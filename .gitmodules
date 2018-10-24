@@ -1,0 +1,3 @@
+[submodule "JOSE"]
+	path = JOSE
+	url = https://github.com/paolo-rossi/delphi-jose-jwt.git
