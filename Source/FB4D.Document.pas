@@ -421,7 +421,8 @@ begin
     result := Default;
 end;
 
-function TFirestoreDocument.GetArrayValues(const FieldName: string): TJSONObjects;
+function TFirestoreDocument.GetArrayValues(
+  const FieldName: string): TJSONObjects;
 var
   Val: TJSONValue;
   Obj: TJSONObject;
@@ -429,15 +430,17 @@ var
   c: integer;
 begin
   Val := FieldByName(FieldName);
-  if assigned(Val) then
-  begin
-    Obj := Val.GetValue<TJSONObject>('arrayValue');
-    Arr := Obj.GetValue('values') as TJSONArray;
-    SetLength(result, Arr.Count);
-    for c := 0 to Arr.Count - 1 do
-      result[c] := Arr.Items[c].GetValue<TJSONObject>('mapValue.fields');
-  end else
-    raise EFirestoreDocument.Create('Field ' + FieldName + ' not found');
+  if not assigned(Val) then
+    exit(nil);
+  Obj := Val.GetValue<TJSONObject>('arrayValue');
+  if not assigned(Obj) then
+    exit(nil);
+  Arr := Obj.GetValue('values') as TJSONArray;
+  if not assigned(Arr) then
+    exit(nil);
+  SetLength(result, Arr.Count);
+  for c := 0 to Arr.Count - 1 do
+    result[c] := Arr.Items[c].GetValue<TJSONObject>('mapValue.fields');
 end;
 
 function TFirestoreDocument.CreateTime: TDateTime;
