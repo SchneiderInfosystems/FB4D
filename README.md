@@ -1,5 +1,5 @@
 # FB4D
-Delphi library for access Firebase Realtime DB, Firestore DB and Firebase Storage, Functions and more.
+Delphi library for access the Firebase Realtime DB, the Firestore DB and Firebase Storage, Functions and more.
 
 ## Getting Started
 
