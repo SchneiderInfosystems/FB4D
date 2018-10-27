@@ -1,10 +1,10 @@
 # FB4D
 Delphi library for access the Firebase Realtime DB, the Firestore DB and Firebase Storage, Functions and more.
 
-## Getting Started
+### Wiki
 
-This project has a wiki page for an introduction into this Delphi library
-https://github.com/SchneiderInfosystems/FB4D/wiki/Gettings-Started-with-FB4D
+This project has a wiki page for an introduction and reference information to this Delphi library
+https://github.com/SchneiderInfosystems/FB4D/wiki/Home
 
 ### Prerequisites
 
