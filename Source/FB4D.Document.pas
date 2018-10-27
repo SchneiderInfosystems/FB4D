@@ -183,6 +183,8 @@ begin
 end;
 
 function TFirestoreDocuments.ServerTimeStamp(TimeZone: TTimeZone): TDateTime;
+const
+  cInitialDate: double = 0;
 begin
   case TimeZone of
     tzUTC:
@@ -190,7 +192,7 @@ begin
     tzLocalTime:
       result := TFirebaseHelpers.ConvertToLocalDateTime(fServerTimeStampUTC);
     else
-      result := TDateTime(0);
+      result := TDateTime(cInitialDate);
   end;
 end;
 

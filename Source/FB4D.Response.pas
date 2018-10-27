@@ -273,10 +273,12 @@ begin
 end;
 
 function TFirebaseResponse.GetServerTime(TimeZone: TTimeZone): TDateTime;
+const
+  cInitialDate: double = 0;
 var
   ServerDate: string;
 begin
-  result := TDateTime(0);
+  result := TDateTime(cInitialDate);
   if assigned(fHttpResp) then
     ServerDate := fHttpResp.HeaderValue['Date']
   else if assigned(fRestResp) then
