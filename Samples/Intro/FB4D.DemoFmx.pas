@@ -350,8 +350,6 @@ end;
 procedure TfmxFirebaseDemo.OnUserResponse(const Info: string;
   User: IFirebaseUser);
 begin
-  edtToken.Text := '';
-  edtUID.Text := '';
   memUser.Lines.Clear;
   DisplayUser(memUser, User);
   edtToken.Text := fAuth.Token;
@@ -580,7 +578,7 @@ begin
     memoResp.Lines.Add('Path: ' + fFirestoreObject.Path);
     memoResp.Lines.Add('Type: ' + fFirestoreObject.ContentType);
     memoResp.Lines.Add('Size: ' +
-      Format('%.0n bytes', [extended(fFirestoreObject.Size)]));
+      Format('%.0n bytes', [fFirestoreObject.Size]));
     memoResp.Lines.Add('Created: ' +
       DateTimeToStr(fFirestoreObject.createTime));
     memoResp.Lines.Add('Updated: ' +
@@ -1230,7 +1228,7 @@ begin
   if not CheckAndCreateRealTimeDBClass(memRTDB) then
     exit;
   ServerTime := fRealTimeDB.GetServerVariablesSynchronous(
-    cServerVariableTimeStamp, []);
+    cServerVariableTimeStamp, GetRTDBPath);
   try
     memRTDB.Lines.Add('ServerTime (local time): ' +
       DateTimeToStr(TFirebaseHelpers.ConvertTimeStampToLocalDateTime(
