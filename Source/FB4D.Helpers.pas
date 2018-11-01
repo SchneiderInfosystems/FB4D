@@ -374,7 +374,7 @@ begin
   if assigned(Val) then
     result := Val.GetValue<integer>('integerValue')
   else
-    raise EJSONException.Create(Format(SValueNotFound, [Name]));
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
 end;
 
 function TJSONHelpers.GetStringValue(const Name: string): string;
@@ -385,7 +385,7 @@ begin
   if assigned(Val) then
     result := Val.GetValue<string>('stringValue')
   else
-    raise EJSONException.Create(Format(SValueNotFound, [Name]));
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
 end;
 
 function TJSONHelpers.GetTimeStampValue(const Name: string): TDateTime;
@@ -396,7 +396,7 @@ begin
   if assigned(Val) then
     result := Val.GetValue<TDateTime>('timestampValue')
   else
-    raise EJSONException.Create(Format(SValueNotFound, [Name]));
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
 end;
 
 end.

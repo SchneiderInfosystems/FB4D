@@ -230,8 +230,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 448.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
-            Viewport.Width = 929.000000000000000000
-            Viewport.Height = 444.000000000000000000
+            Viewport.Width = 933.000000000000000000
+            Viewport.Height = 448.000000000000000000
           end
           object btnGetUserData: TButton
             Position.X = 16.000000000000000000
@@ -397,8 +397,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 456.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 952.000000000000000000
-        Viewport.Height = 452.000000000000000000
+        Viewport.Width = 956.000000000000000000
+        Viewport.Height = 456.000000000000000000
       end
       object edtPath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -1005,8 +1005,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 626.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Viewport.Width = 920.000000000000000000
-        Viewport.Height = 622.000000000000000000
+        Viewport.Width = 924.000000000000000000
+        Viewport.Height = 626.000000000000000000
       end
       object btnStopEvent: TButton
         Position.X = 192.000000000000000000
@@ -1100,8 +1100,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 576.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 944.000000000000000000
-        Viewport.Height = 572.000000000000000000
+        Viewport.Width = 948.000000000000000000
+        Viewport.Height = 576.000000000000000000
       end
       object btnCreateDocument: TButton
         Position.X = 24.000000000000000000
@@ -1176,8 +1176,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 528.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 4
-        Viewport.Width = 944.000000000000000000
-        Viewport.Height = 524.000000000000000000
+        Viewport.Width = 948.000000000000000000
+        Viewport.Height = 528.000000000000000000
       end
       object btnDownload: TButton
         Enabled = False

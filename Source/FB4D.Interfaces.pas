@@ -32,7 +32,13 @@ uses
   JOSE.Core.JWT;
 
 type
+  /// <summary>
+  /// Firebase returns timestamps in UTC time zone (tzUTC). FB4D offers the
+  /// or convertion into local time by tzLocalTime.
+  /// </summary>
   TTimeZone = (tzUTC, tzLocalTime);
+
+
   EFirebaseResponse = class(Exception);
   IFirebaseResponse = interface(IInterface)
     function ContentAsString: string;

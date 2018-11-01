@@ -1,0 +1,276 @@
+object fmxMain: TfmxMain
+  Left = 0
+  Top = 0
+  Caption = 'Super Clipboard'
+  ClientHeight = 480
+  ClientWidth = 700
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnClose = FormClose
+  OnShow = FormShow
+  DesignerMasterStyle = 0
+  object TabControl: TTabControl
+    Align = Client
+    Size.Width = 700.000000000000000000
+    Size.Height = 480.000000000000000000
+    Size.PlatformDefault = False
+    TabIndex = 2
+    TabOrder = 0
+    TabPosition = None
+    Sizes = (
+      700s
+      480s
+      700s
+      480s
+      700s
+      480s)
+    object tabProjectSettings: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabProjectSettings'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      object edtKey: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+        Position.X = 16.000000000000000000
+        Position.Y = 40.000000000000000000
+        Size.Width = 668.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 
+          'Enter firebase Web API key from Firebase Console > Project Overv' +
+          'iew > Settings > General> Your Project'
+        Left = 8
+        Top = 147
+        object Text3: TText
+          Position.Y = -24.000000000000000000
+          Size.Width = 104.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Web API Key'
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      object edtProjectID: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 1
+        Position.X = 16.000000000000000000
+        Position.Y = 104.000000000000000000
+        Size.Width = 668.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 'Enter Project ID from FB Settings'
+        object Text4: TText
+          Position.Y = -24.000000000000000000
+          Size.Width = 81.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Project ID'
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      object btnEnteredProjSettings: TButton
+        Anchors = [akRight, akBottom]
+        Position.X = 592.000000000000000000
+        Position.Y = 424.000000000000000000
+        Size.Width = 73.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = 'arrowrighttoolbutton'
+        TabOrder = 2
+        Text = 'btnEnteredProjSettings'
+        OnClick = btnEnteredProjSettingsClick
+      end
+    end
+    object tabSignIn: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabSignIn'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      object edtEMail: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = Center
+        TabOrder = 0
+        Margins.Bottom = 50.000000000000000000
+        Size.Width = 377.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        object Text1: TText
+          Position.X = -128.000000000000000000
+          Size.Width = 121.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'EMail address:'
+          TextSettings.HorzAlign = Trailing
+        end
+      end
+      object btnSignIn: TButton
+        Align = Center
+        Margins.Top = 150.000000000000000000
+        Size.Width = 377.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Sign-In'
+        OnClick = btnSignInClick
+      end
+      object edtPassword: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = Center
+        TabOrder = 1
+        Password = True
+        Margins.Top = 40.000000000000000000
+        Size.Width = 377.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        object Text2: TText
+          Position.X = -128.000000000000000000
+          Size.Width = 121.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Password'
+          TextSettings.HorzAlign = Trailing
+        end
+      end
+      object lblStatus: TLabel
+        Align = Center
+        Margins.Top = 250.000000000000000000
+        Size.Width = 600.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'Enter your credentials for login'
+        TabOrder = 3
+      end
+      object AniIndicator: TAniIndicator
+        Align = Center
+        Margins.Bottom = 150.000000000000000000
+        Visible = False
+      end
+      object btnSettings: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 33.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = 'detailstoolbuttonbordered'
+        TabOrder = 5
+        Text = 'btnSettings'
+        OnClick = btnSettingsClick
+      end
+    end
+    object tabClipboard: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = True
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabClipboard'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      object lblClipboardState: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 40.000000000000000000
+        Text = 'Clipboard Content:'
+        TabOrder = 0
+      end
+      object lblUserInfo: TLabel
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 24.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 649.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Trailing
+        TabOrder = 1
+      end
+      object memClipboardText: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        StyledSettings = [Size, Style, FontColor]
+        TextSettings.Font.Family = 'Courier New'
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Position.X = 24.000000000000000000
+        Position.Y = 64.000000000000000000
+        Size.Width = 649.000000000000000000
+        Size.Height = 321.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Viewport.Width = 645.000000000000000000
+        Viewport.Height = 317.000000000000000000
+      end
+      object btnSendToCloud: TButton
+        Anchors = [akRight, akBottom]
+        Position.X = 576.000000000000000000
+        Position.Y = 392.000000000000000000
+        Size.Width = 96.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+        Text = 'Send to Cloud'
+        OnClick = btnSendToCloudClick
+      end
+      object lblStatusRTDB: TLabel
+        Anchors = [akLeft, akRight, akBottom]
+        Margins.Top = 250.000000000000000000
+        Position.X = 18.000000000000000000
+        Position.Y = 420.000000000000000000
+        Size.Width = 655.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        TabOrder = 3
+      end
+      object aniRTDB: TAniIndicator
+        Position.X = 512.000000000000000000
+        Position.Y = 392.000000000000000000
+        Visible = False
+      end
+      object btnFromClipBoard: TButton
+        Anchors = [akTop, akBottom]
+        Position.X = 24.000000000000000000
+        Position.Y = 392.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 6
+        Text = #144'Copy from OS Clipboard'
+        OnClick = btnFromClipBoardClick
+      end
+      object btnToClipboard: TButton
+        Anchors = [akTop, akBottom]
+        Position.X = 192.000000000000000000
+        Position.Y = 392.000000000000000000
+        Size.Width = 137.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 7
+        Text = 'Copy to OS Clipboard'
+        OnClick = btnToClipboardClick
+      end
+    end
+  end
+end
