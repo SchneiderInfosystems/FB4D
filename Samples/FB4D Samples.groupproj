@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{2BF2B763-451E-41B0-96B0-F43D80369369}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Intro\DemoFB4D.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="CloudClipboard\CloudClipBoard.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="DemoFB4D">
+        <MSBuild Projects="Intro\DemoFB4D.dproj"/>
+    </Target>
+    <Target Name="DemoFB4D:Clean">
+        <MSBuild Projects="Intro\DemoFB4D.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DemoFB4D:Make">
+        <MSBuild Projects="Intro\DemoFB4D.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CloudClipBoard">
+        <MSBuild Projects="CloudClipboard\CloudClipBoard.dproj"/>
+    </Target>
+    <Target Name="CloudClipBoard:Clean">
+        <MSBuild Projects="CloudClipboard\CloudClipBoard.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CloudClipBoard:Make">
+        <MSBuild Projects="CloudClipboard\CloudClipBoard.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="DemoFB4D;CloudClipBoard"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="DemoFB4D:Clean;CloudClipBoard:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="DemoFB4D:Make;CloudClipBoard:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
