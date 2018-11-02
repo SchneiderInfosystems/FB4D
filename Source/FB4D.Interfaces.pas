@@ -257,6 +257,8 @@ type
   TPasswordVerificationResult = (pvrOpNotAllowed, pvrPassed, pvrpvrExpired,
     pvrInvalid);
   TOnUserResponse = procedure(const Info: string; User: IFirebaseUser) of object;
+  TOnFetchProviders = procedure(const EMail: string; IsRegistered: boolean;
+    Providers: TStrings) of object;
   TOnPasswordVerification = procedure(const Info: string;
     Result: TPasswordVerificationResult) of object;
   TOnGetUserData = procedure(FirebaseUserList: TFirebaseUserList) of object;
@@ -274,6 +276,11 @@ type
       OnError: TOnRequestError);
     // Logout
     procedure SignOut;
+    // Providers
+    procedure FetchProvidersForEMail(const EMail: string;
+      OnFetchProviders: TOnFetchProviders; OnError: TOnRequestError);
+    function FetchProvidersForEMailSynchronous(const EMail: string;
+      Strings: TStrings): boolean; // returns true if EMail is registered
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
       OnResponse: TOnResponse; OnError: TOnRequestError);

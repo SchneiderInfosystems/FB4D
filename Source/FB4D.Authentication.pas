@@ -46,6 +46,8 @@ type
       fExpiresAt: TDateTime;
       fRefreshToken: string;
       fOnUserResponse: TOnUserResponse;
+      fOnFetchProviders: TOnFetchProviders;
+      fOnFetchProvidersError: TOnRequestError;
       fOnPasswordVerification: TOnPasswordVerification;
       fOnGetUserData: TOnGetUserData;
       fOnRefreshToken: TOnTokenRefresh;
@@ -54,6 +56,8 @@ type
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError;
       const Email: string = ''; const Password: string = '');
     procedure OnUserResp(const RequestID: string; Response: IFirebaseResponse);
+    procedure OnFetchProvidersResp(const RequestID: string;
+      Response: IFirebaseResponse);
     procedure OnVerifyPasswordResp(const RequestID: string;
       Response: IFirebaseResponse);
     procedure OnUserListResp(const RequestID: string;
@@ -74,6 +78,11 @@ type
       OnError: TOnRequestError);
     // Logout
     procedure SignOut;
+    // Providers
+    procedure FetchProvidersForEMail(const EMail: string;
+      OnFetchProviders: TOnFetchProviders; OnError: TOnRequestError);
+    function FetchProvidersForEMailSynchronous(const EMail: string;
+      Strings: TStrings): boolean; // returns true if EMail is registered
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
       OnResponse: TOnResponse; OnError: TOnRequestError);
@@ -264,6 +273,108 @@ begin
     Request.SendRequest([ResourceStr[SignType]], rmPost, Data, Params,
       tmNoToken, OnUserResp, OnError);
   finally
+    Params.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.FetchProvidersForEMail(const EMail: string;
+  OnFetchProviders: TOnFetchProviders; OnError: TOnRequestError);
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: IFirebaseRequest;
+begin
+  fOnFetchProviders := OnFetchProviders;
+  fOnFetchProvidersError := OnError;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, EMail);
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('identifier', Email));
+    Data.AddPair(TJSONPair.Create('continueUri', 'http://locahost'));
+    Params.Add('key', ApiKey);
+    Request.SendRequest(['createAuthUri'], rmPOST, Data, Params, tmNoToken,
+      OnFetchProvidersResp, onError);
+  finally
+    Params.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.OnFetchProvidersResp(const RequestID: string;
+  Response: IFirebaseResponse);
+var
+  ResObj: TJSONObject;
+  ResArr: TJSONArray;
+  c: integer;
+  Registered: boolean;
+  Providers: TStringList;
+begin
+  try
+    Response.CheckForJSONObj;
+    ResObj := Response.GetContentAsJSONObj;
+    Providers := TStringList.Create;
+    try
+      if not ResObj.GetValue('registered').TryGetValue(Registered) then
+        raise EFirebaseAuthentication.Create('JSON field registered missing');
+      if Registered then
+      begin
+        ResArr := ResObj.GetValue('allProviders') as TJSONArray;
+        if not assigned(ResArr) then
+          raise EFirebaseAuthentication.Create(
+            'JSON field allProviders missing');
+        for c := 0 to ResArr.Count - 1 do
+          Providers.Add(ResArr.Items[c].ToString);
+      end;
+      if assigned(fOnFetchProviders) then
+        fOnFetchProviders(RequestID, Registered, Providers);
+    finally
+      Providers.Free;
+      ResObj.Free;
+    end;
+  except
+    on e: exception do
+      if assigned(fOnFetchProvidersError) then
+        fOnFetchProvidersError(RequestID, e.Message);
+  end;
+end;
+
+function TFirebaseAuthentication.FetchProvidersForEMailSynchronous(
+  const EMail: string; Strings: TStrings): boolean;
+var
+  Data, ResObj: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+  ResArr: TJSONArray;
+  c: integer;
+begin
+  Data := TJSONObject.Create;
+  ResObj := nil;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('identifier', Email));
+    Data.AddPair(TJSONPair.Create('continueUri', 'http://locahost'));
+    Params.Add('key', ApiKey);
+    Response := Request.SendRequestSynchronous(['createAuthUri'], rmPOST, Data,
+      Params, tmNoToken);
+    Response.CheckForJSONObj;
+    ResObj := Response.GetContentAsJSONObj;
+    if not ResObj.GetValue('registered').TryGetValue(result) then
+      raise EFirebaseAuthentication.Create('JSON field registered missing');
+    if result then
+    begin
+      ResArr := ResObj.GetValue('allProviders') as TJSONArray;
+      if not assigned(ResArr) then
+        raise EFirebaseAuthentication.Create('JSON field allProviders missing');
+      Strings.Clear;
+      for c := 0 to ResArr.Count - 1 do
+        Strings.Add(ResArr.Items[c].ToString);
+    end;
+  finally
+    ResObj.Free;
     Params.Free;
     Data.Free;
   end;
