@@ -36,6 +36,8 @@ type
     aniRTDB: TAniIndicator;
     btnFromClipBoard: TButton;
     btnToClipboard: TButton;
+    btnCheckEMail: TButton;
+    btnSignUp: TButton;
     procedure btnSignInClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -44,6 +46,9 @@ type
     procedure btnSendToCloudClick(Sender: TObject);
     procedure btnFromClipBoardClick(Sender: TObject);
     procedure btnToClipboardClick(Sender: TObject);
+    procedure btnCheckEMailClick(Sender: TObject);
+    procedure edtEMailChangeTracking(Sender: TObject);
+    procedure btnSignUpClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fUID: string;
@@ -51,6 +56,9 @@ type
     fFirebaseEvent: IFirebaseEvent;
     procedure CreateAuthenticationClass;
     procedure CreateRealTimeDBClass;
+    procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
+      Providers: TStrings);
+    procedure OnFetchProvidersError(const Info, ErrMsg: string);
     procedure OnUserResponse(const Info: string; User: IFirebaseUser);
     procedure OnUserError(const Info, ErrMsg: string);
     procedure OnPutResp(ResourceParams: TRequestResourceParam; Val: TJSONValue);
@@ -77,6 +85,10 @@ uses
   FB4D.RealTimeDB;
 
 resourcestring
+  rsEnterEMail = 'Enter your email address for login';
+  rsWait = 'Please wait for Firebase';
+  rsEnterPassword = 'Enter your password for login';
+  rsSetupPassword = 'Setup a new password for future logins';
   rsHintRTDBRules =
     'Hint to permission error:'#13#13 +
     'Before you can write into the real time database add the following'#13 +
@@ -109,7 +121,19 @@ begin
   finally
     IniFile.Free;
   end;
-  TabControl.ActiveTab := tabSignIn;
+  if edtKey.Text.IsEmpty or edtProjectID.Text.IsEmpty then
+    TabControl.ActiveTab := tabProjectSettings
+  else
+    TabControl.ActiveTab := tabSignIn;
+  btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
+  if btnCheckEMail.Enabled then
+    btnCheckEMail.SetFocus
+  else
+    edtEMail.SetFocus;
+  lblStatus.Text := rsEnterEMail;
+  btnSignIn.Visible := false;
+  btnSignUp.Visible := false;
+  edtPassword.Visible := false;
 end;
 
 procedure TfmxMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -128,6 +152,16 @@ begin
   finally
     IniFile.Free;
   end;
+end;
+
+procedure TfmxMain.btnEnteredProjSettingsClick(Sender: TObject);
+begin
+  if edtKey.Text.IsEmpty then
+    edtKey.SetFocus
+  else if edtProjectID.Text.IsEmpty then
+    edtProjectID.SetFocus
+  else
+    WipeToTab(tabSignIn);
 end;
 
 procedure TfmxMain.CreateAuthenticationClass;
@@ -149,24 +183,77 @@ begin
   end;
 end;
 
+procedure TfmxMain.edtEMailChangeTracking(Sender: TObject);
+begin
+  btnCheckEMail.Visible := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
+  edtPassword.Visible := false;
+  btnSignUp.Visible := false;
+  btnSignIn.Visible := false;
+end;
+
 procedure TfmxMain.btnSettingsClick(Sender: TObject);
 begin
   WipeToTab(tabProjectSettings);
 end;
 
-procedure TfmxMain.btnSignInClick(Sender: TObject);
+procedure TfmxMain.btnCheckEMailClick(Sender: TObject);
 begin
   CreateAuthenticationClass;
+  fAuth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
+    OnFetchProvidersError);
+  AniIndicator.Enabled := true;
+  AniIndicator.Visible := true;
+  btnCheckEMail.Enabled := false;
+  lblStatus.Text := rsWait;
+end;
+
+procedure TfmxMain.OnFetchProviders(const EMail: string; IsRegistered: boolean;
+  Providers: TStrings);
+begin
+  AniIndicator.Enabled := false;
+  AniIndicator.Visible := false;
+  if IsRegistered then
+  begin
+    btnSignIn.Visible := true;
+    edtPassword.Visible := true;
+    lblStatus.Text := rsEnterPassword;
+  end else begin
+    btnSignUp.Visible := true;
+    edtPassword.Visible := true;
+    edtPassword.Text := ''; // clear default password
+    btnSignUp.Visible := true;
+    lblStatus.Text := rsSetupPassword;
+  end;
+  edtPassword.SetFocus;
+  btnCheckEMail.Visible := false;
+end;
+
+procedure TfmxMain.OnFetchProvidersError(const Info, ErrMsg: string);
+begin
+  AniIndicator.Enabled := false;
+  AniIndicator.Visible := false;
+  lblStatus.Text := Info + ': ' + ErrMsg;
+  btnCheckEMail.Enabled := true;
+end;
+
+procedure TfmxMain.btnSignInClick(Sender: TObject);
+begin
   fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
+  lblStatus.Text := rsWait;
 end;
 
-procedure TfmxMain.btnEnteredProjSettingsClick(Sender: TObject);
+procedure TfmxMain.btnSignUpClick(Sender: TObject);
 begin
-  WipeToTab(tabSignIn);
+  fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
+    OnUserResponse, OnUserError);
+  AniIndicator.Enabled := true;
+  AniIndicator.Visible := true;
+  btnSignIn.Enabled := false;
+  lblStatus.Text := rsWait;
 end;
 
 procedure TfmxMain.OnUserError(const Info, ErrMsg: string);
@@ -184,11 +271,11 @@ begin
   AniIndicator.Visible := false;
   lblStatus.Text := 'Logged in to Cloud Clipboard';
   fUID := User.UID;
-  if User.DisplayName.IsEmpty then
-    lblUserInfo.Text := 'Logged in user eMail: ' + User.EMail
+  if User.IsDisplayNameAvailable and not User.DisplayName.IsEmpty then
+    lblUserInfo.Text := 'Logged in user name: ' + User.DisplayName
   else
-   lblUserInfo.Text := 'Logged in user nmae: ' + User.DisplayName;
-   StartClipboard;
+    lblUserInfo.Text := 'Logged in user eMail: ' + User.EMail;
+  StartClipboard;
 end;
 
 procedure TfmxMain.WipeToTab(ActiveTab: TTabItem);
@@ -227,7 +314,6 @@ end;
 procedure TfmxMain.btnSendToCloudClick(Sender: TObject);
 var
   Data: TJSONObject;
-  c: integer;
 begin
   StopListener;
   lblStatusRTDB.Text := '';
