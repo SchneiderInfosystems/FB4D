@@ -58,6 +58,7 @@ type
       OnError: TOnSimpleDownloadError = nil);
     class function CreateAutoID: string;
     class function ConvertIDtoGUID(const FBID: string): TGuid;
+    class function IsEMailAdress(const EMail: string): boolean;
   private
     const
       cBase62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -397,6 +398,96 @@ begin
     result := Val.GetValue<TDateTime>('timestampValue')
   else
     raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
+ // Returns True if the email address is valid
+ // Author: Ernesto D'Spirito
+const
+  AtomChars = [#33..#255] -
+    ['(', ')', '<', '>', '@', ',', ';', ':', '\', '/', '"', '.', '[', ']', #127];
+  QuotedStringChars = [#0..#255] - ['"', #13, '\'];
+  Letters = ['A'..'Z', 'a'..'z'];
+  LettersDigits = ['0'..'9', 'A'..'Z', 'a'..'z'];
+type
+  States = (STATE_BEGIN, STATE_ATOM, STATE_QTEXT, STATE_QCHAR,
+    STATE_QUOTE, STATE_LOCAL_PERIOD, STATE_EXPECTING_SUBDOMAIN,
+    STATE_SUBDOMAIN, STATE_HYPHEN);
+var
+  State: States;
+  i, n, subdomains: integer;
+  c: char;
+begin
+  State := STATE_BEGIN;
+  n := Length(email);
+  i := 1;
+  subdomains := 1;
+  while i <= n do
+  begin
+    c := email[i];
+    case State of
+      STATE_BEGIN:
+        if CharInSet(c, AtomChars) then
+          State := STATE_ATOM
+        else if c = '"' then
+          State := STATE_QTEXT
+        else
+          break;
+      STATE_ATOM:
+        if c = '@' then
+          State := STATE_EXPECTING_SUBDOMAIN
+        else if c = '.' then
+          State := STATE_LOCAL_PERIOD
+        else if not CharInSet(c, AtomChars) then
+          break;
+      STATE_QTEXT:
+        if c = '\' then
+          State := STATE_QCHAR
+        else if c = '"' then
+          State := STATE_QUOTE
+        else if not CharInSet(c, QuotedStringChars) then
+          break;
+      STATE_QCHAR:
+        State := STATE_QTEXT;
+      STATE_QUOTE:
+        if c = '@' then
+          State := STATE_EXPECTING_SUBDOMAIN
+        else if c = '.' then
+          State := STATE_LOCAL_PERIOD
+        else
+          break;
+      STATE_LOCAL_PERIOD:
+        if  CharInSet(c, AtomChars) then
+          State := STATE_ATOM
+        else if c = '"' then
+          State := STATE_QTEXT
+        else
+          break;
+      STATE_EXPECTING_SUBDOMAIN:
+        if CharInSet(c, Letters) then
+          State := STATE_SUBDOMAIN
+        else
+          break;
+      STATE_SUBDOMAIN:
+        if c = '.' then begin
+          inc(subdomains);
+          State := STATE_EXPECTING_SUBDOMAIN
+        end else if c = '-' then
+          State := STATE_HYPHEN
+        else if not CharInSet(c, LettersDigits) then
+          break;
+      STATE_HYPHEN:
+        if CharInSet(c, LettersDigits) then
+          State := STATE_SUBDOMAIN
+        else if c <> '-' then
+          break;
+    end;
+    inc(i);
+  end;
+  if i <= n then
+    result := false
+  else
+    result := (State = STATE_SUBDOMAIN) and (subdomains >= 2);
 end;
 
 end.
