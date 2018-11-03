@@ -1,0 +1,202 @@
+inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
+  ClientHeight = 695
+  ClientWidth = 450
+  DesignerMasterStyle = 3
+  inherited TabControl: TTabControl
+    Size.Width = 450.000000000000000000
+    Size.Height = 695.000000000000000000
+    Sizes = (
+      450s
+      695s
+      450s
+      695s
+      450s
+      695s)
+    inherited tabProjectSettings: TTabItem
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      inherited edtKey: TEdit
+        Align = Top
+        Position.X = 20.000000000000000000
+        Position.Y = 50.000000000000000000
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 50.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Size.Width = 410.000000000000000000
+      end
+      inherited edtProjectID: TEdit
+        Align = Top
+        Position.X = 20.000000000000000000
+        Position.Y = 132.000000000000000000
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 50.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 20.000000000000000000
+        Size.Width = 410.000000000000000000
+      end
+      inherited btnEnteredProjSettings: TButton
+        Align = Top
+        Position.Y = 184.000000000000000000
+        Size.Width = 450.000000000000000000
+      end
+    end
+    inherited tabSignIn: TTabItem
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      inherited btnResetPwd: TButton
+        Align = Top
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 504.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 40.000000000000000000
+      end
+      inherited edtEMail: TEdit
+        Align = Top
+        Position.X = 20.000000000000000000
+        Position.Y = 80.000000000000000000
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 80.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 20.000000000000000000
+        Size.Width = 410.000000000000000000
+        inherited Text1: TText
+          Position.Y = -32.000000000000000000
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      inherited btnSignIn: TButton
+        Align = Top
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 10.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 374.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 40.000000000000000000
+      end
+      inherited edtPassword: TEdit
+        Align = Top
+        Position.X = 20.000000000000000000
+        Position.Y = 182.000000000000000000
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 50.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 20.000000000000000000
+        Size.Width = 410.000000000000000000
+        inherited Text2: TText
+          Position.Y = -40.000000000000000000
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      inherited lblStatus: TLabel
+        Align = Bottom
+        Margins.Top = 320.000000000000000000
+        Position.Y = 583.000000000000000000
+        Size.Width = 450.000000000000000000
+        Size.Height = 112.000000000000000000
+      end
+      inherited btnCheckEMail: TButton
+        Align = Top
+        Margins.Left = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 314.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 40.000000000000000000
+      end
+      inherited btnSignUp: TButton
+        Align = Top
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 10.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 434.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 40.000000000000000000
+      end
+    end
+    inherited tabClipboard: TTabItem
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      inherited lblClipboardState: TLabel
+        Align = Top
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 48.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 41.000000000000000000
+        Size.PlatformDefault = False
+      end
+      inherited lblUserInfo: TLabel
+        Align = Top
+        StyledSettings = [Family, Style, FontColor]
+        Margins.Left = 20.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 5.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 33.000000000000000000
+        TextSettings.Font.Size = 8.000000000000000000
+      end
+      inherited memClipboardText: TMemo
+        Align = Client
+        Margins.Left = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 443.000000000000000000
+        Viewport.Width = 410.000000000000000000
+        Viewport.Height = 443.000000000000000000
+      end
+      inherited btnSendToCloud: TButton
+        Align = Bottom
+        Margins.Left = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 20.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 641.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 34.000000000000000000
+      end
+      inherited lblStatusRTDB: TLabel
+        Margins.Left = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.Y = 870.000000000000000000
+        Size.Width = 155.000000000000000000
+      end
+      inherited btnFromClipBoard: TButton
+        Align = Bottom
+        Margins.Left = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 547.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 37.000000000000000000
+      end
+      inherited btnToClipboard: TButton
+        Align = Bottom
+        Margins.Left = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.X = 20.000000000000000000
+        Position.Y = 594.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 37.000000000000000000
+      end
+    end
+  end
+end

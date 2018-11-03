@@ -97,6 +97,7 @@ type
     procedure OnRecDataStop(Sender: TObject);
     procedure StartListener;
     procedure StopListener;
+    procedure SaveSettings;
   end;
 
 var
@@ -131,9 +132,11 @@ resourcestring
     '}'#13;
 
 {$R *.fmx}
+{$R *.LgXhdpiPh.fmx ANDROID}
 
 procedure TfmxMain.FormShow(Sender: TObject);
 var
+d: string;
   IniFile: TIniFile;
 begin
   IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(TPath.GetHomePath) +
@@ -164,10 +167,15 @@ begin
 end;
 
 procedure TfmxMain.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  StopListener;
+  SaveSettings;
+end;
+
+procedure TfmxMain.SaveSettings;
 var
   IniFile: TIniFile;
 begin
-  StopListener;
   IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(TPath.GetHomePath) +
     ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini'));
   try
@@ -187,8 +195,10 @@ begin
     edtKey.SetFocus
   else if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
-  else
+  else begin
+    SaveSettings;
     WipeToTab(tabSignIn);
+  end;
 end;
 
 procedure TfmxMain.CreateAuthenticationClass;
@@ -338,8 +348,12 @@ begin
   if TabControl.ActiveTab <> ActiveTab then
   begin
     ActiveTab.Visible := true;
+{$IFDEF ANDROID}
+    TabControl.ActiveTab := ActiveTab;
+{$ELSE}
     TabControl.GotoVisibleTab(ActiveTab.Index, TTabTransition.Slide,
       TTabTransitionDirection.Normal);
+{$ENDIF}
     for c := 0 to TabControl.TabCount - 1 do
       TabControl.Tabs[c].Visible := TabControl.Tabs[c] = ActiveTab;
   end;
@@ -347,6 +361,7 @@ end;
 
 procedure TfmxMain.StartClipboard;
 begin
+  SaveSettings;
   WipeToTab(tabClipboard);
   CreateRealTimeDBClass;
   StartListener;
