@@ -38,6 +38,7 @@ type
     btnToClipboard: TButton;
     btnCheckEMail: TButton;
     btnSignUp: TButton;
+    btnResetPwd: TButton;
     procedure btnSignInClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -49,6 +50,7 @@ type
     procedure btnCheckEMailClick(Sender: TObject);
     procedure edtEMailChangeTracking(Sender: TObject);
     procedure btnSignUpClick(Sender: TObject);
+    procedure btnResetPwdClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fUID: string;
@@ -61,6 +63,7 @@ type
     procedure OnFetchProvidersError(const Info, ErrMsg: string);
     procedure OnUserResponse(const Info: string; User: IFirebaseUser);
     procedure OnUserError(const Info, ErrMsg: string);
+    procedure OnResetPwd(const Info: string; Response: IFirebaseResponse);
     procedure OnPutResp(ResourceParams: TRequestResourceParam; Val: TJSONValue);
     procedure OnPutError(const RequestID, ErrMsg: string);
     procedure WipeToTab(ActiveTab: TTabItem);
@@ -132,6 +135,7 @@ begin
     edtEMail.SetFocus;
   lblStatus.Text := rsEnterEMail;
   btnSignIn.Visible := false;
+  btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
   edtPassword.Visible := false;
 end;
@@ -185,7 +189,7 @@ end;
 
 procedure TfmxMain.edtEMailChangeTracking(Sender: TObject);
 begin
-  btnCheckEMail.Visible := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
+  btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
   edtPassword.Visible := false;
   btnSignUp.Visible := false;
   btnSignIn.Visible := false;
@@ -215,13 +219,15 @@ begin
   if IsRegistered then
   begin
     btnSignIn.Visible := true;
+    btnResetPwd.Visible := true;
     edtPassword.Visible := true;
     lblStatus.Text := rsEnterPassword;
   end else begin
     btnSignUp.Visible := true;
     edtPassword.Visible := true;
     edtPassword.Text := ''; // clear default password
-    btnSignUp.Visible := true;
+    btnSignIn.Visible := false;
+    btnResetPwd.Visible := false;
     lblStatus.Text := rsSetupPassword;
   end;
   edtPassword.SetFocus;
@@ -243,6 +249,7 @@ begin
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
+  btnResetPwd.Enabled := false;
   lblStatus.Text := rsWait;
 end;
 
@@ -252,7 +259,17 @@ begin
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
+  btnSignUp.Enabled := false;
+  lblStatus.Text := rsWait;
+end;
+
+procedure TfmxMain.btnResetPwdClick(Sender: TObject);
+begin
+  fAuth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
+  AniIndicator.Enabled := true;
+  AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
+  btnResetPwd.Enabled := false;
   lblStatus.Text := rsWait;
 end;
 
@@ -262,6 +279,8 @@ begin
   AniIndicator.Visible := false;
   lblStatus.Text := Info + ': ' + ErrMsg;
   btnSignIn.Enabled := true;
+  btnResetPwd.Enabled := true;
+  btnSignUp.Enabled := true;
 end;
 
 procedure TfmxMain.OnUserResponse(const Info: string;
@@ -276,6 +295,17 @@ begin
   else
     lblUserInfo.Text := 'Logged in user eMail: ' + User.EMail;
   StartClipboard;
+end;
+
+procedure TfmxMain.OnResetPwd(const Info: string; Response: IFirebaseResponse);
+begin
+  AniIndicator.Enabled := false;
+  AniIndicator.Visible := false;
+  btnSignIn.Enabled := true;
+  if Response.StatusOk then
+    lblStatus.Text := 'Please check your email box to renew your password.'
+  else
+    lblStatus.Text := Response.ErrorMsgOrStatusText;
 end;
 
 procedure TfmxMain.WipeToTab(ActiveTab: TTabItem);

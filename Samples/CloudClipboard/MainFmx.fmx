@@ -15,7 +15,7 @@ object fmxMain: TfmxMain
     Size.Width = 700.000000000000000000
     Size.Height = 480.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 2
+    TabIndex = 1
     TabOrder = 0
     TabPosition = None
     Sizes = (
@@ -97,7 +97,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
@@ -106,6 +106,16 @@ object fmxMain: TfmxMain
       Text = 'tabSignIn'
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
+      object btnResetPwd: TButton
+        Align = Center
+        Margins.Top = 200.000000000000000000
+        Size.Width = 377.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 5
+        Text = 'Reset password'
+        OnClick = btnResetPwdClick
+      end
       object edtEMail: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Align = Center
@@ -155,12 +165,12 @@ object fmxMain: TfmxMain
       object lblStatus: TLabel
         Align = Center
         Margins.Top = 260.000000000000000000
-        Size.Width = 377.000000000000000000
+        Size.Width = 500.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
         Text = 'lblStatus'
-        TabOrder = 4
+        TabOrder = 7
       end
       object AniIndicator: TAniIndicator
         Align = Center
@@ -184,7 +194,7 @@ object fmxMain: TfmxMain
         Size.Width = 376.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 7
+        TabOrder = 2
         Text = 'Check EMail Address'
         OnClick = btnCheckEMailClick
       end
@@ -194,7 +204,7 @@ object fmxMain: TfmxMain
         Size.Width = 377.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 2
+        TabOrder = 4
         Text = 'Sign-Up'
         OnClick = btnSignUpClick
       end
@@ -203,7 +213,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
