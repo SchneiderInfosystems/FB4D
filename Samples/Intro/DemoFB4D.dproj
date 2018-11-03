@@ -106,6 +106,6 @@
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>DemoFB4D</SanitizedProjectName>
         <DCC_UnitSearchPath>..\..\JOSE\Source\Common;..\..\JOSE\Source\JOSE;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-        <DCC_Define>$(FrameworkType);$(DCC_Define)</DCC_Define>
+        <DCC_Define>$(FrameworkType);$TOKENJWT;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
 </Project>

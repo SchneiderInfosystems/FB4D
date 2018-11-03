@@ -31,7 +31,10 @@ uses
   System.Net.HttpClient,
   System.Generics.Collections,
   REST.Types,
-  FB4D.Interfaces, FB4D.Response, FB4D.Request, FB4D.OAuth;
+{$IFDEF TOKENJWT}
+  FB4D.OAuth,
+{$ENDIF}
+  FB4D.Interfaces, FB4D.Response, FB4D.Request;
 
 type
   TFirebaseAuthentication = class(TInterfacedObject, IFirebaseAuthentication)
@@ -616,7 +619,11 @@ begin
       if not NewToken.TryGetValue('access_token', fToken) then
         raise EFirebaseUser.Create('access_token not found')
       else
+{$IFDEF TOKENJWT}
         fTokenJWT := TTokenJWT.Create(fToken);
+{$ELSE}
+        fTokenJWT := nil;
+{$ENDIF}
       if NewToken.TryGetValue('expires_in', ExpiresInSec) then
         fExpiresAt := now + ExpiresInSec / 24 / 3600
       else
@@ -668,7 +675,11 @@ begin
       if not NewToken.TryGetValue('access_token', fToken) then
         raise EFirebaseAuthentication.Create('access_token not found')
       else
+{$IFDEF TOKENJWT}
         fTokenJWT := TTokenJWT.Create(fToken);
+{$ELSE}
+        fTokenJWT := nil;
+{$ENDIF}
       if NewToken.TryGetValue('expires_in', ExpiresInSec) then
         fExpiresAt := now + ExpiresInSec / 24 / 3600
       else
@@ -725,8 +736,10 @@ end;
 constructor TFirebaseUser.Create(JSONResp: TJSONObject; TokenExpected: boolean);
 var
   ExpiresInSec: integer;
+{$IFDEF TOKENJWT}
   Claims: TJSONObject;
   c: integer;
+{$ENDIF}
 begin
   inherited Create;
   fTokenJWT := nil;
@@ -738,11 +751,15 @@ begin
     else
       fToken := ''
   else begin
+{$IFDEF TOKENJWT}
     fTokenJWT := TTokenJWT.Create(fToken);
     Claims := fTokenJWT.Claims.JSON;
     for c := 0 to Claims.Count - 1 do
       fClaimFields.Add(Claims.Pairs[c].JsonString.Value,
         Claims.Pairs[c].JsonValue);
+{$ELSE}
+    fTokenJWT := nil;
+{$ENDIF}
   end;
   if fJSONResp.TryGetValue('expiresIn', ExpiresInSec) then
     fExpiresAt := now + ExpiresInSec / 24 / 3600
