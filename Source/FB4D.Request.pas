@@ -452,7 +452,7 @@ end;
 
 procedure TFirebaseRequest.RESTRequestAfterExecute(Sender: TCustomRESTRequest);
 begin
-  {$IFDEF VER320} // In DE 10.1 snf former this leads to an AV
+  {$IFDEF VER320} // In DE 10.1 and former this leads to an AV
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log(' Exe: ' +
     GetEnumName(TypeInfo(TRESTRequestMethod), ord(Sender.Method)) + ': ' +
