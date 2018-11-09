@@ -358,30 +358,42 @@ begin
       Client: THTTPClient;
       Response: IHTTPResponse;
     begin
-      Client := THTTPClient.Create;
       try
-        Response := Client.Get(DownloadUrl, Stream);
-        if Response.StatusCode = 200 then
-        begin
-          if assigned(OnSuccess) then
-            TThread.Queue(nil,
-              procedure
-              begin
-                OnSuccess(RequestID, self);
-              end);
-        end else begin
-          {$IFDEF DEBUG}
-          TFirebaseHelpers.Log(Response.ContentAsString);
-          {$ENDIF}
+        Client := THTTPClient.Create;
+        try
+          Response := Client.Get(DownloadUrl, Stream);
+          if TFirebaseHelpers.AppIsTerminated then
+            exit;
+          if Response.StatusCode = 200 then
+          begin
+            if assigned(OnSuccess) then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  OnSuccess(RequestID, self);
+                end);
+          end else begin
+            {$IFDEF DEBUG}
+            TFirebaseHelpers.Log(Response.ContentAsString);
+            {$ENDIF}
+            if assigned(OnError) then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  OnError(self, Response.StatusText);
+                end);
+          end;
+        finally
+          Client.Free;
+        end;
+      except
+        on e: exception do
           if assigned(OnError) then
             TThread.Queue(nil,
               procedure
               begin
-                OnError(self, Response.StatusText);
+                OnError(self, e.Message);
               end);
-        end;
-      finally
-        Client.Free;
       end;
     end).Start;
 end;
