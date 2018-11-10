@@ -38,8 +38,14 @@ type
   /// </summary>
   TTimeZone = (tzUTC, tzLocalTime);
 
-
+  /// <summary>
+  /// Exception for IFirebaseRespone
+  /// </summary>
   EFirebaseResponse = class(Exception);
+
+  /// <summary>
+  /// Interface for handling REST response from all Firebase Services
+  /// </summary>
   IFirebaseResponse = interface(IInterface)
     function ContentAsString: string;
     function GetContentAsJSONObj: TJSONObject;
@@ -64,7 +70,7 @@ type
   TOnResponse = procedure(const RequestID: string;
     Response: IFirebaseResponse) of object;
   TOnRequestError = procedure(const RequestID, ErrMsg: string) of object;
-  TRequestResourceParam = TStringDynArray; // array of string;
+  TRequestResourceParam = TStringDynArray;
   IFirebaseRequest = interface(IInterface)
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
@@ -269,11 +275,16 @@ type
     procedure SignUpWithEmailAndPassword(const Email,
       Password: string; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
+    function SignUpWithEmailAndPasswordSynchronous(const Email,
+      Password: string): IFirebaseUser;
     // Login
     procedure SignInWithEmailAndPassword(const Email, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    function SignInWithEmailAndPasswordSynchronous(const Email,
+      Password: string): IFirebaseUser;
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
+    function SignInAnonymouslySynchronous: IFirebaseUser;
     // Logout
     procedure SignOut;
     // Providers
@@ -284,17 +295,25 @@ type
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
       OnResponse: TOnResponse; OnError: TOnRequestError);
+    procedure SendPasswordResetEMailSynchronous(const Email: string);
     procedure VerifyPasswordResetCode(const ResetPasswortCode: string;
       OnPasswordVerification: TOnPasswordVerification; OnError: TOnRequestError);
+    function VerifyPasswordResetCodeSynchronous(const ResetPasswortCode: string):
+      TPasswordVerificationResult;
     procedure ConfirmPasswordReset(const ResetPasswortCode, NewPassword: string;
       OnResponse: TOnResponse; OnError: TOnRequestError);
+    procedure ConfirmPasswordResetSynchronous(const ResetPasswortCode,
+      NewPassword: string);
     // Change password, Change email, Update Profile Data
     // let field empty which shall not be changed
     procedure ChangeProfile(const EMail, Password, DisplayName,
       PhotoURL: string; OnResponse: TOnResponse; OnError: TOnRequestError);
+    procedure ChangeProfileSynchronous(const EMail, Password, DisplayName,
+      PhotoURL: string);
     // Get User Data
     procedure GetUserData(OnGetUserData: TOnGetUserData;
       OnError: TOnRequestError);
+    function GetUserDataSynchronous: TFirebaseUserList;
     // Token refresh
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
       OnError: TOnRequestError);
