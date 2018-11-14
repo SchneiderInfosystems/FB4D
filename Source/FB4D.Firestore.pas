@@ -113,8 +113,14 @@ type
   public
     class function IntegerFieldFilter(const WhereFieldPath: string;
       WhereOperator: TWhereOperator; WhereValue: integer): IQueryFilter;
+    class function DoubleFieldFilter(const WhereFieldPath: string;
+      WhereOperator: TWhereOperator; WhereValue: double): IQueryFilter;
     class function StringFieldFilter(const WhereFieldPath: string;
       WhereOperator: TWhereOperator; const WhereValue: string): IQueryFilter;
+    class function BooleanFieldFilter(const WhereFieldPath: string;
+      WhereOperator: TWhereOperator; WhereValue: boolean): IQueryFilter;
+    class function TimestampFieldFilter(const WhereFieldPath: string;
+      WhereOperator: TWhereOperator; WhereValue: TDateTime): IQueryFilter; static;
     constructor Create(const Where, Value: string; Op: TWhereOperator);
     procedure AddPair(const Str: string; Val: TJSONValue); overload;
     procedure AddPair(const Str, Val: string); overload;
@@ -530,6 +536,31 @@ begin
     TJSONObject.Create(TJSONPair.Create('integerValue', WhereValue.ToString)));
 end;
 
+class function TQueryFilter.DoubleFieldFilter(const WhereFieldPath: string;
+  WhereOperator: TWhereOperator; WhereValue: double): IQueryFilter;
+begin
+  result := TQueryFilter.Create(WhereFieldPath, WhereValue.ToString,
+    WhereOperator);
+  result.AddPair('field',
+    TJSONObject.Create(TJSONPair.Create('fieldPath', WhereFieldPath)));
+  result.AddPair('op', FILTER_OERATION[WhereOperator]);
+  result.AddPair('value',
+    TJSONObject.Create(TJSONPair.Create('doubleValue', WhereValue.ToString)));
+end;
+
+class function TQueryFilter.BooleanFieldFilter(const WhereFieldPath: string;
+  WhereOperator: TWhereOperator; WhereValue: boolean): IQueryFilter;
+begin
+  result := TQueryFilter.Create(WhereFieldPath, WhereValue.ToString(true),
+    WhereOperator);
+  result.AddPair('field',
+    TJSONObject.Create(TJSONPair.Create('fieldPath', WhereFieldPath)));
+  result.AddPair('op', FILTER_OERATION[WhereOperator]);
+  result.AddPair('value',
+    TJSONObject.Create(TJSONPair.Create('booleanValue',
+      TJSONBool.Create(WhereValue))));
+end;
+
 class function TQueryFilter.StringFieldFilter(const WhereFieldPath: string;
   WhereOperator: TWhereOperator; const WhereValue: string): IQueryFilter;
 begin
@@ -539,6 +570,21 @@ begin
   result.AddPair('op', FILTER_OERATION[WhereOperator]);
   result.AddPair('value',
     TJSONObject.Create(TJSONPair.Create('stringValue', WhereValue)));
+end;
+
+class function TQueryFilter.TimestampFieldFilter(const WhereFieldPath: string;
+  WhereOperator: TWhereOperator; WhereValue: TDateTime): IQueryFilter;
+const
+  cBoolStrs: array [boolean] of String = ('false', 'true');
+begin
+  result := TQueryFilter.Create(WhereFieldPath, DateTimeToStr(WhereValue),
+    WhereOperator);
+  result.AddPair('field',
+    TJSONObject.Create(TJSONPair.Create('fieldPath', WhereFieldPath)));
+  result.AddPair('op', FILTER_OERATION[WhereOperator]);
+  result.AddPair('value',
+    TJSONObject.Create(TJSONPair.Create('timestampValue',
+    TFirebaseHelpers.CodeRFC3339DateTime(WhereValue))));
 end;
 
 constructor TQueryFilter.Create(const Where, Value: string; Op: TWhereOperator);
