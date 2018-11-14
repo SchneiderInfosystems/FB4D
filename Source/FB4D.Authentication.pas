@@ -55,6 +55,8 @@ type
       fOnGetUserData: TOnGetUserData;
       fOnRefreshToken: TOnTokenRefresh;
       fOnError: TOnRequestError;
+    function SignWithEmailAndPasswordSynchronous(SignType: TSignType;
+      const Email: string = ''; const Password: string = ''): IFirebaseUser;
     procedure SignWithEmailAndPassword(SignType: TSignType; const Info: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError;
       const Email: string = ''; const Password: string = '');
@@ -73,12 +75,17 @@ type
     procedure SignUpWithEmailAndPassword(const Email,
       Password: string; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
+    function SignUpWithEmailAndPasswordSynchronous(const Email,
+      Password: string): IFirebaseUser;
     // Login
     procedure SignInWithEmailAndPassword(const Email,
       Password: string; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
+    function SignInWithEmailAndPasswordSynchronous(const Email,
+      Password: string): IFirebaseUser;
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
+    function SignInAnonymouslySynchronous: IFirebaseUser;
     // Logout
     procedure SignOut;
     // Providers
@@ -89,17 +96,25 @@ type
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
       OnResponse: TOnResponse; OnError: TOnRequestError);
+    procedure SendPasswordResetEMailSynchronous(const Email: string);
     procedure VerifyPasswordResetCode(const ResetPasswortCode: string;
       OnPasswordVerification: TOnPasswordVerification; OnError: TOnRequestError);
+    function VerifyPasswordResetCodeSynchronous(const ResetPasswortCode: string):
+      TPasswordVerificationResult;
     procedure ConfirmPasswordReset(const ResetPasswortCode, NewPassword: string;
       OnResponse: TOnResponse; OnError: TOnRequestError);
+    procedure ConfirmPasswordResetSynchronous(const ResetPasswortCode,
+      NewPassword: string);
     // Change password, Change email, Update Profile Data
     // let field empty which shall not be changed
     procedure ChangeProfile(const EMail, Password, DisplayName,
       PhotoURL: string; OnResponse: TOnResponse; OnError: TOnRequestError);
+    procedure ChangeProfileSynchronous(const EMail, Password, DisplayName,
+      PhotoURL: string);
     // Get User Data
     procedure GetUserData(OnGetUserData: TOnGetUserData;
       OnError: TOnRequestError);
+    function GetUserDataSynchronous: TFirebaseUserList;
     // Token refresh
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
       OnError: TOnRequestError);
@@ -187,11 +202,22 @@ begin
     OnUserResponse, OnError);
 end;
 
+function TFirebaseAuthentication.SignInAnonymouslySynchronous: IFirebaseUser;
+begin
+  result := SignWithEmailAndPasswordSynchronous(stAnonymousLogin);
+end;
+
 procedure TFirebaseAuthentication.SignInWithEmailAndPassword(const Email,
   Password: string; OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
 begin
   SignWithEmailAndPassword(stLogin, Format(rsSignInWithEmail, [EMail]),
     OnUserResponse, OnError, Email, Password);
+end;
+
+function TFirebaseAuthentication.SignInWithEmailAndPasswordSynchronous(
+  const Email, Password: string): IFirebaseUser;
+begin
+  result := SignWithEmailAndPasswordSynchronous(stLogin, Email, Password);
 end;
 
 procedure TFirebaseAuthentication.SignOut;
@@ -207,6 +233,12 @@ procedure TFirebaseAuthentication.SignUpWithEmailAndPassword(const Email,
 begin
   SignWithEmailAndPassword(stNewUser, Format(rsSignUpWithEmail, [EMail]),
     OnUserResponse, OnError, Email, Password);
+end;
+
+function TFirebaseAuthentication.SignUpWithEmailAndPasswordSynchronous(
+  const Email, Password: string): IFirebaseUser;
+begin
+  result := SignWithEmailAndPasswordSynchronous(stNewUser, Email, Password);
 end;
 
 procedure TFirebaseAuthentication.OnUserResp(const RequestID: string;
@@ -277,6 +309,49 @@ begin
       tmNoToken, OnUserResp, OnError);
   finally
     Params.Free;
+    Data.Free;
+  end;
+end;
+
+function TFirebaseAuthentication.SignWithEmailAndPasswordSynchronous(
+  SignType: TSignType; const Email, Password: string): IFirebaseUser;
+const
+  ResourceStr: array  [TSignType] of string =
+    ('signupNewUser', 'verifyPassword', 'signupNewUser');
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+  User: TFirebaseUser;
+begin
+  result := nil;
+  fAuthenticated := false;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  try
+    if SignType < stAnonymousLogin then
+    begin
+      Data.AddPair(TJSONPair.Create('email', Email));
+      Data.AddPair(TJSONPair.Create('password', Password));
+    end;
+    Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
+    Params.Add('key', ApiKey);
+    Response := Request.SendRequestSynchronous([ResourceStr[SignType]], rmPost,
+      Data, Params, tmNoToken);
+    Response.CheckForJSONObj;
+    fAuthenticated := true;
+    User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
+    fToken := User.fToken;
+    fTokenJWT := User.fTokenJWT;
+    fExpiresAt := User.fExpiresAt;
+    fRefreshToken := User.fRefreshToken;
+    result := User;
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
     Data.Free;
   end;
 end;
@@ -406,6 +481,33 @@ begin
   end;
 end;
 
+procedure TFirebaseAuthentication.SendPasswordResetEMailSynchronous(
+  const Email: string);
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('email', Email));
+    Data.AddPair(TJSONPair.Create('requestType', 'PASSWORD_RESET'));
+    Params.Add('key', ApiKey);
+    Response := Request.SendRequestSynchronous(['getOobConfirmationCode'],
+      rmPost, Data, Params, tmNoToken);
+    if not Response.StatusOk then
+      Response.CheckForJSONObj;
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
+end;
+
 procedure TFirebaseAuthentication.VerifyPasswordResetCode(
   const ResetPasswortCode: string;
   OnPasswordVerification: TOnPasswordVerification; OnError: TOnRequestError);
@@ -426,6 +528,43 @@ begin
     Request.SendRequest(['resetPassword'], rmPost,
       Data, Params, tmNoToken, OnVerifyPasswordResp, OnError);
   finally
+    Data.Free;
+  end;
+end;
+
+function TFirebaseAuthentication.VerifyPasswordResetCodeSynchronous(
+  const ResetPasswortCode: string): TPasswordVerificationResult;
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('oobCode', ResetPasswortCode));
+    Params.Add('key', ApiKey);
+    Response := Request.SendRequestSynchronous(['resetPassword'], rmPost, Data,
+      Params, tmNoToken);
+    if Response.StatusOk then
+      result := pvrPassed
+    else if SameText(Response.ErrorMsg,
+      TFirebaseResponse.ExceptOpNotAllowed) then
+      result := pvrOpNotAllowed
+    else if SameText(Response.ErrorMsg,
+      TFirebaseResponse.ExceptExpiredOobCode) then
+      result := pvrpvrExpired
+    else if SameText(Response.ErrorMsg,
+      TFirebaseResponse.ExceptInvalidOobCode) then
+      result := pvrInvalid
+    else
+      raise EFirebaseResponse.Create(Response.ErrorMsg);
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
     Data.Free;
   end;
 end;
@@ -469,6 +608,33 @@ begin
       Params, tmNoToken, OnResponse, OnError);
   finally
     Params.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.ConfirmPasswordResetSynchronous(
+  const ResetPasswortCode, NewPassword: string);
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('oobCode', ResetPasswortCode));
+    Data.AddPair(TJSONPair.Create('newPassword', NewPassword));
+    Params.Add('key', ApiKey);
+    Response := Request.SendRequestSynchronous(['resetPassword'], rmPost, Data,
+      Params, tmNoToken);
+    if not Response.StatusOk then
+      Response.CheckForJSONObj;
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
     Data.Free;
   end;
 end;
@@ -520,6 +686,60 @@ begin
   end;
 end;
 
+procedure TFirebaseAuthentication.ChangeProfileSynchronous(const EMail,
+  Password, DisplayName, PhotoURL: string);
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+  Info: TStringList;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  Info := TStringList.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('returnSecureToken', 'FALSE'));
+    if not EMail.IsEmpty then
+    begin
+      Data.AddPair(TJSONPair.Create('email', EMail));
+      Info.Add('EMail');
+    end;
+    if not Password.IsEmpty then
+    begin
+      Data.AddPair(TJSONPair.Create('password', Password));
+      Info.Add('Password');
+    end;
+    if not DisplayName.IsEmpty then
+    begin
+      Data.AddPair(TJSONPair.Create('displayName', DisplayName));
+      Info.Add('Display name');
+    end;
+    if not PhotoURL.IsEmpty then
+    begin
+      Data.AddPair(TJSONPair.Create('photoUrl', PhotoURL));
+      Info.Add('Photo URL');
+    end;
+    Params.Add('key', ApiKey);
+    Response := Request.SendRequestSynchronous(['setAccountInfo'], rmPost, Data,
+      Params, tmNoToken);
+    if not Response.StatusOk then
+      Response.CheckForJSONObj;
+    {$IFDEF DEBUG}
+    TFirebaseHelpers.Log(Format(rsChangeProfile, [Info.CommaText]));
+    TFirebaseHelpers.Log(Response.ContentAsString);
+    {$ENDIF}
+  finally
+    Info.Free;
+    Response := nil;
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
+end;
+
 procedure TFirebaseAuthentication.GetUserData(OnGetUserData: TOnGetUserData;
   OnError: TOnRequestError);
 var
@@ -539,6 +759,48 @@ begin
       OnUserListResp, OnError);
   finally
     Params.Free;
+    Data.Free;
+  end;
+end;
+
+function TFirebaseAuthentication.GetUserDataSynchronous: TFirebaseUserList;
+var
+  Data, UsersObj: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+  Users: TJSONArray;
+  c: integer;
+begin
+  result := TFirebaseUserList.Create;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Params.Add('key', ApiKey);
+    Response := Request.SendRequestSynchronous(['getAccountInfo'], rmPost, Data,
+      Params, tmNoToken);
+    if not Response.StatusOk then
+      Response.CheckForJSONObj
+    else begin
+      UsersObj := Response.GetContentAsJSONObj;
+      try
+        if not UsersObj.TryGetValue('users', Users) then
+          raise EFirebaseResponse.Create(
+            'users field not found in getAccountInfo');
+        for c := 0 to Users.Count - 1 do
+          result.Add(
+            TFirebaseUser.Create(
+              Users.Items[c].Clone as TJSONObject, false));
+      finally
+        UsersObj.Free;
+      end;
+    end;
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
     Data.Free;
   end;
 end;
