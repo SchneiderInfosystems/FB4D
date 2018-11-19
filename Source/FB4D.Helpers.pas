@@ -50,6 +50,7 @@ type
       const Param: string): TStringDynArray;
     class function EncodeToken(const Token: string): string;
     class function ArrStrToCommaStr(Arr: array of string): string;
+    class function ArrStrToQuotedCommaStr(Arr: array of string): string;
     class procedure Log(msg: string);
     class function AppIsTerminated: boolean;
     class procedure SleepAndMessageLoop(SleepInMs: cardinal);
@@ -66,8 +67,15 @@ type
 
   TJSONHelpers = class helper for TJSONObject
     function GetStringValue(const Name: string): string;
+    class function SetStringValue(const Val: string): TJSONObject;
     function GetIntegerValue(const Name: string): integer;
+    class function SetIntegerValue(Val: integer): TJSONObject;
+    function GetBooleanValue(const Name: string): Boolean;
+    class function SetBooleanValue(Val: boolean): TJSONObject;
+    function GetDoubleValue(const Name: string): double;
+    class function SetDoubleValue(Val: double): TJSONObject;
     function GetTimeStampValue(const Name: string): TDateTime;
+    class function SetTimeStampValue(Val: TDateTime): TJSONObject;
   end;
 
 resourcestring
@@ -195,6 +203,31 @@ begin
       result := Arr[i]
     else
       result := result + ',' + Arr[i];
+end;
+
+class function TFirebaseHelpers.ArrStrToQuotedCommaStr(
+  Arr: array of string): string;
+
+  function DoubleQuotedStr(const S: string): string;
+  var
+    i: integer;
+  begin
+    result := S;
+    for i := result.Length - 1 downto 0 do
+      if result.Chars[i] = '"' then
+        result := result.Insert(i, '"');
+    result := '"' + result + '"';
+  end;
+
+var
+  i: integer;
+begin
+  result := '';
+  for i := low(Arr) to high(Arr) do
+    if i = low(Arr) then
+      result := DoubleQuotedStr(Arr[i])
+    else
+      result := result + ',' + DoubleQuotedStr(Arr[i]);
 end;
 
 class procedure TFirebaseHelpers.Log(msg: string);
@@ -390,6 +423,28 @@ begin
     raise EJSONException.CreateFmt(SValueNotFound, [Name]);
 end;
 
+function TJSONHelpers.GetBooleanValue(const Name: string): Boolean;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := Val.GetValue<boolean>('booleanValue')
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetDoubleValue(const Name: string): double;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := Val.GetValue<double>('doubleValue')
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
 function TJSONHelpers.GetTimeStampValue(const Name: string): TDateTime;
 var
   Val: TJSONValue;
@@ -399,6 +454,36 @@ begin
     result := Val.GetValue<TDateTime>('timestampValue')
   else
     raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+class function TJSONHelpers.SetStringValue(const Val: string): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('stringValue',
+    TJSONString.Create(Val)));
+end;
+
+class function TJSONHelpers.SetIntegerValue(Val: integer): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('integerValue',
+    TJSONNumber.Create(Val)));
+end;
+
+class function TJSONHelpers.SetDoubleValue(Val: double): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('doubleValue',
+    TJSONNumber.Create(Val)));
+end;
+
+class function TJSONHelpers.SetBooleanValue(Val: boolean): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('booleanValue',
+    TJSONBool.Create(Val)));
+end;
+
+class function TJSONHelpers.SetTimeStampValue(Val: TDateTime): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('timestampValue',
+    TJSONNumber.Create(double(Val))));
 end;
 
 class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
