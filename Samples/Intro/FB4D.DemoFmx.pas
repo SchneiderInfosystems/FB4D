@@ -202,6 +202,7 @@ type
     fDatabase: IFirestoreDatabase;
     fRealTimeDB: IRealTimeDB;
     fFirebaseEvent: IFirebaseEvent;
+    fDownloadStream: TFileStream;
     function CheckSignedIn(Log: TMemo): boolean;
     procedure DisplayUser(mem: TMemo; User: IFirebaseUser);
     procedure DisplayTokenJWT(mem: TMemo);
@@ -239,6 +240,8 @@ type
     procedure OnDeleteError(const RequestID, ErrMsg: string);
     procedure ShowFirestoreObject;
     function GetStorageFileName: string;
+    procedure OnDownload(const RequestID: string; Obj: IStorageObject);
+    procedure OnDownloadError(Obj: IStorageObject; const ErrorMsg: string);
   end;
 
 var
@@ -597,21 +600,32 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.btnDownloadClick(Sender: TObject);
-var
-  fs: TFileStream;
 begin
   SaveDialog.FileName := fFirestoreObject.ObjectName(false);
   if SaveDialog.Execute then
   begin
-    fs := TFileStream.Create(SaveDialog.FileName, fmCreate);
-    try
-      fFirestoreObject.DownloadSynchronousToStream(fs);
-      memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
-       SaveDialog.FileName);
-    finally
-      fs.Free;
-    end;
+    FreeAndNil(fDownloadStream);
+    fDownloadStream := TFileStream.Create(SaveDialog.FileName, fmCreate);
+    fFirestoreObject.DownloadToStream(SaveDialog.FileName, fDownloadStream,
+      OnDownload, OnDownloadError);
+    memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' download started');
   end;
+end;
+
+procedure TfmxFirebaseDemo.OnDownload(const RequestID: string;
+  Obj: IStorageObject);
+begin
+  memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+    SaveDialog.FileName + ' passed');
+  FreeAndNil(fDownloadStream);
+end;
+
+procedure TfmxFirebaseDemo.OnDownloadError(Obj: IStorageObject;
+  const ErrorMsg: string);
+begin
+  memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+    SaveDialog.FileName + ' failed: ' + ErrorMsg);
+  FreeAndNil(fDownloadStream);
 end;
 
 procedure TfmxFirebaseDemo.btnUploadClick(Sender: TObject);
