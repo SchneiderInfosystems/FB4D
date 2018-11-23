@@ -68,9 +68,9 @@ type
   public
     constructor Create(Response: IFirebaseResponse);
     destructor Destroy; override;
-    procedure Download(const RequestID: string; Stream: TStream;
+    procedure DownloadToStream(const RequestID: string; Stream: TStream;
       OnSuccess: TOnDownload; OnError: TOnDownloadError);
-    procedure DownloadSynchronousToStream(Stream: TStream);
+    procedure DownloadToStreamSynchronous(Stream: TStream);
     function ObjectName(IncludePath: boolean = true): string;
     function Path: string;
     function LastPathElement: string;
@@ -328,7 +328,7 @@ begin
   end;
 end;
 
-procedure TStorageObject.DownloadSynchronousToStream(Stream: TStream);
+procedure TStorageObject.DownloadToStreamSynchronous(Stream: TStream);
 var
   Client: THTTPClient;
   Response: IHTTPResponse;
@@ -349,7 +349,7 @@ begin
   end;
 end;
 
-procedure TStorageObject.Download(const RequestID: string; Stream: TStream;
+procedure TStorageObject.DownloadToStream(const RequestID: string; Stream: TStream;
   OnSuccess: TOnDownload; OnError: TOnDownloadError);
 begin
   TThread.CreateAnonymousThread(

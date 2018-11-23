@@ -351,9 +351,9 @@ type
     const ErrorMsg: string) of object;
   EStorageObject = class(Exception);
   IStorageObject = interface(IInterface)
-    procedure Download(const RequestID: string; Stream: TStream;
+    procedure DownloadToStream(const RequestID: string; Stream: TStream;
       OnSuccess: TOnDownload; OnError: TOnDownloadError);
-    procedure DownloadSynchronousToStream(Stream: TStream);
+    procedure DownloadToStreamSynchronous(Stream: TStream);
     function ObjectName(IncludePath: boolean = true): string;
     function Path: string;
     function LastPathElement: string;
