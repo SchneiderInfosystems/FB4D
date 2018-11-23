@@ -136,7 +136,6 @@ resourcestring
 
 procedure TfmxMain.FormShow(Sender: TObject);
 var
-d: string;
   IniFile: TIniFile;
 begin
   IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(TPath.GetHomePath) +
