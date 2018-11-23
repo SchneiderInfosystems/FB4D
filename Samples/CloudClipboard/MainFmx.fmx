@@ -223,6 +223,17 @@ object fmxMain: TfmxMain
       Text = 'tabClipboard'
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
+      object btnReconnect: TButton
+        Position.X = 528.000000000000000000
+        Position.Y = 392.000000000000000000
+        Size.Width = 144.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+        Text = 'Reconnect to Cloud'
+        Visible = False
+        OnClick = btnReconnectClick
+      end
       object lblClipboardState: TLabel
         Position.X = 24.000000000000000000
         Position.Y = 40.000000000000000000
@@ -281,7 +292,7 @@ object fmxMain: TfmxMain
         Visible = False
       end
       object btnFromClipBoard: TButton
-        Anchors = [akTop, akBottom]
+        Anchors = [akLeft, akBottom]
         Position.X = 24.000000000000000000
         Position.Y = 392.000000000000000000
         Size.Width = 153.000000000000000000
@@ -292,7 +303,7 @@ object fmxMain: TfmxMain
         OnClick = btnFromClipBoardClick
       end
       object btnToClipboard: TButton
-        Anchors = [akTop, akBottom]
+        Anchors = [akLeft, akBottom]
         Position.X = 192.000000000000000000
         Position.Y = 392.000000000000000000
         Size.Width = 137.000000000000000000

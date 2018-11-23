@@ -62,6 +62,7 @@ type
     btnCheckEMail: TButton;
     btnSignUp: TButton;
     btnResetPwd: TButton;
+    btnReconnect: TButton;
     procedure btnSignInClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -74,6 +75,7 @@ type
     procedure edtEMailChangeTracking(Sender: TObject);
     procedure btnSignUpClick(Sender: TObject);
     procedure btnResetPwdClick(Sender: TObject);
+    procedure btnReconnectClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fUID: string;
@@ -295,6 +297,11 @@ begin
   lblStatus.Text := rsWait;
 end;
 
+procedure TfmxMain.btnReconnectClick(Sender: TObject);
+begin
+  StartListener;
+end;
+
 procedure TfmxMain.btnResetPwdClick(Sender: TObject);
 begin
   fAuth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
@@ -370,6 +377,8 @@ procedure TfmxMain.StartListener;
 begin
   fFirebaseEvent := fRealTimeDB.ListenForValueEvents(['cb', fUID],
     OnRecData, OnRecDataStop, OnRecDataError);
+  btnReconnect.Visible := false;
+  btnSendToCloud.Visible := true;
 end;
 
 procedure TfmxMain.StopListener;
@@ -447,6 +456,8 @@ procedure TfmxMain.OnRecDataStop(Sender: TObject);
 begin
   lblStatusRTDB.Text := 'Clipboard stopped';
   fFirebaseEvent := nil;
+  btnReconnect.Visible := true;
+  btnSendToCloud.Visible := false;
 end;
 
 procedure TfmxMain.btnFromClipBoardClick(Sender: TObject);
