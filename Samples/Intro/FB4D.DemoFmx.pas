@@ -578,7 +578,7 @@ begin
     memoResp.Lines.Add('Path: ' + fFirestoreObject.Path);
     memoResp.Lines.Add('Type: ' + fFirestoreObject.ContentType);
     memoResp.Lines.Add('Size: ' +
-      Format('%.0n bytes', [fFirestoreObject.Size]));
+      Format('%.0n bytes', [extended(fFirestoreObject.Size)]));
     memoResp.Lines.Add('Created: ' +
       DateTimeToStr(fFirestoreObject.createTime));
     memoResp.Lines.Add('Updated: ' +
