@@ -15,3 +15,5 @@ This library requires at least Delphi 10 Seattle. The sample projects are develo
 For authorization token verification and token content extraction this library uses the Delphi JOSE JWT library. Thank you Paolo Rossi for your great library!
 
 https://github.com/paolo-rossi/delphi-jose-jwt
+
+![Logo FB4D](https://github.com/SchneiderInfosystems/FB4D/wiki/logoFB4D.png)
