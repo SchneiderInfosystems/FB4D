@@ -150,16 +150,6 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Size.Height = 33.000000000000000000
         TextSettings.Font.Size = 8.000000000000000000
       end
-      inherited memClipboardText: TMemo
-        Align = Client
-        Margins.Left = 20.000000000000000000
-        Margins.Right = 20.000000000000000000
-        Margins.Bottom = 10.000000000000000000
-        Size.Width = 410.000000000000000000
-        Size.Height = 443.000000000000000000
-        Viewport.Width = 410.000000000000000000
-        Viewport.Height = 443.000000000000000000
-      end
       inherited btnSendToCloud: TButton
         Align = Bottom
         Margins.Left = 20.000000000000000000
@@ -174,8 +164,8 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Left = 20.000000000000000000
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 10.000000000000000000
-        Position.Y = 870.000000000000000000
-        Size.Width = 155.000000000000000000
+        Position.Y = 1085.000000000000000000
+        Size.Width = 0.000000000000000000
       end
       inherited btnFromClipBoard: TButton
         Align = Bottom
@@ -196,6 +186,42 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Position.Y = 594.000000000000000000
         Size.Width = 410.000000000000000000
         Size.Height = 37.000000000000000000
+      end
+      inherited TabControlClipboard: TTabControl
+        Align = Client
+        Margins.Left = 20.000000000000000000
+        Margins.Right = 20.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Size.Width = 410.000000000000000000
+        Size.Height = 443.000000000000000000
+        TabHeight = 49.000000000000000000
+        Sizes = (
+          410s
+          394s
+          410s
+          394s)
+        inherited tabText: TTabItem
+          Size.Width = 205.000000000000000000
+          Size.Height = 49.000000000000000000
+          ExplicitSize.cx = 649.000000000000000000
+          ExplicitSize.cy = 49.000000000000000000
+          inherited memClipboardText: TMemo
+            Size.Width = 410.000000000000000000
+            Size.Height = 394.000000000000000000
+            Viewport.Width = 410.000000000000000000
+            Viewport.Height = 394.000000000000000000
+          end
+        end
+        inherited tabGraphic: TTabItem
+          Size.Width = 205.000000000000000000
+          Size.Height = 49.000000000000000000
+          ExplicitSize.cx = 325.000000000000000000
+          ExplicitSize.cy = 49.000000000000000000
+          inherited imgClipboardPict: TImage
+            Size.Width = 408.000000000000000000
+            Size.Height = 392.000000000000000000
+          end
+        end
       end
     end
   end

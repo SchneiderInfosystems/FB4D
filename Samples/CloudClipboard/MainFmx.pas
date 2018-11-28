@@ -63,6 +63,10 @@ type
     btnSignUp: TButton;
     btnResetPwd: TButton;
     btnReconnect: TButton;
+    imgClipboardPict: TImage;
+    TabControlClipboard: TTabControl;
+    tabText: TTabItem;
+    tabGraphic: TTabItem;
     procedure btnSignInClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -100,6 +104,8 @@ type
     procedure StartListener;
     procedure StopListener;
     procedure SaveSettings;
+    function GetClipboardPictAsBase64: string;
+    procedure SetClipboardPictFromBase64(const Base64: string);
   end;
 
 var
@@ -109,7 +115,8 @@ implementation
 
 uses
   System.IniFiles, System.IOUtils, System.StrUtils, System.Rtti,
-  FMX.Platform,
+  System.NetEncoding,
+  FMX.Platform, FMX.Surfaces,
   FB4D.Authentication, FB4D.Helpers, FB4D.Response, FB4D.Request,
   FB4D.RealTimeDB;
 
@@ -391,12 +398,21 @@ procedure TfmxMain.btnSendToCloudClick(Sender: TObject);
 var
   Data: TJSONObject;
 begin
-  StopListener;
   lblStatusRTDB.Text := '';
   Data := TJSONObject.Create;
   try
-    Data.AddPair('type', 'text');
-    Data.AddPair('text', memClipboardText.Lines.Text);
+    if TabControlClipboard.ActiveTab = tabText then
+    begin
+      Data.AddPair('type', 'text');
+      Data.AddPair('text', string(UTF8Encode(memClipboardText.Lines.Text)));
+    end
+    else if TabControlClipboard.ActiveTab = tabGraphic then
+    begin
+      Data.AddPair('type', 'picture');
+      Data.AddPair('picture', GetClipboardPictAsBase64);
+    end else
+      exit;
+    StopListener;
     fRealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
   finally
     Data.Free;
@@ -438,10 +454,20 @@ begin
     Data := JSONObj.Pairs[1].JsonValue  as TJSONObject;
     // '{"text":"payload of clipboard","type":"text"}'
     if Data.GetValue('type').Value = 'text' then
-      memClipboardText.Lines.Text := Data.GetValue('text').Value
-    else
+    begin
+      TabControlClipboard.ActiveTab := tabText;
+      memClipboardText.Lines.Text :=
+        UTF8ToString(RawByteString(Data.GetValue('text').Value))
+    end
+    else if Data.GetValue('type').Value = 'picture' then
+    begin
+      TabControlClipboard.ActiveTab := tabGraphic;
+      SetClipboardPictFromBase64(Data.GetValue('picture').Value);
+    end else begin
+      TabControlClipboard.ActiveTab := tabText;
       memClipboardText.Lines.Text := 'Unsupported clipboard type: ' +
         Data.GetValue('type').Value;
+    end;
     lblStatusRTDB.Text := 'New clipboard content at ' + TimeToStr(now);
   end else
     lblStatusRTDB.Text := 'Clipboard is empty';
@@ -469,8 +495,19 @@ begin
     Svc) then
   begin
     Value := Svc.GetClipboard;
-    if not Value.IsEmpty and Value.IsType<string> then
-      memClipboardText.Lines.Text := Value.ToString;
+    if not Value.IsEmpty then
+    begin
+      if Value.IsType<string> then
+      begin
+        TabControlClipboard.ActiveTab := tabText;
+        memClipboardText.Lines.Text := Value.ToString;
+      end
+      else if Value.IsType<TBitmapSurface> then
+      begin
+        TabControlClipboard.ActiveTab := tabGraphic;
+        imgClipboardPict.Bitmap.Assign(Value.AsObject as TBitmapSurface);
+      end;
+    end;
   end;
 end;
 
@@ -480,8 +517,45 @@ var
 begin
   if TPlatformServices.Current.SupportsPlatformService(IFMXClipboardService,
     Svc) then
-    Svc.SetClipboard(memClipboardText.Lines.Text);
+  begin
+    if TabControlClipboard.ActiveTab = tabText then
+      Svc.SetClipboard(memClipboardText.Lines.Text)
+    else if TabControlClipboard.ActiveTab = tabGraphic then
+      Svc.SetClipboard(imgClipboardPict.Bitmap)
+  end;
 end;
 
+function TfmxMain.GetClipboardPictAsBase64: string;
+var
+  MemoryStream: TMemoryStream;
+  Bytes: TBytes;
+begin
+  MemoryStream := TMemoryStream.Create;
+  try
+    imgClipboardPict.Bitmap.SaveToStream(MemoryStream);
+    MemoryStream.Position := 0;
+    SetLength(Bytes, MemoryStream.Size);
+    MemoryStream.Read(Bytes, MemoryStream.Size);
+  finally
+    MemoryStream.Free;
+  end;
+  result := TNetEncoding.Base64.EncodeBytesToString(Bytes);
+end;
+
+procedure TfmxMain.SetClipboardPictFromBase64(const Base64: string);
+var
+  MemoryStream: TMemoryStream;
+  Bytes: TBytes;
+begin
+  Bytes := TNetEncoding.Base64.DecodeStringToBytes(Base64);
+  MemoryStream := TMemoryStream.Create;
+  try
+    MemoryStream.WriteData(Bytes, length(Bytes));
+    MemoryStream.Position := 0;
+    imgClipboardPict.Bitmap.LoadFromStream(MemoryStream);
+  finally
+    MemoryStream.Free;
+  end;
+end;
 
 end.

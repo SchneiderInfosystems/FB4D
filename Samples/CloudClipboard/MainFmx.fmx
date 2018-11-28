@@ -16,7 +16,7 @@ object fmxMain: TfmxMain
     Size.Height = 480.000000000000000000
     Size.PlatformDefault = False
     TabHeight = 49.000000000000000000
-    TabIndex = 1
+    TabIndex = 2
     TabOrder = 0
     TabPosition = None
     Sizes = (
@@ -98,7 +98,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
@@ -214,7 +214,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
@@ -229,7 +229,7 @@ object fmxMain: TfmxMain
         Size.Width = 144.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 8
+        TabOrder = 7
         Text = 'Reconnect to Cloud'
         Visible = False
         OnClick = btnReconnectClick
@@ -250,21 +250,6 @@ object fmxMain: TfmxMain
         TextSettings.HorzAlign = Trailing
         TabOrder = 1
       end
-      object memClipboardText: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        StyledSettings = [Size, Style, FontColor]
-        TextSettings.Font.Family = 'Courier New'
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 24.000000000000000000
-        Position.Y = 64.000000000000000000
-        Size.Width = 649.000000000000000000
-        Size.Height = 321.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Viewport.Width = 645.000000000000000000
-        Viewport.Height = 317.000000000000000000
-      end
       object btnSendToCloud: TButton
         Anchors = [akRight, akBottom]
         Position.X = 576.000000000000000000
@@ -272,7 +257,7 @@ object fmxMain: TfmxMain
         Size.Width = 96.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 4
+        TabOrder = 3
         Text = 'Send to Cloud'
         OnClick = btnSendToCloudClick
       end
@@ -284,7 +269,7 @@ object fmxMain: TfmxMain
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
-        TabOrder = 3
+        TabOrder = 2
       end
       object aniRTDB: TAniIndicator
         Position.X = 512.000000000000000000
@@ -298,7 +283,7 @@ object fmxMain: TfmxMain
         Size.Width = 153.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 6
+        TabOrder = 5
         Text = 'Copy from OS Clipboard'
         OnClick = btnFromClipBoardClick
       end
@@ -309,9 +294,74 @@ object fmxMain: TfmxMain
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 7
+        TabOrder = 6
         Text = 'Copy to OS Clipboard'
         OnClick = btnToClipboardClick
+      end
+      object TabControlClipboard: TTabControl
+        Position.X = 24.000000000000000000
+        Position.Y = 64.000000000000000000
+        Size.Width = 649.000000000000000000
+        Size.Height = 321.000000000000000000
+        Size.PlatformDefault = False
+        TabIndex = 0
+        TabOrder = 9
+        TabPosition = PlatformDefault
+        Sizes = (
+          649s
+          295s
+          649s
+          295s)
+        object tabText: TTabItem
+          CustomIcon = <
+            item
+            end>
+          IsSelected = True
+          Size.Width = 41.000000000000000000
+          Size.Height = 26.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = ''
+          TabOrder = 0
+          Text = 'Text'
+          object memClipboardText: TMemo
+            Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+            DataDetectorTypes = []
+            StyledSettings = [Size, Style, FontColor]
+            TextSettings.Font.Family = 'Courier New'
+            Align = Client
+            Size.Width = 649.000000000000000000
+            Size.Height = 295.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 0
+            Viewport.Width = 645.000000000000000000
+            Viewport.Height = 291.000000000000000000
+          end
+        end
+        object tabGraphic: TTabItem
+          CustomIcon = <
+            item
+            end>
+          IsSelected = False
+          Size.Width = 61.000000000000000000
+          Size.Height = 26.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = ''
+          TabOrder = 0
+          Text = 'Graphic'
+          object imgClipboardPict: TImage
+            MultiResBitmap = <
+              item
+              end>
+            Align = Client
+            Margins.Left = 1.000000000000000000
+            Margins.Top = 1.000000000000000000
+            Margins.Right = 1.000000000000000000
+            Margins.Bottom = 1.000000000000000000
+            Size.Width = 647.000000000000000000
+            Size.Height = 293.000000000000000000
+            Size.PlatformDefault = False
+          end
+        end
       end
     end
   end
