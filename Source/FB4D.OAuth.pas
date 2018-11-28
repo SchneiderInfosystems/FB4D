@@ -89,7 +89,7 @@ begin
       if SameText(JSONObj.Pairs[c].JsonString.Value, Id) then
         result.AsString := JSONObj.Pairs[c].JsonValue.Value;
     if result.IsEmpty then
-      raise Exception.Create('kid not found: ' + Id);
+      raise ETokenJWT.Create('kid not found: ' + Id);
   finally
     JSONObj.Free;
     AResponse := nil;
