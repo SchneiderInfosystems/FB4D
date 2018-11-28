@@ -588,8 +588,11 @@ begin
               EventName := Lines[0].Substring(length(cEvent));
               if Lines[1].StartsWith(cData) then
                 Data := Lines[1].Substring(length(cData))
-              else
+              else begin
+                // resynch
                 Data := '';
+                fListenPartialResp := '';
+              end;
               if EventName = cKeepAlive then
                 fLastKeepAliveMsg := now
               else if EventName = cRevokeToken then
