@@ -219,6 +219,13 @@ type
     function InsertOrUpdateDocumentSynchronous(
       DocumentPath: TRequestResourceParam; Document: IFirestoreDocument;
       QueryParams: TQueryParams = nil): IFirestoreDocument;
+    procedure PatchDocument(DocumentPath: TRequestResourceParam;
+      DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
+      OnDocument: TOnDocument; OnRequestError: TOnRequestError;
+      Mask: TStringDynArray = []);
+    function PatchDocumentSynchronous(DocumentPath: TRequestResourceParam;
+      DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
+      Mask: TStringDynArray = []): IFirestoreDocument;
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
@@ -345,9 +352,9 @@ type
     const ErrorMsg: string) of object;
   EStorageObject = class(Exception);
   IStorageObject = interface(IInterface)
-    procedure Download(const RequestID: string; Stream: TStream;
+    procedure DownloadToStream(const RequestID: string; Stream: TStream;
       OnSuccess: TOnDownload; OnError: TOnDownloadError);
-    procedure DownloadSynchronousToStream(Stream: TStream);
+    procedure DownloadToStreamSynchronous(Stream: TStream);
     function ObjectName(IncludePath: boolean = true): string;
     function Path: string;
     function LastPathElement: string;

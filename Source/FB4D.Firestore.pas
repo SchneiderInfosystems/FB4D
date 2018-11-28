@@ -26,7 +26,7 @@ unit FB4D.Firestore;
 interface
 
 uses
-  System.Classes, System.JSON, System.SysUtils,
+  System.Classes, System.Types, System.JSON, System.SysUtils,
   System.Net.HttpClient, System.Net.URLClient,
   System.Generics.Collections,
   REST.Types,
@@ -43,9 +43,9 @@ type
     fDatabaseID: string;
     fAuth: IFirebaseAuthentication;
     fOnQueryDocuments, fOnGetDocuments: TOnDocuments;
-    fOnQueryError, fOnGetError, fOnCreateError,
-    fOnInsertUpdateError, fOnDeleteError: TOnRequestError;
-    fOnCreateDocument, fOnInsertUpdateDocument: TOnDocument;
+    fOnQueryError, fOnGetError, fOnCreateError, fOnInsertUpdateError,
+    fOnPatchError, fOnDeleteError: TOnRequestError;
+    fOnCreateDocument, fOnInsertUpdateDocument, fOnPatchDocument: TOnDocument;
     fOnDelete: TOnResponse;
     function BaseURI: string;
     procedure OnQueryResponse(const RequestID: string;
@@ -55,6 +55,8 @@ type
     procedure OnCreateResponse(const RequestID: string;
       Response: IFirebaseResponse);
     procedure OnInsertOrUpdateResponse(const RequestID: string;
+      Response: IFirebaseResponse);
+    procedure OnPatchResponse(const RequestID: string;
       Response: IFirebaseResponse);
     procedure OnDeleteResponse(const RequestID: string;
       Response: IFirebaseResponse);
@@ -80,6 +82,13 @@ type
     function InsertOrUpdateDocumentSynchronous(
       DocumentPath: TRequestResourceParam; Document: IFirestoreDocument;
       QueryParams: TQueryParams = nil): IFirestoreDocument;
+    procedure PatchDocument(DocumentPath: TRequestResourceParam;
+      DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
+      OnDocument: TOnDocument; OnRequestError: TOnRequestError;
+      Mask: TStringDynArray = []);
+    function PatchDocumentSynchronous(DocumentPath: TRequestResourceParam;
+      DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
+      Mask: TStringDynArray = []): IFirestoreDocument;
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
@@ -113,8 +122,14 @@ type
   public
     class function IntegerFieldFilter(const WhereFieldPath: string;
       WhereOperator: TWhereOperator; WhereValue: integer): IQueryFilter;
+    class function DoubleFieldFilter(const WhereFieldPath: string;
+      WhereOperator: TWhereOperator; WhereValue: double): IQueryFilter;
     class function StringFieldFilter(const WhereFieldPath: string;
       WhereOperator: TWhereOperator; const WhereValue: string): IQueryFilter;
+    class function BooleanFieldFilter(const WhereFieldPath: string;
+      WhereOperator: TWhereOperator; WhereValue: boolean): IQueryFilter;
+    class function TimestampFieldFilter(const WhereFieldPath: string;
+      WhereOperator: TWhereOperator; WhereValue: TDateTime): IQueryFilter; static;
     constructor Create(const Where, Value: string; Op: TWhereOperator);
     procedure AddPair(const Str: string; Val: TJSONValue); overload;
     procedure AddPair(const Str, Val: string); overload;
@@ -143,6 +158,7 @@ resourcestring
   rsGetDocument = 'Get document for ';
   rsCreateDoc = 'Create document for ';
   rsInsertOrUpdateDoc = 'Insert or update document for ';
+  rsPatchDoc = 'Patch document for ';
   rsDeleteDoc = 'Delete document for ';
 
 { TFirestoreDatabase }
@@ -265,7 +281,8 @@ begin
   begin
     Response.CheckForJSONObj;
     result := TFirestoreDocuments.CreateFromJSONDocumentsObj(Response)
-  end;
+  end else
+    raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
 end;
 
 procedure TFirestoreDatabase.CreateDocument(DocumentPath: TRequestResourceParam;
@@ -322,7 +339,8 @@ begin
   begin
     Response.CheckForJSONObj;
     result := TFirestoreDocument.CreateFromJSONObj(Response);
-  end;
+  end else
+    raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
 end;
 
 procedure TFirestoreDatabase.InsertOrUpdateDocument(
@@ -386,7 +404,97 @@ begin
   begin
     Response.CheckForJSONObj;
     result := TFirestoreDocument.CreateFromJSONObj(Response);
+  end else
+    raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
+end;
+
+procedure TFirestoreDatabase.PatchDocument(DocumentPath: TRequestResourceParam;
+  DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
+  OnDocument: TOnDocument; OnRequestError: TOnRequestError;
+  Mask: TStringDynArray = []);
+var
+  Request: IFirebaseRequest;
+  QueryParams: TQueryParams;
+  m: string;
+begin
+  fOnPatchDocument := OnDocument;
+  fOnPatchError := OnRequestError;
+  Request := TFirebaseRequest.Create(BaseURI, rsPatchDoc +
+    TFirebaseHelpers.ArrStrToCommaStr(DocumentPath), fAuth);
+{$IFDEF DEBUG}
+  TFirebaseHelpers.Log(' Document: ' + DocumentPart.AsJSON.ToJSON);
+{$ENDIF}
+  QueryParams := TDictionary<string, string>.Create;
+  try
+    for m in UpdateMask do
+      QueryParams.Add('updateMask.fieldPaths', m);
+    for m in Mask do
+    if assigned(Mask) then
+      QueryParams.Add('mask.fieldPaths', m);
+    Request.SendRequest(DocumentPath, rmPatch, DocumentPart.AsJSON, QueryParams,
+      tmBearer, OnPatchResponse, OnRequestError);
+  finally
+    QueryParams.Free;
   end;
+end;
+
+procedure TFirestoreDatabase.OnPatchResponse(const RequestID: string;
+  Response: IFirebaseResponse);
+var
+  Document: IFirestoreDocument;
+begin
+  try
+    if not Response.StatusNotFound then
+    begin
+      Response.CheckForJSONObj;
+      Document := TFirestoreDocument.CreateFromJSONObj(Response);
+    end else
+      Document := nil;
+    if assigned(fOnPatchDocument) then
+      fOnPatchDocument(RequestID, Document);
+  except
+    on e: Exception do
+    begin
+      if assigned(fOnPatchError) then
+        fOnPatchError(RequestID, e.Message)
+      else
+        TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
+    end;
+  end;
+end;
+
+function TFirestoreDatabase.PatchDocumentSynchronous(
+  DocumentPath: TRequestResourceParam; DocumentPart: IFirestoreDocument;
+  UpdateMask, Mask: TStringDynArray): IFirestoreDocument;
+var
+  Request: IFirebaseRequest;
+  QueryParams: TQueryParams;
+  m: string;
+  Response: IFirebaseResponse;
+begin
+  result := nil;
+  Request := TFirebaseRequest.Create(BaseURI, '', fAuth);
+{$IFDEF DEBUG}
+  TFirebaseHelpers.Log(' Document: ' + DocumentPart.AsJSON.ToJSON);
+{$ENDIF}
+  QueryParams := TDictionary<string, string>.Create;
+  try
+    for m in UpdateMask do
+      QueryParams.Add('updateMask.fieldPaths', m);
+    for m in Mask do
+    if assigned(Mask) then
+      QueryParams.Add('mask.fieldPaths', m);
+    Response := Request.SendRequestSynchronous(DocumentPath, rmPatch,
+      DocumentPart.AsJSON, QueryParams);
+  finally
+    QueryParams.Free;
+  end;
+  if not Response.StatusNotFound then
+  begin
+    Response.CheckForJSONObj;
+    result := TFirestoreDocument.CreateFromJSONObj(Response);
+  end else
+    raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
 end;
 
 procedure TFirestoreDatabase.Delete(Params: TRequestResourceParam;
@@ -530,6 +638,31 @@ begin
     TJSONObject.Create(TJSONPair.Create('integerValue', WhereValue.ToString)));
 end;
 
+class function TQueryFilter.DoubleFieldFilter(const WhereFieldPath: string;
+  WhereOperator: TWhereOperator; WhereValue: double): IQueryFilter;
+begin
+  result := TQueryFilter.Create(WhereFieldPath, WhereValue.ToString,
+    WhereOperator);
+  result.AddPair('field',
+    TJSONObject.Create(TJSONPair.Create('fieldPath', WhereFieldPath)));
+  result.AddPair('op', FILTER_OERATION[WhereOperator]);
+  result.AddPair('value',
+    TJSONObject.Create(TJSONPair.Create('doubleValue', WhereValue.ToString)));
+end;
+
+class function TQueryFilter.BooleanFieldFilter(const WhereFieldPath: string;
+  WhereOperator: TWhereOperator; WhereValue: boolean): IQueryFilter;
+begin
+  result := TQueryFilter.Create(WhereFieldPath, WhereValue.ToString(true),
+    WhereOperator);
+  result.AddPair('field',
+    TJSONObject.Create(TJSONPair.Create('fieldPath', WhereFieldPath)));
+  result.AddPair('op', FILTER_OERATION[WhereOperator]);
+  result.AddPair('value',
+    TJSONObject.Create(TJSONPair.Create('booleanValue',
+      TJSONBool.Create(WhereValue))));
+end;
+
 class function TQueryFilter.StringFieldFilter(const WhereFieldPath: string;
   WhereOperator: TWhereOperator; const WhereValue: string): IQueryFilter;
 begin
@@ -539,6 +672,21 @@ begin
   result.AddPair('op', FILTER_OERATION[WhereOperator]);
   result.AddPair('value',
     TJSONObject.Create(TJSONPair.Create('stringValue', WhereValue)));
+end;
+
+class function TQueryFilter.TimestampFieldFilter(const WhereFieldPath: string;
+  WhereOperator: TWhereOperator; WhereValue: TDateTime): IQueryFilter;
+const
+  cBoolStrs: array [boolean] of String = ('false', 'true');
+begin
+  result := TQueryFilter.Create(WhereFieldPath, DateTimeToStr(WhereValue),
+    WhereOperator);
+  result.AddPair('field',
+    TJSONObject.Create(TJSONPair.Create('fieldPath', WhereFieldPath)));
+  result.AddPair('op', FILTER_OERATION[WhereOperator]);
+  result.AddPair('value',
+    TJSONObject.Create(TJSONPair.Create('timestampValue',
+    TFirebaseHelpers.CodeRFC3339DateTime(WhereValue))));
 end;
 
 constructor TQueryFilter.Create(const Where, Value: string; Op: TWhereOperator);
