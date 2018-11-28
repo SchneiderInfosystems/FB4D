@@ -225,6 +225,7 @@ type
       QueryParams: TQueryParams = nil): IFirebaseResponse;
   end;
 
+  ETokenJWT = class(Exception);
   ITokenJWT = interface(IInterface)
     function VerifySignature: boolean;
     function GetHeader: TJWTHeader;
