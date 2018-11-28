@@ -63,6 +63,7 @@ type
     fLastKeepAliveMsg: TDateTime;
     fRequireTokenRefresh: boolean;
     fStopWaiting: boolean;
+    fListenPartialResp: string;
     const
       cJSONExt = '.json';
     function AddJSONExtToRequest(ResourceParams: TRequestResourceParam):
@@ -490,6 +491,7 @@ begin
   Info :=  TFirebaseHelpers.ArrStrToCommaStr(ResourceParams);
   fOnListenEvent := ListenEvent;
   fOnListenError := OnError;
+  fListenPartialResp := '';
   fClient := THTTPClient.Create;
   fClient.HandleRedirects := true;
   fClient.Accept := 'text/event-stream';
@@ -563,7 +565,7 @@ begin
           var
             ss: TStringStream;
             Lines: TArray<string>;
-            Resp, EventName, Data: string;
+            EventName, Data: string;
             JSONObj: TJSONObject;
           begin
             ss := TStringStream.Create;
@@ -574,10 +576,9 @@ begin
                 // On Mac OS a 'Stream read error' will be thrown inside
                 // TStream.ReadBuffer if this code is in the main thread
                 ss.CopyFrom(fStream, ReadCount - fReadPos);
-                Resp := ss.DataString;
-              end else
-                Resp := '';
-              Lines := Resp.Split([#10]);
+                fListenPartialResp := fListenPartialResp + ss.DataString;
+              end;
+              Lines := fListenPartialResp.Split([#10]);
             finally
               ss.Free;
             end;
@@ -598,7 +599,9 @@ begin
               end else if Data.Length > 0 then
               begin
                 JSONObj := TJSONObject.ParseJSONValue(Data) as TJSONObject;
+                if assigned(JSONObj) then
                 try
+                  fListenPartialResp := '';
                   fOnListenEvent(EventName, Params, JSONObj);
                 finally
                   JSONObj.Free;
@@ -625,7 +628,7 @@ end;
 var
   ss: TStringStream;
   Lines: TArray<string>;
-  Resp, EventName, Data: string;
+  EventName, Data: string;
   Params: TRequestResourceParam;
 begin
   try
@@ -640,8 +643,8 @@ begin
         try
           fStream.Position := fReadPos;
           ss.CopyFrom(fStream, ReadCount - fReadPos);
-          Resp := ss.DataString;
-          Lines := Resp.Split([#10]);
+          fListenPartialResp := fListenPartialResp + ss.DataString;
+          Lines := fListenPartialResp.Split([#10]);
         finally
           ss.Free;
         end;
@@ -651,8 +654,11 @@ begin
           EventName := Lines[0].Substring(length(cEvent));
           if Lines[1].StartsWith(cData) then
             Data := Lines[1].Substring(length(cData))
-          else
+          else begin
+            // resynch
             Data := '';
+            fListenPartialResp := '';
+          end;
           if EventName = cKeepAlive then
             fLastKeepAliveMsg := now
           else if EventName = cRevokeToken then
@@ -667,7 +673,9 @@ begin
                 JSONObj: TJSONObject;
               begin
                 JSONObj := TJSONObject.ParseJSONValue(Data) as TJSONObject;
+                if assigned(JSONObj) then
                 try
+                  fListenPartialResp := '';
                   fOnListenEvent(EventName, Params, JSONObj);
                 finally
                   JSONObj.Free;
