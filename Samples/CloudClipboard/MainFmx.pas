@@ -115,7 +115,7 @@ implementation
 
 uses
   System.IniFiles, System.IOUtils, System.StrUtils, System.Rtti,
-  System.NetEncoding,
+  System.NetEncoding, System.Generics.Collections,
   FMX.Platform, FMX.Surfaces,
   FB4D.Authentication, FB4D.Helpers, FB4D.Response, FB4D.Request,
   FB4D.RealTimeDB;

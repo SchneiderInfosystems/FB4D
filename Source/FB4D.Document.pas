@@ -89,6 +89,7 @@ type
 implementation
 
 uses
+  System.Generics.Collections,
   FB4D.Helpers;
 
 { TFirestoreDocuments }
