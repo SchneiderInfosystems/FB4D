@@ -1,4 +1,4 @@
-# FB4D – The OpenSource Library for _Firebase_
+# FB4D – The OpenSource Cross-Platform Library for _Firebase_
 
 For the _Google Cloud database Firebase_, there was no complete library for Delphi. The new open source library **FB4D** closes this gap and supports the _Firebase Realtime DB_, the new _Firestore DB_, the _Firebase Storage_ (for file storage) and _Firebase Functions_ (for calling server functions). 
 
@@ -13,6 +13,10 @@ This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki).
 ### Prerequisites
 
 This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.2 Tokio. 
+
+### Supported Platforms
+
+**FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac32 and Android.
 
 ### Submodules
 
