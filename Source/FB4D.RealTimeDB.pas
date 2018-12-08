@@ -663,10 +663,14 @@ begin
             fListenPartialResp := '';
           end;
           if EventName = cKeepAlive then
-            fLastKeepAliveMsg := now
+          begin
+            fLastKeepAliveMsg := now;
+            fListenPartialResp := '';
+          end
           else if EventName = cRevokeToken then
           begin
             fRequireTokenRefresh := true;
+            fListenPartialResp := '';
             Abort := true;
           end else if Data.Length > 0 then
           begin
