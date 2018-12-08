@@ -142,17 +142,22 @@ resourcestring
 
 {$R *.fmx}
 {$R *.LgXhdpiPh.fmx ANDROID}
+{$R *.iPhone55in.fmx IOS}
 
 procedure TfmxMain.FormShow(Sender: TObject);
 var
   IniFile: TIniFile;
 begin
-  IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(TPath.GetHomePath) +
-    ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini'));
+  IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(
+{$IFDEF IOS}
+    TPath.GetDocumentsPath
+{$ELSE}
+    TPath.GetHomePath
+{$ENDIF}
+    ) + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini'));
   try
     edtKey.Text := IniFile.ReadString('FBProjectSettings', 'APIKey', '');
-    edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID',
-      '');
+    edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
     edtEmail.Text := IniFile.ReadString('Authentication', 'User', '');
     edtPassword.Text := IniFile.ReadString('Authentication', 'Pwd', '');
   finally
@@ -184,8 +189,13 @@ procedure TfmxMain.SaveSettings;
 var
   IniFile: TIniFile;
 begin
-  IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(TPath.GetHomePath) +
-    ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini'));
+  IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(
+{$IFDEF IOS}
+    TPath.GetDocumentsPath
+{$ELSE}
+    TPath.GetHomePath
+{$ENDIF}
+    ) + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini'));
   try
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);

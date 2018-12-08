@@ -1,2 +1,7 @@
 CloudClipBoard.res
 Android
+Win32
+Win64
+OSX32
+iOSDevice32
+iOSDevice64
