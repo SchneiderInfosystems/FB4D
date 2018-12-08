@@ -8,7 +8,7 @@ The library builds on the _Firebase REST-API_ and provides all functionality wit
 
 ### Wiki
 
-This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki). Two example applications and a [Getting-Started](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D) on the wiki will help you to start working with the library.
+This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki/Introduction). Two example applications and a [Getting-Started](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D) on the wiki will help you to start working with the library.
 
 ### Prerequisites
 
