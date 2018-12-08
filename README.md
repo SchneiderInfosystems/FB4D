@@ -16,7 +16,7 @@ This library requires at least Delphi 10 Seattle. The sample projects are develo
 
 ### Supported Platforms
 
-**FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac32 and Android.
+**FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac32, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verifcation requires the installation of the OpenSSL libraries and is not tested yet). 
 
 ### Submodules
 
