@@ -243,26 +243,37 @@ type
 
   EFirebaseUser = class(Exception);
   TThreeStateBoolean = (tsbTrue, tsbFalse, tsbUnspecified);
+
+  /// <summary>
+  /// The IFirebaseUser interface provides only getter functions that are used
+  /// to retrieve details of the user profile and the access token.
+  /// </summary>
   IFirebaseUser = interface(IInterface)
+    // Get User Identification
     function UID: string;
-    function Token: string;
-    function TokenJWT: ITokenJWT;
-    function ExpiresAt: TDateTime;
-    function RefreshToken: string;
-    function IsDisabled: TThreeStateBoolean;
+    // Get EMail Address
     function IsEMailAvailable: boolean;
-    function IsEMailRegistred: TThreeStateBoolean;
+    function IsEMailRegistered: TThreeStateBoolean;
     function IsEMailVerified: TThreeStateBoolean;
     function EMail: string;
-    function IsDisplayNameAvailable: boolean;
+    // Get User Display Name
     function DisplayName: string;
+    function IsDisplayNameAvailable: boolean;
+    // Get Photo URL for User Avatar or Photo
     function IsPhotoURLAvailable: boolean;
     function PhotoURL: string;
+    // Get User Account State and Timestamps
+    function IsDisabled: TThreeStateBoolean;
     function IsNewSignupUser: boolean;
     function IsLastLoginAtAvailable: boolean;
     function LastLoginAt: TDateTime;
     function IsCreatedAtAvailable: boolean;
     function CreatedAt: TDateTime;
+    // Get Token Details and Claim Fields
+    function Token: string;
+    function TokenJWT: ITokenJWT;
+    function ExpiresAt: TDateTime;
+    function RefreshToken: string;
     function ClaimFieldNames: TStrings;
     function ClaimField(const FieldName: string): TJSONValue;
   end;
@@ -278,6 +289,14 @@ type
   TOnGetUserData = procedure(FirebaseUserList: TFirebaseUserList) of object;
   TOnTokenRefresh = procedure(TokenRefreshed: boolean) of object;
   EFirebaseAuthentication = class(Exception);
+
+  /// <summary>
+  /// The interface IFirebaseAuthentication provides all functions for accessing
+  /// the Firebase Authentication Service. The interface will be created by the
+  /// constructor of the class TFirebaseAuthentication in the unit
+  /// FB4D.Authentication. The constructor expects the web API key of the
+  /// Firebase project as parameter.
+  /// </summary>
   IFirebaseAuthentication = interface(IInterface)
     // Create new User with email and password
     procedure SignUpWithEmailAndPassword(const Email,

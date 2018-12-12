@@ -140,25 +140,31 @@ type
   public
     constructor Create(JSONResp: TJSONObject; TokenExpected: boolean = true);
     destructor Destroy; override;
+    // Get User Identification
     function UID: string;
-    function Token: string;
-    function TokenJWT: ITokenJWT;
-    function ExpiresAt: TDateTime;
-    function RefreshToken: string;
-    function IsDisabled: TThreeStateBoolean;
+    // Get EMail Address
     function IsEMailAvailable: boolean;
-    function IsEMailRegistred: TThreeStateBoolean;
+    function IsEMailRegistered: TThreeStateBoolean;
     function IsEMailVerified: TThreeStateBoolean;
     function EMail: string;
+    // Get User Display Name
     function IsDisplayNameAvailable: boolean;
     function DisplayName: string;
+    // Get Photo URL for User Avatar or Photo
     function IsPhotoURLAvailable: boolean;
     function PhotoURL: string;
+    // Get User Account State and Timestamps
+    function IsDisabled: TThreeStateBoolean;
     function IsNewSignupUser: boolean;
     function IsLastLoginAtAvailable: boolean;
     function LastLoginAt: TDateTime;
     function IsCreatedAtAvailable: boolean;
     function CreatedAt: TDateTime;
+    // Get Token Details and Claim Fields
+    function Token: string;
+    function TokenJWT: ITokenJWT;
+    function ExpiresAt: TDateTime;
+    function RefreshToken: string;
     function ClaimFieldNames: TStrings;
     function ClaimField(const FieldName: string): TJSONValue;
   end;
@@ -1102,7 +1108,7 @@ begin
     raise EFirebaseUser.Create('localId not found');
 end;
 
-function TFirebaseUser.IsEMailRegistred: TThreeStateBoolean;
+function TFirebaseUser.IsEMailRegistered: TThreeStateBoolean;
 var
   bool: boolean;
 begin
