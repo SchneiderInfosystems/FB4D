@@ -177,7 +177,7 @@ type
   end;
 
   TWhereOperator = (woUnspecific, woLessThan, woLessThanOrEqual,
-    woGreaterThan, woGreaterThanOrEqual, woEqual);
+    woGreaterThan, woGreaterThanOrEqual, woEqual, woArrayContains);
   IQueryFilter = interface(IInterface)
     procedure AddPair(const Str: string; Val: TJSONValue); overload;
     procedure AddPair(const Str, Val: string); overload;

@@ -149,7 +149,7 @@ const
   METHODE_RUNQUERY = ':runQuery';
   FILTER_OERATION: array [TWhereOperator] of string = ('OPERATOR_UNSPECIFIED',
     'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN',
-    'GREATER_THAN_OR_EQUAL', 'EQUAL');
+    'GREATER_THAN_OR_EQUAL', 'EQUAL', 'ARRAY_CONTAINS');
   COMPOSITEFILTER_OPERATION: array [TCompostiteOperation] of string = (
     'OPERATOR_UNSPECIFIED', 'AND');
 
@@ -692,7 +692,8 @@ end;
 constructor TQueryFilter.Create(const Where, Value: string; Op: TWhereOperator);
 const
   cWhereOperationStr: array [TWhereOperator] of string =
-    ('?', '<', '≤', '>', '≥', '=');
+    ('?', '<', '≤', '>', '≥', '=', #2208);
+  // Attention U+2208 (Element of) is not yet in all MS fonts
 begin
   inherited Create;
   fFilter := TJSONObject.Create;
