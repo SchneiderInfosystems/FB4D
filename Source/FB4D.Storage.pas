@@ -358,6 +358,7 @@ begin
       Client: THTTPClient;
       Response: IHTTPResponse;
     begin
+      TThread.NameThreadForDebugging('StorageObject.DownloadToStream');
       try
         Client := THTTPClient.Create;
         try
