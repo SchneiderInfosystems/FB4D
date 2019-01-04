@@ -523,6 +523,7 @@ begin
       fThread := nil;
     end);
   fThread.OnTerminate := OnStopListening;
+  fThread.NameThreadForDebugging('FB4D.RTDB.ListenEvent', fThread.ThreadID);
   fThread.FreeOnTerminate := true;
   fThread.Start;
   result := TFirebaseEvent.Create(Self, ResourceParams);
