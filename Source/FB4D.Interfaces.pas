@@ -233,6 +233,12 @@ type
   end;
 
   ETokenJWT = class(Exception);
+
+  /// <summary>
+  /// Usually you do not need to create an instance of the class TTokenJWT by
+  /// yourself because you get an object with this interface in by the getter
+  /// method IFirebaseAuthentication.TokenJWT
+  /// </summary>
   ITokenJWT = interface(IInterface)
     function VerifySignature: boolean;
     function GetHeader: TJWTHeader;
