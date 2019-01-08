@@ -1,0 +1,62 @@
+inherited fmxMain_Macintosh: TfmxMain_Macintosh
+  DesignerMasterStyle = 0
+  inherited TabControl: TTabControl
+    Sizes = (
+      700s
+      480s
+      700s
+      480s
+      700s
+      480s)
+    inherited tabProjectSettings: TTabItem
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+    end
+    inherited tabSignIn: TTabItem
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+    end
+    inherited tabClipboard: TTabItem
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      inherited btnSendToCloud: TButton
+        Position.X = 560.000000000000000000
+        Size.Width = 112.000000000000000000
+        Size.Height = 25.000000000000000000
+      end
+      inherited btnFromClipBoard: TButton
+        Size.Width = 161.000000000000000000
+        Size.Height = 25.000000000000000000
+      end
+      inherited btnToClipboard: TButton
+        Size.Width = 145.000000000000000000
+        Size.Height = 25.000000000000000000
+      end
+      inherited TabControlClipboard: TTabControl
+        Sizes = (
+          649s
+          295s
+          649s
+          295s)
+        inherited tabText: TTabItem
+          Size.Width = 44.000000000000000000
+          ExplicitSize.cx = 41.000000000000000000
+          ExplicitSize.cy = 26.000000000000000000
+          inherited memClipboardText: TMemo
+            Viewport.Width = 649.000000000000000000
+            Viewport.Height = 295.000000000000000000
+          end
+        end
+        inherited tabGraphic: TTabItem
+          Size.Width = 65.000000000000000000
+          ExplicitSize.cx = 61.000000000000000000
+          ExplicitSize.cy = 26.000000000000000000
+        end
+      end
+      inherited chbTesting: TCheckBox
+        Position.X = 560.000000000000000000
+        Size.Width = 112.000000000000000000
+      end
+    end
+  end
+end

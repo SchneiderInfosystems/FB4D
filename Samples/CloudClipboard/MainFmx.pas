@@ -152,6 +152,7 @@ resourcestring
 {$R *.fmx}
 {$R *.LgXhdpiPh.fmx ANDROID}
 {$R *.iPhone55in.fmx IOS}
+{$R *.Macintosh.fmx MACOS}
 
 procedure TfmxMain.FormShow(Sender: TObject);
 var
