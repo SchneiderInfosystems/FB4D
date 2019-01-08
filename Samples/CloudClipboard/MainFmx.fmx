@@ -229,7 +229,7 @@ object fmxMain: TfmxMain
         Size.Width = 144.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 7
+        TabOrder = 8
         Text = 'Reconnect to Cloud'
         Visible = False
         OnClick = btnReconnectClick
@@ -252,24 +252,24 @@ object fmxMain: TfmxMain
       end
       object btnSendToCloud: TButton
         Anchors = [akRight, akBottom]
-        Position.X = 576.000000000000000000
+        Position.X = 568.000000000000000000
         Position.Y = 392.000000000000000000
-        Size.Width = 96.000000000000000000
+        Size.Width = 104.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 3
+        TabOrder = 4
         Text = 'Send to Cloud'
         OnClick = btnSendToCloudClick
       end
       object lblStatusRTDB: TLabel
         Anchors = [akLeft, akRight, akBottom]
-        Position.X = 18.000000000000000000
+        Position.X = 24.000000000000000000
         Position.Y = 440.000000000000000000
-        Size.Width = 655.000000000000000000
+        Size.Width = 489.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
-        TabOrder = 2
+        TabOrder = 3
       end
       object aniRTDB: TAniIndicator
         Position.X = 512.000000000000000000
@@ -283,7 +283,7 @@ object fmxMain: TfmxMain
         Size.Width = 153.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 5
+        TabOrder = 6
         Text = 'Copy from OS Clipboard'
         OnClick = btnFromClipBoardClick
       end
@@ -294,18 +294,19 @@ object fmxMain: TfmxMain
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 6
+        TabOrder = 7
         Text = 'Copy to OS Clipboard'
         OnClick = btnToClipboardClick
       end
       object TabControlClipboard: TTabControl
+        Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
         Position.Y = 64.000000000000000000
         Size.Width = 649.000000000000000000
         Size.Height = 321.000000000000000000
         Size.PlatformDefault = False
         TabIndex = 0
-        TabOrder = 9
+        TabOrder = 10
         TabPosition = PlatformDefault
         Sizes = (
           649s
@@ -323,6 +324,8 @@ object fmxMain: TfmxMain
           StyleLookup = ''
           TabOrder = 0
           Text = 'Text'
+          ExplicitSize.cx = 41.000000000000000000
+          ExplicitSize.cy = 26.000000000000000000
           object memClipboardText: TMemo
             Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
             DataDetectorTypes = []
@@ -348,6 +351,8 @@ object fmxMain: TfmxMain
           StyleLookup = ''
           TabOrder = 0
           Text = 'Graphic'
+          ExplicitSize.cx = 61.000000000000000000
+          ExplicitSize.cy = 26.000000000000000000
           object imgClipboardPict: TImage
             MultiResBitmap = <
               item
@@ -363,6 +368,41 @@ object fmxMain: TfmxMain
           end
         end
       end
+      object chbTesting: TCheckBox
+        Anchors = [akRight, akBottom]
+        Position.X = 568.000000000000000000
+        Position.Y = 424.000000000000000000
+        Size.Width = 104.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 11
+        Text = 'Stress Testing'
+        OnChange = chbTestingChange
+      end
+      object lblSendStatusRTDB: TLabel
+        Anchors = [akLeft, akRight, akBottom]
+        Position.X = 24.000000000000000000
+        Position.Y = 420.000000000000000000
+        Size.Width = 481.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        TabOrder = 2
+        object FloatAnimationHideStatus: TFloatAnimation
+          Delay = 3.000000000000000000
+          Duration = 0.200000002980232200
+          PropertyName = 'Opacity'
+          StartValue = 1.000000000000000000
+          StopValue = 0.000000000000000000
+        end
+      end
     end
+  end
+  object tmrTesting: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = tmrTestingTimer
+    Left = 624
+    Top = 320
   end
 end

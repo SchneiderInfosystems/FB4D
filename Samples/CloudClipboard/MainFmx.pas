@@ -30,7 +30,7 @@ uses
   System.Variants, System.JSON,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.StdCtrls,
   FMX.Objects, FMX.Controls.Presentation, FMX.Edit, FMX.TabControl,
-  FB4D.Interfaces, FMX.MultiView, FMX.ScrollBox, FMX.Memo;
+  FB4D.Interfaces, FMX.MultiView, FMX.ScrollBox, FMX.Memo, FMX.Ani;
 
 type
   TfmxMain = class(TForm)
@@ -67,6 +67,10 @@ type
     TabControlClipboard: TTabControl;
     tabText: TTabItem;
     tabGraphic: TTabItem;
+    tmrTesting: TTimer;
+    chbTesting: TCheckBox;
+    lblSendStatusRTDB: TLabel;
+    FloatAnimationHideStatus: TFloatAnimation;
     procedure btnSignInClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -80,11 +84,15 @@ type
     procedure btnSignUpClick(Sender: TObject);
     procedure btnResetPwdClick(Sender: TObject);
     procedure btnReconnectClick(Sender: TObject);
+    procedure chbTestingChange(Sender: TObject);
+    procedure tmrTestingTimer(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fUID: string;
     fRealTimeDB: IRealTimeDB;
     fFirebaseEvent: IFirebaseEvent;
+    fReceivedUpdates, fErrorCount: Int64;
+    fStressTestCounter: Int64;
     procedure CreateAuthenticationClass;
     procedure CreateRealTimeDBClass;
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
@@ -106,6 +114,7 @@ type
     procedure SaveSettings;
     function GetClipboardPictAsBase64: string;
     procedure SetClipboardPictFromBase64(const Base64: string);
+    function GetConfigAndPlatform: string;
   end;
 
 var
@@ -177,6 +186,12 @@ begin
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
   edtPassword.Visible := false;
+  Caption := Caption + ' [' + GetConfigAndPlatform + ']';
+{$IFDEF DEBUG}
+  chbTesting.Visible := true;
+{$ELSE}
+  chbTesting.Visible := false;
+{$ENDIF}
 end;
 
 procedure TfmxMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -396,6 +411,8 @@ begin
     OnRecData, OnRecDataStop, OnRecDataError);
   btnReconnect.Visible := false;
   btnSendToCloud.Visible := true;
+  fReceivedUpdates := 0;
+  fErrorCount := 0;
 end;
 
 procedure TfmxMain.StopListener;
@@ -408,7 +425,9 @@ procedure TfmxMain.btnSendToCloudClick(Sender: TObject);
 var
   Data: TJSONObject;
 begin
-  lblStatusRTDB.Text := '';
+  FloatAnimationHideStatus.Stop;
+  lblSendStatusRTDB.Opacity := 1;
+  lblSendStatusRTDB.Text := '';
   Data := TJSONObject.Create;
   try
     if TabControlClipboard.ActiveTab = tabText then
@@ -422,7 +441,6 @@ begin
       Data.AddPair('picture', GetClipboardPictAsBase64);
     end else
       exit;
-    StopListener;
     fRealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
   finally
     Data.Free;
@@ -435,10 +453,11 @@ procedure TfmxMain.OnPutError(const RequestID, ErrMsg: string);
 begin
   aniRTDB.Visible := false;
   aniRTDB.Enabled := false;
-  lblStatusRTDB.Text := 'Failure in ' + RequestID + ': ' + ErrMsg;
+  FloatAnimationHideStatus.Stop;
+  lblSendStatusRTDB.Opacity := 1;
+  lblSendStatusRTDB.Text := 'Failure in ' + RequestID + ': ' + ErrMsg;
   if SameText(ErrMsg, 'Permission denied') then
     memClipboardText.Lines.Text := rsHintRTDBRules;
-  StartListener;
 end;
 
 procedure TfmxMain.OnPutResp(ResourceParams: TRequestResourceParam;
@@ -446,8 +465,10 @@ procedure TfmxMain.OnPutResp(ResourceParams: TRequestResourceParam;
 begin
   aniRTDB.Visible := false;
   aniRTDB.Enabled := false;
-  lblStatusRTDB.Text := 'Clipboard updated';
-  StartListener;
+  FloatAnimationHideStatus.Stop;
+  lblSendStatusRTDB.Opacity := 1;
+  lblSendStatusRTDB.Text := 'Clipboard updated';
+  FloatAnimationHideStatus.Start;
 end;
 
 procedure TfmxMain.OnRecData(const Event: string; Params: TRequestResourceParam;
@@ -461,6 +482,7 @@ begin
   Path := JSONObj.Pairs[0].JsonValue.Value;
   if JSONObj.Pairs[1].JsonValue is TJSONObject then
   begin
+    inc(fReceivedUpdates);
     Data := JSONObj.Pairs[1].JsonValue  as TJSONObject;
     // '{"text":"payload of clipboard","type":"text"}'
     if Data.GetValue('type').Value = 'text' then
@@ -478,13 +500,15 @@ begin
       memClipboardText.Lines.Text := 'Unsupported clipboard type: ' +
         Data.GetValue('type').Value;
     end;
-    lblStatusRTDB.Text := 'New clipboard content at ' + TimeToStr(now);
+    lblStatusRTDB.Text := Format('New clipboard content #%d at %s',
+      [fReceivedUpdates, TimeToStr(now)]);
   end else
     lblStatusRTDB.Text := 'Clipboard is empty';
 end;
 
 procedure TfmxMain.OnRecDataError(const Info, ErrMsg: string);
 begin
+  inc(fErrorCount);
   lblStatusRTDB.Text := 'Clipboard error: ' + ErrMsg;
 end;
 
@@ -567,5 +591,69 @@ begin
     MemoryStream.Free;
   end;
 end;
+
+function TfmxMain.GetConfigAndPlatform: string;
+begin
+{$IF defined(RELEASE)}
+  result := 'Release Build/';
+{$ELSEIF defined(DEBUG)}
+  result := 'Debug Build/';
+{$ELSE}
+  result := 'Unknown Build/';
+{$IFEND}
+{$IF defined(WIN32)}
+  result := result + 'Win 32';
+{$ELSEIF defined(WIN64)}
+  result := result + 'Win 64';
+{$ELSEIF defined(MACOS32)}
+  result := result + 'Mac 32';
+{$ELSEIF defined(MACOS64)}
+  result := result + 'Mac 64';
+{$ELSEIF defined(MACOS64)}
+  result := result + 'Mac 64';
+{$ELSEIF defined(IOS32)}
+  result := result + 'iOS 32';
+{$ELSEIF defined(IOS64)}
+  result := result + 'iOS 64';
+{$ELSEIF defined(ANDROID32)}
+  result := result + 'Android 32';
+{$ELSEIF defined(ANDROID64)}
+  result := result + 'Android 64';
+{$ELSEIF defined(LINUX32)}
+  result := result + 'Linux 32';
+{$ELSEIF defined(Linux64)}
+  result := result + 'Linux 64';
+{$ELSE}
+  result := result + 'Platform?';
+{$ENDIF}
+end;
+
+{$REGION 'StressTest'}
+procedure TfmxMain.chbTestingChange(Sender: TObject);
+begin
+  fStressTestCounter := 0;
+  tmrTesting.Enabled := chbTesting.IsChecked;
+end;
+
+procedure TfmxMain.tmrTestingTimer(Sender: TObject);
+begin
+  memClipboardText.Lines.Clear;
+  memClipboardText.Lines.Add('Stress Test');
+  memClipboardText.Lines.Add('Number of received updates .. : ' +
+    fReceivedUpdates.ToString);
+  memClipboardText.Lines.Add('Number of sent updates ...... : ' +
+    fStressTestCounter.ToString);
+  memClipboardText.Lines.Add('Number of errors ............ : ' +
+    fErrorCount.ToString);
+  memClipboardText.Lines.Add('Timestamp of last sent update : ' +
+    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now));
+  memClipboardText.Lines.Add('Sender''s token refresh time . : ' +
+    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', fAuth.TokenExpiryDT));
+  memClipboardText.Lines.Add('Sender''s config and platform  : ' +
+    GetConfigAndPlatform);
+  btnSendToCloudClick(Sender);
+  inc(fStressTestCounter);
+end;
+{$ENDREGION}
 
 end.
