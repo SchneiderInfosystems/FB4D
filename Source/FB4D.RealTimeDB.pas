@@ -675,6 +675,7 @@ begin
             Abort := true;
           end else if Data.Length > 0 then
           begin
+            fListenPartialResp := '';
             TThread.Queue(nil,
               procedure
               var
@@ -683,7 +684,6 @@ begin
                 JSONObj := TJSONObject.ParseJSONValue(Data) as TJSONObject;
                 if assigned(JSONObj) then
                 try
-                  fListenPartialResp := '';
                   fOnListenEvent(EventName, Params, JSONObj);
                 finally
                   JSONObj.Free;
@@ -746,12 +746,13 @@ begin
         fFirebase.GetServerVariables(cServerVariableTimeStamp,
           TFirebaseHelpers.AddParamToResParams(fResourceParams, NodeName));
       Timeout := cMaxTimeout;
-      while assigned(fFirebase.fThread) and (Timeout > 0) do
+      while assigned(fFirebase) and assigned(fFirebase.fThread) and
+        (Timeout > 0) do
       begin
         TFirebaseHelpers.SleepAndMessageLoop(1);
         dec(Timeout);
       end;
-      if assigned(fFirebase.fThread) then
+      if assigned(fFirebase) and assigned(fFirebase.fThread) then
       begin
         TFirebaseHelpers.Log(
           'Hard stop of listener thread because of lost connection');
