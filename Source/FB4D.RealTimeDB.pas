@@ -573,6 +573,8 @@ begin
           begin
             ss := TStringStream.Create;
             try
+              Assert(fReadPos >= 0, 'Invalid stream read position');
+              Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count');
               fStream.Position := fReadPos;
               if ReadCount - fReadPos > 0 then
               begin
@@ -647,6 +649,8 @@ begin
         Params := GetParams(Sender as TURLRequest);
         ss := TStringStream.Create;
         try
+          Assert(fReadPos >= 0, 'Invalid stream read position');
+          Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count');
           fStream.Position := fReadPos;
           ss.CopyFrom(fStream, ReadCount - fReadPos);
           fListenPartialResp := fListenPartialResp + ss.DataString;
