@@ -38,11 +38,13 @@ type
   private
     fFirebase: TRealTimeDB;
     fResourceParams: TRequestResourceParam;
+    fIsStopped: boolean;
     constructor Create(Firebase: TRealTimeDB;
       ResourceParams: TRequestResourceParam);
   public
     procedure StopListening(const NodeName: string = '');
     function GetResourceParams: TRequestResourceParam;
+    function IsStopped: boolean;
   end;
 
   TRealTimeDB = class(TInterfacedObject, IRealTimeDB)
@@ -720,11 +722,17 @@ constructor TFirebaseEvent.Create(Firebase: TRealTimeDB;
 begin
   fFirebase := Firebase;
   fResourceParams := ResourceParams;
+  fIsStopped := false;
 end;
 
 function TFirebaseEvent.GetResourceParams: TRequestResourceParam;
 begin
   result := fResourceParams;
+end;
+
+function TFirebaseEvent.IsStopped: boolean;
+begin
+  result := fIsStopped;
 end;
 
 procedure TFirebaseEvent.StopListening(const NodeName: string);
@@ -733,6 +741,7 @@ const
 var
   Timeout: cardinal;
 begin
+  fIsStopped := true;
   try
     if assigned(fFirebase.fThread) then
     begin
