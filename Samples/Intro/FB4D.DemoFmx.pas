@@ -63,7 +63,8 @@ type
     memoResp: TMemo;
     btnDownload: TButton;
     SaveDialog: TSaveDialog;
-    btnUpload: TButton;
+    btnUploadSynch: TButton;
+    btnUploadAsynch: TButton;
     OpenDialog: TOpenDialog;
     Label11: TLabel;
     btnDelete: TButton;
@@ -163,7 +164,8 @@ type
     procedure FormShow(Sender: TObject);
     procedure btnGetStorageClick(Sender: TObject);
     procedure btnDownloadClick(Sender: TObject);
-    procedure btnUploadClick(Sender: TObject);
+    procedure btnUploadSynchClick(Sender: TObject);
+    procedure btnUploadAsynchClick(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
     procedure btnNotifyEventClick(Sender: TObject);
     procedure btnStopEventClick(Sender: TObject);
@@ -203,6 +205,8 @@ type
     fRealTimeDB: IRealTimeDB;
     fFirebaseEvent: IFirebaseEvent;
     fDownloadStream: TFileStream;
+    fUploadStorage: IFirebaseStorage;
+    fUploadStream: TFileStream;
     function CheckSignedIn(Log: TMemo): boolean;
     procedure DisplayUser(mem: TMemo; User: IFirebaseUser);
     procedure DisplayTokenJWT(mem: TMemo);
@@ -238,10 +242,12 @@ type
     procedure OnPostError(const RequestID, ErrMsg: string);
     procedure OnDeleteResp(Params: TRequestResourceParam; Success: boolean);
     procedure OnDeleteError(const RequestID, ErrMsg: string);
-    procedure ShowFirestoreObject;
+    procedure ShowFirestoreObject(Obj: IStorageObject);
     function GetStorageFileName: string;
     procedure OnDownload(const RequestID: string; Obj: IStorageObject);
     procedure OnDownloadError(Obj: IStorageObject; const ErrorMsg: string);
+    procedure OnUpload(const ObjectName: string; Obj: IStorageObject);
+    procedure OnUploadError(const RequestID, ErrorMsg: string);
   end;
 
 var
@@ -565,42 +571,44 @@ begin
   Storage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
   try
     fFirestoreObject := Storage.GetSynchronous(GetStorageFileName);
-    ShowFirestoreObject;
+    memoResp.Lines.Text := 'Firestore object synchronous retrieven';
+    ShowFirestoreObject(fFirestoreObject);
+    if assigned(fFirestoreObject) then
+      btnDownload.Enabled := fFirestoreObject.DownloadToken > ''
+    else
+      btnDownload.Enabled := false;
+    btnDelete.Enabled := btnDownload.Enabled;
   finally
     Storage.Free;
   end;
 end;
 
-procedure TfmxFirebaseDemo.ShowFirestoreObject;
+procedure TfmxFirebaseDemo.ShowFirestoreObject(Obj: IStorageObject);
 begin
-  if assigned(fFirestoreObject) then
+  if assigned(Obj) then
   begin
-    btnDownload.Enabled := fFirestoreObject.DownloadToken > '';
-    memoResp.Lines.Clear;
-    memoResp.Lines.Add('ObjectName: ' + fFirestoreObject.ObjectName(false));
-    memoResp.Lines.Add('Path: ' + fFirestoreObject.Path);
-    memoResp.Lines.Add('Type: ' + fFirestoreObject.ContentType);
+    memoResp.Lines.Add('ObjectName: ' + Obj.ObjectName(false));
+    memoResp.Lines.Add('Path: ' + Obj.Path);
+    memoResp.Lines.Add('Type: ' + Obj.ContentType);
     memoResp.Lines.Add('Size: ' +
-      Format('%.0n bytes', [extended(fFirestoreObject.Size)]));
+      Format('%.0n bytes', [extended(Obj.Size)]));
     memoResp.Lines.Add('Created: ' +
-      DateTimeToStr(fFirestoreObject.createTime));
+      DateTimeToStr(Obj.createTime));
     memoResp.Lines.Add('Updated: ' +
-      DateTimeToStr(fFirestoreObject.updateTime));
-    memoResp.Lines.Add('Download URL: ' + fFirestoreObject.DownloadUrl);
-    memoResp.Lines.Add('MD5 hash code: ' + fFirestoreObject.MD5HashCode);
-    memoResp.Lines.Add('E-Tag: ' + fFirestoreObject.etag);
-    memoResp.Lines.Add('generation: ' + IntTostr(fFirestoreObject.generation));
+      DateTimeToStr(Obj.updateTime));
+    memoResp.Lines.Add('Download URL: ' + Obj.DownloadUrl);
+    memoResp.Lines.Add('MD5 hash code: ' + Obj.MD5HashCode);
+    memoResp.Lines.Add('E-Tag: ' + Obj.etag);
+    memoResp.Lines.Add('generation: ' + IntTostr(Obj.generation));
     memoResp.Lines.Add('Meta Generation: ' +
-      IntTostr(fFirestoreObject.metaGeneration));
-  end else begin
-    btnDownload.Enabled := false;
+      IntTostr(Obj.metaGeneration));
+  end else
     memoResp.Lines.Text := 'No firestore object';
-  end;
-  btnDelete.Enabled := btnDownload.Enabled;
 end;
 
 procedure TfmxFirebaseDemo.btnDownloadClick(Sender: TObject);
 begin
+  Assert(assigned(fFirestoreObject), 'Firestore object is missing');
   SaveDialog.FileName := fFirestoreObject.ObjectName(false);
   if SaveDialog.Execute then
   begin
@@ -615,7 +623,7 @@ end;
 procedure TfmxFirebaseDemo.OnDownload(const RequestID: string;
   Obj: IStorageObject);
 begin
-  memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+  memoResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
     SaveDialog.FileName + ' passed');
   FreeAndNil(fDownloadStream);
 end;
@@ -623,18 +631,19 @@ end;
 procedure TfmxFirebaseDemo.OnDownloadError(Obj: IStorageObject;
   const ErrorMsg: string);
 begin
-  memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+  memoResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
     SaveDialog.FileName + ' failed: ' + ErrorMsg);
   FreeAndNil(fDownloadStream);
 end;
 
-procedure TfmxFirebaseDemo.btnUploadClick(Sender: TObject);
+procedure TfmxFirebaseDemo.btnUploadSynchClick(Sender: TObject);
 var
   Storage: TFirebaseStorage;
   fs: TFileStream;
   ExtType: string;
   ContentType: TRESTContentType;
   ObjectName: string;
+  Obj: IStorageObject;
 begin
   if not CheckSignedIn(memoResp) then
     exit;
@@ -657,9 +666,9 @@ begin
     try
       fs := TFileStream.Create(OpenDialog.FileName, fmOpenRead);
       try
-        fFirestoreObject := Storage.UploadSynchronousFromStream(fs, ObjectName,
-          ContentType);
-        ShowFirestoreObject;
+        Obj := Storage.UploadSynchronousFromStream(fs, ObjectName, ContentType);
+        memoResp.Lines.Text := 'Firestore object synchronous uploaded';
+        ShowFirestoreObject(Obj);
       finally
         fs.Free;
       end;
@@ -667,6 +676,57 @@ begin
       Storage.Free;
     end;
   end;
+end;
+
+procedure TfmxFirebaseDemo.btnUploadAsynchClick(Sender: TObject);
+var
+  ExtType: string;
+  ContentType: TRESTContentType;
+  ObjectName: string;
+begin
+  if not CheckSignedIn(memoResp) then
+    exit;
+  if assigned(fUploadStream) then
+  begin
+    memoResp.Lines.Add('Wait until previous upload is finisehd');
+    memoResp.GoToTextEnd;
+  end;
+  if OpenDialog.Execute then
+  begin
+    ExtType := LowerCase(ExtractFileExt(OpenDialog.FileName).Substring(1));
+    if (ExtType = 'jpg') or (ExtType = 'jpeg') then
+      ContentType := TRESTContentType.ctIMAGE_JPEG
+    else if ExtType = 'png' then
+      ContentType := TRESTContentType.ctIMAGE_PNG
+    else if ExtType = 'gif' then
+      ContentType := TRESTContentType.ctIMAGE_GIF
+    else if ExtType = 'mp4' then
+      ContentType := TRESTContentType.ctVIDEO_MP4
+    else
+      ContentType := TRESTContentType.ctNone;
+    edtStorageObject.Text := ExtractFilename(OpenDialog.FileName);
+    ObjectName := GetStorageFileName;
+    if not assigned(fUploadStorage) then
+      fUploadStorage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+    fUploadStream := TFileStream.Create(OpenDialog.FileName, fmOpenRead);
+    fUploadStorage.UploadFromStream(fUploadStream, ObjectName, ContentType,
+      OnUpload, OnUploadError);
+  end;
+end;
+
+procedure TfmxFirebaseDemo.OnUpload(const ObjectName: string;
+  Obj: IStorageObject);
+begin
+  memoResp.Lines.Text := 'Firestore object asynchronous uploaded';
+  ShowFirestoreObject(Obj);
+  FreeAndNil(fUploadStream);
+end;
+
+procedure TfmxFirebaseDemo.OnUploadError(const RequestID, ErrorMsg: string);
+begin
+  memoResp.Lines.Text := 'Error while asynchronous upload of ' + RequestID;
+  memoResp.Lines.Add('Error: ' + ErrorMsg);
+  FreeAndNil(fUploadStream);
 end;
 
 procedure TfmxFirebaseDemo.btnDeleteClick(Sender: TObject);

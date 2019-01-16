@@ -230,8 +230,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 448.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
-            Viewport.Width = 933.000000000000000000
-            Viewport.Height = 448.000000000000000000
+            Viewport.Width = 929.000000000000000000
+            Viewport.Height = 444.000000000000000000
           end
           object btnGetUserData: TButton
             Position.X = 16.000000000000000000
@@ -397,8 +397,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 456.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 956.000000000000000000
-        Viewport.Height = 456.000000000000000000
+        Viewport.Width = 952.000000000000000000
+        Viewport.Height = 452.000000000000000000
       end
       object edtPath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -1005,8 +1005,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 626.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Viewport.Width = 924.000000000000000000
-        Viewport.Height = 626.000000000000000000
+        Viewport.Width = 920.000000000000000000
+        Viewport.Height = 622.000000000000000000
       end
       object btnStopEvent: TButton
         Position.X = 192.000000000000000000
@@ -1100,8 +1100,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 576.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 948.000000000000000000
-        Viewport.Height = 576.000000000000000000
+        Viewport.Width = 944.000000000000000000
+        Viewport.Height = 572.000000000000000000
       end
       object btnCreateDocument: TButton
         Position.X = 24.000000000000000000
@@ -1176,8 +1176,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 528.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 4
-        Viewport.Width = 948.000000000000000000
-        Viewport.Height = 528.000000000000000000
+        Viewport.Width = 944.000000000000000000
+        Viewport.Height = 524.000000000000000000
       end
       object btnDownload: TButton
         Enabled = False
@@ -1187,18 +1187,21 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Text = 'Download'
         OnClick = btnDownloadClick
       end
-      object btnUpload: TButton
+      object btnUploadSynch: TButton
         Position.X = 408.000000000000000000
         Position.Y = 134.000000000000000000
-        TabOrder = 7
-        Text = 'Upload'
-        OnClick = btnUploadClick
+        Size.Width = 129.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+        Text = 'Upload Synchronous'
+        OnClick = btnUploadSynchClick
       end
       object Label11: TLabel
         Position.X = 408.000000000000000000
         Position.Y = 78.000000000000000000
         Text = 'Folder'
-        TabOrder = 8
+        TabOrder = 9
       end
       object btnDelete: TButton
         Enabled = False
@@ -1210,7 +1213,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object edtStorageObject: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 9
+        TabOrder = 10
         Position.X = 24.000000000000000000
         Position.Y = 103.000000000000000000
         Size.Width = 329.000000000000000000
@@ -1221,13 +1224,23 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object edtStoragePath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akLeft, akTop, akRight]
-        TabOrder = 10
+        TabOrder = 11
         Position.X = 408.000000000000000000
         Position.Y = 103.000000000000000000
         Size.Width = 561.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Enter the path including path separator /'
+      end
+      object btnUploadAsynch: TButton
+        Position.X = 544.000000000000000000
+        Position.Y = 134.000000000000000000
+        Size.Width = 129.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 7
+        Text = 'Upload Asynchronous'
+        OnClick = btnUploadAsynchClick
       end
     end
   end
