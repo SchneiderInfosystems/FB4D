@@ -192,13 +192,19 @@ var
 begin
   fOnUpload := OnUpload;
   fOnUploadError := OnUploadError;
-  Request := TFirebaseRequest.Create(BaseURL, ObjectName, fAuth);
+  // Because of RSP-23318 the resource parameters shall not be empty when using
+  // query parameters
+  // https://quality.embarcadero.com/browse/RSP-23318
+  // That is why in the workaround the last segement of the URL must be removed
+  // from the Base URL and added as first resource parameter.
+  Request := TFirebaseRequest.Create(Copy(BaseURL, 1, length(BaseURL) - 2),
+    ObjectName, fAuth);
   QueryParams := TDictionary<string, string>.Create;
   try
     QueryParams.Add('uploadType', 'media');
     QueryParams.Add('name',  ObjectName);
-    Request.SendRequest([], rmPost, Stream, ContentType, QueryParams, tmBearer,
-      OnUploadFromStream, fOnUploadError);
+    Request.SendRequest([BaseURL[length(BaseURL)]], rmPost, Stream, ContentType,
+      QueryParams, tmBearer, OnUploadFromStream, fOnUploadError);
   finally
     QueryParams.Free;
   end;
