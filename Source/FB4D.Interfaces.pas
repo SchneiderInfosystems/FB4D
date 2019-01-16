@@ -93,6 +93,7 @@ type
   IFirebaseEvent = interface(IInterface)
     procedure StopListening(const NodeName: string = ''); // Depending on internet connection requires up to 500 ms
     function GetResourceParams: TRequestResourceParam;
+    function IsStopped: boolean;
   end;
 
   TOnGetValue = procedure(ResourceParams: TRequestResourceParam; Val: TJSONValue)

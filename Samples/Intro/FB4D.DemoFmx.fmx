@@ -230,8 +230,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 448.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
-            Viewport.Width = 933.000000000000000000
-            Viewport.Height = 448.000000000000000000
+            Viewport.Width = 929.000000000000000000
+            Viewport.Height = 444.000000000000000000
           end
           object btnGetUserData: TButton
             Position.X = 16.000000000000000000
@@ -397,8 +397,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 456.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 956.000000000000000000
-        Viewport.Height = 456.000000000000000000
+        Viewport.Width = 952.000000000000000000
+        Viewport.Height = 452.000000000000000000
       end
       object edtPath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -1005,8 +1005,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 626.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Viewport.Width = 924.000000000000000000
-        Viewport.Height = 626.000000000000000000
+        Viewport.Width = 920.000000000000000000
+        Viewport.Height = 622.000000000000000000
       end
       object btnStopEvent: TButton
         Position.X = 192.000000000000000000
@@ -1100,8 +1100,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 576.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 948.000000000000000000
-        Viewport.Height = 576.000000000000000000
+        Viewport.Width = 944.000000000000000000
+        Viewport.Height = 572.000000000000000000
       end
       object btnCreateDocument: TButton
         Position.X = 24.000000000000000000
@@ -1153,64 +1153,76 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TextPrompt = 'Enter a Storage Bucket URL wiithout gs://'
       end
-      object btnGetStorage: TButton
+      object btnGetStorageSynch: TButton
         Position.X = 24.000000000000000000
         Position.Y = 134.000000000000000000
-        TabOrder = 2
-        Text = 'Get'
-        OnClick = btnGetStorageClick
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        Text = 'Get Synchronous'
+        OnClick = btnGetStorageSynchClick
       end
       object Label10: TLabel
         Position.X = 24.000000000000000000
         Position.Y = 78.000000000000000000
         Text = 'Object'
-        TabOrder = 3
+        TabOrder = 4
       end
       object memoResp: TMemo
         Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
         DataDetectorTypes = []
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
-        Position.Y = 168.000000000000000000
+        Position.Y = 232.000000000000000000
         Size.Width = 948.000000000000000000
-        Size.Height = 528.000000000000000000
+        Size.Height = 464.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 4
-        Viewport.Width = 948.000000000000000000
-        Viewport.Height = 528.000000000000000000
+        TabOrder = 5
+        Viewport.Width = 944.000000000000000000
+        Viewport.Height = 460.000000000000000000
       end
-      object btnDownload: TButton
+      object btnDownloadAsync: TButton
         Enabled = False
-        Position.X = 120.000000000000000000
-        Position.Y = 134.000000000000000000
-        TabOrder = 6
-        Text = 'Download'
-        OnClick = btnDownloadClick
+        Position.X = 200.000000000000000000
+        Position.Y = 166.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 9
+        Text = 'Download Asynchronous'
+        OnClick = btnDownloadAsyncClick
       end
-      object btnUpload: TButton
+      object btnUploadSynch: TButton
         Position.X = 408.000000000000000000
         Position.Y = 134.000000000000000000
-        TabOrder = 7
-        Text = 'Upload'
-        OnClick = btnUploadClick
+        Size.Width = 129.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 11
+        Text = 'Upload Synchronous'
+        OnClick = btnUploadSynchClick
       end
       object Label11: TLabel
         Position.X = 408.000000000000000000
         Position.Y = 78.000000000000000000
         Text = 'Folder'
-        TabOrder = 8
+        TabOrder = 12
       end
-      object btnDelete: TButton
+      object btnDeleteSync: TButton
         Enabled = False
-        Position.X = 216.000000000000000000
-        Position.Y = 134.000000000000000000
-        TabOrder = 5
-        Text = 'Delete'
-        OnClick = btnDeleteClick
+        Position.X = 24.000000000000000000
+        Position.Y = 198.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 7
+        Text = 'Delete Synchronous'
+        OnClick = btnDeleteSyncClick
       end
       object edtStorageObject: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 9
+        TabOrder = 13
         Position.X = 24.000000000000000000
         Position.Y = 103.000000000000000000
         Size.Width = 329.000000000000000000
@@ -1221,13 +1233,55 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object edtStoragePath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akLeft, akTop, akRight]
-        TabOrder = 10
+        TabOrder = 14
         Position.X = 408.000000000000000000
         Position.Y = 103.000000000000000000
         Size.Width = 561.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Enter the path including path separator /'
+      end
+      object btnUploadAsynch: TButton
+        Position.X = 544.000000000000000000
+        Position.Y = 134.000000000000000000
+        Size.Width = 129.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 10
+        Text = 'Upload Asynchronous'
+        OnClick = btnUploadAsynchClick
+      end
+      object btnGetStorageAsynch: TButton
+        Position.X = 200.000000000000000000
+        Position.Y = 134.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Get Asynchronous'
+        OnClick = btnGetStorageAsynchClick
+      end
+      object btnDownloadSync: TButton
+        Enabled = False
+        Position.X = 24.000000000000000000
+        Position.Y = 166.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+        Text = 'Download Synchronous'
+        OnClick = btnDownloadSyncClick
+      end
+      object btnDeleteAsync: TButton
+        Enabled = False
+        Position.X = 200.000000000000000000
+        Position.Y = 198.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 6
+        Text = 'Delete Asynchronous'
+        OnClick = btnDeleteAsyncClick
       end
     end
   end

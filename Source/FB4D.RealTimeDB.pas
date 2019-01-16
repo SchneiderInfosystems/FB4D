@@ -38,11 +38,13 @@ type
   private
     fFirebase: TRealTimeDB;
     fResourceParams: TRequestResourceParam;
+    fIsStopped: boolean;
     constructor Create(Firebase: TRealTimeDB;
       ResourceParams: TRequestResourceParam);
   public
     procedure StopListening(const NodeName: string = '');
     function GetResourceParams: TRequestResourceParam;
+    function IsStopped: boolean;
   end;
 
   TRealTimeDB = class(TInterfacedObject, IRealTimeDB)
@@ -571,6 +573,8 @@ begin
           begin
             ss := TStringStream.Create;
             try
+              Assert(fReadPos >= 0, 'Invalid stream read position');
+              Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count');
               fStream.Position := fReadPos;
               if ReadCount - fReadPos > 0 then
               begin
@@ -645,6 +649,8 @@ begin
         Params := GetParams(Sender as TURLRequest);
         ss := TStringStream.Create;
         try
+          Assert(fReadPos >= 0, 'Invalid stream read position');
+          Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count');
           fStream.Position := fReadPos;
           ss.CopyFrom(fStream, ReadCount - fReadPos);
           fListenPartialResp := fListenPartialResp + ss.DataString;
@@ -720,11 +726,17 @@ constructor TFirebaseEvent.Create(Firebase: TRealTimeDB;
 begin
   fFirebase := Firebase;
   fResourceParams := ResourceParams;
+  fIsStopped := false;
 end;
 
 function TFirebaseEvent.GetResourceParams: TRequestResourceParam;
 begin
   result := fResourceParams;
+end;
+
+function TFirebaseEvent.IsStopped: boolean;
+begin
+  result := fIsStopped;
 end;
 
 procedure TFirebaseEvent.StopListening(const NodeName: string);
@@ -733,6 +745,7 @@ const
 var
   Timeout: cardinal;
 begin
+  fIsStopped := true;
   try
     if assigned(fFirebase.fThread) then
     begin

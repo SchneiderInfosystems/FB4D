@@ -58,15 +58,19 @@ type
     tabStorage: TTabItem;
     Label9: TLabel;
     edtStorageBucket: TEdit;
-    btnGetStorage: TButton;
+    btnGetStorageSynch: TButton;
+    btnGetStorageAsynch: TButton;
     Label10: TLabel;
     memoResp: TMemo;
-    btnDownload: TButton;
+    btnDownloadSync: TButton;
+    btnDownloadAsync: TButton;
     SaveDialog: TSaveDialog;
-    btnUpload: TButton;
+    btnUploadSynch: TButton;
+    btnUploadAsynch: TButton;
     OpenDialog: TOpenDialog;
     Label11: TLabel;
-    btnDelete: TButton;
+    btnDeleteSync: TButton;
+    btnDeleteAsync: TButton;
     tabScanRTEvent: TTabItem;
     btnNotifyEvent: TButton;
     memScans: TMemo;
@@ -161,10 +165,14 @@ type
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure btnGetStorageClick(Sender: TObject);
-    procedure btnDownloadClick(Sender: TObject);
-    procedure btnUploadClick(Sender: TObject);
-    procedure btnDeleteClick(Sender: TObject);
+    procedure btnGetStorageSynchClick(Sender: TObject);
+    procedure btnGetStorageAsynchClick(Sender: TObject);
+    procedure btnDownloadSyncClick(Sender: TObject);
+    procedure btnDownloadAsyncClick(Sender: TObject);
+    procedure btnUploadSynchClick(Sender: TObject);
+    procedure btnUploadAsynchClick(Sender: TObject);
+    procedure btnDeleteSyncClick(Sender: TObject);
+    procedure btnDeleteAsyncClick(Sender: TObject);
     procedure btnNotifyEventClick(Sender: TObject);
     procedure btnStopEventClick(Sender: TObject);
     procedure btnPutRTSynchClick(Sender: TObject);
@@ -203,6 +211,8 @@ type
     fRealTimeDB: IRealTimeDB;
     fFirebaseEvent: IFirebaseEvent;
     fDownloadStream: TFileStream;
+    fStorage: IFirebaseStorage;
+    fUploadStream: TFileStream;
     function CheckSignedIn(Log: TMemo): boolean;
     procedure DisplayUser(mem: TMemo; User: IFirebaseUser);
     procedure DisplayTokenJWT(mem: TMemo);
@@ -238,10 +248,16 @@ type
     procedure OnPostError(const RequestID, ErrMsg: string);
     procedure OnDeleteResp(Params: TRequestResourceParam; Success: boolean);
     procedure OnDeleteError(const RequestID, ErrMsg: string);
-    procedure ShowFirestoreObject;
+    procedure ShowFirestoreObject(Obj: IStorageObject);
     function GetStorageFileName: string;
+    procedure OnGetStorage(const RequestID: string; Obj: IStorageObject);
+    procedure OnGetStorageError(const RequestID, ErrMsg: string);
     procedure OnDownload(const RequestID: string; Obj: IStorageObject);
     procedure OnDownloadError(Obj: IStorageObject; const ErrorMsg: string);
+    procedure OnUpload(const ObjectName: string; Obj: IStorageObject);
+    procedure OnUploadError(const RequestID, ErrorMsg: string);
+    procedure OnDeleteStorage(const ObjectName: string);
+    procedure OnDeleteStorageError(const RequestID, ErrorMsg: string);
   end;
 
 var
@@ -551,56 +567,93 @@ end;
 function TfmxFirebaseDemo.GetStorageFileName: string;
 begin
   result := edtStoragePath.Text;
-  if result.Length > 0 then
+  if (result.Length > 0) and (result[High(result)] <> '/') then
     result := result + '/';
   result := result + edtStorageObject.Text;
 end;
 
-procedure TfmxFirebaseDemo.btnGetStorageClick(Sender: TObject);
+procedure TfmxFirebaseDemo.btnGetStorageSynchClick(Sender: TObject);
 var
   Storage: TFirebaseStorage;
 begin
   if not CheckSignedIn(memoResp) then
     exit;
   Storage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+  // We could use also fStorage here but in order to demontrate the more simple
+  // way of synchronous calls we use a local TFirebaseStorage
   try
     fFirestoreObject := Storage.GetSynchronous(GetStorageFileName);
-    ShowFirestoreObject;
+    memoResp.Lines.Text := 'Firestore object synchronous retrieven';
+    ShowFirestoreObject(fFirestoreObject);
+    if assigned(fFirestoreObject) then
+      btnDownloadSync.Enabled := fFirestoreObject.DownloadToken > ''
+    else
+      btnDownloadSync.Enabled := false;
+    btnDownloadAsync.Enabled := btnDownloadSync.Enabled;
+    btnDeleteSync.Enabled := btnDownloadSync.Enabled;
+    btnDeleteAsync.Enabled := btnDeleteSync.Enabled;
   finally
     Storage.Free;
   end;
 end;
 
-procedure TfmxFirebaseDemo.ShowFirestoreObject;
+procedure TfmxFirebaseDemo.btnGetStorageAsynchClick(Sender: TObject);
 begin
-  if assigned(fFirestoreObject) then
-  begin
-    btnDownload.Enabled := fFirestoreObject.DownloadToken > '';
-    memoResp.Lines.Clear;
-    memoResp.Lines.Add('ObjectName: ' + fFirestoreObject.ObjectName(false));
-    memoResp.Lines.Add('Path: ' + fFirestoreObject.Path);
-    memoResp.Lines.Add('Type: ' + fFirestoreObject.ContentType);
-    memoResp.Lines.Add('Size: ' +
-      Format('%.0n bytes', [extended(fFirestoreObject.Size)]));
-    memoResp.Lines.Add('Created: ' +
-      DateTimeToStr(fFirestoreObject.createTime));
-    memoResp.Lines.Add('Updated: ' +
-      DateTimeToStr(fFirestoreObject.updateTime));
-    memoResp.Lines.Add('Download URL: ' + fFirestoreObject.DownloadUrl);
-    memoResp.Lines.Add('MD5 hash code: ' + fFirestoreObject.MD5HashCode);
-    memoResp.Lines.Add('E-Tag: ' + fFirestoreObject.etag);
-    memoResp.Lines.Add('generation: ' + IntTostr(fFirestoreObject.generation));
-    memoResp.Lines.Add('Meta Generation: ' +
-      IntTostr(fFirestoreObject.metaGeneration));
-  end else begin
-    btnDownload.Enabled := false;
-    memoResp.Lines.Text := 'No firestore object';
-  end;
-  btnDelete.Enabled := btnDownload.Enabled;
+  if not CheckSignedIn(memoResp) then
+    exit;
+  if not assigned(fStorage) then
+    fStorage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+  fStorage.Get(GetStorageFileName, 'Get asynchronous Storage', OnGetStorage,
+    OnGetStorageError);
 end;
 
-procedure TfmxFirebaseDemo.btnDownloadClick(Sender: TObject);
+procedure TfmxFirebaseDemo.OnGetStorage(const RequestID: string;
+  Obj: IStorageObject);
 begin
+  memoResp.Lines.Text := 'Firestore object asynchronous retrieven';
+  ShowFirestoreObject(Obj);
+  if assigned(Obj) then
+    btnDownloadSync.Enabled := Obj.DownloadToken > ''
+  else
+    btnDownloadSync.Enabled := false;
+  btnDownloadAsync.Enabled := btnDownloadSync.Enabled;
+  btnDeleteSync.Enabled := btnDownloadSync.Enabled;
+  btnDeleteAsync.Enabled := btnDeleteSync.Enabled;
+  fFirestoreObject := Obj;
+end;
+
+procedure TfmxFirebaseDemo.OnGetStorageError(const RequestID, ErrMsg: string);
+begin
+  memoResp.Lines.Text := 'Error while asynchronous get for ' + RequestID;
+  memoResp.Lines.Add('Error: ' + ErrMsg);
+end;
+
+procedure TfmxFirebaseDemo.ShowFirestoreObject(Obj: IStorageObject);
+begin
+  if assigned(Obj) then
+  begin
+    memoResp.Lines.Add('ObjectName: ' + Obj.ObjectName(false));
+    memoResp.Lines.Add('Path: ' + Obj.Path);
+    memoResp.Lines.Add('Type: ' + Obj.ContentType);
+    memoResp.Lines.Add('Size: ' +
+      Format('%.0n bytes', [extended(Obj.Size)]));
+    memoResp.Lines.Add('Created: ' +
+      DateTimeToStr(Obj.createTime));
+    memoResp.Lines.Add('Updated: ' +
+      DateTimeToStr(Obj.updateTime));
+    memoResp.Lines.Add('Download URL: ' + Obj.DownloadUrl);
+    memoResp.Lines.Add('MD5 hash code: ' + Obj.MD5HashCode);
+    memoResp.Lines.Add('E-Tag: ' + Obj.etag);
+    memoResp.Lines.Add('generation: ' + IntTostr(Obj.generation));
+    memoResp.Lines.Add('Meta Generation: ' +
+      IntTostr(Obj.metaGeneration));
+  end else
+    memoResp.Lines.Text := 'No firestore object';
+end;
+
+procedure TfmxFirebaseDemo.btnDownloadAsyncClick(Sender: TObject);
+begin
+  Assert(assigned(fFirestoreObject), 'Firestore object is missing');
   SaveDialog.FileName := fFirestoreObject.ObjectName(false);
   if SaveDialog.Execute then
   begin
@@ -612,10 +665,29 @@ begin
   end;
 end;
 
+procedure TfmxFirebaseDemo.btnDownloadSyncClick(Sender: TObject);
+var
+  Stream: TFileStream;
+begin
+  Assert(assigned(fFirestoreObject), 'Firestore object is missing');
+  SaveDialog.FileName := fFirestoreObject.ObjectName(false);
+  if SaveDialog.Execute then
+  begin
+    Stream := TFileStream.Create(SaveDialog.FileName, fmCreate);
+    try
+      fFirestoreObject.DownloadToStreamSynchronous(Stream);
+      memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+        SaveDialog.FileName);
+    finally
+      Stream.Free;
+    end;
+  end;
+end;
+
 procedure TfmxFirebaseDemo.OnDownload(const RequestID: string;
   Obj: IStorageObject);
 begin
-  memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+  memoResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
     SaveDialog.FileName + ' passed');
   FreeAndNil(fDownloadStream);
 end;
@@ -623,18 +695,19 @@ end;
 procedure TfmxFirebaseDemo.OnDownloadError(Obj: IStorageObject;
   const ErrorMsg: string);
 begin
-  memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+  memoResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
     SaveDialog.FileName + ' failed: ' + ErrorMsg);
   FreeAndNil(fDownloadStream);
 end;
 
-procedure TfmxFirebaseDemo.btnUploadClick(Sender: TObject);
+procedure TfmxFirebaseDemo.btnUploadSynchClick(Sender: TObject);
 var
   Storage: TFirebaseStorage;
   fs: TFileStream;
   ExtType: string;
   ContentType: TRESTContentType;
   ObjectName: string;
+  Obj: IStorageObject;
 begin
   if not CheckSignedIn(memoResp) then
     exit;
@@ -657,9 +730,9 @@ begin
     try
       fs := TFileStream.Create(OpenDialog.FileName, fmOpenRead);
       try
-        fFirestoreObject := Storage.UploadSynchronousFromStream(fs, ObjectName,
-          ContentType);
-        ShowFirestoreObject;
+        Obj := Storage.UploadSynchronousFromStream(fs, ObjectName, ContentType);
+        memoResp.Lines.Text := 'Firestore object synchronous uploaded';
+        ShowFirestoreObject(Obj);
       finally
         fs.Free;
       end;
@@ -669,18 +742,95 @@ begin
   end;
 end;
 
-procedure TfmxFirebaseDemo.btnDeleteClick(Sender: TObject);
+procedure TfmxFirebaseDemo.btnUploadAsynchClick(Sender: TObject);
+var
+  ExtType: string;
+  ContentType: TRESTContentType;
+  ObjectName: string;
+begin
+  if not CheckSignedIn(memoResp) then
+    exit;
+  if assigned(fUploadStream) then
+  begin
+    memoResp.Lines.Add('Wait until previous upload is finisehd');
+    memoResp.GoToTextEnd;
+  end;
+  if OpenDialog.Execute then
+  begin
+    ExtType := LowerCase(ExtractFileExt(OpenDialog.FileName).Substring(1));
+    if (ExtType = 'jpg') or (ExtType = 'jpeg') then
+      ContentType := TRESTContentType.ctIMAGE_JPEG
+    else if ExtType = 'png' then
+      ContentType := TRESTContentType.ctIMAGE_PNG
+    else if ExtType = 'gif' then
+      ContentType := TRESTContentType.ctIMAGE_GIF
+    else if ExtType = 'mp4' then
+      ContentType := TRESTContentType.ctVIDEO_MP4
+    else
+      ContentType := TRESTContentType.ctNone;
+    edtStorageObject.Text := ExtractFilename(OpenDialog.FileName);
+    ObjectName := GetStorageFileName;
+    if not assigned(fStorage) then
+      fStorage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+    fUploadStream := TFileStream.Create(OpenDialog.FileName, fmOpenRead);
+    fStorage.UploadFromStream(fUploadStream, ObjectName, ContentType,
+      OnUpload, OnUploadError);
+  end;
+end;
+
+procedure TfmxFirebaseDemo.OnUpload(const ObjectName: string;
+  Obj: IStorageObject);
+begin
+  memoResp.Lines.Text := 'Firestore object asynchronous uploaded';
+  ShowFirestoreObject(Obj);
+  FreeAndNil(fUploadStream);
+end;
+
+procedure TfmxFirebaseDemo.OnUploadError(const RequestID, ErrorMsg: string);
+begin
+  memoResp.Lines.Text := 'Error while asynchronous upload of ' + RequestID;
+  memoResp.Lines.Add('Error: ' + ErrorMsg);
+  FreeAndNil(fUploadStream);
+end;
+
+procedure TfmxFirebaseDemo.btnDeleteSyncClick(Sender: TObject);
 var
   Storage: TFirebaseStorage;
 begin
   Storage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
   try
     Storage.DeleteSynchronous(GetStorageFileName);
-    memoResp.Lines.Text := GetStorageFileName + ' deleted';
-    btnGetStorage.Enabled := false;
+    memoResp.Lines.Text := GetStorageFileName + ' synchronous deleted';
+    btnDownloadSync.Enabled := false;
+    btnDownloadAsync.Enabled :=  false;
+    btnDeleteSync.Enabled := false;
+    btnDeleteAsync.Enabled := false;
   finally
     Storage.Free;
   end;
+end;
+
+procedure TfmxFirebaseDemo.btnDeleteAsyncClick(Sender: TObject);
+begin
+  if not assigned(fStorage) then
+    fStorage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+  fStorage.Delete(GetStorageFileName, OnDeleteStorage, OnDeleteStorageError);
+end;
+
+procedure TfmxFirebaseDemo.OnDeleteStorage(const ObjectName: string);
+begin
+  memoResp.Lines.Text := GetStorageFileName + ' asynchronous deleted';
+  btnDownloadSync.Enabled := false;
+  btnDownloadAsync.Enabled :=  false;
+  btnDeleteSync.Enabled := false;
+  btnDeleteAsync.Enabled := false;
+end;
+
+procedure TfmxFirebaseDemo.OnDeleteStorageError(const RequestID,
+  ErrorMsg: string);
+begin
+  memoResp.Lines.Text := 'Error while asynchronous delete of ' + RequestID;
+  memoResp.Lines.Add('Error: ' + ErrorMsg);
 end;
 
 {$ENDREGION}
