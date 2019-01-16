@@ -86,6 +86,7 @@ type
     procedure btnReconnectClick(Sender: TObject);
     procedure chbTestingChange(Sender: TObject);
     procedure tmrTestingTimer(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fUID: string;
@@ -115,6 +116,7 @@ type
     function GetClipboardPictAsBase64: string;
     procedure SetClipboardPictFromBase64(const Base64: string);
     function GetConfigAndPlatform: string;
+    procedure ExceptionHandler(Sender: TObject; E: Exception);
   end;
 
 var
@@ -153,6 +155,25 @@ resourcestring
 {$R *.LgXhdpiPh.fmx ANDROID}
 {$R *.iPhone55in.fmx IOS}
 {$R *.Macintosh.fmx MACOS}
+
+procedure TfmxMain.FormCreate(Sender: TObject);
+begin
+  Application.OnException := ExceptionHandler;
+end;
+
+procedure TfmxMain.ExceptionHandler(Sender: TObject; E: Exception);
+begin
+{$IFDEF DEBUG}
+  tmrTesting.Enabled := false;
+  chbTesting.IsChecked := false;
+{$ENDIF}
+  TabControlClipboard.ActiveTab := tabText;
+  memClipboardText.Lines.Clear;
+  memClipboardText.Lines.Add('Exception at: ' +
+    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now));
+  memClipboardText.Lines.Add(E.ClassName);
+  memClipboardText.Lines.Add(E.Message);
+end;
 
 procedure TfmxMain.FormShow(Sender: TObject);
 var
@@ -515,10 +536,15 @@ end;
 
 procedure TfmxMain.OnRecDataStop(Sender: TObject);
 begin
-  lblStatusRTDB.Text := 'Clipboard stopped';
+  lblStatusRTDB.Text := Format('Clipboard stopped at %s %d',
+    [TimeToStr(now), fReceivedUpdates]);
   fFirebaseEvent := nil;
   btnReconnect.Visible := true;
   btnSendToCloud.Visible := false;
+{$IFDEF DEBUG}
+  tmrTesting.Enabled := false;
+  chbTesting.IsChecked := false;
+{$ENDIF}
 end;
 
 procedure TfmxMain.btnFromClipBoardClick(Sender: TObject);
@@ -638,6 +664,7 @@ end;
 
 procedure TfmxMain.tmrTestingTimer(Sender: TObject);
 begin
+  TabControlClipboard.ActiveTab := tabText;
   memClipboardText.Lines.Clear;
   memClipboardText.Lines.Add('Stress Test');
   memClipboardText.Lines.Add('Number of received updates .. : ' +
