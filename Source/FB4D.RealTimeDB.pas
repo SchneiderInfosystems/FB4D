@@ -554,6 +554,7 @@ const
 {$IFDEF MACOS}
 var
   Params: TRequestResourceParam;
+  ErrMsg: string;
 begin
   try
     if assigned(fStream) then
@@ -622,21 +623,24 @@ begin
       Abort := true;
   except
     on e: Exception do
+    begin
+      ErrMsg := e.Message;
       if assigned(fOnListenError) then
         TThread.Queue(nil,
           procedure
           begin
-            fOnListenError(rsEvtParserFailed, e.Message)
+            fOnListenError(rsEvtParserFailed, ErrMsg)
           end)
       else
-        TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + e.Message);
+        TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + ErrMsg);
+    end;
   end;
 end;
 {$ELSE}
 var
   ss: TStringStream;
   Lines: TArray<string>;
-  EventName, Data: string;
+  EventName, Data, ErrMsg: string;
   Params: TRequestResourceParam;
 begin
   try
@@ -702,14 +706,17 @@ begin
       Abort := true;
   except
     on e: Exception do
+    begin
+      ErrMsg := e.Message;
       if assigned(fOnListenError) then
         TThread.Queue(nil,
           procedure
           begin
-            fOnListenError(rsEvtParserFailed, e.Message)
+            fOnListenError(rsEvtParserFailed, ErrMsg)
           end)
       else
-        TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + e.Message);
+        TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + ErrMsg);
+    end;
   end;
 end;
 {$ENDIF}
