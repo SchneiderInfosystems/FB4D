@@ -508,6 +508,8 @@ begin
           if fRequireTokenRefresh then
             fAuth.CheckAndRefreshTokenSynchronous;
           fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token), fStream);
+          fReadPos := 0;
+          fStream.Position := 0;
         end;
       except
         on e: exception do
