@@ -164,7 +164,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Left = 20.000000000000000000
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 10.000000000000000000
-        Position.Y = 1300.000000000000000000
+        Position.Y = 1730.000000000000000000
         Size.Width = 0.000000000000000000
       end
       inherited btnFromClipBoard: TButton
@@ -223,8 +223,13 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
           end
         end
       end
+      inherited chbTesting: TCheckBox
+        Position.X = 68.000000000000000000
+        Position.Y = 854.000000000000000000
+      end
       inherited lblSendStatusRTDB: TLabel
-        Size.Width = 655.000000000000000000
+        Position.Y = 850.000000000000000000
+        Size.Width = 155.000000000000000000
       end
     end
   end
