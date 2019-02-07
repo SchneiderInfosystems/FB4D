@@ -161,6 +161,7 @@ type
     Label26: TLabel;
     edtStorageObject: TEdit;
     edtStoragePath: TEdit;
+    btnDeleteUserAccount: TButton;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -204,6 +205,7 @@ type
     procedure btnPatchRTAsynchClick(Sender: TObject);
     procedure btnPostRTAsynchClick(Sender: TObject);
     procedure btnDelRTAsynchClick(Sender: TObject);
+    procedure btnDeleteUserAccountClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fFirestoreObject: IStorageObject;
@@ -559,6 +561,11 @@ begin
     Log.GoToTextEnd;
     result := false;
   end;
+end;
+
+procedure TfmxFirebaseDemo.btnDeleteUserAccountClick(Sender: TObject);
+begin
+  fAuth.DeleteCurrentUser(OnUserResp, OnUserError);
 end;
 {$ENDREGION}
 
