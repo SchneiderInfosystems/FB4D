@@ -485,7 +485,7 @@ function TRealTimeDB.ListenForValueEvents(ResourceParams: TRequestResourceParam;
   OnError: TOnRequestError): IFirebaseEvent;
 var
   URL: string;
-  Info: string;
+  Info, ErrMsg: string;
 begin
   InitListen;
   URL := fBaseURL + TFirebaseHelpers.EncodeResourceParams(ResourceParams) +
@@ -498,28 +498,32 @@ begin
   fClient.HandleRedirects := true;
   fClient.Accept := 'text/event-stream';
   fClient.OnReceiveData := OnRecData;
-  fStream := TMemoryStream.Create;
   fThread := TThread.CreateAnonymousThread(
     procedure
     begin
+      fStream := TMemoryStream.Create;
       try
         while not TThread.CurrentThread.CheckTerminated and not fStopWaiting do
         begin
+          fReadPos := 0;
           if fRequireTokenRefresh then
             fAuth.CheckAndRefreshTokenSynchronous;
           fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token), fStream);
-          fReadPos := 0;
-          fStream.Position := 0;
+          // reopen stream
+          FStream.Free;
+          fStream := TMemoryStream.Create;
         end;
       except
         on e: exception do
           if assigned(fOnListenError) then
+          begin
+            ErrMsg := e.Message;
             TThread.Queue(nil,
               procedure
               begin
-                fOnListenError(Info, e.Message);
+                fOnListenError(Info, ErrMsg);
               end)
-          else
+          end else
             TFirebaseHelpers.Log(Format(rsEvtListenerFailed, [Info, e.Message]));
       end;
       FreeAndNil(fStream);
