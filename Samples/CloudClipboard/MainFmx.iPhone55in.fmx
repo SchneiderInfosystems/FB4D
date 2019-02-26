@@ -18,16 +18,16 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
       inherited edtKey: TEdit
-        Size.Width = 418.000000000000000000
+        Size.Width = 0.000000000000000000
         Size.Height = 30.000000000000000000
       end
       inherited edtProjectID: TEdit
-        Size.Width = 418.000000000000000000
+        Size.Width = 0.000000000000000000
         Size.Height = 30.000000000000000000
       end
       inherited btnEnteredProjSettings: TButton
-        Position.X = 342.000000000000000000
-        Position.Y = 574.000000000000000000
+        Position.X = -230.000000000000000000
+        Position.Y = 1046.000000000000000000
         Size.Width = 44.000000000000000000
         Size.Height = 44.000000000000000000
       end
@@ -196,8 +196,13 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
           end
         end
       end
+      inherited chbTesting: TCheckBox
+        Position.X = -4.000000000000000000
+        Position.Y = 896.000000000000000000
+      end
       inherited lblSendStatusRTDB: TLabel
-        Size.Width = 655.000000000000000000
+        Position.Y = 892.000000000000000000
+        Size.Width = 83.000000000000000000
       end
     end
   end

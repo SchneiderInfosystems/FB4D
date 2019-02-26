@@ -111,6 +111,10 @@ type
       PhotoURL: string; OnResponse: TOnResponse; OnError: TOnRequestError);
     procedure ChangeProfileSynchronous(const EMail, Password, DisplayName,
       PhotoURL: string);
+    // Delete signed in user account
+    procedure DeleteCurrentUser(OnResponse: TOnResponse;
+      OnError: TOnRequestError);
+    procedure DeleteCurrentUserSynchronous;
     // Get User Data
     procedure GetUserData(OnGetUserData: TOnGetUserData;
       OnError: TOnRequestError);
@@ -190,6 +194,7 @@ resourcestring
   rsVerifyPasswordResetCode = 'Verify password reset code';
   rsConfirmPasswordReset = 'Confirm password reset';
   rsChangeProfile = 'Change profile for %s';
+  rsDeleteCurrentUser = 'Delete signed-in user account';
   rsRetriveUserList = 'Get account info';
   rsRefreshToken = 'Refresh token';
 
@@ -754,6 +759,59 @@ begin
     Response := nil;
     Params.Free;
     Request.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.DeleteCurrentUserSynchronous;
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+  ds: TStringDynArray;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Params.Add('key', ApiKey);
+    ds := ['deleteAccount'];
+    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
+      tmNoToken);
+    if not Response.StatusOk then
+      Response.CheckForJSONObj;
+    {$IFDEF DEBUG}
+    TFirebaseHelpers.Log(Response.ContentAsString);
+    {$ENDIF}
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.DeleteCurrentUser(OnResponse: TOnResponse;
+  OnError: TOnRequestError);
+var
+  Data: TJSONObject;
+  Params: TDictionary<string, string>;
+  Request: IFirebaseRequest;
+  ds: TStringDynArray;
+begin
+  Data := TJSONObject.Create;
+  Params := TDictionary<string, string>.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Params.Add('key', ApiKey);
+    Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, rsDeleteCurrentUser);
+    ds := ['deleteAccount'];
+    Request.SendRequest(ds, rmPost, Data, Params, tmNoToken, OnResponse,
+      OnError);
+  finally
+    Params.Free;
     Data.Free;
   end;
 end;

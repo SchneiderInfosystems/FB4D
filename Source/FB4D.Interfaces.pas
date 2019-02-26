@@ -344,6 +344,10 @@ type
       PhotoURL: string; OnResponse: TOnResponse; OnError: TOnRequestError);
     procedure ChangeProfileSynchronous(const EMail, Password, DisplayName,
       PhotoURL: string);
+    // Delete signed in user account
+    procedure DeleteCurrentUser(OnResponse: TOnResponse;
+      OnError: TOnRequestError);
+    procedure DeleteCurrentUserSynchronous;
     // Get User Data
     procedure GetUserData(OnGetUserData: TOnGetUserData;
       OnError: TOnRequestError);

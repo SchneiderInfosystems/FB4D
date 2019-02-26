@@ -30,7 +30,8 @@ uses
   System.Variants, System.JSON,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.StdCtrls,
   FMX.Objects, FMX.Controls.Presentation, FMX.Edit, FMX.TabControl,
-  FB4D.Interfaces, FMX.MultiView, FMX.ScrollBox, FMX.Memo, FMX.Ani;
+  FMX.MultiView, FMX.ScrollBox, FMX.Memo, FMX.Ani,
+  FB4D.Interfaces;
 
 type
   TfmxMain = class(TForm)
@@ -94,7 +95,7 @@ type
     fFirebaseEvent: IFirebaseEvent;
     fReceivedUpdates, fErrorCount: Int64;
     fStressTestCounter: Int64;
-    procedure CreateAuthenticationClass;
+	procedure CreateAuthenticationClass;
     procedure CreateRealTimeDBClass;
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
       Providers: TStrings);
@@ -113,6 +114,7 @@ type
     procedure StartListener;
     procedure StopListener;
     procedure SaveSettings;
+    function GetSettingFilename: string;
     function GetClipboardPictAsBase64: string;
     procedure SetClipboardPictFromBase64(const Base64: string);
     function GetConfigAndPlatform: string;
@@ -179,13 +181,7 @@ procedure TfmxMain.FormShow(Sender: TObject);
 var
   IniFile: TIniFile;
 begin
-  IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(
-{$IFDEF IOS}
-    TPath.GetDocumentsPath
-{$ELSE}
-    TPath.GetHomePath
-{$ENDIF}
-    ) + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini'));
+  IniFile := TIniFile.Create(GetSettingFilename);
   try
     edtKey.Text := IniFile.ReadString('FBProjectSettings', 'APIKey', '');
     edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
@@ -226,13 +222,7 @@ procedure TfmxMain.SaveSettings;
 var
   IniFile: TIniFile;
 begin
-  IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(
-{$IFDEF IOS}
-    TPath.GetDocumentsPath
-{$ELSE}
-    TPath.GetHomePath
-{$ENDIF}
-    ) + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini'));
+  IniFile := TIniFile.Create(GetSettingFilename);
   try
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
@@ -242,6 +232,17 @@ begin
   finally
     IniFile.Free;
   end;
+end;
+
+function TfmxMain.GetSettingFilename: string;
+begin
+  result := IncludeTrailingPathDelimiter(
+{$IFDEF IOS}
+    TPath.GetDocumentsPath
+{$ELSE}
+    TPath.GetHomePath
+{$ENDIF}
+    ) + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini');
 end;
 
 procedure TfmxMain.btnEnteredProjSettingsClick(Sender: TObject);
