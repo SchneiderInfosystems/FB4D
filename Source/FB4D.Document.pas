@@ -65,6 +65,9 @@ type
     function GetTimeStampValue(const FieldName: string): TDateTime;
     function GetTimeStampValueDef(const FieldName: string;
       Default: TDateTime): TDateTime;
+    function GetBoolValue(const FieldName: string): boolean;
+    function GetBoolValueDef(const FieldName: string;
+      Default: boolean): boolean;
     function GetArrayValues(const FieldName: string): TJSONObjects;
     procedure AddOrUpdateField(const FieldName: string; Val: TJSONValue);
     function AsJSON: TJSONObject;
@@ -420,6 +423,29 @@ begin
   Val := FieldByName(FieldName);
   if assigned(Val) then
     result := Val.GetValue<TDateTime>('timestampValue')
+  else
+    result := Default;
+end;
+
+function TFirestoreDocument.GetBoolValue(const FieldName: string): boolean;
+var
+  Val: TJSONValue;
+begin
+  Val := FieldByName(FieldName);
+  if assigned(Val) then
+    result := Val.GetValue<boolean>('booleanValue')
+  else
+    raise EFirestoreDocument.Create('Field ' + FieldName + ' not found');
+end;
+
+function TFirestoreDocument.GetBoolValueDef(const FieldName: string;
+  Default: boolean): boolean;
+var
+  Val: TJSONValue;
+begin
+  Val := FieldByName(FieldName);
+  if assigned(Val) then
+    result := Val.GetValue<boolean>('booleanValue')
   else
     result := Default;
 end;

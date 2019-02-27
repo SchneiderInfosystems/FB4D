@@ -163,6 +163,9 @@ type
     function GetDoubleValue(const FieldName: string): double;
     function GetDoubleValueDef(const FieldName: string;
       Default: double): double;
+    function GetBoolValue(const FieldName: string): boolean;
+    function GetBoolValueDef(const FieldName: string;
+      Default: boolean): boolean;
     function GetTimeStampValue(const FieldName: string): TDateTime;
     function GetTimeStampValueDef(const FieldName: string;
       Default: TDateTime): TDateTime;
