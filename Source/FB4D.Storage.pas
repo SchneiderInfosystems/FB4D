@@ -357,6 +357,8 @@ end;
 
 procedure TStorageObject.DownloadToStream(const RequestID: string; Stream: TStream;
   OnSuccess: TOnDownload; OnError: TOnDownloadError);
+var
+  ErrMsg: string;
 begin
   TThread.CreateAnonymousThread(
     procedure
@@ -396,11 +398,14 @@ begin
       except
         on e: exception do
           if assigned(OnError) then
+          begin
+            ErrMsg := e.Message;
             TThread.Queue(nil,
               procedure
               begin
-                OnError(self, e.Message);
+                OnError(self, ErrMsg);
               end);
+          end;
       end;
     end).Start;
 end;
