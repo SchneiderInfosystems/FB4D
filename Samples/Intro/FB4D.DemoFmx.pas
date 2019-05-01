@@ -162,6 +162,7 @@ type
     edtStorageObject: TEdit;
     edtStoragePath: TEdit;
     btnDeleteUserAccount: TButton;
+    chbComplexDoc: TCheckBox;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -270,7 +271,7 @@ implementation
 {$R *.fmx}
 
 uses
-  System.Generics.Collections, System.IniFiles, System.IOUtils,
+  System.Generics.Collections, System.IniFiles, System.IOUtils, System.RTTI,
   REST.Types,
   FB4D.Authentication, FB4D.OAuth, FB4D.Helpers,
   FB4D.Response, FB4D.Request, FB4D.Functions, FB4D.Storage,
@@ -297,6 +298,8 @@ begin
     edtStorageBucket.Text := IniFile.ReadString('Storage', 'Bucket', '');
     edtStorageObject.Text := IniFile.ReadString('Storage', 'Object', '');
     edtStoragePath.Text := IniFile.ReadString('Storage', 'Path', '');
+    edtCollection.Text := IniFile.ReadString('Firestore', 'Collection', '');
+    edtDocument.Text := IniFile.ReadString('Firestore', 'Document', '');
   finally
     IniFile.Free;
   end;
@@ -322,6 +325,8 @@ begin
     IniFile.WriteString('Storage', 'Bucket', edtStorageBucket.Text);
     IniFile.WriteString('Storage', 'Object', edtStorageObject.Text);
     IniFile.WriteString('Storage', 'Path', edtStoragePath.Text);
+    IniFile.WriteString('Firestore', 'Collection', edtCollection.Text);
+    IniFile.WriteString('Firestore', 'Document', edtDocument.Text);
   finally
     IniFile.Free;
   end;
@@ -916,8 +921,15 @@ begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   Doc := TFirestoreDocument.Create(edtDocument.Text);
-  Doc.AddOrUpdateField('TestField',
-    TJSONObject.Create(TJSONPair.Create('stringValue', 'TestValue')));
+  if chbComplexDoc.IsChecked then
+  begin
+    Doc.AddOrUpdateField('MyString', TJSONObject.SetStringValue('Text'));
+    Doc.AddOrUpdateField('MyInt', TJSONObject.SetIntegerValue(123));
+    Doc.AddOrUpdateField('MyReal', TJSONObject.SetDoubleValue(1.54));
+    Doc.AddOrUpdateField('MyBool', TJSONObject.SetBooleanValue(true));
+    Doc.AddOrUpdateField('MyTime', TJSONObject.SetTimeStampValue(now));
+  end else
+    Doc.AddOrUpdateField('TestField', TJSONObject.SetStringValue('TestValue'));
   fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text], Doc,
     nil, OnFirestoreInsertOrUpdate, OnFirestoreError);
 end;
@@ -939,7 +951,8 @@ end;
 
 procedure TfmxFirebaseDemo.ShowDocument(Doc: IFirestoreDocument);
 var
-  c: integer;
+  c, d: integer;
+  FieldName: string;
 begin
   if assigned(Doc) then
   begin
@@ -950,7 +963,52 @@ begin
     memFirestore.Lines.Add('Updated      : ' + DateTimeToStr(
       TFirebaseHelpers.ConvertToLocalDateTime(doc.updateTime)));
     for c := 0 to Doc.CountFields - 1 do
-      memFirestore.Lines.Add(Doc.FieldName(c) + ' : ' + Doc.Fields(c).ToJSON);
+    begin
+      FieldName := Doc.FieldName(c);
+      memFirestore.Lines.Add(FieldName + ' : ' +
+        TRttiEnumerationType.GetName<TFirestoreFieldType>(Doc.FieldType(c)) +
+        ' = ' + Doc.GetValue(c).ToJSON);
+      case Doc.FieldType(c) of
+        fftNull:
+          memFirestore.Lines.Add('  Null');
+        fftBoolean:
+          memFirestore.Lines.Add('  ' +
+            BoolToStr(Doc.GetBoolValue(FieldName), true));
+        fftInteger:
+          memFirestore.Lines.Add('  ' + Doc.GetIntegerValue(FieldName).ToString);
+        fftDouble:
+          memFirestore.Lines.Add('  ' + Doc.GetDoubleValue(FieldName).ToString);
+        fftTimeStamp:
+          memFirestore.Lines.Add('  ' +
+            DateTimeToStr(Doc.GetTimeStampValue(FieldName)));
+        fftString:
+          memFirestore.Lines.Add('  ' + Doc.GetStringValue(FieldName));
+        fftGeoPoint:
+          memFirestore.Lines.Add(Format('  [%f2.10°N, %f2.10°E]',
+            [Doc.GetGeoPoint(FieldName).Latitude,
+             Doc.GetGeoPoint(FieldName).Longitude]));
+        fftReference:
+          memFirestore.Lines.Add('  ' + Doc.GetReference(FieldName));
+        fftArray:
+          for d := 0 to Doc.GetArraySize(FieldName) - 1 do
+          begin
+            memFirestore.Lines.Add('  [' + d.ToString + ']: ' +
+              TRttiEnumerationType.GetName<TFirestoreFieldType>(
+                Doc.GetArrayType(FieldName, d)) + ' = ' +
+              Doc.GetArrayValue(FieldName, d).ToJSON);
+          end;
+        fftMap:
+          for d := 0 to Doc.GetMapSize(FieldName) - 1 do
+          begin
+            memFirestore.Lines.Add('  [' + d.ToString + ']: ' +
+              TRttiEnumerationType.GetName<TFirestoreFieldType>(
+                Doc.GetMapType(FieldName, d)) + ' = ' +
+              Doc.GetMapValue(FieldName, d).Value);
+          end;
+        fftBytes:
+          memFirestore.Lines.Add('not yet supported');
+      end;
+    end;
   end else
     memFirestore.Lines.Add('No document found');
 end;

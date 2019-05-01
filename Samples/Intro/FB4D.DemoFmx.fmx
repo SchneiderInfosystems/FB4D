@@ -1064,7 +1064,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       ExplicitSize.cx = 185.000000000000000000
       ExplicitSize.cy = 49.000000000000000000
       object btnGet: TButton
-        Position.X = 336.000000000000000000
+        Position.X = 480.000000000000000000
         Position.Y = 22.000000000000000000
         TabOrder = 0
         Text = 'Get'
@@ -1132,6 +1132,15 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 7
         Text = 'Insert / Update Doc'
         OnClick = btnInsertOrUpdateDocumentClick
+      end
+      object chbComplexDoc: TCheckBox
+        Position.X = 304.000000000000000000
+        Position.Y = 24.000000000000000000
+        Size.Width = 145.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+        Text = 'Create Complex Doc'
       end
     end
     object tabStorage: TTabItem
