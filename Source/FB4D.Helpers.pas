@@ -268,6 +268,8 @@ end;
 class procedure TFirebaseHelpers.SimpleDownload(const DownloadUrl: string;
   Stream: TStream; OnSuccess: TOnSimpleDownloadSuccess;
   OnError: TOnSimpleDownloadError);
+var
+  ErrMsg: string;
 begin
   TThread.CreateAnonymousThread(
     procedure
@@ -301,12 +303,14 @@ begin
         except
           on e: exception do
             if assigned(OnError) then
+            begin
+              ErrMsg := e.Message;
               TThread.Queue(nil,
                 procedure
                 begin
-                  OnError(DownloadUrl, e.Message);
+                  OnError(DownloadUrl, ErrMsg);
                 end)
-            else
+            end else
               TFirebaseHelpers.Log(
                 Format(rsFBFailureIn, [DownloadUrl, e.Message]));
         end;

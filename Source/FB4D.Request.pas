@@ -127,6 +127,7 @@ uses
 
 resourcestring
   rsTokenRefreshFailed = 'Authorisation token refresh failed';
+  rsConnectionToServerBroken = 'Connection to internet server broken';
 
 { TResendRequest }
 
@@ -328,7 +329,16 @@ begin
     begin
       try
         if Assigned(Obj) and (Obj is Exception) and assigned(OnRequestError) then
-          OnRequestError(RequestID, Exception(Obj).Message);
+        begin
+          if Pos('(12030)', Exception(Obj).Message) > 1 then
+            // Misleading error message from WinAPI
+            // 12030: ERROR_INTERNET_CONNECTION_ABORTED
+            // "The connection with the server has been terminated."
+            // German "Die Serververbindung wurde aufgrund eines Fehlers beendet."
+            OnRequestError(RequestID, rsConnectionToServerBroken)
+          else
+            OnRequestError(RequestID, Exception(Obj).Message);
+        end;
       finally
         FreeAndNil(SourceStr);
         FreeAndNil(Response);
