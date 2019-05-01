@@ -26,8 +26,7 @@ interface
 
 uses
   System.Classes, System.Types, System.SysUtils,
-  System.JSON,
-  System.Generics.Collections,
+  System.JSON, System.Sensors, System.Generics.Collections,
   REST.Types,
   JOSE.Core.JWT;
 
@@ -147,6 +146,9 @@ type
 
   EFirestoreDocument = class(Exception);
   TJSONObjects = array of TJSONObject;
+  TFirestoreFieldType = (fftNull, fftBoolean, fftInteger, fftDouble,
+    fftTimeStamp, fftString, fftBytes, fftReference, fftGeoPoint, fftArray,
+    fftMap);
   IFirestoreDocument = interface(IInterface)
     function DocumentName(FullPath: boolean): string;
     function CreateTime: TDateTime;
@@ -155,6 +157,10 @@ type
     function Fields(Ind: integer): TJSONValue;
     function FieldName(Ind: integer): string;
     function FieldByName(const FieldName: string): TJSONValue;
+    function FieldType(Ind: integer): TFirestoreFieldType;
+    function FieldTypeByName(const FieldName: string): TFirestoreFieldType;
+    function GetValue(Ind: integer): TJSONValue; overload;
+    function GetValue(const FieldName: string): TJSONValue; overload;
     function GetStringValue(const FieldName: string): string;
     function GetStringValueDef(const FieldName, Default: string): string;
     function GetIntegerValue(const FieldName: string): integer;
@@ -169,7 +175,19 @@ type
     function GetTimeStampValue(const FieldName: string): TDateTime;
     function GetTimeStampValueDef(const FieldName: string;
       Default: TDateTime): TDateTime;
-    function GetArrayValues(const FieldName: string): TJSONObjects;
+    function GetGeoPoint(const FieldName: string): TLocationCoord2D;
+    function GetReference(const FieldName: string): string;
+    function GetArrayValues(const FieldName: string;
+      ConvertMapValues: boolean = true): TJSONObjects;
+    function GetArraySize(const FieldName: string): integer;
+    function GetArrayType(const FieldName: string;
+      Index: integer): TFirestoreFieldType;
+    function GetArrayValue(const FieldName: string; Index: integer): TJSONValue;
+    function GetMapSize(const FieldName: string): integer;
+    function GetMapType(const FieldName: string;
+      Index: integer): TFirestoreFieldType;
+    function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
+    function GetMapValues(const FieldName: string): TJSONObjects;
     procedure AddOrUpdateField(const FieldName: string; Val: TJSONValue);
     function AsJSON: TJSONObject;
   end;
