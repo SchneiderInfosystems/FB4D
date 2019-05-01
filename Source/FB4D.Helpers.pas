@@ -483,7 +483,7 @@ end;
 class function TJSONHelpers.SetTimeStampValue(Val: TDateTime): TJSONObject;
 begin
   result := TJSONObject.Create(TJSONPair.Create('timestampValue',
-    TJSONNumber.Create(double(Val))));
+    TJSONString.Create(TFirebaseHelpers.CodeRFC3339DateTime(Val))));
 end;
 
 class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
