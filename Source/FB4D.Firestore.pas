@@ -375,6 +375,7 @@ begin
       Document := nil;
     if assigned(fOnInsertUpdateDocument) then
       fOnInsertUpdateDocument(RequestID, Document);
+    Document := nil;
   except
     on e: Exception do
     begin
