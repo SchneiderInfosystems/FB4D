@@ -154,9 +154,10 @@ type
     function CreateTime: TDateTime;
     function UpdateTime: TDatetime;
     function CountFields: integer;
-    function Fields(Ind: integer): TJSONValue;
+    function Fields(Ind: integer): TJSONObject;
     function FieldName(Ind: integer): string;
-    function FieldByName(const FieldName: string): TJSONValue;
+    function FieldByName(const FieldName: string): TJSONObject;
+    function FieldValue(Ind: integer): TJSONObject;
     function FieldType(Ind: integer): TFirestoreFieldType;
     function FieldTypeByName(const FieldName: string): TFirestoreFieldType;
     function GetValue(Ind: integer): TJSONValue; overload;
@@ -177,18 +178,22 @@ type
       Default: TDateTime): TDateTime;
     function GetGeoPoint(const FieldName: string): TLocationCoord2D;
     function GetReference(const FieldName: string): string;
-    function GetArrayValues(const FieldName: string;
-      ConvertMapValues: boolean = true): TJSONObjects;
+    function GetBytes(const FieldName: string): TBytes;
+    function GetArrayValues(const FieldName: string): TJSONObjects;
+    function GetArrayMapValues(const FieldName: string): TJSONObjects;
     function GetArraySize(const FieldName: string): integer;
     function GetArrayType(const FieldName: string;
       Index: integer): TFirestoreFieldType;
+    function GetArrayItem(const FieldName: string; Index: integer): TJSONPair;
     function GetArrayValue(const FieldName: string; Index: integer): TJSONValue;
     function GetMapSize(const FieldName: string): integer;
     function GetMapType(const FieldName: string;
       Index: integer): TFirestoreFieldType;
     function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
     function GetMapValues(const FieldName: string): TJSONObjects;
+    procedure AddOrUpdateField(Field: TJSONPair); overload;
     procedure AddOrUpdateField(const FieldName: string; Val: TJSONValue);
+      overload;
     function AsJSON: TJSONObject;
   end;
 

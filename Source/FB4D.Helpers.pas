@@ -26,7 +26,7 @@ unit FB4D.Helpers;
 interface
 
 uses
-  System.Classes, System.Types, System.SysUtils,
+  System.Classes, System.Types, System.SysUtils, System.Sensors,
   System.JSON, System.Generics.Collections;
 
 type
@@ -66,16 +66,56 @@ type
   end;
 
   TJSONHelpers = class helper for TJSONObject
-    function GetStringValue(const Name: string): string;
+    function GetStringValue: string; overload;
+    function GetStringValue(const Name: string): string; overload;
     class function SetStringValue(const Val: string): TJSONObject;
-    function GetIntegerValue(const Name: string): integer;
+    class function SetString(const VarName, Val: string): TJSONPair;
+    function GetIntegerValue: integer; overload;
+    function GetIntegerValue(const Name: string): integer; overload;
     class function SetIntegerValue(Val: integer): TJSONObject;
-    function GetBooleanValue(const Name: string): Boolean;
+    class function SetInteger(const VarName: string; Val: integer): TJSONPair;
+    function GetBooleanValue: Boolean; overload;
+    function GetBooleanValue(const Name: string): Boolean; overload;
     class function SetBooleanValue(Val: boolean): TJSONObject;
-    function GetDoubleValue(const Name: string): double;
+    class function SetBoolean(const VarName: string; Val: boolean): TJSONPair;
+    function GetDoubleValue: double; overload;
+    function GetDoubleValue(const Name: string): double; overload;
     class function SetDoubleValue(Val: double): TJSONObject;
-    function GetTimeStampValue(const Name: string): TDateTime;
+    class function SetDouble(const VarName: string; Val: double): TJSONPair;
+    function GetTimeStampValue(const Name: string): TDateTime; overload;
+    function GetTimeStampValue: TDateTime; overload;
     class function SetTimeStampValue(Val: TDateTime): TJSONObject;
+    class function SetTimeStamp(const VarName: string;
+      Val: TDateTime): TJSONPair;
+    class function SetNullValue: TJSONObject;
+    class function SetNull(const VarName: string): TJSONPair;
+    function GetReference: string; overload;
+    function GetReference(const Name: string): string; overload;
+    class function SetReferenceValue(const ProjectID, Ref: string): TJSONObject;
+    class function SetReference(const Name, ProjectID, Ref: string): TJSONPair;
+    function GetGeoPoint: TLocationCoord2D; overload;
+    function GetGeoPoint(const Name: string): TLocationCoord2D; overload;
+    class function SetGeoPointValue(Val: TLocationCoord2D): TJSONObject;
+    class function SetGeoPoint(const VarName: string;
+      Val: TLocationCoord2D): TJSONPair;
+    class function SetBytesValue(Val: TBytes): TJSONObject;
+    class function SetBytes(const VarName: string; Val: TBytes): TJSONPair;
+    function GetBytes: TBytes; overload;
+    function GetBytes(const Name: string): TBytes; overload;
+    class function SetMapValue(MapVars: array of TJSONPair): TJSONObject;
+    class function SetMap(const VarName: string;
+      MapVars: array of TJSONPair): TJSONPair;
+    function GetMapSize: integer; overload;
+    function GetMapSize(const Name: string): integer; overload;
+    function GetMapItem(Ind: integer): TJSONPair; overload;
+    function GetMapItem(const Name: string; Ind: integer): TJSONPair; overload;
+    class function SetArray(const VarName: string;
+      ArrayVars: array of TJSONValue): TJSONPair;
+    function GetArraySize: integer; overload;
+    function GetArraySize(const Name: string): integer; overload;
+    function GetArrayItem(Ind: integer): TJSONObject; overload;
+    function GetArrayItem(const Name: string; Ind: integer): TJSONObject;
+      overload;
   end;
 
 resourcestring
@@ -99,6 +139,11 @@ uses
   System.DateUtils, System.NetEncoding, System.JSONConsts, System.Math,
   System.Net.HttpClient,
   IdGlobalProtocols;
+
+resourcestring
+  rsArrayItemOutOfBounds = 'Array item %d out of bounds';
+  rsInvalidArrayItem = 'Invalid array item %d';
+  rsMapItemOutOfBounds = 'Map item %d out of bounds';
 
 { TFirestoreHelpers }
 
@@ -403,93 +448,6 @@ begin
   result.D4[7] := (D4b shr 24) and $FF; // 2 bits are missing
 end;
 
-{ TJSONHelpers }
-
-function TJSONHelpers.GetIntegerValue(const Name: string): integer;
-var
-  Val: TJSONValue;
-begin
-  Val := GetValue(Name);
-  if assigned(Val) then
-    result := Val.GetValue<integer>('integerValue')
-  else
-    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
-end;
-
-function TJSONHelpers.GetStringValue(const Name: string): string;
-var
-  Val: TJSONValue;
-begin
-  Val := GetValue(Name);
-  if assigned(Val) then
-    result := Val.GetValue<string>('stringValue')
-  else
-    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
-end;
-
-function TJSONHelpers.GetBooleanValue(const Name: string): Boolean;
-var
-  Val: TJSONValue;
-begin
-  Val := GetValue(Name);
-  if assigned(Val) then
-    result := Val.GetValue<boolean>('booleanValue')
-  else
-    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
-end;
-
-function TJSONHelpers.GetDoubleValue(const Name: string): double;
-var
-  Val: TJSONValue;
-begin
-  Val := GetValue(Name);
-  if assigned(Val) then
-    result := Val.GetValue<double>('doubleValue')
-  else
-    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
-end;
-
-function TJSONHelpers.GetTimeStampValue(const Name: string): TDateTime;
-var
-  Val: TJSONValue;
-begin
-  Val := GetValue(Name);
-  if assigned(Val) then
-    result := Val.GetValue<TDateTime>('timestampValue')
-  else
-    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
-end;
-
-class function TJSONHelpers.SetStringValue(const Val: string): TJSONObject;
-begin
-  result := TJSONObject.Create(TJSONPair.Create('stringValue',
-    TJSONString.Create(Val)));
-end;
-
-class function TJSONHelpers.SetIntegerValue(Val: integer): TJSONObject;
-begin
-  result := TJSONObject.Create(TJSONPair.Create('integerValue',
-    TJSONNumber.Create(Val)));
-end;
-
-class function TJSONHelpers.SetDoubleValue(Val: double): TJSONObject;
-begin
-  result := TJSONObject.Create(TJSONPair.Create('doubleValue',
-    TJSONNumber.Create(Val)));
-end;
-
-class function TJSONHelpers.SetBooleanValue(Val: boolean): TJSONObject;
-begin
-  result := TJSONObject.Create(TJSONPair.Create('booleanValue',
-    TJSONBool.Create(Val)));
-end;
-
-class function TJSONHelpers.SetTimeStampValue(Val: TDateTime): TJSONObject;
-begin
-  result := TJSONObject.Create(TJSONPair.Create('timestampValue',
-    TJSONString.Create(TFirebaseHelpers.CodeRFC3339DateTime(Val))));
-end;
-
 class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
 // Returns True if the email address is valid
 // Inspired by Ernesto D'Spirito
@@ -579,6 +537,385 @@ begin
     end;
   end;
   result := (State = STATE_SUBDOMAIN) and (subdomains >= 2);
+end;
+
+{ TJSONHelpers }
+
+function TJSONHelpers.GetIntegerValue: integer;
+begin
+  result := GetValue<integer>('integerValue');
+end;
+
+function TJSONHelpers.GetIntegerValue(const Name: string): integer;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetIntegerValue
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetStringValue: string;
+begin
+  result := GetValue<string>('stringValue');
+end;
+
+function TJSONHelpers.GetStringValue(const Name: string): string;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetStringValue
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetBooleanValue: Boolean;
+begin
+  result := GetValue<boolean>('booleanValue');
+end;
+
+function TJSONHelpers.GetBooleanValue(const Name: string): Boolean;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetBooleanValue
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetDoubleValue: double;
+begin
+  result := GetValue<double>('doubleValue');
+end;
+
+function TJSONHelpers.GetDoubleValue(const Name: string): double;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetDoubleValue
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetTimeStampValue: TDateTime;
+begin
+  result := GetValue<TDateTime>('timestampValue');
+end;
+
+function TJSONHelpers.GetTimeStampValue(const Name: string): TDateTime;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetTimeStampValue
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetGeoPoint: TLocationCoord2D;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue<TJSONValue>('geoPointValue');
+  result := TLocationCoord2D.Create(Val.GetValue<double>('latitude'),
+    Val.GetValue<double>('longitude'))
+end;
+
+function TJSONHelpers.GetGeoPoint(const Name: string): TLocationCoord2D;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetGeoPoint
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+class function TJSONHelpers.SetStringValue(const Val: string): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('stringValue',
+    TJSONString.Create(Val)));
+end;
+
+class function TJSONHelpers.SetString(const VarName, Val: string): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetStringValue(Val));
+end;
+
+class function TJSONHelpers.SetIntegerValue(Val: integer): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('integerValue',
+    TJSONNumber.Create(Val)));
+end;
+
+class function TJSONHelpers.SetInteger(const VarName: string;
+  Val: integer): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetIntegerValue(Val));
+end;
+
+class function TJSONHelpers.SetDoubleValue(Val: double): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('doubleValue',
+    TJSONNumber.Create(Val)));
+end;
+
+class function TJSONHelpers.SetDouble(const VarName: string;
+  Val: double): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetDoubleValue(Val));
+end;
+
+class function TJSONHelpers.SetBooleanValue(Val: boolean): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('booleanValue',
+    TJSONBool.Create(Val)));
+end;
+
+class function TJSONHelpers.SetBoolean(const VarName: string;
+  Val: boolean): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetBooleanValue(Val));
+end;
+
+class function TJSONHelpers.SetTimeStampValue(Val: TDateTime): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('timestampValue',
+    TJSONString.Create(TFirebaseHelpers.CodeRFC3339DateTime(Val))));
+end;
+
+class function TJSONHelpers.SetTimeStamp(const VarName: string;
+  Val: TDateTime): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetTimeStampValue(Val));
+end;
+
+class function TJSONHelpers.SetNullValue: TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('nullValue', TJSONNull.Create));
+end;
+
+class function TJSONHelpers.SetNull(const VarName: string): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetNullValue);
+end;
+
+function TJSONHelpers.GetReference: string;
+begin
+  result := GetValue<string>('referenceValue');
+end;
+
+function TJSONHelpers.GetReference(const Name: string): string;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetReference
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+class function TJSONHelpers.SetReferenceValue(const ProjectID,
+  Ref: string): TJSONObject;
+
+  function ConvertRefPath(const ProjectID, Reference: string): string;
+  begin
+    result := 'projects/' + ProjectID + '/databases/(default)/documents';
+    if Reference.StartsWith('/') then
+      result := result + Reference
+    else
+      result := result + '/' + Reference;
+  end;
+
+begin
+  result := TJSONObject.Create(TJSONPair.Create('referenceValue',
+    TJSONString.Create(ConvertRefPath(ProjectID, Ref))));
+end;
+
+class function TJSONHelpers.SetReference(const Name, ProjectID,
+  Ref: string): TJSONPair;
+begin
+  result := TJSONPair.Create(Name, SetReferenceValue(ProjectID, Ref));
+end;
+
+class function TJSONHelpers.SetGeoPointValue(Val: TLocationCoord2D): TJSONObject;
+var
+  Geo: TJSONObject;
+begin
+  Geo := TJSONObject.Create;
+  Geo.AddPair('latitude', TJSONNumber.Create(Val.Latitude));
+  Geo.AddPair('longitude', TJSONNumber.Create(Val.Longitude));
+  result := TJSONObject.Create(TJSONPair.Create('geoPointValue', Geo));
+end;
+
+class function TJSONHelpers.SetGeoPoint(const VarName: string;
+  Val: TLocationCoord2D): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetGeoPointValue(Val));
+end;
+
+class function TJSONHelpers.SetBytesValue(Val: TBytes): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('bytesValue',
+    TJSONString.Create(TNetEncoding.Base64.EncodeBytesToString(Val))));
+end;
+
+class function TJSONHelpers.SetBytes(const VarName: string;
+  Val: TBytes): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetBytesValue(Val));
+end;
+
+function TJSONHelpers.GetBytes: TBytes;
+begin
+  result := TNetEncoding.Base64.DecodeStringToBytes(
+    GetValue<string>('bytesValue'));
+end;
+
+function TJSONHelpers.GetBytes(const Name: string): TBytes;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetBytes
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetMapSize: integer;
+begin
+  result := GetValue<TJSONObject>('mapValue').
+    GetValue<TJSONObject>('fields').Count;
+end;
+
+function TJSONHelpers.GetMapSize(const Name: string): integer;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+  begin
+    result := (Val as TJSONObject).GetMapSize
+  end else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetMapItem(Ind: integer): TJSONPair;
+var
+  Obj: TJSONObject;
+begin
+  Obj := GetValue<TJSONObject>('mapValue').
+    GetValue<TJSONObject>('fields');
+  if (Ind < 0) or (Ind >= Obj.Count) then
+    raise EJSONException.CreateFmt(rsMapItemOutOfBounds, [Ind]);
+  result := Obj.Pairs[Ind];
+end;
+
+function TJSONHelpers.GetMapItem(const Name: string; Ind: integer): TJSONPair;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+  begin
+    result := (Val as TJSONObject).GetMapItem(Ind)
+  end else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+class function TJSONHelpers.SetMapValue(
+  MapVars: array of TJSONPair): TJSONObject;
+var
+  Map: TJSONObject;
+  c: integer;
+begin
+  Map := TJSONObject.Create;
+  for c := 0 to length(mapVars) - 1 do
+    Map.AddPair(MapVars[c]);
+  result := TJSONObject.Create(TJSONPair.Create('mapValue',
+    TJSONObject.Create(TJSONPair.Create('fields', Map))));
+end;
+
+class function TJSONHelpers.SetMap(const VarName: string;
+  MapVars: array of TJSONPair): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetMapValue(MapVars));
+end;
+
+class function TJSONHelpers.SetArray(const VarName: string;
+  ArrayVars: array of TJSONValue): TJSONPair;
+
+  function SetArrayValue(ArrayVars: array of TJSONValue): TJSONObject;
+  var
+    Arr: TJSONArray;
+    c: integer;
+  begin
+    Arr := TJSONArray.Create;
+    for c := 0 to length(ArrayVars) - 1 do
+      Arr.AddElement(ArrayVars[c]);
+    result := TJSONObject.Create(TJSONPair.Create('arrayValue',
+      TJSONObject.Create(TJSONPair.Create('values', Arr))));
+  end;
+
+begin
+  result := TJSONPair.Create(VarName, SetArrayValue(ArrayVars));
+end;
+
+function TJSONHelpers.GetArraySize: integer;
+begin
+  result := GetValue<TJSONObject>('arrayValue').
+    GetValue<TJSONArray>('values').Count;
+end;
+
+function TJSONHelpers.GetArraySize(const Name: string): integer;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+  begin
+    result := (Val as TJSONObject).GetArraySize
+  end else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetArrayItem(Ind: integer): TJSONObject;
+var
+  Arr: TJSONArray;
+  Obj: TJSONObject;
+begin
+  Arr := GetValue<TJSONObject>('arrayValue').GetValue<TJSONArray>('values');
+  if (Ind < 0) or (Ind >= Arr.Count) then
+    raise EJSONException.CreateFmt(rsArrayItemOutOfBounds, [Ind]);
+  if not(Arr.Items[Ind] is TJSONObject) then
+    raise EJSONException.CreateFmt(rsInvalidArrayItem, [Ind]);
+  Obj := Arr.Items[Ind] as TJSONObject;
+  if Obj.Count <> 1 then
+    raise EJSONException.CreateFmt(rsInvalidArrayItem, [Ind]);
+  result := Obj;
+end;
+
+function TJSONHelpers.GetArrayItem(const Name: string; Ind: integer): TJSONObject;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetArrayItem(Ind)
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
 end;
 
 end.
