@@ -1,6 +1,6 @@
 # How Can I Contribute?
 
-Every contribution are welcome!
+Every contribution is welcome!
 
 ## Reporting Bugs
 This section guides you through submitting a bug report for FB4D. Following these guidelines helps developers and the community understand your report, reproduce the behavior and find related reports.
