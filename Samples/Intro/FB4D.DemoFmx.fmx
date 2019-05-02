@@ -1064,10 +1064,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       ExplicitSize.cx = 185.000000000000000000
       ExplicitSize.cy = 49.000000000000000000
       object btnGet: TButton
-        Position.X = 480.000000000000000000
+        Position.X = 464.000000000000000000
         Position.Y = 22.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
         TabOrder = 0
-        Text = 'Get'
+        Text = 'Get Document'
         OnClick = btnGetClick
       end
       object edtCollection: TEdit
@@ -1119,7 +1122,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 6
+        TabOrder = 7
         Text = 'Create Document'
         OnClick = btnCreateDocumentClick
       end
@@ -1129,7 +1132,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 7
+        TabOrder = 8
         Text = 'Insert / Update Doc'
         OnClick = btnInsertOrUpdateDocumentClick
       end
@@ -1139,8 +1142,28 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 145.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 8
+        TabOrder = 9
         Text = 'Create Complex Doc'
+      end
+      object btnDeleteDoc: TButton
+        Position.X = 720.000000000000000000
+        Position.Y = 23.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 6
+        Text = 'Delete Document'
+        OnClick = btnDeleteDocClick
+      end
+      object btnPatchDoc: TButton
+        Position.X = 592.000000000000000000
+        Position.Y = 22.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 10
+        Text = 'PatchDocument'
+        OnClick = btnPatchDocClick
       end
     end
     object tabStorage: TTabItem

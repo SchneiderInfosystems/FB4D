@@ -27,7 +27,7 @@ program DemoFB4D;
 
 uses
   {$IFDEF DEBUG}
-  FastMM4,
+//  FastMM4,
   {$ENDIF }
   System.StartUpCopy,
   FMX.Forms,
