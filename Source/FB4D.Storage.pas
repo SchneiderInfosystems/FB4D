@@ -164,14 +164,14 @@ function TFirebaseStorage.UploadSynchronousFromStream(Stream: TStream;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
-  QueryParams: TDictionary<string, string>;
+  QueryParams: TQueryParams;
 begin
   result := nil;
   Request := TFirebaseRequest.Create(BaseURL, '', fAuth);
-  QueryParams := TDictionary<string, string>.Create;
+  QueryParams := TQueryParams.Create;
   try
-    QueryParams.Add('uploadType', 'media');
-    QueryParams.Add('name',  ObjectName);
+    QueryParams.Add('uploadType', ['media']);
+    QueryParams.Add('name',  [ObjectName]);
     Response := Request.SendRequestSynchronous([], rmPost, Stream, ContentType,
       QueryParams);
     {$IFDEF DEBUG}
@@ -188,7 +188,7 @@ procedure TFirebaseStorage.UploadFromStream(Stream: TStream;
   OnUpload: TOnUploadFromStream; OnUploadError: TOnRequestError);
 var
   Request: IFirebaseRequest;
-  QueryParams: TDictionary<string, string>;
+  QueryParams: TQueryParams;
 begin
   fOnUpload := OnUpload;
   fOnUploadError := OnUploadError;
@@ -199,10 +199,10 @@ begin
   // from the Base URL and added as first resource parameter.
   Request := TFirebaseRequest.Create(Copy(BaseURL, 1, length(BaseURL) - 2),
     ObjectName, fAuth);
-  QueryParams := TDictionary<string, string>.Create;
+  QueryParams := TQueryParams.Create;
   try
-    QueryParams.Add('uploadType', 'media');
-    QueryParams.Add('name',  ObjectName);
+    QueryParams.Add('uploadType', ['media']);
+    QueryParams.Add('name',  [ObjectName]);
     Request.SendRequest([BaseURL[length(BaseURL)]], rmPost, Stream, ContentType,
       QueryParams, tmBearer, OnUploadFromStream, fOnUploadError);
   finally
@@ -320,12 +320,12 @@ end;
 
 function TStorageObject.DownloadUrl: string;
 var
-  QueryParams: TDictionary<string, string>;
+  QueryParams: TQueryParams;
 begin
-  QueryParams := TDictionary<string, string>.Create;
+  QueryParams := TQueryParams.Create;
   try
-    QueryParams.Add('alt', 'media');
-    QueryParams.Add('token', DownloadToken);
+    QueryParams.Add('alt', ['media']);
+    QueryParams.Add('token', [DownloadToken]);
     result := Format(GOOGLE_STORAGE, [Bucket]) + '/' +
       TNetEncoding.URL.Encode(ObjectName) +
       TFirebaseHelpers.EncodeQueryParams(QueryParams);

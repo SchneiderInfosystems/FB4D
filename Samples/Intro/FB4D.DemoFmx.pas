@@ -1015,8 +1015,16 @@ begin
   Doc := TFirestoreDocument.Create(edtDocument.Text);
   Doc.AddOrUpdateField('patchedField',
     TJSONObject.SetStringValue('This field is added while patch'));
-  fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
-    ['patchedField'], OnFirestoreInsertOrUpdate, OnFirestoreError);
+  if chbComplexDoc.IsChecked then
+    Doc.AddOrUpdateField(TJSONObject.SetString('patchedField2',
+      'If this works issue #10 is solved👍'));
+  if not chbComplexDoc.IsChecked then
+    fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
+      ['patchedField'], OnFirestoreInsertOrUpdate, OnFirestoreError)
+  else
+    fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
+      ['patchedField', 'patchedField2'], OnFirestoreInsertOrUpdate,
+      OnFirestoreError);
   Doc := nil;
 end;
 
@@ -1172,25 +1180,25 @@ begin
   if (cboOrderBy.ItemIndex = 1) and (not edtColumName.Text.IsEmpty) then
   begin
     result := TQueryParams.Create;
-    result.Add(cGetQueryParamOrderBy, '"' + edtColumName.Text + '"');
+    result.Add(cGetQueryParamOrderBy, ['"' + edtColumName.Text + '"']);
   end
   else if cboOrderBy.ItemIndex > 1 then
   begin
     result := TQueryParams.Create;
     result.Add(cGetQueryParamOrderBy,
-      Format(sQuery, [cboOrderBy.Items[cboOrderBy.ItemIndex]]))
+      [Format(sQuery, [cboOrderBy.Items[cboOrderBy.ItemIndex]])])
   end;
   if spbLimitToFirst.Value > 0 then
   begin
     if not assigned(result) then
       result := TQueryParams.Create;
-    result.Add(cGetQueryParamLimitToFirst, spbLimitToFirst.Value.toString);
+    result.Add(cGetQueryParamLimitToFirst, [spbLimitToFirst.Value.toString]);
   end;
   if spbLimitToLast.Value > 0 then
   begin
     if not assigned(result) then
       result := TQueryParams.Create;
-    result.Add(cGetQueryParamLimitToLast, spbLimitToLast.Value.toString);
+    result.Add(cGetQueryParamLimitToLast, [spbLimitToLast.Value.toString]);
   end;
 end;
 

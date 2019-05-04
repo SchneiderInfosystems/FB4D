@@ -70,12 +70,12 @@ type
     procedure Get(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
-      QueryParams: TDictionary<string, string> = nil): IFirestoreDocuments;
+      QueryParams: TQueryParams = nil): IFirestoreDocuments;
     procedure CreateDocument(DocumentPath: TRequestResourceParam;
-      QueryParams: TDictionary<string, string>; OnDocument: TOnDocument;
+      QueryParams: TQueryParams; OnDocument: TOnDocument;
       OnRequestError: TOnRequestError);
     function CreateDocumentSynchronous(DocumentPath: TRequestResourceParam;
-      QueryParams: TDictionary<string, string> = nil): IFirestoreDocument;
+      QueryParams: TQueryParams = nil): IFirestoreDocument;
     procedure InsertOrUpdateDocument(DocumentPath: TRequestResourceParam;
       Document: IFirestoreDocument; QueryParams: TQueryParams;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError);
@@ -286,7 +286,7 @@ begin
 end;
 
 procedure TFirestoreDatabase.CreateDocument(DocumentPath: TRequestResourceParam;
-  QueryParams: TDictionary<string, string>; OnDocument: TOnDocument;
+  QueryParams: TQueryParams; OnDocument: TOnDocument;
   OnRequestError: TOnRequestError);
 var
   Request: IFirebaseRequest;
@@ -326,7 +326,7 @@ end;
 
 function TFirestoreDatabase.CreateDocumentSynchronous(
   DocumentPath: TRequestResourceParam;
-  QueryParams: TDictionary<string, string>): IFirestoreDocument;
+  QueryParams: TQueryParams): IFirestoreDocument;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
@@ -416,7 +416,6 @@ procedure TFirestoreDatabase.PatchDocument(DocumentPath: TRequestResourceParam;
 var
   Request: IFirebaseRequest;
   QueryParams: TQueryParams;
-  m: string;
 begin
   fOnPatchDocument := OnDocument;
   fOnPatchError := OnRequestError;
@@ -425,13 +424,12 @@ begin
 {$IFDEF DEBUG}
   TFirebaseHelpers.Log(' Document: ' + DocumentPart.AsJSON.ToJSON);
 {$ENDIF}
-  QueryParams := TDictionary<string, string>.Create;
+  QueryParams := TQueryParams.Create;
   try
-    for m in UpdateMask do
-      QueryParams.Add('updateMask.fieldPaths', m);
-    for m in Mask do
-    if assigned(Mask) then
-      QueryParams.Add('mask.fieldPaths', m);
+    if length(UpdateMask) > 0 then
+      QueryParams.Add('updateMask.fieldPaths', UpdateMask);
+    if length(Mask) > 0 then
+      QueryParams.Add('mask.fieldPaths', Mask);
     Request.SendRequest(DocumentPath, rmPatch, DocumentPart.AsJSON, QueryParams,
       tmBearer, OnPatchResponse, OnRequestError);
   finally
@@ -470,7 +468,6 @@ function TFirestoreDatabase.PatchDocumentSynchronous(
 var
   Request: IFirebaseRequest;
   QueryParams: TQueryParams;
-  m: string;
   Response: IFirebaseResponse;
 begin
   result := nil;
@@ -478,13 +475,12 @@ begin
 {$IFDEF DEBUG}
   TFirebaseHelpers.Log(' Document: ' + DocumentPart.AsJSON.ToJSON);
 {$ENDIF}
-  QueryParams := TDictionary<string, string>.Create;
+  QueryParams := TQueryParams.Create;
   try
-    for m in UpdateMask do
-      QueryParams.Add('updateMask.fieldPaths', m);
-    for m in Mask do
-    if assigned(Mask) then
-      QueryParams.Add('mask.fieldPaths', m);
+    if length(UpdateMask) > 0 then
+      QueryParams.Add('updateMask.fieldPaths', UpdateMask);
+    if length(Mask) > 0 then
+      QueryParams.Add('mask.fieldPaths', Mask);
     Response := Request.SendRequestSynchronous(DocumentPath, rmPatch,
       DocumentPart.AsJSON, QueryParams);
   finally

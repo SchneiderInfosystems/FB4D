@@ -27,7 +27,8 @@ interface
 
 uses
   System.Classes, System.Types, System.SysUtils, System.Sensors,
-  System.JSON, System.Generics.Collections;
+  System.JSON, System.Generics.Collections,
+  FB4D.Interfaces;
 
 type
   TOnSimpleDownloadError = procedure(const DownloadURL, ErrMsg: string) of
@@ -40,10 +41,8 @@ type
     class function ConvertRFC5322ToLocalDateTime(DateTime: string): TDateTime;
     class function ConvertTimeStampToLocalDateTime(Timestamp: Int64): TDateTime;
     class function ConvertToLocalDateTime(DateTimeStampUTC: TDateTime): TDateTime;
-    class function EncodeQueryParams(
-      QueryParams: TDictionary<string, string>): string;
-    class function EncodeQueryParamsWithToken(
-      QueryParams: TDictionary<string, string>;
+    class function EncodeQueryParams(QueryParams: TQueryParams): string;
+    class function EncodeQueryParamsWithToken(QueryParams: TQueryParams;
       const EncodedToken: string): string;
     class function EncodeResourceParams(ResourceParams: TStringDynArray): string;
     class function AddParamToResParams(ResourceParams: TStringDynArray;
@@ -190,34 +189,36 @@ begin
 end;
 
 class function TFirebaseHelpers.EncodeQueryParams(
-  QueryParams: TDictionary<string, string>): string;
+  QueryParams: TQueryParams): string;
 var
-  Param: TPair<string, string>;
+  Param: TPair<string, TStringDynArray>;
+  ParVal: string;
 begin
   if (not assigned(QueryParams)) or not(QueryParams.Count > 0) then
     exit('');
   result := '?';
   for Param in QueryParams do
-  begin
-    if result <> '?' then
-      result := result + '&';
-    result := result + TNetEncoding.URL.Encode(Param.Key) + '=' +
-      TNetEncoding.URL.Encode(Param.Value);
-  end;
+    for ParVal in Param.Value do
+    begin
+      if result <> '?' then
+        result := result + '&';
+      result := result + TNetEncoding.URL.Encode(Param.Key) + '=' +
+        TNetEncoding.URL.Encode(ParVal);
+    end;
 end;
 
 class function TFirebaseHelpers.EncodeQueryParamsWithToken(
-  QueryParams: TDictionary<string, string>; const EncodedToken: string): string;
+  QueryParams: TQueryParams; const EncodedToken: string): string;
 var
-  Param: TPair<string, string>;
+  Param: TPair<string, TStringDynArray>;
+  ParVal: string;
 begin
   result := '?auth=' + EncodedToken;
   if assigned(QueryParams) then
     for Param in QueryParams do
-    begin
-      result := result + '&' + TNetEncoding.URL.Encode(Param.Key) + '=' +
-        TNetEncoding.URL.Encode(Param.Value);
-    end;
+      for ParVal in Param.Value do
+        result := result + '&' + TNetEncoding.URL.Encode(Param.Key) + '=' +
+          TNetEncoding.URL.Encode(ParVal);
 end;
 
 class function TFirebaseHelpers.EncodeResourceParams(

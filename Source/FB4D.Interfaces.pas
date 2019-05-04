@@ -63,7 +63,7 @@ type
     function GetServerTime(TimeZone: TTimeZone): TDateTime;
   end;
 
-  TQueryParams = TDictionary<string, string>;
+  TQueryParams = TDictionary<string, TStringDynArray>;
   TTokenMode = (tmNoToken, tmBearer, tmAuthParam);
   IFirebaseRequest = interface;
   TOnResponse = procedure(const RequestID: string;
@@ -73,11 +73,11 @@ type
   IFirebaseRequest = interface(IInterface)
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
     function SendRequestSynchronous(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue = nil;
@@ -230,16 +230,17 @@ type
   IFirestoreDatabase = interface(IInterface)
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
-    function RunQuerySynchronous(StructuredQuery: IStructuredQuery): IFirestoreDocuments;
+    function RunQuerySynchronous(
+      StructuredQuery: IStructuredQuery): IFirestoreDocuments;
     procedure Get(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirestoreDocuments;
     procedure CreateDocument(DocumentPath: TRequestResourceParam;
-      QueryParams: TDictionary<string, string>; OnDocument: TOnDocument;
+      QueryParams: TQueryParams; OnDocument: TOnDocument;
       OnRequestError: TOnRequestError);
     function CreateDocumentSynchronous(DocumentPath: TRequestResourceParam;
-      QueryParams: TDictionary<string, string> = nil): IFirestoreDocument;
+      QueryParams: TQueryParams = nil): IFirestoreDocument;
     procedure InsertOrUpdateDocument(DocumentPath: TRequestResourceParam;
       Document: IFirestoreDocument; QueryParams: TQueryParams;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError);

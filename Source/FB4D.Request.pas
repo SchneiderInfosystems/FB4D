@@ -44,15 +44,15 @@ type
     function EncodeToken: string;
     function InternalSendRequestSynchronous(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
-      QueryParams: TDictionary<string, string> = nil;
+      QueryParams: TQueryParams = nil;
       TokenMode: TTokenMode = tmBearer): IFirebaseResponse; overload;
     procedure InternalSendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
     procedure InternalSendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
     procedure SendRequestAfterTokenRefresh(TokenRefreshed: boolean);
     procedure SendStreamRequestAfterTokenRefresh(TokenRefreshed: boolean);
@@ -65,19 +65,19 @@ type
       Auth: IFirebaseAuthentication = nil);
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
     function SendRequestSynchronous(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue = nil;
-      QueryParams: TDictionary<string, string> = nil;
+      QueryParams: TQueryParams = nil;
       TokenMode: TTokenMode = tmBearer): IFirebaseResponse; overload;
     function SendRequestSynchronous(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
-      QueryParams: TDictionary<string, string> = nil;
+      QueryParams: TQueryParams = nil;
       TokenMode: TTokenMode = tmBearer): IFirebaseResponse; overload;
   end;
 
@@ -91,18 +91,18 @@ type
     fData: TJSONValue;
     fDataStream: TStream;
     fContentType: TRESTContentType;
-    fQueryParams: TDictionary<string, string>;
+    fQueryParams: TQueryParams;
     fTokenMode: TTokenMode;
     fOnResponse: TOnResponse;
     fOnRequestError: TOnRequestError;
   public
-    constructor Create(Req: TFirebaseRequest; ResParams: array of string;
-      Method: TRESTRequestMethod; Data: TJSONValue;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
-    constructor Create(Req: TFirebaseRequest; ResParams: array of string;
+    constructor Create(Req: TFirebaseRequest; ResParams: TRequestResourceParam;
+      Method: TRESTRequestMethod; Data: TJSONValue; QueryParams: TQueryParams;
+      TokenMode: TTokenMode; OnResponse: TOnResponse;
+      OnRequestError: TOnRequestError); overload;
+    constructor Create(Req: TFirebaseRequest; ResParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
-      QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
     destructor Destroy; override;
     property BaseURI: string read fBaseURI;
@@ -113,7 +113,7 @@ type
     property Data: TJSONValue read fData;
     property DataStream: TStream read fDataStream;
     property ContentType: TRESTContentType read fContentType;
-    property QueryParams: TDictionary<string, string> read fQueryParams;
+    property QueryParams: TQueryParams read fQueryParams;
     property TokenMode: TTokenMode read fTokenMode;
     property OnResponse: TOnResponse read fOnResponse;
     property OnRequestError: TOnRequestError read fOnRequestError;
@@ -132,8 +132,8 @@ resourcestring
 { TResendRequest }
 
 constructor TResendRequest.Create(Req: TFirebaseRequest;
-  ResParams: array of string; Method: TRESTRequestMethod; Data: TJSONValue;
-  QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+  ResParams: TRequestResourceParam; Method: TRESTRequestMethod;
+  Data: TJSONValue; QueryParams: TQueryParams; TokenMode: TTokenMode;
   OnResponse: TOnResponse; OnRequestError: TOnRequestError);
 var
   c: integer;
@@ -150,7 +150,7 @@ begin
     fData := Data.Clone as TJSONValue;
   if assigned(QueryParams) then
   begin
-    fQueryParams := TDictionary<string, string>.Create;
+    fQueryParams := TQueryParams.Create;
     for key in QueryParams.Keys do
       fQueryParams.Add(key, QueryParams.Items[key]);
   end;
@@ -160,8 +160,8 @@ begin
 end;
 
 constructor TResendRequest.Create(Req: TFirebaseRequest;
-  ResParams: array of string; Method: TRESTRequestMethod; Data: TStream;
-  ContentType: TRESTContentType; QueryParams: TDictionary<string, string>;
+  ResParams: TRequestResourceParam; Method: TRESTRequestMethod; Data: TStream;
+  ContentType: TRESTContentType; QueryParams: TQueryParams;
   TokenMode: TTokenMode; OnResponse: TOnResponse;
   OnRequestError: TOnRequestError);
 var
@@ -179,7 +179,7 @@ begin
   fContentType := ContentType;
   if assigned(QueryParams) then
   begin
-    fQueryParams := TDictionary<string, string>.Create;
+    fQueryParams := TQueryParams.Create;
     for key in QueryParams.Keys do
       fQueryParams.Add(key, QueryParams.Items[key]);
   end;
@@ -211,7 +211,7 @@ end;
 function TFirebaseRequest.InternalSendRequestSynchronous(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TStream; ContentType: TRESTContentType;
-  QueryParams: TDictionary<string, string>;
+  QueryParams: TQueryParams;
   TokenMode: TTokenMode): IFirebaseResponse;
 var
   Client: THTTPClient;
@@ -262,9 +262,8 @@ end;
 
 procedure TFirebaseRequest.InternalSendRequest(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
-  Data: TJSONValue; QueryParams: TDictionary<string, string>;
-  TokenMode: TTokenMode; OnResponse: TOnResponse;
-  OnRequestError: TOnRequestError);
+  Data: TJSONValue; QueryParams: TQueryParams; TokenMode: TTokenMode;
+  OnResponse: TOnResponse; OnRequestError: TOnRequestError);
 var
   Client: TRestClient;
   Request: TRestRequest;
@@ -351,9 +350,9 @@ end;
 
 procedure TFirebaseRequest.InternalSendRequest(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
-  Data: TStream; ContentType: TRESTContentType;
-  QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
-  OnResponse: TOnResponse; OnRequestError: TOnRequestError);
+  Data: TStream; ContentType: TRESTContentType; QueryParams:TQueryParams;
+  TokenMode: TTokenMode; OnResponse: TOnResponse;
+  OnRequestError: TOnRequestError);
 var
   Client: TRestClient;
   Request: TRestRequest;
@@ -428,7 +427,7 @@ end;
 function TFirebaseRequest.SendRequestSynchronous(
   ResourceParams: TRequestResourceParam;
   Method: TRESTRequestMethod; Data: TJSONValue;
-  QueryParams: TDictionary<string, string>;
+  QueryParams: TQueryParams;
   TokenMode: TTokenMode): IFirebaseResponse;
 var
   SourceStr: TStringStream;
@@ -448,7 +447,7 @@ end;
 function TFirebaseRequest.SendRequestSynchronous(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TStream; ContentType: TRESTContentType;
-  QueryParams: TDictionary<string, string>;
+  QueryParams: TQueryParams;
   TokenMode: TTokenMode): IFirebaseResponse;
 begin
   result := InternalSendRequestSynchronous(ResourceParams, Method, Data,
@@ -485,10 +484,9 @@ begin
 end;
 
 procedure TFirebaseRequest.SendRequest(ResourceParams: TRequestResourceParam;
-  Method: TRESTRequestMethod; Data: TJSONValue;
-  QueryParams: TDictionary<string, string>;
-  TokenMode: TTokenMode;
-  OnResponse: TOnResponse; OnRequestError: TOnRequestError);
+  Method: TRESTRequestMethod; Data: TJSONValue; QueryParams: TQueryParams;
+  TokenMode: TTokenMode; OnResponse: TOnResponse;
+  OnRequestError: TOnRequestError);
 begin
   if (TokenMode > tmNoToken) and assigned(fAuth) and fAuth.NeedTokenRefresh then
   begin
@@ -503,7 +501,7 @@ end;
 
 procedure TFirebaseRequest.SendRequest(ResourceParams: TRequestResourceParam;
   Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
-  QueryParams: TDictionary<string, string>; TokenMode: TTokenMode;
+  QueryParams: TQueryParams; TokenMode: TTokenMode;
   OnResponse: TOnResponse; OnRequestError: TOnRequestError);
 begin
   if (TokenMode > tmNoToken) and assigned(fAuth) and fAuth.NeedTokenRefresh then
