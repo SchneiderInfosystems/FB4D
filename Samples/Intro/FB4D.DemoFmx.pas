@@ -982,8 +982,8 @@ begin
       'Keep in mind that the fields order is not defined - ' +
       'multiple gets has different field orders 🤔'));
   end else
-    Doc.AddOrUpdateField('TestField',
-      TJSONObject.SetStringValue('Now try to create a complex document 😀'));
+    Doc.AddOrUpdateField(TJSONObject.SetString('TestField',
+      'Now try to create a complex document 😀'));
   // Log.d(Doc.AsJSON.ToJSON);
   fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text], Doc,
     nil, OnFirestoreInsertOrUpdate, OnFirestoreError);
@@ -1013,8 +1013,8 @@ begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   Doc := TFirestoreDocument.Create(edtDocument.Text);
-  Doc.AddOrUpdateField('patchedField',
-    TJSONObject.SetStringValue('This field is added while patch'));
+  Doc.AddOrUpdateField(TJSONObject.SetString('patchedField',
+    'This field is added while patch'));
   if chbComplexDoc.IsChecked then
     Doc.AddOrUpdateField(TJSONObject.SetString('patchedField2',
       'If this works issue #10 is solved👍'));
@@ -1063,7 +1063,7 @@ procedure TfmxFirebaseDemo.ShowDocument(Doc: IFirestoreDocument);
       fftString:
         result := FieldVal.GetStringValue;
       fftBoolean:
-        result := BoolToStr(FieldVal.GetValue<boolean>('booleanValue'), true);
+        result := BoolToStr(FieldVal.GetBooleanValue, true);
       fftInteger:
         result := FieldVal.GetIntegerValue.ToString;
       fftDouble:
