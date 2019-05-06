@@ -348,6 +348,10 @@ type
     function SignInAnonymouslySynchronous: IFirebaseUser;
     // Logout
     procedure SignOut;
+    // Send EMail for EMail Verification
+    procedure SendEmailVerification(OnResponse: TOnResponse;
+      OnError: TOnRequestError);
+    procedure SendEmailVerificationSynchronous;
     // Providers
     procedure FetchProvidersForEMail(const EMail: string;
       OnFetchProviders: TOnFetchProviders; OnError: TOnRequestError);

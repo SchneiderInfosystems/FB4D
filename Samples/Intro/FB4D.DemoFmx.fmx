@@ -381,6 +381,16 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Text = 'Delete Signed-In User Account'
             OnClick = btnDeleteUserAccountClick
           end
+          object btnSendEMailVerification: TButton
+            Position.X = 224.000000000000000000
+            Position.Y = 342.000000000000000000
+            Size.Width = 177.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 9
+            Text = 'Send EMail Verification'
+            OnClick = btnSendEMailVerificationClick
+          end
         end
       end
     end

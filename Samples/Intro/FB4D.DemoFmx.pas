@@ -165,6 +165,7 @@ type
     chbComplexDoc: TCheckBox;
     btnDeleteDoc: TButton;
     btnPatchDoc: TButton;
+    btnSendEMailVerification: TButton;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -211,6 +212,7 @@ type
     procedure btnDeleteUserAccountClick(Sender: TObject);
     procedure btnDeleteDocClick(Sender: TObject);
     procedure btnPatchDocClick(Sender: TObject);
+    procedure btnSendEMailVerificationClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fFirestoreObject: IStorageObject;
@@ -577,6 +579,12 @@ end;
 procedure TfmxFirebaseDemo.btnDeleteUserAccountClick(Sender: TObject);
 begin
   fAuth.DeleteCurrentUser(OnUserResp, OnUserError);
+end;
+
+procedure TfmxFirebaseDemo.btnSendEMailVerificationClick(Sender: TObject);
+begin
+  CreateAuthenticationClass;
+  fAuth.SendEmailVerification(OnUserResp, OnUserError);
 end;
 {$ENDREGION}
 

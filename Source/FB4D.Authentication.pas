@@ -88,6 +88,10 @@ type
     function SignInAnonymouslySynchronous: IFirebaseUser;
     // Logout
     procedure SignOut;
+    // Send EMail for EMail Verification
+    procedure SendEmailVerification(OnResponse: TOnResponse;
+      OnError: TOnRequestError);
+    procedure SendEmailVerificationSynchronous;
     // Providers
     procedure FetchProvidersForEMail(const EMail: string;
       OnFetchProviders: TOnFetchProviders; OnError: TOnRequestError);
@@ -191,6 +195,7 @@ resourcestring
   rsEnableAnonymousLogin = 'In the firebase console under Authentication/' +
     'Sign-in method firstly enable anonymous sign-in provider.';
   rsSendPasswordResetEMail = 'EMail to reset the password sent to %s';
+  rsSendVerificationEMail = 'EMail to verify the email sent';
   rsVerifyPasswordResetCode = 'Verify password reset code';
   rsConfirmPasswordReset = 'Confirm password reset';
   rsChangeProfile = 'Change profile for %s';
@@ -237,6 +242,57 @@ begin
   fTokenJWT := nil;
   fRefreshToken := '';
   fAuthenticated := false;
+end;
+
+procedure TFirebaseAuthentication.SendEmailVerification(OnResponse: TOnResponse;
+  OnError: TOnRequestError);
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: IFirebaseRequest;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL,
+    rsSendVerificationEMail);
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('requestType', 'VERIFY_EMAIL'));
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Params.Add('key', [ApiKey]);
+    Request.SendRequest(['getOobConfirmationCode'], rmPost, Data, Params,
+      tmNoToken, OnResponse, OnError);
+  finally
+    Params.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.SendEmailVerificationSynchronous;
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+  ds: TStringDynArray;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('requestType', 'VERIFY_EMAIL'));
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Params.Add('key', [ApiKey]);
+    ds := ['getOobConfirmationCode'];
+    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
+      tmNoToken);
+    if not Response.StatusOk then
+      Response.CheckForJSONObj;
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
 end;
 
 procedure TFirebaseAuthentication.SignUpWithEmailAndPassword(const Email,
