@@ -154,7 +154,6 @@ type
     function CreateTime: TDateTime;
     function UpdateTime: TDatetime;
     function CountFields: integer;
-    function Fields(Ind: integer): TJSONObject;
     function FieldName(Ind: integer): string;
     function FieldByName(const FieldName: string): TJSONObject;
     function FieldValue(Ind: integer): TJSONObject;
@@ -195,6 +194,7 @@ type
     procedure AddOrUpdateField(const FieldName: string; Val: TJSONValue);
       overload;
     function AsJSON: TJSONObject;
+    property Fields[Index: integer]: TJSONObject read FieldValue;
   end;
 
   IFirestoreDocuments = interface(IInterface)

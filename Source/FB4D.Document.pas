@@ -53,7 +53,6 @@ type
     function CreateTime: TDateTime;
     function UpdateTime: TDatetime;
     function CountFields: integer;
-    function Fields(Ind: integer): TJSONObject;
     function FieldName(Ind: integer): string;
     function FieldByName(const FieldName: string): TJSONObject;
     function FieldValue(Ind: integer): TJSONObject;
@@ -445,13 +444,6 @@ begin
     result := fftMap
   else
     raise EFirestoreDocument.CreateFmt('Unknown field type %s', [FieldType]);
-end;
-
-function TFirestoreDocument.Fields(Ind: integer): TJSONObject;
-begin
-  if Ind >= CountFields then
-    raise EFirestoreDocument.Create(rsFieldIndexOutOfBound);
-  result := fFields[Ind].Obj;
 end;
 
 function TFirestoreDocument.FieldByName(const FieldName: string): TJSONObject;
