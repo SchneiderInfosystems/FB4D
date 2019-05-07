@@ -73,10 +73,10 @@ uses
 
 resourcestring
   rsResponseIsNotJSON = 'The reponse from the firestore is not a JSON: %s';
-  rsResponseIsNotJSONObj = 'The reponse from the firestore is not a JSON object: %s';
-  rsResponseIsNotJSONArr = 'The reponse from the firestore is not a JSON array: %s';
-  rsSimpleTypesSupportedOnly =
-    'Currently, only simple types are supported as JSON but complex types are received: %s';
+  rsResponseIsNotJSONObj =
+    'The reponse from the firestore is not a JSON object: %s';
+  rsResponseIsNotJSONArr =
+    'The reponse from the firestore is not a JSON array: %s';
   rsTimeZoneIsNotSupported = 'Time zone %d is not supported yet';
 
 { TFirestoreResponse }
