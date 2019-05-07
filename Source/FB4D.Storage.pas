@@ -385,11 +385,12 @@ begin
             {$IFDEF DEBUG}
             TFirebaseHelpers.Log(Response.ContentAsString);
             {$ENDIF}
+            ErrMsg := Response.StatusText;
             if assigned(OnError) then
               TThread.Queue(nil,
                 procedure
                 begin
-                  OnError(self, Response.StatusText);
+                  OnError(self, ErrMsg);
                 end);
           end;
         finally
