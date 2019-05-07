@@ -166,6 +166,11 @@ type
     btnDeleteDoc: TButton;
     btnPatchDoc: TButton;
     btnSendEMailVerification: TButton;
+    chbUseChildDoc: TCheckBox;
+    Label27: TLabel;
+    Label28: TLabel;
+    edtChildCollection: TEdit;
+    edtChildDocument: TEdit;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -213,6 +218,7 @@ type
     procedure btnDeleteDocClick(Sender: TObject);
     procedure btnPatchDocClick(Sender: TObject);
     procedure btnSendEMailVerificationClick(Sender: TObject);
+    procedure chbUseChildDocChange(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fFirestoreObject: IStorageObject;
@@ -244,6 +250,7 @@ type
       Doc: IFirestoreDocument);
     procedure OnFirestoreDeleted(const RequestID: string;
       Response: IFirebaseResponse);
+    function CheckFirestoreFields(InsUpdGetWF: boolean): boolean;
     function CheckAndCreateRealTimeDBClass(Log: TMemo): boolean;
     function GetRTDBPath: TStringDynArray;
     function GetOptions: TQueryParams;
@@ -308,6 +315,9 @@ begin
     edtStoragePath.Text := IniFile.ReadString('Storage', 'Path', '');
     edtCollection.Text := IniFile.ReadString('Firestore', 'Collection', '');
     edtDocument.Text := IniFile.ReadString('Firestore', 'Document', '');
+    chbUseChildDoc.IsChecked := IniFile.ReadBool('Firestore', 'UseChild', false);
+    edtChildCollection.Text := IniFile.ReadString('Firestore', 'ChildCol', '');
+    edtChildDocument.Text := IniFile.ReadString('Firestore', 'ChildDoc', '');
   finally
     IniFile.Free;
   end;
@@ -335,6 +345,9 @@ begin
     IniFile.WriteString('Storage', 'Path', edtStoragePath.Text);
     IniFile.WriteString('Firestore', 'Collection', edtCollection.Text);
     IniFile.WriteString('Firestore', 'Document', edtDocument.Text);
+    IniFile.WriteBool('Firestore', 'UseChild', chbUseChildDoc.IsChecked);
+    IniFile.WriteString('Firestore', 'ChildCol', edtChildCollection.Text);
+    IniFile.WriteString('Firestore', 'ChildDoc', edtChildDocument.Text);
   finally
     IniFile.Free;
   end;
@@ -880,12 +893,40 @@ begin
   memFirestore.GoToTextEnd;
 end;
 
+function TfmxFirebaseDemo.CheckFirestoreFields(InsUpdGetWF: boolean): boolean;
+begin
+  result := false;
+  if edtCollection.Text.IsEmpty then
+    memFirestore.Lines.Add('Hint: Collection need to be filled')
+  else if not InsUpdGetWF and not chbUseChildDoc.IsChecked then
+    result := true
+  else if edtDocument.Text.IsEmpty then
+     memFirestore.Lines.Add('Hint: Document need to be filled')
+  else if not chbUseChildDoc.IsChecked then
+    result := true
+  else if edtChildCollection.Text.IsEmpty then
+    memFirestore.Lines.Add('Hint: Child collection need to be filled')
+  else if not InsUpdGetWF then
+    result := true
+  else if edtChildDocument.Text.IsEmpty then
+    memFirestore.Lines.Add('Hint: Child document need to be filled')
+  else
+    result := true;
+end;
+
 procedure TfmxFirebaseDemo.btnGetClick(Sender: TObject);
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
-  fDatabase.Get([edtCollection.Text, edtDocument.Text], nil,
-    OnFirestoreGet, OnFirestoreError);
+  if not CheckFirestoreFields(false) then
+    exit;
+  if not chbUseChildDoc.IsChecked then
+    fDatabase.Get([edtCollection.Text, edtDocument.Text], nil,
+      OnFirestoreGet, OnFirestoreError)
+  else
+    fDatabase.Get([edtCollection.Text, edtDocument.Text,
+      edtChildCollection.Text, edtChildDocument.Text], nil,
+      OnFirestoreGet, OnFirestoreError);
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreGet(const Info: string;
@@ -909,8 +950,14 @@ procedure TfmxFirebaseDemo.btnCreateDocumentClick(Sender: TObject);
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
-  fDatabase.CreateDocument([edtCollection.Text], nil, OnFirestoreCreate,
-    OnFirestoreError);
+  if not CheckFirestoreFields(false) then
+    exit;
+  if not chbUseChildDoc.IsChecked then
+    fDatabase.CreateDocument([edtCollection.Text], nil, OnFirestoreCreate,
+      OnFirestoreError)
+  else
+    fDatabase.CreateDocument([edtCollection.Text, edtDocument.Text,
+      edtChildCollection.Text], nil, OnFirestoreCreate, OnFirestoreError);
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreCreate(const Info: string;
@@ -918,11 +965,14 @@ procedure TfmxFirebaseDemo.OnFirestoreCreate(const Info: string;
 begin
   try
     ShowDocument(Doc);
-    if assigned(Doc) then
+    if assigned(Doc) and not chbUseChildDoc.IsChecked then
       edtDocument.Text := Doc.DocumentName(false)
+    else if not assigned(Doc) and not chbUseChildDoc.IsChecked then
+      edtDocument.Text := ''
+    else if assigned(Doc) and chbUseChildDoc.IsChecked then
+      edtChildDocument.Text := Doc.DocumentName(false)
     else
-      edtDocument.Text := '';
-    Doc := nil;
+      edtChildDocument.Text := '';
   except
     on e: exception do
       OnFirestoreError(Info, e.Message);
@@ -933,8 +983,15 @@ procedure TfmxFirebaseDemo.btnDeleteDocClick(Sender: TObject);
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
-  fDatabase.Delete([edtCollection.Text, edtDocument.Text], nil,
-    OnFirestoreDeleted, OnFirestoreError);
+  if not CheckFirestoreFields(true) then
+    exit;
+  if not chbUseChildDoc.IsChecked then
+    fDatabase.Delete([edtCollection.Text, edtDocument.Text], nil,
+      OnFirestoreDeleted, OnFirestoreError)
+  else
+    fDatabase.Delete([edtCollection.Text, edtDocument.Text,
+      edtChildCollection.Text, edtChildDocument.Text], nil,
+      OnFirestoreDeleted, OnFirestoreError)
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreDeleted(const RequestID: string;
@@ -949,6 +1006,8 @@ var
   Doc: IFirestoreDocument;
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
+    exit;
+  if not CheckFirestoreFields(true) then
     exit;
   Doc := TFirestoreDocument.Create(edtDocument.Text);
   if chbComplexDoc.IsChecked then
@@ -993,9 +1052,13 @@ begin
     Doc.AddOrUpdateField(TJSONObject.SetString('TestField',
       'Now try to create a complex document 😀'));
   // Log.d(Doc.AsJSON.ToJSON);
-  fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text], Doc,
-    nil, OnFirestoreInsertOrUpdate, OnFirestoreError);
-  Doc := nil;
+  if not chbUseChildDoc.IsChecked then
+    fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text],
+      Doc, nil, OnFirestoreInsertOrUpdate, OnFirestoreError)
+  else
+    fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text,
+      edtChildCollection.Text, edtChildDocument.Text], Doc, nil,
+      OnFirestoreInsertOrUpdate, OnFirestoreError);
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreInsertOrUpdate(const Info: string;
@@ -1003,10 +1066,18 @@ procedure TfmxFirebaseDemo.OnFirestoreInsertOrUpdate(const Info: string;
 begin
   try
     ShowDocument(Doc);
-    if assigned(Doc) then
-      edtDocument.Text := Doc.DocumentName(false)
-    else
-      edtDocument.Text := '';
+    if not chbUseChildDoc.IsChecked then
+    begin
+      if assigned(Doc) then
+        edtDocument.Text := Doc.DocumentName(false)
+      else
+        edtDocument.Text := '';
+    end else begin
+      if assigned(Doc) then
+        edtChildDocument.Text := Doc.DocumentName(false)
+      else
+        edtChildDocument.Text := '';
+    end;
   except
     on e: exception do
       OnFirestoreError(Info, e.Message);
@@ -1020,20 +1091,34 @@ var
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
+  if not CheckFirestoreFields(true) then
+    exit;
   Doc := TFirestoreDocument.Create(edtDocument.Text);
   Doc.AddOrUpdateField(TJSONObject.SetString('patchedField',
     'This field is added while patch'));
   if chbComplexDoc.IsChecked then
     Doc.AddOrUpdateField(TJSONObject.SetString('patchedField2',
       'If this works issue #10 is solved👍'));
-  if not chbComplexDoc.IsChecked then
-    fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
-      ['patchedField'], OnFirestoreInsertOrUpdate, OnFirestoreError)
-  else
-    fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
-      ['patchedField', 'patchedField2'], OnFirestoreInsertOrUpdate,
-      OnFirestoreError);
-  Doc := nil;
+  if not chbUseChildDoc.IsChecked then
+  begin
+    if not chbComplexDoc.IsChecked then
+      fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
+        ['patchedField'], OnFirestoreInsertOrUpdate, OnFirestoreError)
+    else
+      fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
+        ['patchedField', 'patchedField2'], OnFirestoreInsertOrUpdate,
+        OnFirestoreError);
+  end else begin
+    if not chbComplexDoc.IsChecked then
+      fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text,
+        edtChildCollection.Text, edtChildDocument.Text], Doc,
+        ['patchedField'], OnFirestoreInsertOrUpdate, OnFirestoreError)
+    else
+      fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text,
+        edtChildCollection.Text, edtChildDocument.Text], Doc,
+        ['patchedField', 'patchedField2'], OnFirestoreInsertOrUpdate,
+        OnFirestoreError);
+  end;
 end;
 
 procedure TfmxFirebaseDemo.ShowDocument(Doc: IFirestoreDocument);
@@ -1138,6 +1223,19 @@ begin
   end else
     memFirestore.Lines.Add('No document found');
 end;
+
+procedure TfmxFirebaseDemo.chbUseChildDocChange(Sender: TObject);
+begin
+  if chbUseChildDoc.IsChecked and edtDocument.Text.IsEmpty then
+  begin
+    chbUseChildDoc.IsChecked := false;
+    memFirestore.Lines.Add('Hint: You need to enter a Document ID before you ' +
+      'can address a child document');
+  end;
+  edtChildCollection.Visible := chbUseChildDoc.IsChecked;
+  edtChildDocument.Visible := chbUseChildDoc.IsChecked;
+end;
+
 {$ENDREGION}
 
 {$REGION 'Realtime DB'}

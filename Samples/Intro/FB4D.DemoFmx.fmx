@@ -1079,39 +1079,39 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 0
+        TabOrder = 3
         Text = 'Get Document'
         OnClick = btnGetClick
       end
       object edtCollection: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 1
+        TabOrder = 6
         Position.X = 160.000000000000000000
         Position.Y = 63.000000000000000000
         Size.Width = 177.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
+        object Label4: TLabel
+          Position.X = -136.000000000000000000
+          Position.Y = 3.000000000000000000
+          Text = 'Collection:'
+          TabOrder = 0
+        end
       end
       object edtDocument: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 2
+        TabOrder = 7
         Position.X = 160.000000000000000000
         Position.Y = 95.000000000000000000
         Size.Width = 177.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-      end
-      object Label4: TLabel
-        Position.X = 32.000000000000000000
-        Position.Y = 66.000000000000000000
-        Text = 'Collection:'
-        TabOrder = 3
-      end
-      object Label7: TLabel
-        Position.X = 32.000000000000000000
-        Position.Y = 98.000000000000000000
-        Text = 'Document:'
-        TabOrder = 4
+        object Label7: TLabel
+          Position.X = -136.000000000000000000
+          Position.Y = 3.000000000000000000
+          Text = 'Document:'
+          TabOrder = 0
+        end
       end
       object memFirestore: TMemo
         Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
@@ -1122,7 +1122,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 948.000000000000000000
         Size.Height = 576.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 5
+        TabOrder = 11
         Viewport.Width = 944.000000000000000000
         Viewport.Height = 572.000000000000000000
       end
@@ -1132,7 +1132,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 7
+        TabOrder = 0
         Text = 'Create Document'
         OnClick = btnCreateDocumentClick
       end
@@ -1142,7 +1142,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 8
+        TabOrder = 1
         Text = 'Insert / Update Doc'
         OnClick = btnInsertOrUpdateDocumentClick
       end
@@ -1152,7 +1152,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 145.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 9
+        TabOrder = 2
         Text = 'Create Complex Doc'
       end
       object btnDeleteDoc: TButton
@@ -1161,7 +1161,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 6
+        TabOrder = 5
         Text = 'Delete Document'
         OnClick = btnDeleteDocClick
       end
@@ -1171,9 +1171,51 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 10
+        TabOrder = 4
         Text = 'PatchDocument'
         OnClick = btnPatchDocClick
+      end
+      object chbUseChildDoc: TCheckBox
+        Position.X = 376.000000000000000000
+        Position.Y = 62.000000000000000000
+        Size.Width = 145.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+        Text = 'Use Child Document'
+        OnChange = chbUseChildDocChange
+      end
+      object edtChildCollection: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        TabOrder = 9
+        Position.X = 664.000000000000000000
+        Position.Y = 63.000000000000000000
+        Size.Width = 177.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Visible = False
+        object Label27: TLabel
+          Position.X = -127.000000000000000000
+          Position.Y = 3.000000000000000000
+          Text = 'Child Collection:'
+          TabOrder = 0
+        end
+      end
+      object edtChildDocument: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        TabOrder = 10
+        Position.X = 664.000000000000000000
+        Position.Y = 95.000000000000000000
+        Size.Width = 177.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Visible = False
+        object Label28: TLabel
+          Position.X = -127.000000000000000000
+          Position.Y = 3.000000000000000000
+          Text = 'Child Document:'
+          TabOrder = 0
+        end
       end
     end
     object tabStorage: TTabItem
