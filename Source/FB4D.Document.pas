@@ -294,6 +294,7 @@ end;
 constructor TFirestoreDocument.CreateFromJSONObj(Response: IFirebaseResponse);
 begin
   CreateFromJSONObj(Response.GetContentAsJSONObj);
+  fJSONObjOwned := true;
 end;
 
 destructor TFirestoreDocument.Destroy;
