@@ -606,10 +606,14 @@ begin
                 fListenPartialResp := '';
               end;
               if EventName = cKeepAlive then
-                fLastKeepAliveMsg := now
+              begin
+                fLastKeepAliveMsg := now;
+                fListenPartialResp := '';
+              end
               else if EventName = cRevokeToken then
               begin
                 fRequireTokenRefresh := true;
+                fListenPartialResp := '';
                 fStopWaiting := true;
               end else if Data.Length > 0 then
               begin
@@ -660,7 +664,8 @@ begin
         ss := TStringStream.Create;
         try
           Assert(fReadPos >= 0, 'Invalid stream read position');
-          Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count');
+          Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count: ' +
+            ReadCount.ToString + ' - ' + fReadPos.ToString);
           fStream.Position := fReadPos;
           ss.CopyFrom(fStream, ReadCount - fReadPos);
           fListenPartialResp := fListenPartialResp + ss.DataString;
