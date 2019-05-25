@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018 Christoph Schneider                                      }
+{  Copyright (c) 2018-2019 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -162,7 +162,8 @@ type
     edtStorageObject: TEdit;
     edtStoragePath: TEdit;
     btnDeleteUserAccount: TButton;
-    chbComplexDoc: TCheckBox;
+    btnRunQuery: TButton;
+    cboDemoDocType: TComboBox;
     btnDeleteDoc: TButton;
     btnPatchDoc: TButton;
     btnSendEMailVerification: TButton;
@@ -219,6 +220,7 @@ type
     procedure btnPatchDocClick(Sender: TObject);
     procedure btnSendEMailVerificationClick(Sender: TObject);
     procedure chbUseChildDocChange(Sender: TObject);
+    procedure btnRunQueryClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fFirestoreObject: IStorageObject;
@@ -318,6 +320,8 @@ begin
     chbUseChildDoc.IsChecked := IniFile.ReadBool('Firestore', 'UseChild', false);
     edtChildCollection.Text := IniFile.ReadString('Firestore', 'ChildCol', '');
     edtChildDocument.Text := IniFile.ReadString('Firestore', 'ChildDoc', '');
+    cboDemoDocType.ItemIndex := IniFile.ReadInteger('Firestore', 'DocType', 0);
+    btnRunQuery.Enabled := IniFile.ReadBool('Firestore', 'RunQueryEnabled', false);
   finally
     IniFile.Free;
   end;
@@ -348,6 +352,8 @@ begin
     IniFile.WriteBool('Firestore', 'UseChild', chbUseChildDoc.IsChecked);
     IniFile.WriteString('Firestore', 'ChildCol', edtChildCollection.Text);
     IniFile.WriteString('Firestore', 'ChildDoc', edtChildDocument.Text);
+    IniFile.WriteInteger('Firestore', 'DocType', cboDemoDocType.ItemIndex);
+    IniFile.WriteBool('Firestore', 'RunQueryEnabled', btnRunQuery.Enabled);
   finally
     IniFile.Free;
   end;
@@ -934,6 +940,7 @@ procedure TfmxFirebaseDemo.OnFirestoreGet(const Info: string;
 var
   c: integer;
 begin
+  memFirestore.Lines.Clear;
   try
     if assigned(Docs) and (Docs.Count > 0) then
       for c := 0 to Docs.Count - 1 do
@@ -963,6 +970,7 @@ end;
 procedure TfmxFirebaseDemo.OnFirestoreCreate(const Info: string;
   Doc: IFirestoreDocument);
 begin
+  memFirestore.Lines.Clear;
   try
     ShowDocument(Doc);
     if assigned(Doc) and not chbUseChildDoc.IsChecked then
@@ -1010,47 +1018,64 @@ begin
   if not CheckFirestoreFields(true) then
     exit;
   Doc := TFirestoreDocument.Create(edtDocument.Text);
-  if chbComplexDoc.IsChecked then
-  begin
-    Doc.AddOrUpdateField(TJSONObject.SetString('MyString',
-      'This demonstrates a complex document that contains all supported data types'));
-    Doc.AddOrUpdateField(TJSONObject.SetInteger('MyInt', 123));
-    Doc.AddOrUpdateField(TJSONObject.SetDouble('MyReal', 1.54));
-    Doc.AddOrUpdateField(TJSONObject.SetBoolean('MyBool', true));
-    Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('MyTime', now));
-    Doc.AddOrUpdateField(TJSONObject.SetNull('MyNull'));
-    Doc.AddOrUpdateField(TJSONObject.SetReference('MyRef', edtProjectID.Text,
-      edtCollection.Text + '/' + edtDocument.Text));
-    Doc.AddOrUpdateField(TJSONObject.SetGeoPoint('MyGeo',
-      TLocationCoord2D.Create(1.1, 2.2)));
-    Doc.AddOrUpdateField(TJSONObject.SetBytes('MyBytes', [0,1,2,253,254,255]));
-    Doc.AddOrUpdateField(TJSONObject.SetMap('MyMap', [
-      TJSONObject.SetString('MapStr', 'Map would be called in Delphi "record"'),
-      TJSONObject.SetInteger('MapInt', 324),
-      TJSONObject.SetBoolean('MapBool', false),
-      TJSONObject.SetTimeStamp('MapTime', now + 1),
-      TJSONObject.SetArray('MapSubArray', [TJSONObject.SetIntegerValue(1),
-          TJSONObject.SetIntegerValue(2)]), // Array in Map
-      TJSONObject.SetMap('SubMap', [ // Map in Map
-        TJSONObject.SetString('SubMapStr', 'SubText'),
-        TJSONObject.SetDouble('SubMapReal', 3.1414),
-        TJSONObject.SetGeoPoint('SubMapGeo',
-          TLocationCoord2D.Create(-1.0, -2.23)),
-        TJSONObject.SetNull('SubMapNull')])]));
-    Doc.AddOrUpdateField(TJSONObject.SetArray('MyArr',[
-        TJSONObject.SetStringValue('Text0'),
-        TJSONObject.SetStringValue('Text1'),
-        // Array in Array is not supported in Firestore: use a map between
-        TJSONObject.SetMapValue([
-          TJSONObject.SetString('MapInArray_String',
-            'Delphi rocks with Firebase 👨'),
-          TJSONObject.SetInteger('MapInArray_Int', 4711)])]));
-    Doc.AddOrUpdateField(TJSONObject.SetString('Hint',
-      'Keep in mind that the fields order is not defined - ' +
-      'multiple gets has different field orders 🤔'));
-  end else
-    Doc.AddOrUpdateField(TJSONObject.SetString('TestField',
-      'Now try to create a complex document 😀'));
+  case cboDemoDocType.ItemIndex of
+    0: Doc.AddOrUpdateField(TJSONObject.SetString('TestField',
+         'Now try to create a complex document 😀'));
+    1: begin
+         Doc.AddOrUpdateField(TJSONObject.SetString('MyString',
+           'This demonstrates a complex document that contains all supported data types'));
+         Doc.AddOrUpdateField(TJSONObject.SetInteger('MyInt', 123));
+         Doc.AddOrUpdateField(TJSONObject.SetDouble('MyReal', 1.54));
+         Doc.AddOrUpdateField(TJSONObject.SetBoolean('MyBool', true));
+         Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('MyTime', now));
+         Doc.AddOrUpdateField(TJSONObject.SetNull('MyNull'));
+         Doc.AddOrUpdateField(TJSONObject.SetReference('MyRef', edtProjectID.Text,
+           edtCollection.Text + '/' + edtDocument.Text));
+         Doc.AddOrUpdateField(TJSONObject.SetGeoPoint('MyGeo',
+           TLocationCoord2D.Create(1.1, 2.2)));
+         Doc.AddOrUpdateField(TJSONObject.SetBytes('MyBytes', [0,1,2,253,254,255]));
+         Doc.AddOrUpdateField(TJSONObject.SetMap('MyMap', [
+           TJSONObject.SetString('MapStr', 'Map would be called in Delphi "record"'),
+           TJSONObject.SetInteger('MapInt', 324),
+           TJSONObject.SetBoolean('MapBool', false),
+           TJSONObject.SetTimeStamp('MapTime', now + 1),
+           TJSONObject.SetArray('MapSubArray', [TJSONObject.SetIntegerValue(1),
+               TJSONObject.SetIntegerValue(2)]), // Array in Map
+           TJSONObject.SetMap('SubMap', [ // Map in Map
+             TJSONObject.SetString('SubMapStr', 'SubText'),
+             TJSONObject.SetDouble('SubMapReal', 3.1414),
+             TJSONObject.SetGeoPoint('SubMapGeo',
+               TLocationCoord2D.Create(-1.0, -2.23)),
+             TJSONObject.SetNull('SubMapNull')])]));
+         Doc.AddOrUpdateField(TJSONObject.SetArray('MyArr',[
+             TJSONObject.SetStringValue('What can I learn next?'),
+             TJSONObject.SetStringValue('In order to play later with the function Run Query'),
+             TJSONObject.SetStringValue('try also "Docs for Run Query"'),
+             // Array in Array is not supported in Firestore: use a map between
+             TJSONObject.SetMapValue([
+               TJSONObject.SetString('MapInArray_String',
+                 'Delphi rocks with Firebase 👨'),
+               TJSONObject.SetInteger('MapInArray_Int', 4711)])]));
+         Doc.AddOrUpdateField(TJSONObject.SetString('Hint',
+           'Keep in mind that the fields order is not defined when call get - ' +
+           'multiple gets has different field orders 🤔'));
+       end;
+    2: begin
+         Doc.AddOrUpdateField(TJSONObject.SetString('info',
+           'This demonstrates a simple collection with random data.'));
+         if not btnRunQuery.Enabled then
+           Doc.AddOrUpdateField(TJSONObject.SetString('hint',
+             'For test Run Query create same record as this one and by press ' +
+             'Create Doc and Insert Doc repeatedly'))
+         else
+           Doc.AddOrUpdateField(TJSONObject.SetString('hint',
+             'Create at least 5 documents so you have some records for later ' +
+             'test of Run Query'));
+         Doc.AddOrUpdateField(TJSONObject.SetInteger('testInt', random(100)));
+         Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('documentCreated', now));
+         btnRunQuery.Enabled := true;
+       end;
+  end;
   // Log.d(Doc.AsJSON.ToJSON);
   if not chbUseChildDoc.IsChecked then
     fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text],
@@ -1064,6 +1089,7 @@ end;
 procedure TfmxFirebaseDemo.OnFirestoreInsertOrUpdate(const Info: string;
   Doc: IFirestoreDocument);
 begin
+  memFirestore.Lines.Clear;
   try
     ShowDocument(Doc);
     if not chbUseChildDoc.IsChecked then
@@ -1096,12 +1122,12 @@ begin
   Doc := TFirestoreDocument.Create(edtDocument.Text);
   Doc.AddOrUpdateField(TJSONObject.SetString('patchedField',
     'This field is added while patch'));
-  if chbComplexDoc.IsChecked then
+  if cboDemoDocType.ItemIndex > 0 then
     Doc.AddOrUpdateField(TJSONObject.SetString('patchedField2',
       'If this works issue #10 is solved👍'));
   if not chbUseChildDoc.IsChecked then
   begin
-    if not chbComplexDoc.IsChecked then
+    if cboDemoDocType.ItemIndex = 0 then
       fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
         ['patchedField'], OnFirestoreInsertOrUpdate, OnFirestoreError)
     else
@@ -1109,7 +1135,7 @@ begin
         ['patchedField', 'patchedField2'], OnFirestoreInsertOrUpdate,
         OnFirestoreError);
   end else begin
-    if not chbComplexDoc.IsChecked then
+    if cboDemoDocType.ItemIndex = 0 then
       fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text,
         edtChildCollection.Text, edtChildDocument.Text], Doc,
         ['patchedField'], OnFirestoreInsertOrUpdate, OnFirestoreError)
@@ -1205,18 +1231,17 @@ var
 begin
   if assigned(Doc) then
   begin
-    memFirestore.Lines.Clear;
     memFirestore.Lines.Add('Document name: ' + Doc.DocumentName(true));
-    memFirestore.Lines.Add('Created      : ' + DateTimeToStr(
+    memFirestore.Lines.Add('  Created    : ' + DateTimeToStr(
       TFirebaseHelpers.ConvertToLocalDateTime(doc.createTime)));
-    memFirestore.Lines.Add('Updated      : ' + DateTimeToStr(
+    memFirestore.Lines.Add('  Updated    : ' + DateTimeToStr(
       TFirebaseHelpers.ConvertToLocalDateTime(doc.updateTime)));
     // Log.d(Doc.AsJSON.ToJSON);
     for c := 0 to Doc.CountFields - 1 do
     begin
       FieldName := Doc.FieldName(c);
       FieldType := Doc.FieldType(c);
-      memFirestore.Lines.Add(FieldName + ' : ' +
+      memFirestore.Lines.Add('  ' + FieldName + ' : ' +
         TRttiEnumerationType.GetName<TFirestoreFieldType>(FieldType) + ' = ' +
         GetFieldVal('  ', FieldType, Doc.FieldValue(c)));
     end;
@@ -1234,6 +1259,22 @@ begin
   end;
   edtChildCollection.Visible := chbUseChildDoc.IsChecked;
   edtChildDocument.Visible := chbUseChildDoc.IsChecked;
+end;
+
+procedure TfmxFirebaseDemo.btnRunQueryClick(Sender: TObject);
+begin
+  if not CheckAndCreateFirestoreDBClass(memFirestore) then
+    exit;
+  if not CheckFirestoreFields(false) then
+    exit;
+  if not chbUseChildDoc.IsChecked then
+    fDatabase.RunQuery(
+      TStructuredQuery.CreateForCollection(edtCollection.Text).QueryForFieldFilter(
+        TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan, 50)).
+      OrderBy('testInt', odDescending),
+      OnFirestoreGet, OnFirestoreError)
+  else
+    memFirestore.Lines.Add('RunQuery for child docs is not yet implemented');
 end;
 
 {$ENDREGION}

@@ -1079,13 +1079,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 3
+        TabOrder = 2
         Text = 'Get Document'
         OnClick = btnGetClick
       end
       object edtCollection: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 6
+        TabOrder = 5
         Position.X = 160.000000000000000000
         Position.Y = 63.000000000000000000
         Size.Width = 177.000000000000000000
@@ -1100,7 +1100,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object edtDocument: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 7
+        TabOrder = 6
         Position.X = 160.000000000000000000
         Position.Y = 95.000000000000000000
         Size.Width = 177.000000000000000000
@@ -1122,7 +1122,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 948.000000000000000000
         Size.Height = 576.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 11
+        TabOrder = 10
         Viewport.Width = 944.000000000000000000
         Viewport.Height = 572.000000000000000000
       end
@@ -1146,22 +1146,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Text = 'Insert / Update Doc'
         OnClick = btnInsertOrUpdateDocumentClick
       end
-      object chbComplexDoc: TCheckBox
-        Position.X = 304.000000000000000000
-        Position.Y = 24.000000000000000000
-        Size.Width = 145.000000000000000000
-        Size.Height = 19.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Text = 'Create Complex Doc'
-      end
       object btnDeleteDoc: TButton
         Position.X = 720.000000000000000000
         Position.Y = 23.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 5
+        TabOrder = 4
         Text = 'Delete Document'
         OnClick = btnDeleteDocClick
       end
@@ -1171,7 +1162,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 4
+        TabOrder = 3
         Text = 'PatchDocument'
         OnClick = btnPatchDocClick
       end
@@ -1181,13 +1172,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 145.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 8
+        TabOrder = 7
         Text = 'Use Child Document'
         OnChange = chbUseChildDocChange
       end
       object edtChildCollection: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 9
+        TabOrder = 8
         Position.X = 664.000000000000000000
         Position.Y = 63.000000000000000000
         Size.Width = 177.000000000000000000
@@ -1203,7 +1194,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object edtChildDocument: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 10
+        TabOrder = 9
         Position.X = 664.000000000000000000
         Position.Y = 95.000000000000000000
         Size.Width = 177.000000000000000000
@@ -1216,6 +1207,27 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Text = 'Child Document:'
           TabOrder = 0
         end
+      end
+      object btnRunQuery: TButton
+        Enabled = False
+        Position.X = 848.000000000000000000
+        Position.Y = 23.000000000000000000
+        TabOrder = 11
+        Text = 'Run Query'
+        OnClick = btnRunQueryClick
+      end
+      object cboDemoDocType: TComboBox
+        Items.Strings = (
+          'Simple Document'
+          'Complex Document'
+          'Docs for Run Query')
+        ItemIndex = 0
+        Position.X = 304.000000000000000000
+        Position.Y = 23.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 12
       end
     end
     object tabStorage: TTabItem
