@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018 Christoph Schneider                                      }
+{  Copyright (c) 2018-2019 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -101,6 +101,7 @@ type
   private
     fColSelector, fQuery: TJSONObject;
     fFilter: TJSONObject;
+    fOrder: TJSONArray;
     fInfo: string;
   public
     class function CreateForCollection(const CollectionId: string;
@@ -111,6 +112,8 @@ type
     function QueryForFieldFilter(Filter: IQueryFilter): IStructuredQuery;
     function QueryForCompositeFilter(CompostiteOperation: TCompostiteOperation;
       Filters: array of IQueryFilter): IStructuredQuery;
+    function OrderBy(const FieldRef: string;
+      Direction: TOrderDirection): IStructuredQuery;
     function AsJSON: TJSONObject;
     function GetInfo: string;
   end;
@@ -152,6 +155,8 @@ const
     'GREATER_THAN_OR_EQUAL', 'EQUAL', 'ARRAY_CONTAINS');
   COMPOSITEFILTER_OPERATION: array [TCompostiteOperation] of string = (
     'OPERATOR_UNSPECIFIED', 'AND');
+  ORDER_DIRECTION: array [TOrderDirection] of string = ('DIRECTION_UNSPECIFIED',
+    'ASCENDING', 'DESCENDING');
 
 resourcestring
   rsRunQuery = 'Run query for ';
@@ -546,6 +551,9 @@ end;
 
 destructor TStructuredQuery.Destroy;
 begin
+  fColSelector.Free;
+  fFilter.Free;
+  fOrder.Free;
   fQuery.Free;
   inherited;
 end;
@@ -566,9 +574,20 @@ begin
   fQuery := TJSONObject.Create;
   StructQuery := TJSONObject.Create;
   if assigned(fColSelector) then
+  begin
     StructQuery.AddPair('from', TJSONArray.Create(fColSelector));
+    fColSelector := nil;
+  end;
   if assigned(fFilter) then
+  begin
     StructQuery.AddPair('where', fFilter);
+    fFilter := nil;
+  end;
+  if assigned(fOrder) then
+  begin
+    StructQuery.AddPair('orderBy', fOrder);
+    fOrder := nil;
+  end;
   fQuery.AddPair('structuredQuery', StructQuery);
 {$IFDEF DEBUG}
   TFirebaseHelpers.Log(' StructuredQuery: ' + fQuery.ToJSON);
@@ -584,6 +603,24 @@ begin
   fFilter.AddPair('fieldFilter', Filter.AsJSON);
   result := self;
   fInfo := fInfo + '{' + Filter.GetInfo + '}';
+end;
+
+function TStructuredQuery.OrderBy(const FieldRef: string;
+  Direction: TOrderDirection): IStructuredQuery;
+const
+  cDirStr: array [TOrderDirection] of string = ('?', 'ASC', 'DESC');
+var
+  ObjOrder: TJSONObject;
+begin
+  if not assigned(fOrder) then
+    fOrder := TJSONArray.Create;
+  ObjOrder := TJSONObject.Create;
+  ObjOrder.AddPair('field', TJSONObject.Create(
+    TJSONPair.Create('fieldPath', FieldRef)));
+  ObjOrder.AddPair('direction', ORDER_DIRECTION[Direction]);
+  fOrder.AddElement(ObjOrder);
+  result := self;
+  fInfo := fInfo + '[OrderBy:' + FieldRef + ' ' + cDirStr[Direction] + ']';
 end;
 
 function TStructuredQuery.QueryForCompositeFilter(

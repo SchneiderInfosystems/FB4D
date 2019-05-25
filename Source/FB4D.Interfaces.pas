@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018 Christoph Schneider                                      }
+{  Copyright (c) 2018-2019 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -213,12 +213,15 @@ type
   end;
 
   TCompostiteOperation = (coUnspecific, coAnd);
+  TOrderDirection = (odUnspecified, odAscending, odDescending);
   IStructuredQuery = interface(IInterface)
     procedure Collection(const CollectionId: string;
       IncludesDescendants: boolean = false);
     function QueryForFieldFilter(Filter: IQueryFilter): IStructuredQuery;
     function QueryForCompositeFilter(CompostiteOperation: TCompostiteOperation;
       Filters: array of IQueryFilter): IStructuredQuery;
+    function OrderBy(const FieldRef: string;
+      Direction: TOrderDirection): IStructuredQuery;
     function AsJSON: TJSONObject;
     function GetInfo: string;
   end;
