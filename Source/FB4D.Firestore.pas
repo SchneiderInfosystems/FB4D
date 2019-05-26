@@ -64,9 +64,14 @@ type
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
       const DatabaseID: string = DefaultDatabaseID);
     procedure RunQuery(StructuredQuery: IStructuredQuery;
-      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
+      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError); overload;
+    procedure RunQuery(DocumentPath: TRequestResourceParam;
+      StructuredQuery: IStructuredQuery; OnDocuments: TOnDocuments;
+      OnRequestError: TOnRequestError); overload;
     function RunQuerySynchronous(StructuredQuery: IStructuredQuery):
-      IFirestoreDocuments;
+      IFirestoreDocuments; overload;
+    function RunQuerySynchronous(DocumentPath: TRequestResourceParam;
+      StructuredQuery: IStructuredQuery): IFirestoreDocuments; overload;
     procedure Get(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
@@ -228,6 +233,41 @@ var
 begin
   result := nil;
   Request := TFirebaseRequest.Create(BaseURI + METHODE_RUNQUERY, '', fAuth);
+  Query := StructuredQuery.AsJSON;
+  Response := Request.SendRequestSynchronous([''], rmPost, Query, nil);
+  Response.CheckForJSONArr;
+  result := TFirestoreDocuments.CreateFromJSONArr(Response);
+end;
+
+procedure TFirestoreDatabase.RunQuery(DocumentPath: TRequestResourceParam;
+  StructuredQuery: IStructuredQuery; OnDocuments: TOnDocuments;
+  OnRequestError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+  Query: TJSONObject;
+begin
+  fOnQueryDocuments := OnDocuments;
+  fOnQueryError := OnRequestError;
+  Request := TFirebaseRequest.Create(BaseURI +
+    TFirebaseHelpers.EncodeResourceParams(DocumentPath) + METHODE_RUNQUERY,
+    rsRunQuery + StructuredQuery.GetInfo, fAuth);
+  Query := StructuredQuery.AsJSON;
+  Request.SendRequest([''], rmPost, Query, nil, tmBearer, OnQueryResponse,
+    OnRequestError);
+end;
+
+function TFirestoreDatabase.RunQuerySynchronous(
+  DocumentPath: TRequestResourceParam;
+  StructuredQuery: IStructuredQuery): IFirestoreDocuments;
+var
+  Request: IFirebaseRequest;
+  Query: TJSONObject;
+  Response: IFirebaseResponse;
+begin
+  result := nil;
+  Request := TFirebaseRequest.Create(BaseURI +
+    TFirebaseHelpers.EncodeResourceParams(DocumentPath) + METHODE_RUNQUERY, '',
+    fAuth);
   Query := StructuredQuery.AsJSON;
   Response := Request.SendRequestSynchronous([''], rmPost, Query, nil);
   Response.CheckForJSONArr;

@@ -232,9 +232,14 @@ type
     Document: IFirestoreDocument) of object;
   IFirestoreDatabase = interface(IInterface)
     procedure RunQuery(StructuredQuery: IStructuredQuery;
-      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
+      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError); overload;
+    procedure RunQuery(DocumentPath: TRequestResourceParam;
+      StructuredQuery: IStructuredQuery; OnDocuments: TOnDocuments;
+      OnRequestError: TOnRequestError); overload;
     function RunQuerySynchronous(
-      StructuredQuery: IStructuredQuery): IFirestoreDocuments;
+      StructuredQuery: IStructuredQuery): IFirestoreDocuments; overload;
+    function RunQuerySynchronous(DocumentPath: TRequestResourceParam;
+      StructuredQuery: IStructuredQuery): IFirestoreDocuments; overload;
     procedure Get(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;

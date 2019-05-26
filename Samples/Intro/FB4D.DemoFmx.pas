@@ -1061,8 +1061,12 @@ begin
            'multiple gets has different field orders 🤔'));
        end;
     2: begin
-         Doc.AddOrUpdateField(TJSONObject.SetString('info',
-           'This demonstrates a simple collection with random data.'));
+         if not chbUseChildDoc.IsChecked then
+           Doc.AddOrUpdateField(TJSONObject.SetString('info',
+             'This demonstrates a simple collection with random data.'))
+         else
+           Doc.AddOrUpdateField(TJSONObject.SetString('info',
+             'This demonstrates a simple child collection with random data.'));
          if not btnRunQuery.Enabled then
            Doc.AddOrUpdateField(TJSONObject.SetString('hint',
              'For test Run Query create same record as this one and by press ' +
@@ -1271,10 +1275,15 @@ begin
     fDatabase.RunQuery(
       TStructuredQuery.CreateForCollection(edtCollection.Text).QueryForFieldFilter(
         TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan, 50)).
-      OrderBy('testInt', odDescending),
+        OrderBy('testInt', odDescending),
       OnFirestoreGet, OnFirestoreError)
   else
-    memFirestore.Lines.Add('RunQuery for child docs is not yet implemented');
+    fDatabase.RunQuery([edtCollection.Text, edtDocument.Text],
+      TStructuredQuery.CreateForCollection(edtChildCollection.Text).
+        QueryForFieldFilter(
+          TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan, 50)).
+        OrderBy('testInt', odDescending),
+      OnFirestoreGet, OnFirestoreError)
 end;
 
 {$ENDREGION}
