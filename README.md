@@ -4,7 +4,7 @@ For the _Google Cloud database Firebase_, there was no complete library for Delp
 
 For authentication, **FB4D** currently supports email/password authentication and anonymous login. 
 
-The library builds on the _Firebase REST-API_ and provides all functionality with synchronous and asynchronous methods for the usage within GUI application, services and background threads. Both frameworks _VCL_ and _Firemonkey_ are supported. The library is a pure source code library and relies on class interfaces. For clean and short code it supports fluent interface design.
+The library builds on the _Firebase REST-API_ and provides all functionality with synchronous and asynchronous methods for the usage within GUI application, services and background threads. Both frameworks _VCL_ and _Firemonkey_ are supported. The library is a pure source code library and relies on class interfaces. For clean and short application code it supports fluent interface design.
 
 ### Wiki
 
