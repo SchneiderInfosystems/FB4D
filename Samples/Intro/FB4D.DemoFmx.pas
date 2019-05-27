@@ -172,6 +172,8 @@ type
     Label28: TLabel;
     edtChildCollection: TEdit;
     edtChildDocument: TEdit;
+    trbMinTestInt: TTrackBar;
+    lblMinTestInt: TLabel;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -221,6 +223,7 @@ type
     procedure btnSendEMailVerificationClick(Sender: TObject);
     procedure chbUseChildDocChange(Sender: TObject);
     procedure btnRunQueryClick(Sender: TObject);
+    procedure trbMinTestIntChange(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fFirestoreObject: IStorageObject;
@@ -943,9 +946,15 @@ begin
   memFirestore.Lines.Clear;
   try
     if assigned(Docs) and (Docs.Count > 0) then
+    begin
+      if Docs.SkippedResults = 0 then
+        memFirestore.Lines.Add(Docs.Count.ToString + ' documents')
+      else
+        memFirestore.Lines.Add(Docs.Count.ToString + ' documents, skipped ' +
+          Docs.SkippedResults.ToString);
       for c := 0 to Docs.Count - 1 do
         ShowDocument(Docs.Document(c))
-    else
+    end else
       ShowDocument(nil);
   except
     on e: exception do
@@ -1265,24 +1274,43 @@ begin
   edtChildDocument.Visible := chbUseChildDoc.IsChecked;
 end;
 
+procedure TfmxFirebaseDemo.trbMinTestIntChange(Sender: TObject);
+begin
+  lblMinTestInt.Text := 'Min testInt Val: ' +
+    IntToStr(trunc(trbMinTestInt.Value));
+end;
+
 procedure TfmxFirebaseDemo.btnRunQueryClick(Sender: TObject);
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   if not CheckFirestoreFields(false) then
     exit;
+  // the following structured query expects a db built with 'Docs for Run Query'
   if not chbUseChildDoc.IsChecked then
     fDatabase.RunQuery(
-      TStructuredQuery.CreateForCollection(edtCollection.Text).QueryForFieldFilter(
-        TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan, 50)).
-        OrderBy('testInt', odDescending),
+      TStructuredQuery.CreateForCollection(edtCollection.Text).
+        QueryForFieldFilter(
+          TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
+            trunc(trbMinTestInt.Value))).
+        OrderBy('testInt', odAscending),
       OnFirestoreGet, OnFirestoreError)
   else
     fDatabase.RunQuery([edtCollection.Text, edtDocument.Text],
-      TStructuredQuery.CreateForCollection(edtChildCollection.Text).
+      TStructuredQuery.CreateForSelect(['testInt', 'documentCreated', 'info']).
+        Collection(edtChildCollection.Text).
         QueryForFieldFilter(
-          TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan, 50)).
-        OrderBy('testInt', odDescending),
+          TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
+            trunc(trbMinTestInt.Value))).
+        OrderBy('testInt', odAscending).
+        OrderBy('documentCreated', odDescending).
+// For testing the cursor function StartAt and EndAt enter existing values from
+// your collection for testInt instead of 61 and 85
+//        StartAt(TFirestoreDocument.CreateCursor.AddOrUpdateField(
+//          TJSONObject.SetInteger('testInt', 61)), false).
+//        EndAt(TFirestoreDocument.CreateCursor.AddOrUpdateField(
+//          TJSONObject.SetInteger('testInt', 85)), false).
+        Limit(10).Offset(1),
       OnFirestoreGet, OnFirestoreError)
 end;
 

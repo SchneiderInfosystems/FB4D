@@ -1212,6 +1212,9 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Enabled = False
         Position.X = 848.000000000000000000
         Position.Y = 23.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
         TabOrder = 11
         Text = 'Run Query'
         OnClick = btnRunQueryClick
@@ -1228,6 +1231,24 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 12
+      end
+      object trbMinTestInt: TTrackBar
+        CanParentFocus = True
+        Orientation = Horizontal
+        Position.X = 848.000000000000000000
+        Position.Y = 70.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 13
+        Value = 50.000000000000000000
+        OnChange = trbMinTestIntChange
+      end
+      object lblMinTestInt: TLabel
+        Position.X = 848.000000000000000000
+        Position.Y = 56.000000000000000000
+        Text = 'Min testInt Val: 50'
+        TabOrder = 14
       end
     end
     object tabStorage: TTabItem
@@ -1420,12 +1441,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     Top = 242
   end
   object SaveDialog: TSaveDialog
-    Left = 944
-    Top = 114
+    Left = 584
+    Top = 242
   end
   object OpenDialog: TOpenDialog
     DefaultExt = 'png'
-    Left = 880
-    Top = 114
+    Left = 680
+    Top = 242
   end
 end
