@@ -8,11 +8,11 @@ The library builds on the _Firebase REST-API_ and provides all functionality wit
 
 ### Wiki
 
-This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki). Two example applications and a [Getting-Started](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D) on the wiki will help you to start working with the library.
+This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki). Two example applications and a [Getting-Started](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D) on the wiki will help you to start working with the library. For more detailed questions, the [interface reference](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Interface-Reference) will provide the answers you need.
 
 ### Prerequisites
 
-This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.2 Tokio and ready for Delphi 10.3 Rio. 
+This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.2 Tokio and are ready for Delphi 10.3 Rio Update 2. 
 
 ### Supported Platforms
 
