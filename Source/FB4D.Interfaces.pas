@@ -190,9 +190,9 @@ type
       Index: integer): TFirestoreFieldType;
     function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
     function GetMapValues(const FieldName: string): TJSONObjects;
-    procedure AddOrUpdateField(Field: TJSONPair); overload;
-    procedure AddOrUpdateField(const FieldName: string; Val: TJSONValue);
-      overload;
+    function AddOrUpdateField(Field: TJSONPair): IFirestoreDocument; overload;
+    function AddOrUpdateField(const FieldName: string;
+      Val: TJSONValue): IFirestoreDocument; overload;
     function AsJSON: TJSONObject;
     property Fields[Index: integer]: TJSONObject read FieldValue;
   end;
@@ -201,6 +201,7 @@ type
     function Count: integer;
     function Document(Ind: integer): IFirestoreDocument;
     function ServerTimeStamp(TimeZone: TTimeZone): TDateTime;
+    function SkippedResults: integer;
   end;
 
   TWhereOperator = (woUnspecific, woLessThan, woLessThanOrEqual,
@@ -215,13 +216,20 @@ type
   TCompostiteOperation = (coUnspecific, coAnd);
   TOrderDirection = (odUnspecified, odAscending, odDescending);
   IStructuredQuery = interface(IInterface)
-    procedure Collection(const CollectionId: string;
-      IncludesDescendants: boolean = false);
+    function Select(FieldRefs: TRequestResourceParam): IStructuredQuery;
+    function Collection(const CollectionId: string;
+      IncludesDescendants: boolean = false): IStructuredQuery;
     function QueryForFieldFilter(Filter: IQueryFilter): IStructuredQuery;
     function QueryForCompositeFilter(CompostiteOperation: TCompostiteOperation;
       Filters: array of IQueryFilter): IStructuredQuery;
     function OrderBy(const FieldRef: string;
       Direction: TOrderDirection): IStructuredQuery;
+    function StartAt(Cursor: IFirestoreDocument;
+      Before: boolean): IStructuredQuery;
+    function EndAt(Cursor: IFirestoreDocument;
+      Before: boolean): IStructuredQuery;
+    function Limit(limit: integer): IStructuredQuery;
+    function Offset(offset: integer): IStructuredQuery;
     function AsJSON: TJSONObject;
     function GetInfo: string;
   end;

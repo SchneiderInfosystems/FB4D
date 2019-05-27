@@ -105,20 +105,33 @@ type
   TStructuredQuery = class(TInterfacedObject, IStructuredQuery)
   private
     fColSelector, fQuery: TJSONObject;
-    fFilter: TJSONObject;
+    fFilter, fSelect: TJSONObject;
     fOrder: TJSONArray;
+    fStartAt, fEndAt: TJSONObject;
+    fLimit, fOffset: integer;
     fInfo: string;
+    function GetCursorArr(Cursor: IFirestoreDocument): TJSONArray;
   public
     class function CreateForCollection(const CollectionId: string;
       IncludesDescendants: boolean = false): IStructuredQuery;
+    class function CreateForSelect(FieldRefs:
+      TRequestResourceParam): IStructuredQuery;
+    constructor Create;
     destructor Destroy; override;
-    procedure Collection(const CollectionId: string;
-      IncludesDescendants: boolean = false);
+    function Select(FieldRefs: TRequestResourceParam): IStructuredQuery;
+    function Collection(const CollectionId: string;
+      IncludesDescendants: boolean = false): IStructuredQuery;
     function QueryForFieldFilter(Filter: IQueryFilter): IStructuredQuery;
     function QueryForCompositeFilter(CompostiteOperation: TCompostiteOperation;
       Filters: array of IQueryFilter): IStructuredQuery;
     function OrderBy(const FieldRef: string;
       Direction: TOrderDirection): IStructuredQuery;
+    function StartAt(Cursor: IFirestoreDocument;
+      Before: boolean): IStructuredQuery;
+    function EndAt(Cursor: IFirestoreDocument;
+      Before: boolean): IStructuredQuery;
+    function Limit(limit: integer): IStructuredQuery;
+    function Offset(offset: integer): IStructuredQuery;
     function AsJSON: TJSONObject;
     function GetInfo: string;
   end;
@@ -582,6 +595,12 @@ end;
 
 { TStructuredQuery }
 
+constructor TStructuredQuery.Create;
+begin
+  fLimit := -1;
+  fOffset := -1;
+end;
+
 class function TStructuredQuery.CreateForCollection(const CollectionId: string;
   IncludesDescendants: boolean): IStructuredQuery;
 begin
@@ -589,21 +608,32 @@ begin
   result.Collection(CollectionId, IncludesDescendants);
 end;
 
+class function TStructuredQuery.CreateForSelect(
+  FieldRefs: TRequestResourceParam): IStructuredQuery;
+begin
+  result := TStructuredQuery.Create;
+  result.Select(FieldRefs);
+end;
+
 destructor TStructuredQuery.Destroy;
 begin
   fColSelector.Free;
   fFilter.Free;
+  fSelect.Free;
   fOrder.Free;
+  fStartAt.Free;
+  fEndAt.Free;
   fQuery.Free;
   inherited;
 end;
 
-procedure TStructuredQuery.Collection(const CollectionId: string;
-  IncludesDescendants: boolean);
+function TStructuredQuery.Collection(const CollectionId: string;
+  IncludesDescendants: boolean): IStructuredQuery;
 begin
   fColSelector := TJSONObject.Create;
   fColSelector.AddPair('collectionId', CollectionId);
   fColSelector.AddPair('allDescendants', TJSONBool.Create(IncludesDescendants));
+  result := self;
   fInfo := CollectionId;
 end;
 
@@ -613,6 +643,11 @@ var
 begin
   fQuery := TJSONObject.Create;
   StructQuery := TJSONObject.Create;
+  if assigned(fSelect) then
+  begin
+    StructQuery.AddPair('select', fSelect);
+    fSelect := nil;
+  end;
   if assigned(fColSelector) then
   begin
     StructQuery.AddPair('from', TJSONArray.Create(fColSelector));
@@ -628,6 +663,20 @@ begin
     StructQuery.AddPair('orderBy', fOrder);
     fOrder := nil;
   end;
+  if assigned(fStartAt) then
+  begin
+    StructQuery.AddPair('startAt', fStartAt);
+    fStartAt := nil;
+  end;
+  if assigned(fEndAt) then
+  begin
+    StructQuery.AddPair('endAt', fEndAt);
+    fEndAt := nil;
+  end;
+  if fOffset > 0 then
+    StructQuery.AddPair('offset', TJSONNumber.Create(fOffset));
+  if fLimit > 0 then
+    StructQuery.AddPair('limit', TJSONNumber.Create(fLimit));
   fQuery.AddPair('structuredQuery', StructQuery);
 {$IFDEF DEBUG}
   TFirebaseHelpers.Log(' StructuredQuery: ' + fQuery.ToJSON);
@@ -635,14 +684,18 @@ begin
   result := fQuery;
 end;
 
-function TStructuredQuery.QueryForFieldFilter(
-  Filter: IQueryFilter): IStructuredQuery;
+function TStructuredQuery.Select(
+  FieldRefs: TRequestResourceParam): IStructuredQuery;
+var
+  ObjProjection: TJSONArray;
+  FieldRef: string;
 begin
-  FreeAndNil(fFilter);
-  fFilter := TJSONObject.Create;
-  fFilter.AddPair('fieldFilter', Filter.AsJSON);
-  result := self;
-  fInfo := fInfo + '{' + Filter.GetInfo + '}';
+  FreeAndNil(fSelect);
+  ObjProjection := TJSONArray.Create;
+  for FieldRef in FieldRefs do
+    ObjProjection.AddElement(TJSONObject.Create(
+      TJSONPair.Create('fieldPath', FieldRef)));
+  fSelect := TJSONObject.Create(TJSONPair.Create('fields', ObjProjection));
 end;
 
 function TStructuredQuery.OrderBy(const FieldRef: string;
@@ -661,6 +714,16 @@ begin
   fOrder.AddElement(ObjOrder);
   result := self;
   fInfo := fInfo + '[OrderBy:' + FieldRef + ' ' + cDirStr[Direction] + ']';
+end;
+
+function TStructuredQuery.QueryForFieldFilter(
+  Filter: IQueryFilter): IStructuredQuery;
+begin
+  FreeAndNil(fFilter);
+  fFilter := TJSONObject.Create;
+  fFilter.AddPair('fieldFilter', Filter.AsJSON);
+  result := self;
+  fInfo := fInfo + '{' + Filter.GetInfo + '}';
 end;
 
 function TStructuredQuery.QueryForCompositeFilter(
@@ -690,6 +753,51 @@ begin
   fInfo := fInfo + '}';
   FilterVal.AddPair('filters', arr);
   fFilter.AddPair('compositeFilter', FilterVal);
+  result := self;
+end;
+
+function TStructuredQuery.GetCursorArr(Cursor: IFirestoreDocument): TJSONArray;
+var
+  c: integer;
+begin
+  result := TJSONArray.Create;
+  for c := 0 to Cursor.CountFields - 1 do
+    result.AddElement(Cursor.FieldValue(c).Clone as TJSONValue);
+end;
+
+function TStructuredQuery.StartAt(Cursor: IFirestoreDocument;
+  Before: boolean): IStructuredQuery;
+begin
+  FreeAndNil(fStartAt);
+  fStartAt := TJSONObject.Create;
+  fStartAt.AddPair('values', GetCursorArr(Cursor));
+  fStartAt.AddPair('before', TJSONBool.Create(Before));
+  fInfo := fInfo + ' startAt';
+  result := self;
+end;
+
+function TStructuredQuery.EndAt(Cursor: IFirestoreDocument;
+  Before: boolean): IStructuredQuery;
+begin
+  FreeAndNil(fEndAt);
+  fEndAt := TJSONObject.Create;
+  fEndAt.AddPair('values', GetCursorArr(Cursor));
+  fEndAt.AddPair('before', TJSONBool.Create(Before));
+  fInfo := fInfo + ' endAt';
+  result := self;
+end;
+
+function TStructuredQuery.Limit(limit: integer): IStructuredQuery;
+begin
+  fLimit := limit;
+  fInfo := fInfo + ' limit: ' + limit.ToString;
+  result := self;
+end;
+
+function TStructuredQuery.Offset(offset: integer): IStructuredQuery;
+begin
+  fOffset := offset;
+  fInfo := fInfo + ' offset: ' + offset.ToString;
   result := self;
 end;
 

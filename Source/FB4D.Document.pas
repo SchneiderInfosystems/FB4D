@@ -45,6 +45,7 @@ type
     function FieldIndByName(const FieldName: string): integer;
     function ConvertRefPath(const Reference: string): string;
   public
+    class function CreateCursor: IFirestoreDocument;
     constructor Create(const Name: string);
     constructor CreateFromJSONObj(Response: IFirebaseResponse); overload;
     constructor CreateFromJSONObj(JSONObj: TJSONObject); overload;
@@ -90,8 +91,9 @@ type
       Index: integer): TFirestoreFieldType;
     function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
     function GetMapValues(const FieldName: string): TJSONObjects;
-    procedure AddOrUpdateField(Field: TJSONPair); overload;
-    procedure AddOrUpdateField(const FieldName: string; Val: TJSONValue);
+    function AddOrUpdateField(Field: TJSONPair): IFirestoreDocument; overload;
+    function AddOrUpdateField(const FieldName: string;
+      Val: TJSONValue): IFirestoreDocument;
       overload;
     function AsJSON: TJSONObject;
     class function GetFieldType(const FieldType: string): TFirestoreFieldType;
@@ -104,6 +106,7 @@ type
     fJSONObj: TJSONObject;
     fDocumentList: array of IFirestoreDocument;
     fServerTimeStampUTC: TDatetime;
+    fSkippedResults: integer;
   public
     constructor CreateFromJSONDocumentsObj(Response: IFirebaseResponse);
     class function IsJSONDocumentsObj(Response: IFirebaseResponse): boolean;
@@ -112,6 +115,7 @@ type
     function Count: integer;
     function Document(Ind: integer): IFirestoreDocument;
     function ServerTimeStamp(TimeZone: TTimeZone): TDateTime;
+    function SkippedResults: integer;
   end;
 
 implementation
@@ -149,6 +153,7 @@ var
   c: integer;
 begin
   inherited Create;
+  fSkippedResults := 0;
   fJSONArr := Response.GetContentAsJSONArr;
   SetLength(fDocumentList, 0);
   if fJSONArr.Count < 1 then
@@ -156,9 +161,15 @@ begin
   for c := 0 to fJSONArr.Count - 1 do
   begin
     Obj := fJSONArr.Items[c] as TJSONObject;
-    if (fJSONArr.Count = 1) and (Obj.Pairs[0].JsonString.Value = 'readTime') then
+    if (fJSONArr.Count >= 1) and
+       (Obj.Pairs[0].JsonString.Value = 'readTime') then
+    begin
       // Empty [{'#$A'  "readTime": "2018-06-21T08:08:50.445723Z"'#$A'}'#$A']
-      SetLength(fDocumentList, 0)
+      SetLength(fDocumentList, 0);
+      if (fJSONArr.Count >= 2) and
+         (Obj.Pairs[1].JsonString.Value = 'skippedResults') then
+        fSkippedResults := (Obj.Pairs[1].JsonValue as TJSONNumber).AsInt;
+    end
     else if Obj.Pairs[0].JsonString.Value <> 'document' then
       raise EFirestoreDocument.CreateFmt(rsInvalidDocNode,
         [Obj.Pairs[0].JsonString.ToString])
@@ -180,6 +191,7 @@ constructor TFirestoreDocuments.CreateFromJSONDocumentsObj(
 var
   c: integer;
 begin
+  fSkippedResults := 0;
   fJSONObj := Response.GetContentAsJSONObj;
   if fJSONObj.Count < 1 then
     SetLength(fDocumentList, 0)
@@ -246,6 +258,11 @@ begin
   end;
 end;
 
+function TFirestoreDocuments.SkippedResults: integer;
+begin
+  result := fSkippedResults;
+end;
+
 { TFirestoreDocument }
 
 constructor TFirestoreDocument.Create(const Name: string);
@@ -255,6 +272,11 @@ begin
   fJSONObj := TJSONObject.Create;
   fJSONObj.AddPair('name', Name);
   SetLength(fFields, 0);
+end;
+
+class function TFirestoreDocument.CreateCursor: IFirestoreDocument;
+begin
+  result := TFirestoreDocument.Create('CursorDoc');
 end;
 
 constructor TFirestoreDocument.CreateFromJSONObj(JSONObj: TJSONObject);
@@ -315,8 +337,8 @@ begin
       exit(c);
 end;
 
-procedure TFirestoreDocument.AddOrUpdateField(const FieldName: string;
-  Val: TJSONValue);
+function TFirestoreDocument.AddOrUpdateField(const FieldName: string;
+  Val: TJSONValue): IFirestoreDocument;
 var
   FieldsObj: TJSONObject;
   Ind: integer;
@@ -336,9 +358,11 @@ begin
     FieldsObj.RemovePair(FieldName);
   FieldsObj.AddPair(FieldName, Val);
   fFields[Ind].Obj := Val.Clone as TJSONObject;
+  result := self;
 end;
 
-procedure TFirestoreDocument.AddOrUpdateField(Field: TJSONPair);
+function TFirestoreDocument.AddOrUpdateField(
+  Field: TJSONPair): IFirestoreDocument;
 var
   FieldName: string;
   FieldsObj: TJSONObject;
@@ -360,6 +384,7 @@ begin
     FieldsObj.RemovePair(FieldName);
   FieldsObj.AddPair(Field);
   fFields[Ind].Obj := Field.JsonValue as TJSONObject;
+  result := self;
 end;
 
 function TFirestoreDocument.AsJSON: TJSONObject;
