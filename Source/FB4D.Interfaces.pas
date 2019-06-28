@@ -90,7 +90,8 @@ type
   end;
 
   IFirebaseEvent = interface(IInterface)
-    procedure StopListening(const NodeName: string = ''); // Depending on internet connection requires up to 500 ms
+    procedure StopListening(const NodeName: string = '';
+      MaxTimeOutInMS: cardinal = 500);
     function GetResourceParams: TRequestResourceParam;
     function IsStopped: boolean;
   end;
@@ -105,6 +106,7 @@ type
     of object;
   TOnServerTimeStamp = procedure(ServerTime: TDateTime) of object;
   TOnStopListenEvent = TNotifyEvent;
+  TOnAuthRevokedEvent = procedure(TokenRenewPassed: boolean) of object;
   IRealTimeDB = interface(IInterface)
     procedure Get(ResourceParams: TRequestResourceParam;
       OnGetValue: TOnGetValue; OnRequestError: TOnRequestError;
@@ -134,7 +136,8 @@ type
     // long time running request
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
-      OnError: TOnRequestError): IFirebaseEvent;
+      OnError: TOnRequestError;
+      OnAuthRevoked: TOnAuthRevokedEvent = nil): IFirebaseEvent;
     function GetLastKeepAliveTimeStamp: TDateTime;
     // To retrieve server variables like timestamp and future variables
     procedure GetServerVariables(const ServerVarName: string;

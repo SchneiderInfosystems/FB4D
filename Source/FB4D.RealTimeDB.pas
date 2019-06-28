@@ -42,7 +42,8 @@ type
     constructor Create(Firebase: TRealTimeDB;
       ResourceParams: TRequestResourceParam);
   public
-    procedure StopListening(const NodeName: string = '');
+    procedure StopListening(const NodeName: string = '';
+      MaxTimeOutInMS: cardinal = 500);
     function GetResourceParams: TRequestResourceParam;
     function IsStopped: boolean;
   end;
@@ -63,7 +64,7 @@ type
     fOnListenError, fOnGetServerVarError: TOnRequestError;
     fOnServerVariable: TOnServerVariable;
     fLastKeepAliveMsg: TDateTime;
-    fRequireTokenRefresh: boolean;
+    fRequireTokenRenew: boolean;
     fStopWaiting: boolean;
     fListenPartialResp: string;
     const
@@ -123,7 +124,8 @@ type
       QueryParams: TQueryParams = nil): boolean;
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
-      OnError: TOnRequestError): IFirebaseEvent;
+      OnError: TOnRequestError;
+      OnAuthRevoked: TOnAuthRevokedEvent = nil): IFirebaseEvent;
     function GetLastKeepAliveTimeStamp: TDateTime;
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
@@ -476,13 +478,13 @@ begin
   fStream := nil;
   fReadPos := 0;
   fLastKeepAliveMsg := 0;
-  fRequireTokenRefresh := false;
+  fRequireTokenRenew := false;
   fStopWaiting := false;
 end;
 
 function TRealTimeDB.ListenForValueEvents(ResourceParams: TRequestResourceParam;
   ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
-  OnError: TOnRequestError): IFirebaseEvent;
+  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent): IFirebaseEvent;
 var
   URL: string;
   Info, ErrMsg: string;
@@ -506,8 +508,17 @@ begin
         while not TThread.CurrentThread.CheckTerminated and not fStopWaiting do
         begin
           fReadPos := 0;
-          if fRequireTokenRefresh then
-            fAuth.CheckAndRefreshTokenSynchronous;
+          if fRequireTokenRenew then
+          begin
+            if fAuth.CheckAndRefreshTokenSynchronous then
+              fRequireTokenRenew := false;
+            if assigned(OnAuthRevoked) then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  OnAuthRevoked(not fRequireTokenRenew);
+                end);
+          end;
           fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token), fStream);
           // reopen stream
           FStream.Free;
@@ -691,7 +702,7 @@ begin
           end
           else if EventName = cRevokeToken then
           begin
-            fRequireTokenRefresh := true;
+            fRequireTokenRenew := true;
             fListenPartialResp := '';
             Abort := true;
           end else if Data.Length > 0 then
@@ -757,9 +768,8 @@ begin
   result := fIsStopped;
 end;
 
-procedure TFirebaseEvent.StopListening(const NodeName: string);
-const
-  cMaxTimeout = 500; // ms
+procedure TFirebaseEvent.StopListening(const NodeName: string;
+  MaxTimeOutInMS: cardinal);
 var
   Timeout: cardinal;
 begin
@@ -776,7 +786,7 @@ begin
       else
         fFirebase.GetServerVariables(cServerVariableTimeStamp,
           TFirebaseHelpers.AddParamToResParams(fResourceParams, NodeName));
-      Timeout := cMaxTimeout;
+      Timeout := MaxTimeOutInMS;
       while assigned(fFirebase) and assigned(fFirebase.fThread) and
         (Timeout > 0) do
       begin
