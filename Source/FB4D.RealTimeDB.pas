@@ -623,7 +623,7 @@ begin
               end
               else if EventName = cRevokeToken then
               begin
-                fRequireTokenRefresh := true;
+                fRequireTokenRenew := true;
                 fListenPartialResp := '';
                 fStopWaiting := true;
               end else if Data.Length > 0 then
