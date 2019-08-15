@@ -479,6 +479,25 @@ type
       const ObjectName: string; ContentType: TRESTContentType): IStorageObject;
   end;
 
+  /// <summary>
+  /// The interface IFirebaseConfiguration provides a class factory for
+  /// accessing all interfaces to the Firebase services. The interface will be
+  /// created by the constructors of the class TFirebaseConfiguration in the
+  /// unit FB4D.Configuration. The first constructor requires all secrets of the
+  /// Firebase project as ApiKey and Project ID and when using the Storage also
+  /// the storage Bucket. The second constructor parses the google-services.json
+  /// file that shall be loaded from the Firebase Console after adding an App in
+  /// the project settings.
+  /// </summary>
+  EFirebaseConfiguration = class(Exception);
+  IFirebaseConfiguration = interface(IInterface)
+    function Auth: IFirebaseAuthentication;
+    function RealTimeDB: IRealTimeDB;
+    function Database: IFirestoreDatabase;
+    function Storage: IFirebaseStorage;
+    function Functions: IFirebaseFunctions;
+  end;
+
 const
   cGetQueryParamOrderBy = 'orderBy';
   cGetQueryParamLimitToFirst = 'limitToFirst';
