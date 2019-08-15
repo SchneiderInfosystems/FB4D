@@ -164,7 +164,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Left = 20.000000000000000000
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 10.000000000000000000
-        Position.Y = 1730.000000000000000000
+        Position.Y = 2160.000000000000000000
         Size.Width = 0.000000000000000000
       end
       inherited btnFromClipBoard: TButton
@@ -201,7 +201,6 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
           410s
           394s)
         inherited tabText: TTabItem
-          Size.Width = 205.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 649.000000000000000000
           ExplicitSize.cy = 49.000000000000000000
@@ -213,7 +212,6 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
           end
         end
         inherited tabGraphic: TTabItem
-          Size.Width = 205.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 325.000000000000000000
           ExplicitSize.cy = 49.000000000000000000
@@ -224,12 +222,12 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = 68.000000000000000000
-        Position.Y = 854.000000000000000000
+        Position.X = -432.000000000000000000
+        Position.Y = 1284.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
-        Position.Y = 850.000000000000000000
-        Size.Width = 155.000000000000000000
+        Position.Y = 1280.000000000000000000
+        Size.Width = 0.000000000000000000
       end
     end
   end

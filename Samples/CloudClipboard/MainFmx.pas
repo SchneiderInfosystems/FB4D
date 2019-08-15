@@ -72,6 +72,7 @@ type
     chbTesting: TCheckBox;
     lblSendStatusRTDB: TLabel;
     FloatAnimationHideStatus: TFloatAnimation;
+    Label1: TLabel;
     procedure btnSignInClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -175,6 +176,7 @@ begin
     FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now));
   memClipboardText.Lines.Add(E.ClassName);
   memClipboardText.Lines.Add(E.Message);
+  memClipboardText.Lines.Add(E.StackTrace);
 end;
 
 procedure TfmxMain.FormShow(Sender: TObject);
@@ -453,20 +455,33 @@ begin
   lblSendStatusRTDB.Text := '';
   Data := TJSONObject.Create;
   try
-    if TabControlClipboard.ActiveTab = tabText then
+    try
+      if TabControlClipboard.ActiveTab = tabText then
+      begin
+        Data.AddPair('type', 'text');
+        Data.AddPair('text', string(UTF8Encode(memClipboardText.Lines.Text)));
+      end
+      else if TabControlClipboard.ActiveTab = tabGraphic then
+      begin
+        Data.AddPair('type', 'picture');
+        Data.AddPair('picture', GetClipboardPictAsBase64);
+      end else
+        exit;
+      fRealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
+    finally
+      Data.Free;
+    end;
+  except
+    on e: exception do
     begin
-      Data.AddPair('type', 'text');
-      Data.AddPair('text', string(UTF8Encode(memClipboardText.Lines.Text)));
-    end
-    else if TabControlClipboard.ActiveTab = tabGraphic then
-    begin
-      Data.AddPair('type', 'picture');
-      Data.AddPair('picture', GetClipboardPictAsBase64);
-    end else
-      exit;
-    fRealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
-  finally
-    Data.Free;
+      TabControlClipboard.ActiveTab := tabText;
+      memClipboardText.Lines.Clear;
+      memClipboardText.Lines.Add('Exception in btnSendToCloudClick at: ' +
+        FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now));
+      memClipboardText.Lines.Add(E.ClassName);
+      memClipboardText.Lines.Add(E.Message);
+      memClipboardText.Lines.Add(E.StackTrace);
+    end;
   end;
   aniRTDB.Visible := true;
   aniRTDB.Enabled := true;
@@ -592,16 +607,29 @@ var
   MemoryStream: TMemoryStream;
   Bytes: TBytes;
 begin
-  MemoryStream := TMemoryStream.Create;
   try
-    imgClipboardPict.Bitmap.SaveToStream(MemoryStream);
-    MemoryStream.Position := 0;
-    SetLength(Bytes, MemoryStream.Size);
-    MemoryStream.Read(Bytes, MemoryStream.Size);
-  finally
-    MemoryStream.Free;
+    MemoryStream := TMemoryStream.Create;
+    try
+      imgClipboardPict.Bitmap.SaveToStream(MemoryStream);
+      MemoryStream.Position := 0;
+      SetLength(Bytes, MemoryStream.Size);
+      MemoryStream.Read(Bytes, MemoryStream.Size);
+    finally
+      MemoryStream.Free;
+    end;
+    result := TNetEncoding.Base64.EncodeBytesToString(Bytes);
+  except
+    on e: exception do
+    begin
+      TabControlClipboard.ActiveTab := tabText;
+      memClipboardText.Lines.Clear;
+      memClipboardText.Lines.Add('Exception in GetClipboardPictAsBase64 at: ' +
+        FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now));
+      memClipboardText.Lines.Add(E.ClassName);
+      memClipboardText.Lines.Add(E.Message);
+      memClipboardText.Lines.Add(E.StackTrace);
+    end;
   end;
-  result := TNetEncoding.Base64.EncodeBytesToString(Bytes);
 end;
 
 procedure TfmxMain.SetClipboardPictFromBase64(const Base64: string);

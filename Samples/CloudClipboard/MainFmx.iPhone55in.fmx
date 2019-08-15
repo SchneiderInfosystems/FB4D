@@ -26,8 +26,8 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Size.Height = 30.000000000000000000
       end
       inherited btnEnteredProjSettings: TButton
-        Position.X = -230.000000000000000000
-        Position.Y = 1046.000000000000000000
+        Position.X = -802.000000000000000000
+        Position.Y = 1518.000000000000000000
         Size.Width = 44.000000000000000000
         Size.Height = 44.000000000000000000
       end
@@ -98,6 +98,13 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Position.Y = 260.000000000000000000
         Size.Width = 414.000000000000000000
       end
+      inherited Label1: TLabel
+        StyledSettings = [Family, Style, FontColor]
+        Size.Width = 113.000000000000000000
+        Size.Height = 21.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Size = 10.000000000000000000
+      end
     end
     inherited tabClipboard: TTabItem
       Size.Width = 11.000000000000000000
@@ -132,7 +139,8 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       end
       inherited btnSendToCloud: TButton
         Align = Bottom
-        Position.Y = 680.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.Y = 670.000000000000000000
         Size.Width = 414.000000000000000000
         Size.Height = 36.000000000000000000
       end
@@ -142,20 +150,25 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Margins.Left = 10.000000000000000000
         Margins.Bottom = 10.000000000000000000
         Position.X = 10.000000000000000000
-        Position.Y = 581.000000000000000000
+        Position.Y = 571.000000000000000000
         Size.Width = 404.000000000000000000
         TextSettings.Font.Family = '(Default)'
         TextSettings.Font.Size = 10.000000000000000000
       end
+      inherited aniRTDB: TAniIndicator
+        Anchors = [akLeft, akBottom]
+        Position.X = 16.000000000000000000
+        Position.Y = 884.000000000000000000
+      end
       inherited btnFromClipBoard: TButton
         Align = Bottom
-        Position.Y = 608.000000000000000000
+        Position.Y = 598.000000000000000000
         Size.Width = 414.000000000000000000
         Size.Height = 36.000000000000000000
       end
       inherited btnToClipboard: TButton
         Align = Bottom
-        Position.Y = 644.000000000000000000
+        Position.Y = 634.000000000000000000
         Size.Width = 414.000000000000000000
         Size.Height = 36.000000000000000000
       end
@@ -164,13 +177,13 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Margins.Left = 10.000000000000000000
         Margins.Right = 10.000000000000000000
         Size.Width = 394.000000000000000000
-        Size.Height = 508.000000000000000000
+        Size.Height = 498.000000000000000000
         TabHeight = 49.000000000000000000
         Sizes = (
           394s
-          459s
+          449s
           394s
-          459s)
+          449s)
         inherited tabText: TTabItem
           Size.Width = 197.000000000000000000
           Size.Height = 49.000000000000000000
@@ -180,9 +193,9 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
             StyledSettings = [Style, FontColor]
             TextSettings.Font.Size = 8.000000000000000000
             Size.Width = 394.000000000000000000
-            Size.Height = 459.000000000000000000
+            Size.Height = 449.000000000000000000
             Viewport.Width = 394.000000000000000000
-            Viewport.Height = 459.000000000000000000
+            Viewport.Height = 449.000000000000000000
           end
         end
         inherited tabGraphic: TTabItem
@@ -192,17 +205,17 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
           ExplicitSize.cy = 26.000000000000000000
           inherited imgClipboardPict: TImage
             Size.Width = 392.000000000000000000
-            Size.Height = 457.000000000000000000
+            Size.Height = 447.000000000000000000
           end
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -4.000000000000000000
-        Position.Y = 896.000000000000000000
+        Position.X = -576.000000000000000000
+        Position.Y = 1368.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
-        Position.Y = 892.000000000000000000
-        Size.Width = 83.000000000000000000
+        Position.Y = 1364.000000000000000000
+        Size.Width = 0.000000000000000000
       end
     end
   end

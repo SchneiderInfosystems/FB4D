@@ -210,6 +210,12 @@ object fmxMain: TfmxMain
         Text = 'Sign-Up'
         OnClick = btnSignUpClick
       end
+      object Label1: TLabel
+        Position.X = 72.000000000000000000
+        Position.Y = 16.000000000000000000
+        Text = 'Version May-2019'
+        TabOrder = 9
+      end
     end
     object tabClipboard: TTabItem
       CustomIcon = <
