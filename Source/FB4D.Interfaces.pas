@@ -27,8 +27,10 @@ interface
 uses
   System.Classes, System.Types, System.SysUtils,
   System.JSON, System.Sensors, System.Generics.Collections,
-  REST.Types,
-  JOSE.Core.JWT;
+{$IFDEF TOKENJWT}
+  JOSE.Core.JWT,
+{$ENDIF}
+  REST.Types;
 
 type
   /// <summary>
@@ -279,6 +281,7 @@ type
       QueryParams: TQueryParams = nil): IFirebaseResponse;
   end;
 
+{$IFDEF TOKENJWT}
   ETokenJWT = class(Exception);
 
   /// <summary>
@@ -293,6 +296,7 @@ type
     property Header: TJWTHeader read GetHeader;
     property Claims: TJWTClaims read GetClaims;
   end;
+{$ENDIF}
 
   EFirebaseUser = class(Exception);
   TThreeStateBoolean = (tsbTrue, tsbFalse, tsbUnspecified);
@@ -324,11 +328,13 @@ type
     function CreatedAt: TDateTime;
     // Get Token Details and Claim Fields
     function Token: string;
+{$IFDEF TOKENJWT}
     function TokenJWT: ITokenJWT;
-    function ExpiresAt: TDateTime;
-    function RefreshToken: string;
     function ClaimFieldNames: TStrings;
     function ClaimField(const FieldName: string): TJSONValue;
+{$ENDIF}
+    function ExpiresAt: TDateTime;
+    function RefreshToken: string;
   end;
   TFirebaseUserList = TList<IFirebaseUser>;
 
@@ -409,7 +415,9 @@ type
     // Getter methods
     function Authenticated: boolean;
     function Token: string;
+{$IFDEF TOKENJWT}
     function TokenJWT: ITokenJWT;
+{$ENDIF}
     function TokenExpiryDT: TDateTime;
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;

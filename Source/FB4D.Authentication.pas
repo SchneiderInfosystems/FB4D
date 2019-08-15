@@ -45,7 +45,9 @@ type
       fApiKey: string;
       fAuthenticated: boolean;
       fToken: string;
+      {$IFDEF TOKENJWT}
       fTokenJWT: ITokenJWT;
+      {$ENDIF}
       fExpiresAt: TDateTime;
       fRefreshToken: string;
       fOnUserResponse: TOnUserResponse;
@@ -130,7 +132,9 @@ type
     // Getter methods
     function Authenticated: boolean;
     function Token: string;
+    {$IFDEF TOKENJWT}
     function TokenJWT: ITokenJWT;
+    {$ENDIF}
     function TokenExpiryDT: TDateTime;
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
@@ -141,10 +145,12 @@ type
   private
     fJSONResp: TJSONObject;
     fToken: string;
+    {$IFDEF TOKENJWT}
     fTokenJWT: ITokenJWT;
+    fClaimFields: TDictionary<string,TJSONValue>;
+    {$ENDIF}
     fExpiresAt: TDateTime;
     fRefreshToken: string;
-    fClaimFields: TDictionary<string,TJSONValue>;
   public
     constructor Create(JSONResp: TJSONObject; TokenExpected: boolean = true);
     destructor Destroy; override;
@@ -170,11 +176,13 @@ type
     function CreatedAt: TDateTime;
     // Get Token Details and Claim Fields
     function Token: string;
+    {$IFDEF TOKENJWT}
     function TokenJWT: ITokenJWT;
-    function ExpiresAt: TDateTime;
-    function RefreshToken: string;
     function ClaimFieldNames: TStrings;
     function ClaimField(const FieldName: string): TJSONValue;
+    {$ENDIF}
+    function ExpiresAt: TDateTime;
+    function RefreshToken: string;
   end;
 
 implementation
@@ -239,7 +247,9 @@ end;
 procedure TFirebaseAuthentication.SignOut;
 begin
   fToken := '';
+  {$IFDEF TOKENJWT}
   fTokenJWT := nil;
+  {$ENDIF}
   fRefreshToken := '';
   fAuthenticated := false;
 end;
@@ -319,7 +329,9 @@ begin
     fAuthenticated := true;
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
     fToken := User.Token;
+    {$IFDEF TOKENJWT}
     fTokenJWT := User.TokenJWT;
+    {$ENDIF}
     fExpiresAt := User.ExpiresAt;
     fRefreshToken := User.RefreshToken;
     if assigned(fOnUserResponse) then
@@ -413,7 +425,9 @@ begin
     fAuthenticated := true;
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
     fToken := User.fToken;
+    {$IFDEF TOKENJWT}
     fTokenJWT := User.fTokenJWT;
+    {$ENDIF}
     fExpiresAt := User.fExpiresAt;
     fRefreshToken := User.fRefreshToken;
     result := User;
@@ -1015,13 +1029,10 @@ begin
     NewToken := Response.GetContentAsJSONObj;
     try
       if not NewToken.TryGetValue('access_token', fToken) then
-        raise EFirebaseUser.Create('access_token not found')
-      else
-{$IFDEF TOKENJWT}
-        fTokenJWT := TTokenJWT.Create(fToken);
-{$ELSE}
-        fTokenJWT := nil;
-{$ENDIF}
+        raise EFirebaseUser.Create('access_token not found');
+      {$IFDEF TOKENJWT}
+      fTokenJWT := TTokenJWT.Create(fToken);
+      {$ENDIF}
       if NewToken.TryGetValue('expires_in', ExpiresInSec) then
         fExpiresAt := now + ExpiresInSec / 24 / 3600
       else
@@ -1073,13 +1084,10 @@ begin
     NewToken := Response.GetContentAsJSONObj;
     try
       if not NewToken.TryGetValue('access_token', fToken) then
-        raise EFirebaseAuthentication.Create('access_token not found')
-      else
-{$IFDEF TOKENJWT}
-        fTokenJWT := TTokenJWT.Create(fToken);
-{$ELSE}
-        fTokenJWT := nil;
-{$ENDIF}
+        raise EFirebaseAuthentication.Create('access_token not found');
+      {$IFDEF TOKENJWT}
+      fTokenJWT := TTokenJWT.Create(fToken);
+      {$ENDIF}
       if NewToken.TryGetValue('expires_in', ExpiresInSec) then
         fExpiresAt := now + ExpiresInSec / 24 / 3600
       else
@@ -1126,24 +1134,28 @@ begin
   result := fExpiresAt;
 end;
 
+{$IFDEF TOKENJWT}
 function TFirebaseAuthentication.TokenJWT: ITokenJWT;
 begin
   result := fTokenJWT;
 end;
+{$ENDIF}
 
 { TFirebaseUser }
 
 constructor TFirebaseUser.Create(JSONResp: TJSONObject; TokenExpected: boolean);
 var
   ExpiresInSec: integer;
-{$IFDEF TOKENJWT}
+  {$IFDEF TOKENJWT}
   Claims: TJSONObject;
   c: integer;
-{$ENDIF}
+  {$ENDIF}
 begin
   inherited Create;
+  {$IFDEF TOKENJWT}
   fTokenJWT := nil;
   fClaimFields := TDictionary<string,TJSONValue>.Create;
+  {$ENDIF}
   fJSONResp := JSONResp;
   if not fJSONResp.TryGetValue('idToken', fToken) then
     if TokenExpected then
@@ -1151,15 +1163,13 @@ begin
     else
       fToken := ''
   else begin
-{$IFDEF TOKENJWT}
+    {$IFDEF TOKENJWT}
     fTokenJWT := TTokenJWT.Create(fToken);
     Claims := fTokenJWT.Claims.JSON;
     for c := 0 to Claims.Count - 1 do
       fClaimFields.Add(Claims.Pairs[c].JsonString.Value,
         Claims.Pairs[c].JsonValue);
-{$ELSE}
-    fTokenJWT := nil;
-{$ENDIF}
+    {$ENDIF}
   end;
   if fJSONResp.TryGetValue('expiresIn', ExpiresInSec) then
     fExpiresAt := now + ExpiresInSec / 24 / 3600
@@ -1171,8 +1181,10 @@ end;
 
 destructor TFirebaseUser.Destroy;
 begin
+  {$IFDEF TOKENJWT}
   fClaimFields.Free;
   fTokenJWT := nil;
+  {$ENDIF}
   fJSONResp.Free;
   inherited;
 end;
@@ -1306,6 +1318,7 @@ begin
   result := fToken;
 end;
 
+{$IFDEF TOKENJWT}
 function TFirebaseUser.TokenJWT: ITokenJWT;
 begin
   result := fTokenJWT;
@@ -1325,5 +1338,6 @@ begin
   for Key in fClaimFields.Keys do
     result.Add(Key);
 end;
+{$ENDIF}
 
 end.
