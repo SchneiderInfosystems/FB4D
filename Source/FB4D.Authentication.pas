@@ -1116,7 +1116,10 @@ function TFirebaseAuthentication.NeedTokenRefresh: boolean;
 const
   safetyMargin = 5 / 3600 / 24; // 5 sec
 begin
-  result := now + safetyMargin > fExpiresAt;
+  if fAuthenticated then
+    result := now + safetyMargin > fExpiresAt
+  else
+    result := false;
 end;
 
 function TFirebaseAuthentication.GetRefreshToken: string;

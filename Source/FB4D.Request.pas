@@ -221,7 +221,7 @@ begin
   Client := THTTPClient.Create;
   try
     Client.ContentType := ContentTypeToString(ContentType);
-    if assigned(fAuth) and (TokenMode = tmBearer) then
+    if assigned(fAuth) and (TokenMode = tmBearer) and fAuth.Authenticated then
       Client.CustomHeaders['Authorization'] := 'Bearer ' + EncodeToken;
     URL := fBaseURI + TFirebaseHelpers.EncodeResourceParams(ResourceParams);
     if TokenMode = tmAuthParam then
@@ -280,7 +280,7 @@ begin
   Request.Client := Client;
   Request.Method := Method;
   Request.Response := Response;
-  if assigned(fAuth) and (TokenMode = tmBearer) then
+  if assigned(fAuth) and (TokenMode = tmBearer) and fAuth.Authenticated then
     Request.AddAuthParameter('Authorization', 'Bearer ' + EncodeToken,
       pkHTTPHEADER, [poDoNotEncode]);
   if Data <> nil then
@@ -288,7 +288,7 @@ begin
     SourceStr := TStringStream.Create(Data.ToJSON);
     Request.AddBody(SourceStr, TRESTContentType.ctAPPLICATION_JSON);
   end;
-  if TokenMode = tmAuthParam then
+  if assigned(fAuth) and (TokenMode = tmAuthParam) and fAuth.Authenticated then
     Request.Resource := TFirebaseHelpers.EncodeResourceParams(ResourceParams) +
       TFirebaseHelpers.EncodeQueryParamsWithToken(QueryParams, EncodeToken)
   else
@@ -368,7 +368,7 @@ begin
   Request.Client := Client;
   Request.Method := Method;
   Request.Response := Response;
-  if assigned(fAuth) and (TokenMode = tmBearer) then
+  if assigned(fAuth) and (TokenMode = tmBearer) and fAuth.Authenticated then
     Request.AddAuthParameter('Authorization', 'Bearer ' + EncodeToken,
       pkHTTPHEADER, [poDoNotEncode]);
   if Data <> nil then
