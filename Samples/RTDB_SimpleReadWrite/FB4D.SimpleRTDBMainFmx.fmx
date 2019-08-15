@@ -1,0 +1,58 @@
+object FmxSimpleReadWrite: TFmxSimpleReadWrite
+  Left = 0
+  Top = 0
+  Caption = 
+    'Simple Demo for Writing and Continuously Reading a String into t' +
+    'he  Real Time Database'
+  ClientHeight = 104
+  ClientWidth = 676
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object edtDBMessage: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Align = Top
+    TabOrder = 0
+    Position.X = 40.000000000000000000
+    Position.Y = 10.000000000000000000
+    Margins.Left = 40.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 40.000000000000000000
+    Margins.Bottom = 10.000000000000000000
+    Size.Width = 596.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TextPrompt = 'Enter a message for the real time DB'
+    OnChangeTracking = edtDBMessageChangeTracking
+  end
+  object btnWrite: TButton
+    Align = Top
+    Margins.Left = 40.000000000000000000
+    Margins.Right = 40.000000000000000000
+    Position.X = 40.000000000000000000
+    Position.Y = 42.000000000000000000
+    Size.Width = 596.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Write changed text'
+    OnClick = btnWriteClick
+  end
+  object lblStatus: TLabel
+    Align = Top
+    Margins.Left = 40.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 40.000000000000000000
+    Margins.Bottom = 10.000000000000000000
+    Position.X = 40.000000000000000000
+    Position.Y = 74.000000000000000000
+    Size.Width = 596.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.HorzAlign = Center
+    Text = 'lblStatus'
+    TabOrder = 2
+  end
+end

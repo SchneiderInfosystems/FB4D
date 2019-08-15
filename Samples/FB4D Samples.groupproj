@@ -6,6 +6,9 @@
         <Projects Include="Intro\DemoFB4D.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="RTDB_SimpleReadWrite\RTDB_SimpleReadWrite.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="CloudClipboard\CloudClipBoard.dproj">
             <Dependencies/>
         </Projects>
@@ -26,6 +29,15 @@
     <Target Name="DemoFB4D:Make">
         <MSBuild Projects="Intro\DemoFB4D.dproj" Targets="Make"/>
     </Target>
+    <Target Name="RTDB_SimpleReadWrite">
+        <MSBuild Projects="RTDB_SimpleReadWrite\RTDB_SimpleReadWrite.dproj"/>
+    </Target>
+    <Target Name="RTDB_SimpleReadWrite:Clean">
+        <MSBuild Projects="RTDB_SimpleReadWrite\RTDB_SimpleReadWrite.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RTDB_SimpleReadWrite:Make">
+        <MSBuild Projects="RTDB_SimpleReadWrite\RTDB_SimpleReadWrite.dproj" Targets="Make"/>
+    </Target>
     <Target Name="CloudClipBoard">
         <MSBuild Projects="CloudClipboard\CloudClipBoard.dproj"/>
     </Target>
@@ -36,13 +48,13 @@
         <MSBuild Projects="CloudClipboard\CloudClipBoard.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="DemoFB4D;CloudClipBoard"/>
+        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;CloudClipBoard"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DemoFB4D:Clean;CloudClipBoard:Clean"/>
+        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;CloudClipBoard:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DemoFB4D:Make;CloudClipBoard:Make"/>
+        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;CloudClipBoard:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
