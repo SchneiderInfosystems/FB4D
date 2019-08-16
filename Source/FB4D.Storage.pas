@@ -101,9 +101,22 @@ const
 
 constructor TFirebaseStorage.Create(const BucketName: string;
   Auth: IFirebaseAuthentication);
+
+  function ExcludeTrailingSlash(const S: string): string;
+    function IsSlash(const S: string; Index: Integer): Boolean;
+    begin
+      result := (Index >= Low(string)) and (Index <= High(S)) and
+        (S[Index] = '/') and (ByteType(S, Index) = mbSingleByte);
+    end;
+  begin
+    result := S;
+    if IsSlash(result, High(result)) then
+      SetLength(result, Length(result) - 1);
+  end;
+
 begin
   Assert(assigned(Auth), 'Authentication not initalized');
-  fBucket := BucketName;
+  fBucket := ExcludeTrailingSlash(BucketName);
   fAuth := Auth;
 end;
 
