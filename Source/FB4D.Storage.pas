@@ -192,6 +192,25 @@ var
 begin
   fOnUpload := OnUpload;
   fOnUploadError := OnUploadError;
+{$IF CompilerVersion >= 33.0}
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream DE 10.3.1');
+  {$ENDIF}
+  // RSP-23318 is solved since Delphi 10.3.1
+  Request := TFirebaseRequest.Create(BaseURL, ObjectName, fAuth);
+  QueryParams := TQueryParams.Create;
+  try
+    QueryParams.Add('uploadType', ['media']);
+    QueryParams.Add('name',  [ObjectName]);
+    Request.SendRequest([], rmPost, Stream, ContentType,
+      QueryParams, tmBearer, OnUploadFromStream, fOnUploadError);
+  finally
+    QueryParams.Free;
+  end;
+{$ELSE}
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream <= DE 10.3.0');
+  {$ENDIF}
   // Because of RSP-23318 the resource parameters shall not be empty when using
   // query parameters
   // https://quality.embarcadero.com/browse/RSP-23318
@@ -208,11 +227,18 @@ begin
   finally
     QueryParams.Free;
   end;
+{$ENDIF}
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream end');
+  {$ENDIF}
 end;
 
 procedure TFirebaseStorage.OnUploadFromStream(const RequestID: string;
   Response: IFirebaseResponse);
 begin
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('TFirebaseStorage.OnUploadFromStream: ' + RequestID);
+  {$ENDIF}
   try
     Response.CheckForJSONObj;
     if assigned(fOnUpload) then
