@@ -59,6 +59,7 @@ type
     class function CreateAutoID: string;
     class function ConvertIDtoGUID(const FBID: string): TGuid;
     class function IsEMailAdress(const EMail: string): boolean;
+    class function IsMainThread: boolean;
   private
     const
       cBase62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -538,6 +539,11 @@ begin
     end;
   end;
   result := (State = STATE_SUBDOMAIN) and (subdomains >= 2);
+end;
+
+class function TFirebaseHelpers.IsMainThread: boolean;
+begin
+  result := TThread.Current.ThreadID = System.MainThreadID;
 end;
 
 { TJSONHelpers }
