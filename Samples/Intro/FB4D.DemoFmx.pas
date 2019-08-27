@@ -1437,8 +1437,14 @@ begin
     begin
       Obj := Val as TJSONObject;
       for c := 0 to Obj.Count - 1 do
-        memRTDB.Lines.Add(Obj.Pairs[c].JsonString.Value + ': ' +
-          Obj.Pairs[c].JsonValue.ToJSON);
+      begin
+        if Obj.Pairs[c].JsonValue is TJSONString then
+          memRTDB.Lines.Add(Obj.Pairs[c].JsonString.Value + ': ' +
+            Obj.Pairs[c].JsonValue.ToString)
+        else
+          memRTDB.Lines.Add(Obj.Pairs[c].JsonString.Value + ': ' +
+            Obj.Pairs[c].JsonValue.ToJSON);
+      end;
     end
     else if not(Val is TJSONNull) then
       memRTDB.Lines.Add(Val.ToString)
