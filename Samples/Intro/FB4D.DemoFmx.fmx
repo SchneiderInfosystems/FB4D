@@ -220,8 +220,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           object memUser: TMemo
             Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
             DataDetectorTypes = []
+            ReadOnly = True
             Align = Client
-            CanFocus = False
             Margins.Left = 10.000000000000000000
             Margins.Top = 60.000000000000000000
             Margins.Right = 10.000000000000000000
@@ -392,6 +392,17 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             OnClick = btnSendEMailVerificationClick
           end
         end
+      end
+      object btnLinkEMailPwd: TButton
+        Position.X = 592.000000000000000000
+        Position.Y = 40.000000000000000000
+        Size.Width = 113.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 22
+        Text = 'Link EMail/Pwd'
+        Visible = False
+        OnClick = btnLinkEMailPwdClick
       end
     end
     object tabRealTimeDB: TTabItem

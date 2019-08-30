@@ -174,6 +174,7 @@ type
     edtChildDocument: TEdit;
     trbMinTestInt: TTrackBar;
     lblMinTestInt: TLabel;
+    btnLinkEMailPwd: TButton;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -224,6 +225,7 @@ type
     procedure chbUseChildDocChange(Sender: TObject);
     procedure btnRunQueryClick(Sender: TObject);
     procedure trbMinTestIntChange(Sender: TObject);
+    procedure btnLinkEMailPwdClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fFirestoreObject: IStorageObject;
@@ -391,6 +393,8 @@ begin
   if edtEMail.Text.IsEmpty then
   begin
     fAuth.SignInAnonymously(OnUserResponse, OnUserError);
+    btnLinkEMailPwd.Visible := true;
+    btnSignUpNewUser.Visible := false;
   end else
     fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
       OnUserResponse, OnUserError);
@@ -401,6 +405,14 @@ begin
   CreateAuthenticationClass;
   fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
+end;
+
+procedure TfmxFirebaseDemo.btnLinkEMailPwdClick(Sender: TObject);
+begin
+  fAuth.LinkWithEMailAndPassword(edtEmail.Text, edtPassword.Text,
+    OnUserResponse, OnUserError);
+  btnLinkEMailPwd.Visible := false;
+  btnLogin.Visible := true;
 end;
 
 procedure TfmxFirebaseDemo.OnUserResponse(const Info: string;
