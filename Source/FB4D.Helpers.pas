@@ -229,7 +229,8 @@ var
 begin
   result := '';
   for i := low(ResourceParams) to high(ResourceParams) do
-    result := result + '/' + TNetEncoding.URL.Encode(ResourceParams[i]);
+    // Do not use TNetEncoding.URL.Encode because ':' must be supported
+    result := result + '/' + ResourceParams[i];
 end;
 
 class function TFirebaseHelpers.EncodeToken(const Token: string): string;

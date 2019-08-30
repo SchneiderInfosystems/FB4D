@@ -371,6 +371,11 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
+    // Link new email/password access to anonymous user
+    procedure LinkWithEMailAndPassword(const EMail, Password: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    function LinkWithEMailAndPasswordSynchronous(const EMail,
+      Password: string): IFirebaseUser;
     // Logout
     procedure SignOut;
     // Send EMail for EMail Verification

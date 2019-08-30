@@ -88,6 +88,11 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
+    // Link new email/password access to anonymous user
+    procedure LinkWithEMailAndPassword(const EMail, Password: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    function LinkWithEMailAndPasswordSynchronous(const EMail,
+      Password: string): IFirebaseUser;
     // Logout
     procedure SignOut;
     // Send EMail for EMail Verification
@@ -195,6 +200,8 @@ const
    'https://www.googleapis.com/identitytoolkit/v3/relyingparty';
  GOOGLE_REFRESH_AUTH_URL =
    'https://securetoken.googleapis.com/v1/token';
+ GOOGLE_IDTOOLKIT_URL =
+   'https://identitytoolkit.googleapis.com/v1';
 
 resourcestring
   rsSignInAnonymously = 'Sign in anonymously';
@@ -283,7 +290,6 @@ var
   Params: TQueryParams;
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
@@ -292,9 +298,8 @@ begin
     Data.AddPair(TJSONPair.Create('requestType', 'VERIFY_EMAIL'));
     Data.AddPair(TJSONPair.Create('idToken', fToken));
     Params.Add('key', [ApiKey]);
-    ds := ['getOobConfirmationCode'];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
-      tmNoToken);
+    Response := Request.SendRequestSynchronous(['getOobConfirmationCode'],
+      rmPost, Data, Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
   finally
@@ -402,7 +407,6 @@ var
   Params: TQueryParams;
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
-  ds: TStringDynArray;
   User: TFirebaseUser;
 begin
   result := nil;
@@ -418,9 +422,8 @@ begin
     end;
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Params.Add('key', [ApiKey]);
-    ds := [ResourceStr[SignType]];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
-      tmNoToken);
+    Response := Request.SendRequestSynchronous([ResourceStr[SignType]], rmPost,
+      Data, Params, tmNoToken);
     Response.CheckForJSONObj;
     fAuthenticated := true;
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
@@ -571,7 +574,6 @@ var
   Params: TQueryParams;
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
@@ -580,9 +582,8 @@ begin
     Data.AddPair(TJSONPair.Create('email', Email));
     Data.AddPair(TJSONPair.Create('requestType', 'PASSWORD_RESET'));
     Params.Add('key', [ApiKey]);
-    ds := ['getOobConfirmationCode'];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
-      tmNoToken);
+    Response := Request.SendRequestSynchronous(['getOobConfirmationCode'],
+      rmPost, Data, Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
   finally
@@ -624,7 +625,6 @@ var
   Params: TQueryParams;
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
@@ -632,9 +632,8 @@ begin
   try
     Data.AddPair(TJSONPair.Create('oobCode', ResetPasswortCode));
     Params.Add('key', [ApiKey]);
-    ds := ['resetPassword'];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
-      tmNoToken);
+    Response := Request.SendRequestSynchronous(['resetPassword'], rmPost, Data,
+      Params, tmNoToken);
     if Response.StatusOk then
       result := pvrPassed
     else if SameText(Response.ErrorMsg,
@@ -706,7 +705,6 @@ var
   Params: TQueryParams;
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
@@ -715,9 +713,8 @@ begin
     Data.AddPair(TJSONPair.Create('oobCode', ResetPasswortCode));
     Data.AddPair(TJSONPair.Create('newPassword', NewPassword));
     Params.Add('key', [ApiKey]);
-    ds := ['resetPassword'];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
-      tmNoToken);
+    Response := Request.SendRequestSynchronous(['resetPassword'], rmPost, Data,
+      Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
   finally
@@ -736,7 +733,6 @@ var
   Params: TQueryParams;
   Request: IFirebaseRequest;
   Info: TStringList;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Params := TQueryParams.Create;
@@ -767,9 +763,8 @@ begin
     Params.Add('key', [ApiKey]);
     Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL,
       Format(rsChangeProfile, [Info.CommaText]));
-    ds := ['setAccountInfo'];
-    Request.SendRequest(ds, rmPost, Data, Params, tmNoToken, OnResponse,
-      OnError);
+    Request.SendRequest(['setAccountInfo'], rmPost, Data, Params, tmNoToken,
+      OnResponse, OnError);
   finally
     Info.Free;
     Params.Free;
@@ -785,7 +780,6 @@ var
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
   Info: TStringList;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
@@ -815,9 +809,8 @@ begin
       Info.Add('Photo URL');
     end;
     Params.Add('key', [ApiKey]);
-    ds := ['setAccountInfo'];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
-      tmNoToken);
+    Response := Request.SendRequestSynchronous(['setAccountInfo'], rmPost, Data,
+      Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
     {$IFDEF DEBUG}
@@ -833,13 +826,71 @@ begin
   end;
 end;
 
+procedure TFirebaseAuthentication.LinkWithEMailAndPassword(const EMail,
+  Password: string; OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: TFirebaseRequest;
+begin
+  fOnUserResponse := OnUserResponse;
+  fOnError := OnError;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('returnSecureToken', 'TRUE'));
+    Data.AddPair(TJSONPair.Create('email', EMail));
+    Data.AddPair(TJSONPair.Create('password', Password));
+    Params.Add('key', [ApiKey]);
+    Request.SendRequest(['accounts:update'], rmPost, Data, Params, tmNoToken,
+      OnUserResp, OnError);
+  finally
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
+end;
+
+function TFirebaseAuthentication.LinkWithEMailAndPasswordSynchronous(
+  const EMail, Password: string): IFirebaseUser;
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('returnSecureToken', 'TRUE'));
+    Data.AddPair(TJSONPair.Create('email', EMail));
+    Data.AddPair(TJSONPair.Create('password', Password));
+    Params.Add('key', [ApiKey]);
+    Response := Request.SendRequestSynchronous(['accounts:update'],
+      rmPost, Data, Params, tmNoToken);
+    Response.CheckForJSONObj;
+    result := TFirebaseUser.Create(Response.GetContentAsJSONObj);
+    {$IFDEF DEBUG}
+    TFirebaseHelpers.Log(Response.ContentAsString);
+    {$ENDIF}
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
+end;
+
 procedure TFirebaseAuthentication.DeleteCurrentUserSynchronous;
 var
   Data: TJSONObject;
   Params: TQueryParams;
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
@@ -847,9 +898,8 @@ begin
   try
     Data.AddPair(TJSONPair.Create('idToken', fToken));
     Params.Add('key', [ApiKey]);
-    ds := ['deleteAccount'];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
-      tmNoToken);
+    Response := Request.SendRequestSynchronous(['deleteAccount'], rmPost, Data,
+      Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
     {$IFDEF DEBUG}
@@ -869,7 +919,6 @@ var
   Data: TJSONObject;
   Params: TQueryParams;
   Request: IFirebaseRequest;
-  ds: TStringDynArray;
 begin
   Data := TJSONObject.Create;
   Params := TQueryParams.Create;
@@ -877,9 +926,8 @@ begin
     Data.AddPair(TJSONPair.Create('idToken', fToken));
     Params.Add('key', [ApiKey]);
     Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, rsDeleteCurrentUser);
-    ds := ['deleteAccount'];
-    Request.SendRequest(ds, rmPost, Data, Params, tmNoToken, OnResponse,
-      OnError);
+    Request.SendRequest(['deleteAccount'], rmPost, Data, Params, tmNoToken,
+      OnResponse, OnError);
   finally
     Params.Free;
     Data.Free;
@@ -892,7 +940,6 @@ var
   Data: TJSONObject;
   Params: TQueryParams;
   Request: IFirebaseRequest;
-  ds: TStringDynArray;
 begin
   fOnGetUserData := OnGetUserData;
   fOnError := OnError;
@@ -902,8 +949,7 @@ begin
   try
     Data.AddPair(TJSONPair.Create('idToken', fToken));
     Params.Add('key', [ApiKey]);
-    ds := ['getAccountInfo'];
-    Request.SendRequest(ds, rmPost, Data, Params, tmNoToken,
+    Request.SendRequest(['getAccountInfo'], rmPost, Data, Params, tmNoToken,
       OnUserListResp, OnError);
   finally
     Params.Free;
@@ -917,7 +963,6 @@ var
   Params: TQueryParams;
   Request: TFirebaseRequest;
   Response: IFirebaseResponse;
-  ds: TStringDynArray;
   Users: TJSONArray;
   c: integer;
 begin
@@ -928,8 +973,7 @@ begin
   try
     Data.AddPair(TJSONPair.Create('idToken', fToken));
     Params.Add('key', [ApiKey]);
-    ds := ['getAccountInfo'];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data,
+    Response := Request.SendRequestSynchronous(['getAccountInfo'], rmPost, Data,
       Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj
@@ -1063,7 +1107,6 @@ var
   Response: IFirebaseResponse;
   NewToken: TJSONObject;
   ExpiresInSec: integer;
-  ds: TStringDynArray;
 begin
   if not NeedTokenRefresh then
     exit(false);
@@ -1076,8 +1119,7 @@ begin
     Data.AddPair(TJSONPair.Create('grant_type', 'refresh_token'));
     Data.AddPair(TJSONPair.Create('refresh_token', fRefreshToken));
     Params.Add('key', [ApiKey]);
-    ds := [];
-    Response := Request.SendRequestSynchronous(ds, rmPost, Data, Params,
+    Response := Request.SendRequestSynchronous([], rmPost, Data, Params,
       tmNoToken);
     Response.CheckForJSONObj;
     fAuthenticated := true;
