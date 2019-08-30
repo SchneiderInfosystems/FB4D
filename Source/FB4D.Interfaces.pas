@@ -428,14 +428,15 @@ type
     function GetRefreshToken: string;
   end;
 
+  EFirebaseFunctions = class(Exception);
   TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of
     object;
   IFirebaseFunctions = interface(IInterface)
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
       Params: TJSONObject = nil);
-    procedure CallFunctionSynchronous(const FunctionName: string;
-      Params: TJSONObject = nil);
+    function CallFunctionSynchronous(const FunctionName: string;
+      Params: TJSONObject = nil): TJSONObject;
   end;
 
   IStorageObject = interface;

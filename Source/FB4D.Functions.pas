@@ -45,8 +45,8 @@ type
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
       Params: TJSONObject = nil);
-    procedure CallFunctionSynchronous(const FunctionName: string;
-      Params: TJSONObject = nil);
+    function CallFunctionSynchronous(const FunctionName: string;
+      Params: TJSONObject = nil): TJSONObject;
   end;
 
 implementation
@@ -134,12 +134,13 @@ begin
   end;
 end;
 
-procedure TFirebaseFunctions.CallFunctionSynchronous(const FunctionName: string;
-  Params: TJSONObject);
+function TFirebaseFunctions.CallFunctionSynchronous(const FunctionName: string;
+  Params: TJSONObject): TJSONObject;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
   Data: TJSONObject;
+  Obj: TJSONObject;
 begin
   Data := TJSONObject.Create;
   try
@@ -148,6 +149,10 @@ begin
     Response := Request.SendRequestSynchronous([FunctionName], rmPost, Data,
       nil, tmBearer);
     Response.CheckForJSONObj;
+    Obj := Response.GetContentAsJSONObj;
+    if not Obj.TryGetValue('result', result) then
+      raise EFirebaseFunctions.CreateFmt(rsUnexpectedResult,
+        [FunctionName, Obj.ToJSON]);
   finally
     Data.Free;
   end;
