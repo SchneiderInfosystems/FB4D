@@ -9,7 +9,7 @@ uses
   {$IFDEF TESTINSIGHT}
   TestInsight.DUnitX,
   {$ENDIF }
-  DUnitX.Loggers.GUI.VCL {GUIVCLTestRunner},
+  DUnitX.Loggers.GUI.VCL,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
   UT.Autentication in 'UT.Autentication.pas';
