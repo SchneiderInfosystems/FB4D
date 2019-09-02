@@ -224,13 +224,20 @@ end;
 
 class function TFirebaseHelpers.EncodeResourceParams(
   ResourceParams: TStringDynArray): string;
+const
+  PathUnsafeChars: TURLEncoding.TUnsafeChars =
+    [Ord('"'), Ord('<'), Ord('>'), Ord('^'), Ord('`'), Ord('{'), Ord('}'),
+     Ord('|'), Ord('/'), Ord('\'), Ord('?'), Ord('#'), Ord('+')];
+  Option: TURLEncoding.TEncodeOptions =
+    [TURLEncoding.TEncodeOption.SpacesAsPlus,
+     TURLEncoding.TEncodeOption.EncodePercent];
 var
   i: integer;
 begin
   result := '';
   for i := low(ResourceParams) to high(ResourceParams) do
-    // Do not use TNetEncoding.URL.Encode because ':' must be supported
-    result := result + '/' + ResourceParams[i];
+    result := result + '/' + TNetEncoding.URL.Encode(ResourceParams[i],
+      PathUnsafeChars, Option);
 end;
 
 class function TFirebaseHelpers.EncodeToken(const Token: string): string;
