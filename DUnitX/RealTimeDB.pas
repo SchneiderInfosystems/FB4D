@@ -1,0 +1,138 @@
+{******************************************************************************}
+{                                                                              }
+{  Delphi FB4D Library                                                         }
+{  Copyright (c) 2018-2019 Christoph Schneider                                 }
+{  Schneider Infosystems AG, Switzerland                                       }
+{  https://github.com/SchneiderInfosystems/FB4D                                }
+{                                                                              }
+{******************************************************************************}
+{                                                                              }
+{  Licensed under the Apache License, Version 2.0 (the "License");             }
+{  you may not use this file except in compliance with the License.            }
+{  You may obtain a copy of the License at                                     }
+{                                                                              }
+{      http://www.apache.org/licenses/LICENSE-2.0                              }
+{                                                                              }
+{  Unless required by applicable law or agreed to in writing, software         }
+{  distributed under the License is distributed on an "AS IS" BASIS,           }
+{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.    }
+{  See the License for the specific language governing permissions and         }
+{  limitations under the License.                                              }
+{                                                                              }
+{******************************************************************************}
+
+unit RealTimeDB;
+
+interface
+
+uses
+  System.Classes, System.SysUtils, System.JSON,
+  DUnitX.TestFramework,
+  FB4D.Interfaces;
+
+{$M+}
+type
+  [TestFixture]
+  UT_RealTimeDB = class(TObject)
+  private
+    fConfig: IFirebaseConfiguration;
+    fErrMsg: string;
+    fReqID: string;
+    fInfo: string;
+    fData: TJSONObject;
+    fCallBack: boolean;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
+    [TestCase]
+    procedure PutGetSynchronous;
+  end;
+
+implementation
+
+uses
+  VCL.Forms,
+  FB4D.Configuration;
+
+{$I FBConfig.inc}
+
+const
+  cEMail = 'Integration.Tester@FB4D.org';
+  cPassword = 'It54623!';
+  cDBPath: TRequestResourceParam = ['TestNode', '1234'];
+
+{ UT_RealTimeDB }
+
+procedure UT_RealTimeDB.Setup;
+begin
+  fConfig := TFirebaseConfiguration.Create(cApiKey, cProjectID, cBucket);
+  fConfig.Auth.SignUpWithEmailAndPasswordSynchronous(cEmail, cPassword);
+  fErrMsg := '';
+  fReqID := '';
+  fInfo := '';
+  fData := TJSONObject.Create;
+  fCallBack := false;
+end;
+
+procedure UT_RealTimeDB.TearDown;
+begin
+  fConfig.RealTimeDB.DeleteSynchronous(cDBPath);
+  fData.Free;
+  fConfig.Auth.DeleteCurrentUserSynchronous;
+  fConfig := nil;
+end;
+
+procedure UT_RealTimeDB.PutGetSynchronous;
+var
+  Res: TJSONValue;
+begin
+  Status('Put single value');
+  fData.AddPair('Item1', 'TestVal1');
+  Res := fConfig.RealTimeDB.PutSynchronous(cDBPath, fData);
+  Assert.IsNotNull(res, 'Result of Put is nil');
+  Assert.AreEqual(fData.ToJSON, Res.ToJSON, 'result JSON is different from put');
+  Res.Free;
+
+  Status('Get single value');
+  Res := fConfig.RealTimeDB.GetSynchronous(cDBPath);
+  Assert.IsNotNull(res, 'Result of Get is nil');
+  Assert.AreEqual(fData.ToJSON, Res.ToJSON,
+    'result JSON is different between get and put');
+  Res.Free;
+
+  Status('Put simple object value');
+  fData.AddPair('Item2', TJSONNumber.Create(3.14));
+  Res := fConfig.RealTimeDB.PutSynchronous(cDBPath, fData);
+  Assert.IsNotNull(res, 'Result is nil');
+  Assert.AreEqual(fData.ToJSON, Res.ToJSON, 'resul JSON is different from put');
+  Res.Free;
+
+  Status('Get single object value');
+  Res := fConfig.RealTimeDB.GetSynchronous(cDBPath);
+  Assert.IsNotNull(res, 'Result of Get is nil');
+  Assert.AreEqual(fData.ToJSON, Res.ToJSON,
+    'result JSON is different between get and put');
+  Res.Free;
+
+  Status('Put complex object value');
+  fData.AddPair('Item3', TJSONObject.Create(TJSONPair.Create('SubItem',
+    'TestSubItem')));
+  Res := fConfig.RealTimeDB.PutSynchronous(cDBPath, fData);
+  Assert.IsNotNull(res, 'Result is nil');
+  Assert.AreEqual(fData.ToJSON, Res.ToJSON, 'result JSON is different from put');
+  Res.Free;
+
+  Status('Get complex object value');
+  Res := fConfig.RealTimeDB.GetSynchronous(cDBPath);
+  Assert.IsNotNull(res, 'Result of Get is nil');
+  Assert.AreEqual(fData.ToJSON, Res.ToJSON,
+    'result JSON is different between get and put');
+  Res.Free;
+end;
+
+initialization
+  TDUnitX.RegisterTestFixture(UT_RealTimeDB);
+end.

@@ -139,7 +139,8 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="Autentication.pas"/>
+        <DCCReference Include="Authentication.pas"/>
+        <DCCReference Include="RealTimeDB.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

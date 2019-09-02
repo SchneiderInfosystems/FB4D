@@ -35,7 +35,8 @@ uses
   DUnitX.Loggers.GUI.VCL,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  Autentication in 'Autentication.pas';
+  Authentication in 'Authentication.pas',
+  RealTimeDB in 'RealTimeDB.pas';
 
 begin
 {$IFDEF TESTINSIGHT}

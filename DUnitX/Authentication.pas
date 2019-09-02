@@ -21,7 +21,7 @@
 {                                                                              }
 {******************************************************************************}
 
-unit Autentication;
+unit Authentication;
 
 interface
 
