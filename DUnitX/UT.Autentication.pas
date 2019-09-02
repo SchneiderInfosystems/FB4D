@@ -36,8 +36,12 @@ type
     [TestCase]
     procedure SignUpWithEmailAndPasswordSynchronous;
     procedure SignUpWithEmailAndPassword;
+    procedure SignUpWithEmailAndPasswordSynchronousFail;
+    procedure SignUpWithEmailAndPasswordFail;
     procedure SignInWithEmailAndPasswordSynchronous;
     procedure SignInWithEmailAndPassword;
+    procedure SignInWithEmailAndPasswordSynchronousFail;
+    procedure SignInWithEmailAndPasswordFail;
     procedure SignInAnonymouslySynchronous;
     procedure SignInAnonymously;
     procedure LinkWithEMailAndPasswordSynchronous;
@@ -148,6 +152,39 @@ begin
   Assert.IsNotEmpty(fUSer.Token, 'Token is empty');
 end;
 
+procedure UT_Authentication.SignUpWithEmailAndPasswordSynchronousFail;
+begin
+  // precondition is a created user
+  SignUpWithEmailAndPasswordSynchronous;
+  fUser := nil;
+  // start test
+  Status('Try create already registered email again');
+  Assert.WillRaise(
+    procedure
+    begin
+      fUser := fConfig.Auth.SignUpWithEmailAndPasswordSynchronous(cEmail, cPassword);
+    end,
+    EFirebaseResponse, 'EMAIL_EXISTS');
+  Assert.IsNull(fUser, 'User created');
+  fConfig.Auth.DeleteCurrentUserSynchronous;
+end;
+
+procedure UT_Authentication.SignUpWithEmailAndPasswordFail;
+begin
+  // precondition is a created user
+  SignUpWithEmailAndPasswordSynchronous;
+  fUser := nil;
+  // start test
+  Status('Try create already registered email again');
+  fConfig.Auth.SignUpWithEmailAndPassword(cEmail, cPassword, OnUserResponse,
+    OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.AreEqual(fErrMsg, 'EMAIL_EXISTS');
+  Assert.IsNull(fUser, 'User created');
+  fConfig.Auth.DeleteCurrentUserSynchronous;
+end;
+
 procedure UT_Authentication.SignInWithEmailAndPasswordSynchronous;
 begin
   // precondition is a created user
@@ -179,6 +216,30 @@ begin
   Assert.AreEqual(fUser.EMail, cEMail, 'Wrong EMail');
   Assert.IsNotEmpty(fUser.UID, 'UID is empty');
   Assert.IsNotEmpty(fUSer.Token, 'Token is empty');
+end;
+
+procedure UT_Authentication.SignInWithEmailAndPasswordSynchronousFail;
+begin
+  Status('Try login unregistered account');
+  Assert.WillRaise(
+    procedure
+    begin
+      fUser := fConfig.Auth.SignInWithEmailAndPasswordSynchronous(cEmail,
+        cPassword);
+    end,
+    EFirebaseResponse, 'EMAIL_NOT_FOUND');
+  Assert.IsNull(fUser, 'User exists');
+end;
+
+procedure UT_Authentication.SignInWithEmailAndPasswordFail;
+begin
+  Status('Try login unregistered account');
+  fConfig.Auth.SignInWithEmailAndPassword(cEmail, cPassword, OnUserResponse,
+    OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.AreEqual(fErrMsg, 'EMAIL_NOT_FOUND');
+  Assert.IsNull(fUser, 'User exists');
 end;
 
 procedure UT_Authentication.SignInAnonymouslySynchronous;
