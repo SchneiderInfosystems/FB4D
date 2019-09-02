@@ -12,7 +12,7 @@ uses
   DUnitX.Loggers.GUI.VCL,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  UT.Autentication in 'UT.Autentication.pas';
+  Autentication in 'Autentication.pas';
 
 begin
 {$IFDEF TESTINSIGHT}
