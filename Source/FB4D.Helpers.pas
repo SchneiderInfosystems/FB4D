@@ -33,7 +33,7 @@ uses
 type
   TOnSimpleDownloadError = procedure(const DownloadURL, ErrMsg: string) of
     object;
-   TOnSimpleDownloadSuccess = procedure(const DownloadURL: string) of object;
+  TOnSimpleDownloadSuccess = procedure(const DownloadURL: string) of object;
   TFirebaseHelpers = class
     class function CodeRFC3339DateTime(DateTimeStamp: TDateTime): string;
     class function ConvertTimeStampToUTCDateTime(TimeStamp: Int64): TDateTime;
