@@ -26,15 +26,14 @@ program DemoFB4D;
 {$WARN DUPLICATE_CTOR_DTOR OFF}
 
 uses
-  {$IFDEF DEBUG}
-//  FastMM4,
-  {$ENDIF }
   System.StartUpCopy,
   FMX.Forms,
   FB4D.DemoFmx in 'FB4D.DemoFmx.pas' {fmxFirebaseDemo},
   FB4D.Interfaces in '..\..\Source\FB4D.Interfaces.pas',
   FB4D.Authentication in '..\..\Source\FB4D.Authentication.pas',
+{$IFDEF TOKENJWT}
   FB4D.OAuth in '..\..\Source\FB4D.OAuth.pas',
+{$ENDIF}
   FB4D.Response in '..\..\Source\FB4D.Response.pas',
   FB4D.Request in '..\..\Source\FB4D.Request.pas',
   FB4D.Firestore in '..\..\Source\FB4D.Firestore.pas',

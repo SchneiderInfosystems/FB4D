@@ -295,7 +295,10 @@ implementation
 uses
   System.Generics.Collections, System.IniFiles, System.IOUtils, System.RTTI,
   REST.Types,
-  FB4D.Authentication, FB4D.OAuth, FB4D.Helpers,
+  FB4D.Authentication, FB4D.Helpers,
+{$IFDEF TOKENJWT}
+  FB4D.OAuth,
+{$ENDIF}
   FB4D.Response, FB4D.Request, FB4D.Functions, FB4D.Storage,
   FB4D.Firestore, FB4D.Document;
 
@@ -483,29 +486,39 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.DisplayTokenJWT(mem: TMemo);
+{$IFDEF TOKENJWT}
 var
   c: integer;
 begin
-  mem.Lines.Add('JWT.Header:');
-  for c := 0 to fAuth.TokenJWT.Header.JSON.Count - 1 do
-    mem.Lines.Add('  ' +
-      fAuth.TokenJWT.Header.JSON.Pairs[c].JsonString.Value + ': ' +
-      fAuth.TokenJWT.Header.JSON.Pairs[c].JsonValue.Value);
-  mem.Lines.Add('JWT.Claims:');
-  for c := 0 to fAuth.TokenJWT.Claims.JSON.Count - 1 do
-    if fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue is TJSONString then
+  if assigned(fAuth.TokenJWT) then
+  begin
+    mem.Lines.Add('JWT.Header:');
+    for c := 0 to fAuth.TokenJWT.Header.JSON.Count - 1 do
       mem.Lines.Add('  ' +
-        fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonString.Value + ': ' +
-        fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue.Value)
+        fAuth.TokenJWT.Header.JSON.Pairs[c].JsonString.Value + ': ' +
+        fAuth.TokenJWT.Header.JSON.Pairs[c].JsonValue.Value);
+    mem.Lines.Add('JWT.Claims:');
+    for c := 0 to fAuth.TokenJWT.Claims.JSON.Count - 1 do
+      if fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue is TJSONString then
+        mem.Lines.Add('  ' +
+          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonString.Value + ': ' +
+          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue.Value)
+      else
+        mem.Lines.Add('  ' +
+          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonString.Value + ': ' +
+          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue.ToJSON);
+    if fAuth.TokenJWT.VerifySignature then
+      mem.Lines.Add('Token signatur verified')
     else
-      mem.Lines.Add('  ' +
-        fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonString.Value + ': ' +
-        fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue.ToJSON);
-  if fAuth.TokenJWT.VerifySignature then
-    mem.Lines.Add('Token signatur verified')
-  else
-    mem.Lines.Add('Token signatur broken');
+      mem.Lines.Add('Token signatur broken');
+  end else
+    mem.Lines.Add('No JWT Token');
 end;
+{$ELSE}
+begin
+  mem.Lines.Add('No JWT Support');
+end;
+{$ENDIF}
 
 procedure TfmxFirebaseDemo.DisplayUser(mem: TMemo; User: IFirebaseUser);
 begin
@@ -535,8 +548,7 @@ begin
   if User.IsPhotoURLAvailable then
     mem.Lines.Add('Photo URL: ' + User.PhotoURL);
   mem.Lines.Add('Refresh token ' + fAuth.GetRefreshToken);
-  if assigned(fAuth.TokenJWT) then
-    DisplayTokenJWT(memUser);
+  DisplayTokenJWT(memUser);
   if not edtEMail.Text.IsEmpty then
   begin
     if User.IsDisplayNameAvailable then
