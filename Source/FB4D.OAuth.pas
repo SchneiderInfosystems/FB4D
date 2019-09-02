@@ -76,15 +76,14 @@ var
   ARequest: TFirebaseRequest;
   AResponse: IFirebaseResponse;
   JSONObj: TJSONObject;
-  ds: TStringDynArray;
   c: integer;
 begin
   result.Empty;
   ARequest := TFirebaseRequest.Create(GOOGLE_x509, 'GetPublicKey');
   JSONObj := nil;
   try
-    ds := [SToken];
-    AResponse := ARequest.SendRequestSynchronous(ds, rmGet, nil, nil, tmNoToken);
+    AResponse := ARequest.SendRequestSynchronous([SToken], rmGet, nil, nil,
+      tmNoToken);
     JSONObj := TJSONObject.ParseJSONValue(AResponse.ContentAsString) as
       TJSONObject;
     for c := 0 to JSONObj.Count-1 do
