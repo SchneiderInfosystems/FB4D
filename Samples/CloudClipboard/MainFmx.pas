@@ -90,14 +90,12 @@ type
     procedure tmrTestingTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
-    fAuth: IFirebaseAuthentication;
+    fConfig: IFirebaseConfiguration;
     fUID: string;
-    fRealTimeDB: IRealTimeDB;
     fFirebaseEvent: IFirebaseEvent;
     fReceivedUpdates, fErrorCount: Int64;
     fStressTestCounter: Int64;
-	procedure CreateAuthenticationClass;
-    procedure CreateRealTimeDBClass;
+	  procedure CreateFirebaseConfig;
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
       Providers: TStrings);
     procedure OnFetchProvidersError(const Info, ErrMsg: string);
@@ -131,8 +129,8 @@ uses
   System.IniFiles, System.IOUtils, System.StrUtils, System.Rtti,
   System.NetEncoding, System.Generics.Collections,
   FMX.Platform, FMX.Surfaces,
-  FB4D.Authentication, FB4D.Helpers, FB4D.Response, FB4D.Request,
-  FB4D.RealTimeDB;
+  FB4D.Configuration, FB4D.Authentication, FB4D.Helpers, FB4D.Response,
+  FB4D.Request, FB4D.RealTimeDB;
 
 resourcestring
   rsEnterEMail = 'Enter your email address for login';
@@ -259,21 +257,13 @@ begin
   end;
 end;
 
-procedure TfmxMain.CreateAuthenticationClass;
+procedure TfmxMain.CreateFirebaseConfig;
 begin
-  if not assigned(fAuth) then
+  if not assigned(fConfig) then
   begin
-    fAuth := TFirebaseAuthentication.Create(edtKey.Text);
+    fConfig := TFirebaseConfiguration.Create(edtKey.Text, edtProjectID.Text);
     edtKey.ReadOnly := true;
     edtProjectID.ReadOnly := true;
-  end;
-end;
-
-procedure TfmxMain.CreateRealTimeDBClass;
-begin
-  if not assigned(fRealTimeDB) then
-  begin
-    fRealTimeDB := TRealTimeDB.Create(edtProjectID.Text, fAuth);
     fFirebaseEvent := nil;
   end;
 end;
@@ -293,8 +283,8 @@ end;
 
 procedure TfmxMain.btnCheckEMailClick(Sender: TObject);
 begin
-  CreateAuthenticationClass;
-  fAuth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
+  CreateFirebaseConfig;
+  fConfig.Auth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
     OnFetchProvidersError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -335,7 +325,7 @@ end;
 
 procedure TfmxMain.btnSignInClick(Sender: TObject);
 begin
-  fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
+  fConfig.Auth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -346,7 +336,7 @@ end;
 
 procedure TfmxMain.btnSignUpClick(Sender: TObject);
 begin
-  fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
+  fConfig.Auth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -361,7 +351,7 @@ end;
 
 procedure TfmxMain.btnResetPwdClick(Sender: TObject);
 begin
-  fAuth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
+  fConfig.Auth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
@@ -426,13 +416,12 @@ procedure TfmxMain.StartClipboard;
 begin
   SaveSettings;
   WipeToTab(tabClipboard);
-  CreateRealTimeDBClass;
   StartListener;
 end;
 
 procedure TfmxMain.StartListener;
 begin
-  fFirebaseEvent := fRealTimeDB.ListenForValueEvents(['cb', fUID],
+  fFirebaseEvent := fConfig.RealTimeDB.ListenForValueEvents(['cb', fUID],
     OnRecData, OnRecDataStop, OnRecDataError);
   btnReconnect.Visible := false;
   btnSendToCloud.Visible := true;
@@ -442,7 +431,7 @@ end;
 
 procedure TfmxMain.StopListener;
 begin
-  if assigned(fRealTimeDB) and assigned(fFirebaseEvent) then
+  if assigned(fConfig) and assigned(fFirebaseEvent) then
     fFirebaseEvent.StopListening('stopEvent');
 end;
 
@@ -467,7 +456,7 @@ begin
         Data.AddPair('picture', GetClipboardPictAsBase64);
       end else
         exit;
-      fRealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
+      fConfig.RealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
     finally
       Data.Free;
     end;
@@ -705,7 +694,7 @@ begin
   memClipboardText.Lines.Add('Timestamp of last sent update : ' +
     FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now));
   memClipboardText.Lines.Add('Sender''s token refresh time . : ' +
-    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', fAuth.TokenExpiryDT));
+    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', fConfig.Auth.TokenExpiryDT));
   memClipboardText.Lines.Add('Sender''s config and platform  : ' +
     GetConfigAndPlatform);
   btnSendToCloudClick(Sender);
