@@ -168,6 +168,7 @@ begin
     OnError);
   while not fCallBack do
     Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fUser.IsEMailAvailable, 'No EMail');
   Assert.AreEqual(fUser.EMail, cEMail, 'Wrong EMail');
@@ -234,6 +235,7 @@ begin
     OnError);
   while not fCallBack do
     Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fUser.IsEMailAvailable, 'No EMail');
   Assert.AreEqual(fUser.EMail, cEMail, 'Wrong EMail');
@@ -279,6 +281,7 @@ begin
   fConfig.Auth.SignInAnonymously(OnUserResponse, OnError);
   while not fCallBack do
     Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsFalse(fUser.IsEMailAvailable, 'Unexpected EMail');
   Assert.IsNotEmpty(fUser.UID, 'UID is empty');
@@ -310,6 +313,7 @@ begin
     OnError);
   while not fCallBack do
     Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   // re-login
   fUser := fConfig.Auth.SignInWithEmailAndPasswordSynchronous(cEmail, cPassword);
@@ -344,6 +348,7 @@ begin
   fConfig.Auth.FetchProvidersForEMail(cEMail, OnFetchProviders, OnError);
   while not fCallBack do
     Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fIsRegistered, 'EMail not registered');
   Assert.AreEqual(fEMail, cEMail, 'Wrong EMail');
@@ -390,10 +395,12 @@ begin
   fConfig.Auth.ChangeProfile('', '', cDisplayName, cPhotoURL, OnResp, OnError);
   while not fCallBack do
     Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   fCallBack := false;
   fConfig.Auth.GetUserData(OnGetUserData, OnError);
   while not fCallBack do
     Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fUser.IsEMailAvailable, 'No EMail');
   Assert.AreEqual(fUser.EMail, cEMail, 'Wrong EMail');
