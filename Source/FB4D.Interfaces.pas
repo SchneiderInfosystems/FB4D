@@ -505,6 +505,7 @@ type
   end;
 
 const
+  // Params at TQueryParams
   cGetQueryParamOrderBy = 'orderBy';
   cGetQueryParamLimitToFirst = 'limitToFirst';
   cGetQueryParamLimitToLast = 'limitToLast';
@@ -512,9 +513,13 @@ const
   cGetQueryParamEndAt = 'endAt';
   cGetQueryParamEqualTo = 'equalTo';
 
+  // Vars at GetServerVariables
   cServerVariableTimeStamp = 'timestamp';
 
+  // Events at TOnReceiveEvent
   cEventPut = 'put';
+  cEventPatch = 'patch';
+  cEventCancel = 'cancel';
 
 implementation
 
