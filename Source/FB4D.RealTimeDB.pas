@@ -144,6 +144,7 @@ const
 
 resourcestring
   rsEvtListenerFailed = 'Event listener for %s failed: %s';
+  rsEvtStartFailed = 'Event listener start for %s failed: %s';
   rsEvtParserFailed = 'Exception in event parser';
 
 { TFirebase }
@@ -502,6 +503,8 @@ begin
   fClient.OnReceiveData := OnRecData;
   fThread := TThread.CreateAnonymousThread(
     procedure
+    var
+      Resp: IHTTPResponse;
     begin
       fStream := TMemoryStream.Create;
       try
@@ -519,11 +522,22 @@ begin
                   OnAuthRevoked(not fRequireTokenRenew);
                 end);
           end;
-          if assigned(fAuth) then
-            fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token),
-              fStream)
-          else
-            fClient.Get(URL, fStream);
+          Resp := fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token),
+            fStream);
+          if (Resp.StatusCode < 200) or (Resp.StatusCode >= 300) then
+          begin
+            ErrMsg := Resp.StatusText;
+            if assigned(fOnListenError) then
+            begin
+              TThread.Queue(nil,
+                procedure
+                begin
+                  fOnListenError(Info, ErrMsg);
+                end)
+            end else
+              TFirebaseHelpers.Log(Format(rsEvtStartFailed, [Info, ErrMsg]));
+            fStopWaiting := true;
+          end;
           // reopen stream
           FStream.Free;
           fStream := TMemoryStream.Create;
