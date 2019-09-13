@@ -46,6 +46,7 @@ type
       JSONObj: TJSONObject);
     procedure DBError(const RequestID, ErrMsg: string);
     procedure DBWritten(ResourceParams: TRequestResourceParam; Val: TJSONValue);
+    procedure OnDBStop(Sender: TObject);
   end;
 
 var
@@ -69,9 +70,14 @@ procedure TFmxSimpleReadWrite.FormCreate(Sender: TObject);
 begin
   fConfig := TFirebaseConfiguration.Create(GoogleServiceJSON);
 //  fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID);
-  fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, nil, DBError, nil);
+  fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, OnDBStop, DBError, nil);
   lblStatus.Text := 'Firebase RT DB connected';
   btnWrite.Enabled := false;
+end;
+
+procedure TFmxSimpleReadWrite.OnDBStop(Sender: TObject);
+begin
+  Caption := 'DB Listener was stopped - restart App';
 end;
 
 procedure TFmxSimpleReadWrite.DBEvent(const Event: string;
@@ -79,7 +85,7 @@ procedure TFmxSimpleReadWrite.DBEvent(const Event: string;
 begin
   if Event = cEventPut then
   begin
-    edtDBMessage.Text := JSONObj.GetValue<string>('data');
+    edtDBMessage.Text := JSONObj.GetValue<string>(cData);
     btnWrite.Enabled := false;
     lblStatus.Text := 'Last read: ' + DateTimeToStr(now);
   end;
