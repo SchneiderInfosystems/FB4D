@@ -529,21 +529,7 @@ begin
           fStream := TMemoryStream.Create;
         end;
       except
-        on e: ENetHTTPResponseException do
-        begin
-          if assigned(fOnListenError) then
-          begin
-            ErrMsg := e.Message;
-            TThread.Queue(nil,
-              procedure
-              begin
-                fOnListenError(Info, ErrMsg);
-              end)
-          end else
-            TFirebaseHelpers.Log(Format(rsEvtListenerFailed, [Info, e.Message]));
-          // Todo: Check Internet connection and retry
-        end;
-        on e: exception do
+         on e: exception do
           if assigned(fOnListenError) then
           begin
             ErrMsg := e.Message;
