@@ -521,6 +521,10 @@ const
   cEventPatch = 'patch';
   cEventCancel = 'cancel';
 
+  // Nodes in JSONObj at TOnReceiveEvent
+  cData = 'data';
+  cPath = 'path';
+
 implementation
 
 end.
