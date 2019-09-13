@@ -60,11 +60,15 @@ uses
 
 const
   GoogleServiceJSON = '..\..\..\google-services.json';
+// Alternative way by entering
+//  ApiKey = '<Your Firebase ApiKey listed in the Firebase Console>';
+//  ProjectID = '<Your Porject ID listed in the Firebase Console>';
   DBPath: TRequestResourceParam = ['Message'];
 
 procedure TFmxSimpleReadWrite.FormCreate(Sender: TObject);
 begin
   fConfig := TFirebaseConfiguration.Create(GoogleServiceJSON);
+//  fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID);
   fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, nil, DBError, nil);
   lblStatus.Text := 'Firebase RT DB connected';
   btnWrite.Enabled := false;
@@ -72,10 +76,8 @@ end;
 
 procedure TFmxSimpleReadWrite.DBEvent(const Event: string;
   Params: TRequestResourceParam; JSONObj: TJSONObject);
-const
-  NewData = 'put';
 begin
-  if Event = NewData then
+  if Event = cEventPut then
   begin
     edtDBMessage.Text := JSONObj.GetValue<string>('data');
     btnWrite.Enabled := false;
