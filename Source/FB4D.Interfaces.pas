@@ -514,6 +514,8 @@ const
 
   cServerVariableTimeStamp = 'timestamp';
 
+  cEventPut = 'put';
+
 implementation
 
 end.
