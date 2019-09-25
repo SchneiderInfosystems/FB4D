@@ -1,0 +1,100 @@
+object FraSelfRegistration: TFraSelfRegistration
+  Align = Client
+  Size.Width = 588.000000000000000000
+  Size.Height = 413.000000000000000000
+  Size.PlatformDefault = False
+  object AniIndicator: TAniIndicator
+    Align = Center
+    Margins.Bottom = 150.000000000000000000
+    Visible = False
+  end
+  object btnCheckEMail: TButton
+    Align = Center
+    Default = True
+    Margins.Bottom = 25.000000000000000000
+    Size.Width = 376.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = 'Check EMail Address'
+    OnClick = btnCheckEMailClick
+  end
+  object btnResetPwd: TButton
+    Align = Center
+    Margins.Top = 125.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 11
+    Text = 'Reset password'
+    OnClick = btnResetPwdClick
+  end
+  object btnSignIn: TButton
+    Align = Center
+    Default = True
+    Margins.Top = 50.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Text = 'Sign-In'
+    OnClick = btnSignInClick
+  end
+  object btnSignUp: TButton
+    Align = Center
+    Default = True
+    Margins.Top = 125.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 9
+    Text = 'Sign-Up'
+    OnClick = btnSignUpClick
+  end
+  object edtEMail: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Align = Center
+    TabOrder = 0
+    Margins.Bottom = 120.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 32.000000000000000000
+    Size.PlatformDefault = False
+    OnChangeTracking = edtEMailChangeTracking
+    object txtEMail: TText
+      Position.X = -88.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'EMail address:'
+      TextSettings.HorzAlign = Trailing
+    end
+  end
+  object edtPassword: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Align = Center
+    TabOrder = 1
+    Password = True
+    Margins.Bottom = 30.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 32.000000000000000000
+    Size.PlatformDefault = False
+    object txtPassword: TText
+      Position.X = -88.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'Password'
+      TextSettings.HorzAlign = Trailing
+    end
+  end
+  object lblStatus: TLabel
+    Align = Center
+    Margins.Top = 200.000000000000000000
+    Size.Width = 500.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.HorzAlign = Center
+    Text = 'lblStatus'
+    TabOrder = 7
+  end
+end
