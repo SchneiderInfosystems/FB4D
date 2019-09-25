@@ -32,6 +32,7 @@ uses
   FB4D.Interfaces;
 
 type
+  TOnGetAuth = function : IFirebaseAuthentication of object;
   TFraSelfRegistration = class(TFrame)
     AniIndicator: TAniIndicator;
     btnCheckEMail: TButton;
@@ -51,6 +52,7 @@ type
   private
     fAuth: IFirebaseAuthentication;
     fOnUserLogin: TOnUserResponse;
+    fOnGetAuth: TOnGetAuth;
     procedure StartTokenReferesh(const LastToken: string);
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
       Providers: TStrings);
@@ -64,7 +66,11 @@ type
     procedure Initialize(Auth: IFirebaseAuthentication;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = '');
+    procedure InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
+      OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
+      const LastEMail: string = '') overload;
     procedure StartEMailEntering;
+    function GetEMail: string;
   end;
 
 implementation
@@ -87,6 +93,20 @@ procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
 begin
   fAuth := Auth;
   fOnUserLogin := OnUserLogin;
+  fOnGetAuth := nil;
+  edtEMail.Text := LastEMail;
+  if LastRefreshToken.IsEmpty then
+    StartEMailEntering
+  else
+    StartTokenReferesh(LastRefreshToken);
+end;
+
+procedure TFraSelfRegistration.InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
+  OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string);
+begin
+  fAuth := nil;
+  fOnUserLogin := OnUserLogin;
+  fOnGetAuth := OnGetAuth;
   edtEMail.Text := LastEMail;
   if LastRefreshToken.IsEmpty then
     StartEMailEntering
@@ -123,6 +143,8 @@ end;
 
 procedure TFraSelfRegistration.btnCheckEMailClick(Sender: TObject);
 begin
+  if not assigned(fAuth) and assigned(fOnGetAuth) then
+    fAuth := fOnGetAuth;
   Assert(assigned(fAuth), 'Auth is not initialized');
   fAuth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
     OnFetchProvidersError);
@@ -261,6 +283,11 @@ begin
   lblStatus.Text := rsLoggedIn;
   if assigned(fOnUserLogin) then
     fOnUserLogin(Info, User);
+end;
+
+function TFraSelfRegistration.GetEMail: string;
+begin
+  result := edtEmail.Text;
 end;
 
 end.
