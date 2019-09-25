@@ -190,7 +190,6 @@ end;
 
 procedure TFraSelfRegistration.btnSignInClick(Sender: TObject);
 begin
-  Assert(assigned(fAuth), 'Auth is not initialized');
   fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
@@ -202,7 +201,6 @@ end;
 
 procedure TFraSelfRegistration.btnSignUpClick(Sender: TObject);
 begin
-  Assert(assigned(fAuth), 'Auth is not initialized');
   fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
@@ -213,7 +211,6 @@ end;
 
 procedure TFraSelfRegistration.btnResetPwdClick(Sender: TObject);
 begin
-  Assert(assigned(fAuth), 'Auth is not initialized');
   fAuth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -235,6 +232,8 @@ end;
 
 procedure TFraSelfRegistration.StartTokenReferesh(const LastToken: string);
 begin
+  if not assigned(fAuth) and assigned(fOnGetAuth) then
+    fAuth := fOnGetAuth;
   Assert(assigned(fAuth), 'Auth is not initialized');
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -250,7 +249,6 @@ end;
 
 procedure TFraSelfRegistration.OnTokenRefresh(TokenRefreshed: boolean);
 begin
-  Assert(assigned(fAuth), 'Auth is not initialized');
   if TokenRefreshed then
     fAuth.GetUserData(OnGetUserData, OnUserError)
   else
