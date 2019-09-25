@@ -81,6 +81,20 @@ uses
 
 resourcestring
   rsUserInfo = 'Logged in with eMail: %s'#13'User ID: %s';
+  rsHintRTDBRules =
+    'Hint to permission error:'#13#13 +
+    'Before you can write into the real time database add the following'#13 +
+    'text in the Firebase console as rule for the Realtime Database:'#13#13 +
+    '{'#13 +
+    ' "rules": {'#13 +
+    '    "UserMsg": {'#13 +
+    '      "$uid": {'#13 +
+    '		    ".read": "(auth != null) && (auth.uid == $uid)",'#13 +
+    '    		".write": "(auth != null) && (auth.uid == $uid)" '#13 +
+    '    	}'#13 +
+    '    }'#13 +
+    '  }'#13 +
+    '}'#13;
 
 const
 // Alternative way by entering
@@ -221,7 +235,11 @@ end;
 
 procedure TfmxMain.OnDBError(const RequestID, ErrMsg: string);
 begin
-  lblStatus.Text := 'Error: ' + ErrMsg;
+  if SameText(ErrMsg, 'Permission denied') or
+     SameText(ErrMsg, 'Unauthorized') then
+    lblStatus.Text := rsHintRTDBRules
+  else
+    lblStatus.Text := 'Error: ' + ErrMsg;
 end;
 
 procedure TfmxMain.btnWriteClick(Sender: TObject);

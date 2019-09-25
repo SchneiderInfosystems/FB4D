@@ -59,6 +59,13 @@ uses
 
 {$R *.fmx}
 
+resourcestring
+  rsHintRTDBRules =
+    'Hint to permission error: ' +
+    'Before you can write into the real time database add the following ' +
+    'text in the Firebase console as rule for the Realtime Database:'#13 +
+    '  {"rules": {"Message": {".read": true,".write": true}}}'#13;
+
 const
   GoogleServiceJSON = '..\..\..\google-services.json';
 // Alternative way by entering
@@ -99,7 +106,11 @@ end;
 
 procedure TFmxSimpleReadWrite.DBError(const RequestID, ErrMsg: string);
 begin
-  lblStatus.Text := 'Error: ' + ErrMsg;
+  if SameText(ErrMsg, 'Permission denied') or
+     SameText(ErrMsg, 'Unauthorized') then
+    lblStatus.Text := rsHintRTDBRules
+  else
+    lblStatus.Text := 'Error: ' + ErrMsg;
 end;
 
 procedure TFmxSimpleReadWrite.btnWriteClick(Sender: TObject);

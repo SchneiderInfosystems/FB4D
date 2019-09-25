@@ -115,9 +115,9 @@ object fmxMain: TfmxMain
         Position.X = 40.000000000000000000
         Position.Y = 129.000000000000000000
         Size.Width = 560.000000000000000000
-        Size.Height = 17.000000000000000000
+        Size.Height = 264.000000000000000000
         Size.PlatformDefault = False
-        TextSettings.HorzAlign = Center
+        TextSettings.VertAlign = Leading
         Text = 'lblStatus'
         TabOrder = 3
       end
