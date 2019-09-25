@@ -5,6 +5,7 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
   inherited TabControl: TTabControl
     Size.Width = 414.000000000000000000
     Size.Height = 716.000000000000000000
+    TabIndex = 1
     Sizes = (
       414s
       716s
@@ -26,87 +27,48 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Size.Height = 30.000000000000000000
       end
       inherited btnEnteredProjSettings: TButton
-        Position.X = -802.000000000000000000
-        Position.Y = 1518.000000000000000000
+        Position.X = -1374.000000000000000000
+        Position.Y = 1990.000000000000000000
         Size.Width = 44.000000000000000000
         Size.Height = 44.000000000000000000
       end
     end
     inherited tabSignIn: TTabItem
+      IsSelected = True
       Size.Width = 11.000000000000000000
       Size.Height = 11.000000000000000000
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
-      inherited btnResetPwd: TButton
-        Align = Top
-        Margins.Top = 10.000000000000000000
-        Position.Y = 356.000000000000000000
+      inherited FraSelfRegistration: TFraSelfRegistration
         Size.Width = 414.000000000000000000
-      end
-      inherited edtEMail: TEdit
-        Align = Top
-        Position.X = 10.000000000000000000
-        Position.Y = 100.000000000000000000
-        Margins.Left = 10.000000000000000000
-        Margins.Top = 100.000000000000000000
-        Margins.Right = 10.000000000000000000
-        Size.Width = 394.000000000000000000
-        Size.Height = 30.000000000000000000
-        inherited Text1: TText
-          Position.Y = -32.000000000000000000
-          TextSettings.HorzAlign = Leading
+        Size.Height = 666.000000000000000000
+        inherited AniIndicator: TAniIndicator
+          Margins.Bottom = 400.000000000000000000
+        end
+        inherited edtEMail: TEdit
+          Margins.Bottom = 170.000000000000000000
+          Size.Height = 30.000000000000000000
+          inherited txtEMail: TText
+            Position.Y = -32.000000000000000000
+          end
+        end
+        inherited edtPassword: TEdit
+          Size.Height = 30.000000000000000000
+          inherited txtPassword: TText
+            Position.Y = -32.000000000000000000
+          end
         end
       end
-      inherited btnSignIn: TButton
-        Align = Top
-        Margins.Top = 10.000000000000000000
-        Position.Y = 292.000000000000000000
+      inherited layToolbar: TLayout
         Size.Width = 414.000000000000000000
-      end
-      inherited edtPassword: TEdit
-        Align = Top
-        Position.X = 10.000000000000000000
-        Position.Y = 220.000000000000000000
-        Margins.Left = 10.000000000000000000
-        Margins.Right = 10.000000000000000000
-        Size.Width = 394.000000000000000000
-        Size.Height = 30.000000000000000000
-        inherited Text2: TText
-          Position.Y = -32.000000000000000000
-          TextSettings.HorzAlign = Leading
+        inherited btnSettings: TButton
+          Size.Width = 44.000000000000000000
+          Size.Height = 44.000000000000000000
         end
-      end
-      inherited lblStatus: TLabel
-        Align = Bottom
-        Position.Y = 616.000000000000000000
-        Size.Width = 414.000000000000000000
-        Size.Height = 100.000000000000000000
-      end
-      inherited btnSettings: TButton
-        Size.Width = 44.000000000000000000
-        Size.Height = 44.000000000000000000
-      end
-      inherited btnCheckEMail: TButton
-        Align = Top
-        Margins.Top = 10.000000000000000000
-        Position.Y = 324.000000000000000000
-        Size.Width = 414.000000000000000000
-      end
-      inherited btnSignUp: TButton
-        Align = Top
-        Margins.Top = 10.000000000000000000
-        Position.Y = 260.000000000000000000
-        Size.Width = 414.000000000000000000
-      end
-      inherited Label1: TLabel
-        StyledSettings = [Family, Style, FontColor]
-        Size.Width = 113.000000000000000000
-        Size.Height = 21.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.Size = 10.000000000000000000
       end
     end
     inherited tabClipboard: TTabItem
+      IsSelected = False
       Size.Width = 11.000000000000000000
       Size.Height = 11.000000000000000000
       ExplicitSize.cx = 8.000000000000000000
@@ -119,22 +81,10 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Margins.Right = 10.000000000000000000
         Margins.Bottom = 10.000000000000000000
         Position.X = 10.000000000000000000
-        Position.Y = 42.000000000000000000
+        Position.Y = 65.000000000000000000
         Size.Width = 394.000000000000000000
         Size.Height = 21.000000000000000000
         Size.PlatformDefault = False
-        TextSettings.Font.Size = 10.000000000000000000
-      end
-      inherited lblUserInfo: TLabel
-        Align = Top
-        StyledSettings = [Family, Style, FontColor]
-        Margins.Left = 10.000000000000000000
-        Margins.Top = 10.000000000000000000
-        Margins.Right = 10.000000000000000000
-        Position.X = 10.000000000000000000
-        Position.Y = 10.000000000000000000
-        Size.Width = 394.000000000000000000
-        Size.Height = 22.000000000000000000
         TextSettings.Font.Size = 10.000000000000000000
       end
       inherited btnSendToCloud: TButton
@@ -158,7 +108,7 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       inherited aniRTDB: TAniIndicator
         Anchors = [akLeft, akBottom]
         Position.X = 16.000000000000000000
-        Position.Y = 884.000000000000000000
+        Position.Y = 1356.000000000000000000
       end
       inherited btnFromClipBoard: TButton
         Align = Bottom
@@ -177,13 +127,13 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Margins.Left = 10.000000000000000000
         Margins.Right = 10.000000000000000000
         Size.Width = 394.000000000000000000
-        Size.Height = 498.000000000000000000
+        Size.Height = 475.000000000000000000
         TabHeight = 49.000000000000000000
         Sizes = (
           394s
-          449s
+          426s
           394s
-          449s)
+          426s)
         inherited tabText: TTabItem
           Size.Width = 197.000000000000000000
           Size.Height = 49.000000000000000000
@@ -193,9 +143,9 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
             StyledSettings = [Style, FontColor]
             TextSettings.Font.Size = 8.000000000000000000
             Size.Width = 394.000000000000000000
-            Size.Height = 449.000000000000000000
+            Size.Height = 426.000000000000000000
             Viewport.Width = 394.000000000000000000
-            Viewport.Height = 449.000000000000000000
+            Viewport.Height = 426.000000000000000000
           end
         end
         inherited tabGraphic: TTabItem
@@ -205,17 +155,26 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
           ExplicitSize.cy = 26.000000000000000000
           inherited imgClipboardPict: TImage
             Size.Width = 392.000000000000000000
-            Size.Height = 447.000000000000000000
+            Size.Height = 424.000000000000000000
           end
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -576.000000000000000000
-        Position.Y = 1368.000000000000000000
+        Position.X = -1148.000000000000000000
+        Position.Y = 1840.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
-        Position.Y = 1364.000000000000000000
+        Position.Y = 1836.000000000000000000
         Size.Width = 0.000000000000000000
+      end
+      inherited layUserInfo: TLayout
+        Size.Width = 414.000000000000000000
+        inherited btnSignOut: TButton
+          OnClick = nil
+        end
+        inherited lblUserInfo: TLabel
+          Size.Width = 301.000000000000000000
+        end
       end
     end
   end

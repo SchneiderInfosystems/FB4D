@@ -108,113 +108,35 @@ object fmxMain: TfmxMain
       Text = 'tabSignIn'
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
-      object btnResetPwd: TButton
-        Align = Center
-        Margins.Top = 200.000000000000000000
-        Size.Width = 377.000000000000000000
-        Size.Height = 22.000000000000000000
+      inline FraSelfRegistration: TFraSelfRegistration
+        Align = Client
+        Size.Width = 700.000000000000000000
+        Size.Height = 430.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 5
-        Text = 'Reset password'
-        OnClick = btnResetPwdClick
       end
-      object edtEMail: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Align = Center
-        TabOrder = 0
-        Margins.Bottom = 50.000000000000000000
-        Size.Width = 377.000000000000000000
-        Size.Height = 32.000000000000000000
+      object layToolbar: TLayout
+        Align = Top
+        Size.Width = 700.000000000000000000
+        Size.Height = 50.000000000000000000
         Size.PlatformDefault = False
-        OnChangeTracking = edtEMailChangeTracking
-        object Text1: TText
-          Position.X = -128.000000000000000000
-          Size.Width = 121.000000000000000000
-          Size.Height = 25.000000000000000000
-          Size.PlatformDefault = False
-          Text = 'EMail address:'
-          TextSettings.HorzAlign = Trailing
-        end
-      end
-      object btnSignIn: TButton
-        Align = Center
-        Margins.Top = 140.000000000000000000
-        Size.Width = 377.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 3
-        Text = 'Sign-In'
-        OnClick = btnSignInClick
-      end
-      object edtPassword: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Align = Center
-        TabOrder = 1
-        Password = True
-        Margins.Top = 40.000000000000000000
-        Size.Width = 377.000000000000000000
-        Size.Height = 32.000000000000000000
-        Size.PlatformDefault = False
-        object Text2: TText
-          Position.X = -128.000000000000000000
-          Size.Width = 121.000000000000000000
-          Size.Height = 25.000000000000000000
-          Size.PlatformDefault = False
-          Text = 'Password'
-          TextSettings.HorzAlign = Trailing
-        end
-      end
-      object lblStatus: TLabel
-        Align = Center
-        Margins.Top = 260.000000000000000000
-        Size.Width = 500.000000000000000000
-        Size.Height = 17.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.HorzAlign = Center
-        Text = 'lblStatus'
-        TabOrder = 7
-      end
-      object AniIndicator: TAniIndicator
-        Align = Center
-        Margins.Bottom = 150.000000000000000000
-        Visible = False
-      end
-      object btnSettings: TButton
-        Position.X = 16.000000000000000000
-        Position.Y = 16.000000000000000000
-        Size.Width = 48.000000000000000000
-        Size.Height = 48.000000000000000000
-        Size.PlatformDefault = False
-        StyleLookup = 'drawertoolbutton'
         TabOrder = 6
-        Text = 'btnSettings'
-        OnClick = btnSettingsClick
-      end
-      object btnCheckEMail: TButton
-        Align = Center
-        Margins.Top = 80.000000000000000000
-        Size.Width = 376.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Text = 'Check EMail Address'
-        OnClick = btnCheckEMailClick
-      end
-      object btnSignUp: TButton
-        Align = Center
-        Margins.Top = 200.000000000000000000
-        Size.Width = 377.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 4
-        Text = 'Sign-Up'
-        OnClick = btnSignUpClick
-      end
-      object Label1: TLabel
-        Position.X = 72.000000000000000000
-        Position.Y = 16.000000000000000000
-        Text = 'Version May-2019'
-        TabOrder = 9
+        object lblVersionInfo: TLabel
+          Position.X = 72.000000000000000000
+          Position.Y = 16.000000000000000000
+          Text = 'Version Sep-2019'
+          TabOrder = 0
+        end
+        object btnSettings: TButton
+          Position.X = 16.000000000000000000
+          Position.Y = 2.000000000000000000
+          Size.Width = 48.000000000000000000
+          Size.Height = 48.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'drawertoolbutton'
+          TabOrder = 1
+          Text = 'btnSettings'
+          OnClick = btnSettingsClick
+        end
       end
     end
     object tabClipboard: TTabItem
@@ -243,19 +165,9 @@ object fmxMain: TfmxMain
       end
       object lblClipboardState: TLabel
         Position.X = 24.000000000000000000
-        Position.Y = 40.000000000000000000
+        Position.Y = 60.000000000000000000
         Text = 'Clipboard Content:'
         TabOrder = 0
-      end
-      object lblUserInfo: TLabel
-        Anchors = [akLeft, akTop, akRight]
-        Position.X = 24.000000000000000000
-        Position.Y = 8.000000000000000000
-        Size.Width = 649.000000000000000000
-        Size.Height = 17.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.HorzAlign = Trailing
-        TabOrder = 1
       end
       object btnSendToCloud: TButton
         Anchors = [akRight, akBottom]
@@ -308,18 +220,18 @@ object fmxMain: TfmxMain
       object TabControlClipboard: TTabControl
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
-        Position.Y = 64.000000000000000000
+        Position.Y = 88.000000000000000000
         Size.Width = 649.000000000000000000
-        Size.Height = 321.000000000000000000
+        Size.Height = 297.000000000000000000
         Size.PlatformDefault = False
         TabIndex = 0
         TabOrder = 10
         TabPosition = PlatformDefault
         Sizes = (
           649s
-          295s
+          271s
           649s
-          295s)
+          271s)
         object tabText: TTabItem
           CustomIcon = <
             item
@@ -340,11 +252,11 @@ object fmxMain: TfmxMain
             TextSettings.Font.Family = 'Courier New'
             Align = Client
             Size.Width = 649.000000000000000000
-            Size.Height = 295.000000000000000000
+            Size.Height = 271.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
             Viewport.Width = 645.000000000000000000
-            Viewport.Height = 291.000000000000000000
+            Viewport.Height = 267.000000000000000000
           end
         end
         object tabGraphic: TTabItem
@@ -370,7 +282,7 @@ object fmxMain: TfmxMain
             Margins.Right = 1.000000000000000000
             Margins.Bottom = 1.000000000000000000
             Size.Width = 647.000000000000000000
-            Size.Height = 293.000000000000000000
+            Size.Height = 269.000000000000000000
             Size.PlatformDefault = False
           end
         end
@@ -394,13 +306,46 @@ object fmxMain: TfmxMain
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
-        TabOrder = 2
+        TabOrder = 1
         object FloatAnimationHideStatus: TFloatAnimation
           Delay = 3.000000000000000000
           Duration = 0.200000002980232200
           PropertyName = 'Opacity'
           StartValue = 1.000000000000000000
           StopValue = 0.000000000000000000
+        end
+      end
+      object layUserInfo: TLayout
+        Align = Top
+        Size.Width = 700.000000000000000000
+        Size.Height = 55.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        object btnSignOut: TButton
+          Align = Left
+          Margins.Left = 10.000000000000000000
+          Margins.Top = 15.000000000000000000
+          Margins.Bottom = 15.000000000000000000
+          Position.X = 10.000000000000000000
+          Position.Y = 15.000000000000000000
+          Size.Width = 73.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = 'Sign Out'
+          OnClick = btnSignOutClick
+        end
+        object lblUserInfo: TLabel
+          Align = Client
+          Margins.Left = 10.000000000000000000
+          Margins.Top = 10.000000000000000000
+          Margins.Right = 20.000000000000000000
+          Margins.Bottom = 10.000000000000000000
+          Size.Width = 587.000000000000000000
+          Size.Height = 35.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.HorzAlign = Trailing
+          TabOrder = 1
         end
       end
     end

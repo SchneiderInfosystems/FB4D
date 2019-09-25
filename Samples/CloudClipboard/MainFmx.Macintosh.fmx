@@ -33,29 +33,39 @@ inherited fmxMain_Macintosh: TfmxMain_Macintosh
         Size.Height = 25.000000000000000000
       end
       inherited TabControlClipboard: TTabControl
+        Size.Height = 289.000000000000000000
         Sizes = (
           649s
-          295s
+          263s
           649s
-          295s)
+          263s)
         inherited tabText: TTabItem
           Size.Width = 44.000000000000000000
           ExplicitSize.cx = 41.000000000000000000
           ExplicitSize.cy = 26.000000000000000000
           inherited memClipboardText: TMemo
+            Size.Height = 263.000000000000000000
             Viewport.Width = 649.000000000000000000
-            Viewport.Height = 295.000000000000000000
+            Viewport.Height = 263.000000000000000000
           end
         end
         inherited tabGraphic: TTabItem
           Size.Width = 65.000000000000000000
           ExplicitSize.cx = 61.000000000000000000
           ExplicitSize.cy = 26.000000000000000000
+          inherited imgClipboardPict: TImage
+            Size.Height = 261.000000000000000000
+          end
         end
       end
       inherited chbTesting: TCheckBox
         Position.X = 560.000000000000000000
         Size.Width = 112.000000000000000000
+      end
+      inherited layUserInfo: TLayout
+        inherited btnSignOut: TButton
+          OnClick = nil
+        end
       end
     end
   end

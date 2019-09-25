@@ -26,7 +26,8 @@ program CloudClipBoard;
 uses
   System.StartUpCopy,
   FMX.Forms,
-  MainFmx in 'MainFmx.pas' {fmxMain};
+  MainFmx in 'MainFmx.pas' {fmxMain},
+  FB4D.SelfRegistrationFra in '..\..\GUIPatterns\FMX\FB4D.SelfRegistrationFra.pas' {FraSelfRegistration: TFrame};
 
 {$R *.res}
 
