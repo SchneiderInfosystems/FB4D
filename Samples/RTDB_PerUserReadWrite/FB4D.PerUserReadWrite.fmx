@@ -16,7 +16,7 @@ object fmxMain: TfmxMain
     Size.Width = 640.000000000000000000
     Size.Height = 480.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     TabPosition = None
     Sizes = (
@@ -28,13 +28,15 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
       TabOrder = 0
       Text = 'tabAuth'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
       inline FraSelfRegistration: TFraSelfRegistration
         Align = Client
         Size.Width = 640.000000000000000000
@@ -46,18 +48,21 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
       TabOrder = 0
       Text = 'tabRTDBAccess'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
       object layUserInfo: TLayout
-        Size.Width = 649.000000000000000000
+        Align = Top
+        Size.Width = 640.000000000000000000
         Size.Height = 55.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 1
+        TabOrder = 2
         object btnSignOut: TButton
           Align = Left
           Margins.Left = 10.000000000000000000
@@ -78,12 +83,56 @@ object fmxMain: TfmxMain
           Margins.Top = 10.000000000000000000
           Margins.Right = 20.000000000000000000
           Margins.Bottom = 10.000000000000000000
-          Size.Width = 536.000000000000000000
+          Size.Width = 527.000000000000000000
           Size.Height = 35.000000000000000000
           Size.PlatformDefault = False
           TextSettings.HorzAlign = Trailing
           TabOrder = 1
         end
+      end
+      object edtDBMessage: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = Top
+        TabOrder = 0
+        Position.X = 40.000000000000000000
+        Position.Y = 65.000000000000000000
+        Margins.Left = 40.000000000000000000
+        Margins.Top = 10.000000000000000000
+        Margins.Right = 40.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Size.Width = 560.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 'Enter a message for the real time DB'
+        OnChangeTracking = edtDBMessageChangeTracking
+      end
+      object lblStatus: TLabel
+        Align = Top
+        Margins.Left = 40.000000000000000000
+        Margins.Top = 10.000000000000000000
+        Margins.Right = 40.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Position.X = 40.000000000000000000
+        Position.Y = 129.000000000000000000
+        Size.Width = 560.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'lblStatus'
+        TabOrder = 3
+      end
+      object btnWrite: TButton
+        Align = Top
+        Margins.Left = 40.000000000000000000
+        Margins.Right = 40.000000000000000000
+        Position.X = 40.000000000000000000
+        Position.Y = 97.000000000000000000
+        Size.Width = 560.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Write changed text'
+        OnClick = btnWriteClick
       end
     end
   end

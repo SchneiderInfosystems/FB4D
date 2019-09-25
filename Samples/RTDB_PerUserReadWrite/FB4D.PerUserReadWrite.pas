@@ -26,7 +26,8 @@ unit FB4D.PerUserReadWrite;
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
+  System.SysUtils, System.Types, System.UITypes, System.Classes,
+  System.Variants, System.JSON,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.StdCtrls,
   FMX.Objects, FMX.Edit, FMX.Controls.Presentation, FMX.TabControl, FMX.Layouts,
   FB4D.Interfaces, FB4D.Configuration, FB4D.SelfRegistrationFra;
@@ -40,10 +41,15 @@ type
     layUserInfo: TLayout;
     btnSignOut: TButton;
     FraSelfRegistration: TFraSelfRegistration;
+    edtDBMessage: TEdit;
+    lblStatus: TLabel;
+    btnWrite: TButton;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSignOutClick(Sender: TObject);
+    procedure edtDBMessageChangeTracking(Sender: TObject);
+    procedure btnWriteClick(Sender: TObject);
   private
     fConfig: IFirebaseConfiguration;
     fUID: string;
@@ -53,6 +59,13 @@ type
     procedure OnUserLogin(const Info: string; User: IFirebaseUser);
     procedure WipeToTab(ActiveTab: TTabItem);
     procedure StartListening;
+    procedure OnDBEvent(const Event: string; Params: TRequestResourceParam;
+      JSONObj: TJSONObject);
+    procedure OnDBError(const RequestID, ErrMsg: string);
+    procedure OnDBWritten(ResourceParams: TRequestResourceParam;
+      Val: TJSONValue);
+    procedure OnDBStop(Sender: TObject);
+    function DBPath: TRequestResourceParam;
   end;
 
 var
@@ -61,7 +74,8 @@ var
 implementation
 
 uses
-  System.IniFiles, System.IOUtils;
+  System.IniFiles, System.IOUtils,
+  FB4D.Helpers;
 
 {$R *.fmx}
 
@@ -69,22 +83,29 @@ resourcestring
   rsUserInfo = 'Logged in with eMail: %s'#13'User ID: %s';
 
 const
-  GoogleServiceJSON = '..\..\..\google-services.json';
 // Alternative way by entering
 //  ApiKey = '<Your Firebase ApiKey listed in the Firebase Console>';
-//  ProjectID = '<Your Porject ID listed in the Firebase Console>';
-  DBPath: TRequestResourceParam = ['Message'];
+//  ProjectID = '<Your Project ID listed in the Firebase Console>';
+{$IFDEF MSWINDOWS}
+  GoogleServiceJSON = '..\..\..\google-services.json';
+{$ENDIF}
+{$IFDEF MACOS}
+  GoogleServiceJSON = '../Resources/Startup/google-services.json';
+{$ENDIF}
 
 procedure TfmxMain.FormCreate(Sender: TObject);
 begin
   fConfig := TFirebaseConfiguration.Create(GoogleServiceJSON);
+  // Alternative with constants for ApiKey and ProjectID
+  // fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID);
   fUID := '';
 end;
 
 procedure TfmxMain.FormShow(Sender: TObject);
 begin
+  Caption := Caption + ' [' + TFirebaseHelpers.GetConfigAndPlatform + ']';
   TabControl.ActiveTab := tabAuth;
-  FraSelfRegistration.Initialize(fConfig, OnUserLogin, LoadLastToken);
+  FraSelfRegistration.Initialize(fConfig.Auth, OnUserLogin, LoadLastToken);
 end;
 
 procedure TfmxMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -93,14 +114,17 @@ begin
 end;
 
 function TfmxMain.GetSettingFilename: string;
+var
+  FileName: string;
 begin
+  FileName := ChangeFileExt(ExtractFileName(ParamStr(0)), '');
   result := IncludeTrailingPathDelimiter(
 {$IFDEF IOS}
     TPath.GetDocumentsPath
 {$ELSE}
     TPath.GetHomePath
 {$ENDIF}
-    ) + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini');
+    ) + FileName + TFirebaseHelpers.GetPlatform + '.ini';
 end;
 
 function TfmxMain.LoadLastToken: string;
@@ -168,6 +192,60 @@ end;
 procedure TfmxMain.StartListening;
 begin
   WipeToTab(tabRTDBAccess);
+  fConfig.RealTimeDB.ListenForValueEvents(DBPath, OnDBEvent, OnDBStop,
+    OnDBError, nil);
+  lblStatus.Text := 'Firebase RT DB connected';
+end;
+
+procedure TfmxMain.OnDBStop(Sender: TObject);
+begin
+  Caption := 'DB Listener was stopped - restart App';
+end;
+
+procedure TfmxMain.OnDBEvent(const Event: string;
+  Params: TRequestResourceParam; JSONObj: TJSONObject);
+begin
+  if Event = cEventPut then
+  begin
+    edtDBMessage.Text := JSONObj.GetValue<string>(cData);
+    btnWrite.Enabled := false;
+    lblStatus.Text := 'Last read: ' + DateTimeToStr(now);
+  end;
+end;
+
+procedure TfmxMain.OnDBWritten(ResourceParams: TRequestResourceParam;
+  Val: TJSONValue);
+begin
+  lblStatus.Text := 'Last write: ' + DateTimeToStr(now);
+end;
+
+procedure TfmxMain.OnDBError(const RequestID, ErrMsg: string);
+begin
+  lblStatus.Text := 'Error: ' + ErrMsg;
+end;
+
+procedure TfmxMain.btnWriteClick(Sender: TObject);
+var
+  Data: TJSONValue;
+begin
+  Data := TJSONString.Create(edtDBMessage.Text);
+  try
+    fConfig.RealTimeDB.Put(DBPath, Data, OnDBWritten, OnDBError);
+  finally
+    Data.Free;
+  end;
+  btnWrite.Enabled := false;
+end;
+
+procedure TfmxMain.edtDBMessageChangeTracking(Sender: TObject);
+begin
+  btnWrite.Enabled := true;
+end;
+
+function TfmxMain.DBPath: TRequestResourceParam;
+begin
+  Assert(not fUID.IsEmpty, 'UID missing');
+  result := ['UserMsg', fUID];
 end;
 
 end.

@@ -5,8 +5,10 @@ object FraSelfRegistration: TFraSelfRegistration
   Size.PlatformDefault = False
   object AniIndicator: TAniIndicator
     Align = Center
-    Margins.Bottom = 150.000000000000000000
-    Visible = False
+    Margins.Bottom = 250.000000000000000000
+    Size.Width = 100.000000000000000000
+    Size.Height = 100.000000000000000000
+    Size.PlatformDefault = False
   end
   object btnCheckEMail: TButton
     Align = Center
@@ -61,8 +63,8 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.PlatformDefault = False
     OnChangeTracking = edtEMailChangeTracking
     object txtEMail: TText
-      Position.X = -88.000000000000000000
-      Size.Width = 80.000000000000000000
+      Position.X = -104.000000000000000000
+      Size.Width = 96.000000000000000000
       Size.Height = 25.000000000000000000
       Size.PlatformDefault = False
       Text = 'EMail address:'
@@ -79,8 +81,8 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.Height = 32.000000000000000000
     Size.PlatformDefault = False
     object txtPassword: TText
-      Position.X = -88.000000000000000000
-      Size.Width = 80.000000000000000000
+      Position.X = -104.000000000000000000
+      Size.Width = 96.000000000000000000
       Size.Height = 25.000000000000000000
       Size.PlatformDefault = False
       Text = 'Password'

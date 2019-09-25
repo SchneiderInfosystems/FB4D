@@ -49,7 +49,7 @@ type
     procedure btnSignUpClick(Sender: TObject);
     procedure btnResetPwdClick(Sender: TObject);
   private
-    fConfig: IFirebaseConfiguration;
+    fAuth: IFirebaseAuthentication;
     fOnUserLogin: TOnUserResponse;
     procedure StartTokenReferesh(const LastToken: string);
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
@@ -61,7 +61,7 @@ type
     procedure OnTokenRefresh(TokenRefreshed: boolean);
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
   public
-    procedure Initialize(Config: IFirebaseConfiguration;
+    procedure Initialize(Auth: IFirebaseAuthentication;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = '');
     procedure StartEMailEntering;
@@ -82,10 +82,10 @@ resourcestring
   rsPleaseCheckEMail = 'Please check your e-mail inbox to renew your password.';
   rsLoggedIn = 'Successful logged in';
 
-procedure TFraSelfRegistration.Initialize(Config: IFirebaseConfiguration;
+procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string);
 begin
-  fConfig := Config;
+  fAuth := Auth;
   fOnUserLogin := OnUserLogin;
   edtEMail.Text := LastEMail;
   if LastRefreshToken.IsEmpty then
@@ -123,8 +123,8 @@ end;
 
 procedure TFraSelfRegistration.btnCheckEMailClick(Sender: TObject);
 begin
-  Assert(assigned(fConfig), 'Config is not initialized');
-  fConfig.Auth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
+  Assert(assigned(fAuth), 'Auth is not initialized');
+  fAuth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
     OnFetchProvidersError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -168,8 +168,8 @@ end;
 
 procedure TFraSelfRegistration.btnSignInClick(Sender: TObject);
 begin
-  Assert(assigned(fConfig), 'Config is not initialized');
-  fConfig.Auth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
+  Assert(assigned(fAuth), 'Auth is not initialized');
+  fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -180,8 +180,8 @@ end;
 
 procedure TFraSelfRegistration.btnSignUpClick(Sender: TObject);
 begin
-  Assert(assigned(fConfig), 'Config is not initialized');
-  fConfig.Auth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
+  Assert(assigned(fAuth), 'Auth is not initialized');
+  fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -191,8 +191,8 @@ end;
 
 procedure TFraSelfRegistration.btnResetPwdClick(Sender: TObject);
 begin
-  Assert(assigned(fConfig), 'Config is not initialized');
-  fConfig.Auth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
+  Assert(assigned(fAuth), 'Auth is not initialized');
+  fAuth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
@@ -213,7 +213,7 @@ end;
 
 procedure TFraSelfRegistration.StartTokenReferesh(const LastToken: string);
 begin
-  Assert(assigned(fConfig), 'Config is not initialized');
+  Assert(assigned(fAuth), 'Auth is not initialized');
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   edtEMail.Visible := false;
@@ -223,14 +223,14 @@ begin
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
   edtPassword.Visible := false;
-  fConfig.Auth.RefreshToken(LastToken, OnTokenRefresh, OnUserError);
+  fAuth.RefreshToken(LastToken, OnTokenRefresh, OnUserError);
 end;
 
 procedure TFraSelfRegistration.OnTokenRefresh(TokenRefreshed: boolean);
 begin
-  Assert(assigned(fConfig), 'Config is not initialized');
+  Assert(assigned(fAuth), 'Auth is not initialized');
   if TokenRefreshed then
-    fConfig.Auth.GetUserData(OnGetUserData, OnUserError)
+    fAuth.GetUserData(OnGetUserData, OnUserError)
   else
     StartEMailEntering;
 end;
