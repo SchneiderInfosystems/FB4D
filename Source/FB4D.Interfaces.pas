@@ -415,7 +415,9 @@ type
     function GetUserDataSynchronous: TFirebaseUserList;
     // Token refresh
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
-      OnError: TOnRequestError);
+      OnError: TOnRequestError); overload;
+    procedure RefreshToken(const LastRefreshToken: string;
+      OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
     function CheckAndRefreshTokenSynchronous: boolean;
     // Getter methods
     function Authenticated: boolean;
@@ -505,6 +507,7 @@ type
   end;
 
 const
+  // Params at TQueryParams
   cGetQueryParamOrderBy = 'orderBy';
   cGetQueryParamLimitToFirst = 'limitToFirst';
   cGetQueryParamLimitToLast = 'limitToLast';
@@ -512,7 +515,17 @@ const
   cGetQueryParamEndAt = 'endAt';
   cGetQueryParamEqualTo = 'equalTo';
 
+  // Vars at GetServerVariables
   cServerVariableTimeStamp = 'timestamp';
+
+  // Events at TOnReceiveEvent
+  cEventPut = 'put';
+  cEventPatch = 'patch';
+  cEventCancel = 'cancel';
+
+  // Nodes in JSONObj at TOnReceiveEvent
+  cData = 'data';
+  cPath = 'path';
 
 implementation
 

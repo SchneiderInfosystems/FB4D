@@ -132,7 +132,9 @@ type
     function GetUserDataSynchronous: TFirebaseUserList;
     // Token refresh
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
-      OnError: TOnRequestError);
+      OnError: TOnRequestError); overload;
+    procedure RefreshToken(const LastRefreshToken: string;
+      OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
     function CheckAndRefreshTokenSynchronous: boolean;
     // Getter methods
     function Authenticated: boolean;
@@ -1059,6 +1061,13 @@ begin
     Params.Free;
     Data.Free;
   end;
+end;
+
+procedure TFirebaseAuthentication.RefreshToken(const LastRefreshToken: string;
+  OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError);
+begin
+  fRefreshToken := LastRefreshToken;
+  RefreshToken(OnTokenRefresh, OnError);
 end;
 
 procedure TFirebaseAuthentication.CheckAndRefreshTokenResp(const RequestID: string;

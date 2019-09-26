@@ -46,6 +46,7 @@ type
       JSONObj: TJSONObject);
     procedure DBError(const RequestID, ErrMsg: string);
     procedure DBWritten(ResourceParams: TRequestResourceParam; Val: TJSONValue);
+    procedure OnDBStop(Sender: TObject);
   end;
 
 var
@@ -58,26 +59,40 @@ uses
 
 {$R *.fmx}
 
+resourcestring
+  rsHintRTDBRules =
+    'Hint to permission error: ' +
+    'Before you can write into the real time database add the following ' +
+    'text in the Firebase console as rule for the Realtime Database:'#13 +
+    '  {"rules": {"Message": {".read": true,".write": true}}}'#13;
+
 const
   GoogleServiceJSON = '..\..\..\google-services.json';
+// Alternative way by entering
+//  ApiKey = '<Your Firebase ApiKey listed in the Firebase Console>';
+//  ProjectID = '<Your Porject ID listed in the Firebase Console>';
   DBPath: TRequestResourceParam = ['Message'];
 
 procedure TFmxSimpleReadWrite.FormCreate(Sender: TObject);
 begin
   fConfig := TFirebaseConfiguration.Create(GoogleServiceJSON);
-  fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, nil, DBError, nil);
+//  fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID);
+  fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, OnDBStop, DBError, nil);
   lblStatus.Text := 'Firebase RT DB connected';
   btnWrite.Enabled := false;
 end;
 
+procedure TFmxSimpleReadWrite.OnDBStop(Sender: TObject);
+begin
+  Caption := 'DB Listener was stopped - restart App';
+end;
+
 procedure TFmxSimpleReadWrite.DBEvent(const Event: string;
   Params: TRequestResourceParam; JSONObj: TJSONObject);
-const
-  NewData = 'put';
 begin
-  if Event = NewData then
+  if Event = cEventPut then
   begin
-    edtDBMessage.Text := JSONObj.GetValue<string>('data');
+    edtDBMessage.Text := JSONObj.GetValue<string>(cData);
     btnWrite.Enabled := false;
     lblStatus.Text := 'Last read: ' + DateTimeToStr(now);
   end;
@@ -91,7 +106,11 @@ end;
 
 procedure TFmxSimpleReadWrite.DBError(const RequestID, ErrMsg: string);
 begin
-  lblStatus.Text := 'Error: ' + ErrMsg;
+  if SameText(ErrMsg, 'Permission denied') or
+     SameText(ErrMsg, 'Unauthorized') then
+    lblStatus.Text := rsHintRTDBRules
+  else
+    lblStatus.Text := 'Error: ' + ErrMsg;
 end;
 
 procedure TFmxSimpleReadWrite.btnWriteClick(Sender: TObject);

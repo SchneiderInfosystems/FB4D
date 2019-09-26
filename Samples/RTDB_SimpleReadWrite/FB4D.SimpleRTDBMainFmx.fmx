@@ -4,7 +4,7 @@ object FmxSimpleReadWrite: TFmxSimpleReadWrite
   Caption = 
     'Simple Demo for Writing and Continuously Reading a String into t' +
     'he  Real Time Database'
-  ClientHeight = 104
+  ClientHeight = 142
   ClientWidth = 676
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -49,9 +49,9 @@ object FmxSimpleReadWrite: TFmxSimpleReadWrite
     Position.X = 40.000000000000000000
     Position.Y = 74.000000000000000000
     Size.Width = 596.000000000000000000
-    Size.Height = 17.000000000000000000
+    Size.Height = 63.000000000000000000
     Size.PlatformDefault = False
-    TextSettings.HorzAlign = Center
+    TextSettings.VertAlign = Leading
     Text = 'lblStatus'
     TabOrder = 2
   end

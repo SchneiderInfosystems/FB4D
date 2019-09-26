@@ -41,6 +41,9 @@ type
     fInfo: string;
     fData: TJSONObject;
     fCallBack: boolean;
+    fRes: TJSONValue;
+    procedure OnPutGet(ResourceParams: TRequestResourceParam; Val: TJSONValue);
+    procedure OnError(const RequestID, ErrMsg: string);
   public
     [Setup]
     procedure Setup;
@@ -49,6 +52,7 @@ type
   published
     [TestCase]
     procedure PutGetSynchronous;
+    procedure PutGet;
   end;
 
 implementation
@@ -83,6 +87,20 @@ begin
   fData.Free;
   fConfig.Auth.DeleteCurrentUserSynchronous;
   fConfig := nil;
+end;
+
+procedure UT_RealTimeDB.OnError(const RequestID, ErrMsg: string);
+begin
+  fReqID := RequestID;
+  fErrMsg := ErrMsg;
+  fCallBack := true;
+end;
+
+procedure UT_RealTimeDB.OnPutGet(ResourceParams: TRequestResourceParam;
+  Val: TJSONValue);
+begin
+  fRes := Val.Clone as TJSONValue;
+  fCallBack := true;
 end;
 
 procedure UT_RealTimeDB.PutGetSynchronous;
@@ -131,6 +149,76 @@ begin
   Assert.AreEqual(fData.ToJSON, Res.ToJSON,
     'result JSON is different between get and put');
   Res.Free;
+end;
+
+procedure UT_RealTimeDB.PutGet;
+begin
+  Status('Put single value');
+  fData.AddPair('Item1', 'TestVal1');
+  fConfig.RealTimeDB.Put(cDBPath, fData, OnPutGet, OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.IsNotNull(fRes, 'Result of Put is nil');
+  Assert.AreEqual(fData.ToJSON, fRes.ToJSON, 'result JSON is different from put');
+  FreeAndNil(fRes);
+
+  Status('Get single value');
+  fCallBack := false;
+  fConfig.RealTimeDB.Get(cDBPath, OnPutGet, OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.IsNotNull(fRes, 'Result of Get is nil');
+  Assert.AreEqual(fData.ToJSON, fRes.ToJSON,
+    'result JSON is different between get and put');
+  FreeAndNil(fRes);
+
+  Status('Put simple object value');
+  fData.AddPair('Item2', TJSONNumber.Create(3.14));
+  fCallBack := false;
+  fConfig.RealTimeDB.Put(cDBPath, fData, OnPutGet, OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.IsNotNull(fRes, 'Result of Put is nil');
+  Assert.AreEqual(fData.ToJSON, fRes.ToJSON, 'resul JSON is different from put');
+  FreeAndNil(fRes);
+
+  Status('Get single object value');
+  fCallBack := false;
+  fConfig.RealTimeDB.Get(cDBPath, OnPutGet, OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.IsNotNull(fRes, 'Result of Get is nil');
+  Assert.AreEqual(fData.ToJSON, fRes.ToJSON,
+    'result JSON is different between get and put');
+  FreeAndNil(fRes);
+
+  Status('Put complex object value');
+  fData.AddPair('Item3', TJSONObject.Create(TJSONPair.Create('SubItem',
+    'TestSubItem')));
+  fCallBack := false;
+  fConfig.RealTimeDB.Put(cDBPath, fData, OnPutGet, OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.IsNotNull(fRes, 'Result is nil');
+  Assert.AreEqual(fData.ToJSON, fRes.ToJSON,
+    'result JSON is different from put');
+  FreeAndNil(fRes);
+
+  Status('Get complex object value');
+  fCallBack := false;
+  fConfig.RealTimeDB.Get(cDBPath, OnPutGet, OnError);
+  while not fCallBack do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.IsNotNull(fRes, 'Result of Get is nil');
+  Assert.AreEqual(fData.ToJSON, fRes.ToJSON,
+    'result JSON is different between get and put');
+  FreeAndNil(fRes);
 end;
 
 initialization

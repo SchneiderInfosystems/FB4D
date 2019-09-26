@@ -144,6 +144,7 @@ const
 
 resourcestring
   rsEvtListenerFailed = 'Event listener for %s failed: %s';
+  rsEvtStartFailed = 'Event listener start for %s failed: %s';
   rsEvtParserFailed = 'Exception in event parser';
 
 { TFirebase }
@@ -502,6 +503,8 @@ begin
   fClient.OnReceiveData := OnRecData;
   fThread := TThread.CreateAnonymousThread(
     procedure
+    var
+      Resp: IHTTPResponse;
     begin
       fStream := TMemoryStream.Create;
       try
@@ -510,7 +513,7 @@ begin
           fReadPos := 0;
           if fRequireTokenRenew then
           begin
-            if fAuth.CheckAndRefreshTokenSynchronous then
+            if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
               fRequireTokenRenew := false;
             if assigned(OnAuthRevoked) then
               TThread.Queue(nil,
@@ -519,13 +522,28 @@ begin
                   OnAuthRevoked(not fRequireTokenRenew);
                 end);
           end;
-          fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token), fStream);
+          Resp := fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token),
+            fStream);
+          if (Resp.StatusCode < 200) or (Resp.StatusCode >= 300) then
+          begin
+            ErrMsg := Resp.StatusText;
+            if assigned(fOnListenError) then
+            begin
+              TThread.Queue(nil,
+                procedure
+                begin
+                  fOnListenError(Info, ErrMsg);
+                end)
+            end else
+              TFirebaseHelpers.Log(Format(rsEvtStartFailed, [Info, ErrMsg]));
+            fStopWaiting := true;
+          end;
           // reopen stream
           fStream.Free;
           fStream := TMemoryStream.Create;
         end;
       except
-        on e: exception do
+         on e: exception do
           if assigned(fOnListenError) then
           begin
             ErrMsg := e.Message;

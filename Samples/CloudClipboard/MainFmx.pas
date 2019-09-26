@@ -30,39 +30,28 @@ uses
   System.Variants, System.JSON,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.StdCtrls,
   FMX.Objects, FMX.Controls.Presentation, FMX.Edit, FMX.TabControl,
-  FMX.MultiView, FMX.ScrollBox, FMX.Memo, FMX.Ani,
-  FB4D.Interfaces;
+  FMX.MultiView, FMX.ScrollBox, FMX.Memo, FMX.Ani, FMX.Layouts,
+  FB4D.Interfaces, FB4D.SelfRegistrationFra;
 
 type
   TfmxMain = class(TForm)
     TabControl: TTabControl;
     tabSignIn: TTabItem;
     tabClipboard: TTabItem;
-    edtEMail: TEdit;
-    Text1: TText;
-    btnSignIn: TButton;
-    edtPassword: TEdit;
-    Text2: TText;
     edtKey: TEdit;
     Text3: TText;
     edtProjectID: TEdit;
     Text4: TText;
-    lblStatus: TLabel;
-    AniIndicator: TAniIndicator;
     lblClipboardState: TLabel;
     btnSettings: TButton;
     tabProjectSettings: TTabItem;
     btnEnteredProjSettings: TButton;
-    lblUserInfo: TLabel;
     memClipboardText: TMemo;
     btnSendToCloud: TButton;
     lblStatusRTDB: TLabel;
     aniRTDB: TAniIndicator;
     btnFromClipBoard: TButton;
     btnToClipboard: TButton;
-    btnCheckEMail: TButton;
-    btnSignUp: TButton;
-    btnResetPwd: TButton;
     btnReconnect: TButton;
     imgClipboardPict: TImage;
     TabControlClipboard: TTabControl;
@@ -72,8 +61,12 @@ type
     chbTesting: TCheckBox;
     lblSendStatusRTDB: TLabel;
     FloatAnimationHideStatus: TFloatAnimation;
-    Label1: TLabel;
-    procedure btnSignInClick(Sender: TObject);
+    lblVersionInfo: TLabel;
+    FraSelfRegistration: TFraSelfRegistration;
+    layToolbar: TLayout;
+    layUserInfo: TLayout;
+    btnSignOut: TButton;
+    lblUserInfo: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSettingsClick(Sender: TObject);
@@ -81,29 +74,19 @@ type
     procedure btnSendToCloudClick(Sender: TObject);
     procedure btnFromClipBoardClick(Sender: TObject);
     procedure btnToClipboardClick(Sender: TObject);
-    procedure btnCheckEMailClick(Sender: TObject);
-    procedure edtEMailChangeTracking(Sender: TObject);
-    procedure btnSignUpClick(Sender: TObject);
-    procedure btnResetPwdClick(Sender: TObject);
     procedure btnReconnectClick(Sender: TObject);
     procedure chbTestingChange(Sender: TObject);
     procedure tmrTestingTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btnSignOutClick(Sender: TObject);
   private
-    fAuth: IFirebaseAuthentication;
+    fConfig: IFirebaseConfiguration;
     fUID: string;
-    fRealTimeDB: IRealTimeDB;
     fFirebaseEvent: IFirebaseEvent;
     fReceivedUpdates, fErrorCount: Int64;
     fStressTestCounter: Int64;
-	procedure CreateAuthenticationClass;
-    procedure CreateRealTimeDBClass;
-    procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
-      Providers: TStrings);
-    procedure OnFetchProvidersError(const Info, ErrMsg: string);
-    procedure OnUserResponse(const Info: string; User: IFirebaseUser);
-    procedure OnUserError(const Info, ErrMsg: string);
-    procedure OnResetPwd(const Info: string; Response: IFirebaseResponse);
+    function OnGetAuth: IFirebaseAuthentication;
+    procedure OnUserLogin(const Info: string; User: IFirebaseUser);
     procedure OnPutResp(ResourceParams: TRequestResourceParam; Val: TJSONValue);
     procedure OnPutError(const RequestID, ErrMsg: string);
     procedure WipeToTab(ActiveTab: TTabItem);
@@ -118,7 +101,6 @@ type
     function GetSettingFilename: string;
     function GetClipboardPictAsBase64: string;
     procedure SetClipboardPictFromBase64(const Base64: string);
-    function GetConfigAndPlatform: string;
     procedure ExceptionHandler(Sender: TObject; E: Exception);
   end;
 
@@ -131,8 +113,8 @@ uses
   System.IniFiles, System.IOUtils, System.StrUtils, System.Rtti,
   System.NetEncoding, System.Generics.Collections,
   FMX.Platform, FMX.Surfaces,
-  FB4D.Authentication, FB4D.Helpers, FB4D.Response, FB4D.Request,
-  FB4D.RealTimeDB;
+  FB4D.Configuration, FB4D.Authentication, FB4D.Helpers, FB4D.Response,
+  FB4D.Request, FB4D.RealTimeDB;
 
 resourcestring
   rsEnterEMail = 'Enter your email address for login';
@@ -182,13 +164,16 @@ end;
 procedure TfmxMain.FormShow(Sender: TObject);
 var
   IniFile: TIniFile;
+  LastEMail: string;
+  LastToken: string;
 begin
   IniFile := TIniFile.Create(GetSettingFilename);
   try
     edtKey.Text := IniFile.ReadString('FBProjectSettings', 'APIKey', '');
-    edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
-    edtEmail.Text := IniFile.ReadString('Authentication', 'User', '');
-    edtPassword.Text := IniFile.ReadString('Authentication', 'Pwd', '');
+    edtProjectID.Text :=
+      IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
+    LastEMail := IniFile.ReadString('Authentication', 'User', '');
+    LastToken := IniFile.ReadString('Authentication', 'Token', '');
   finally
     IniFile.Free;
   end;
@@ -196,17 +181,9 @@ begin
     TabControl.ActiveTab := tabProjectSettings
   else
     TabControl.ActiveTab := tabSignIn;
-  btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
-  if btnCheckEMail.Enabled then
-    btnCheckEMail.SetFocus
-  else
-    edtEMail.SetFocus;
-  lblStatus.Text := rsEnterEMail;
-  btnSignIn.Visible := false;
-  btnResetPwd.Visible := false;
-  btnSignUp.Visible := false;
-  edtPassword.Visible := false;
-  Caption := Caption + ' [' + GetConfigAndPlatform + ']';
+  FraSelfRegistration.InitializeAuthOnDemand(OnGetAuth, OnUserLogin, LastToken,
+    LastEMail);
+  Caption := Caption + ' [' + TFirebaseHelpers.GetConfigAndPlatform + ']';
 {$IFDEF DEBUG}
   chbTesting.Visible := true;
 {$ELSE}
@@ -228,23 +205,29 @@ begin
   try
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
-    IniFile.WriteString('Authentication', 'User', edtEmail.Text);
-    {$MESSAGE 'Attention: Password will be stored in your inifile in clear text'}
-    IniFile.WriteString('Authentication', 'Pwd', edtPassword.Text);
+    IniFile.WriteString('Authentication', 'User', FraSelfRegistration.GetEMail);
+    if assigned(fConfig) and fConfig.Auth.Authenticated then
+      IniFile.WriteString('Authentication', 'Token',
+        fConfig.Auth.GetRefreshToken)
+    else
+      IniFile.DeleteKey('Authentication', 'Token');
   finally
     IniFile.Free;
   end;
 end;
 
 function TfmxMain.GetSettingFilename: string;
+var
+  FileName: string;
 begin
+  FileName := ChangeFileExt(ExtractFileName(ParamStr(0)), '');
   result := IncludeTrailingPathDelimiter(
 {$IFDEF IOS}
     TPath.GetDocumentsPath
 {$ELSE}
     TPath.GetHomePath
 {$ENDIF}
-    ) + ChangeFileExt(ExtractFileName(ParamStr(0)), '.ini');
+    ) + FileName + TFirebaseHelpers.GetPlatform + '.ini';
 end;
 
 procedure TfmxMain.btnEnteredProjSettingsClick(Sender: TObject);
@@ -259,31 +242,16 @@ begin
   end;
 end;
 
-procedure TfmxMain.CreateAuthenticationClass;
+function TfmxMain.OnGetAuth: IFirebaseAuthentication;
 begin
-  if not assigned(fAuth) then
+  if not assigned(fConfig) then
   begin
-    fAuth := TFirebaseAuthentication.Create(edtKey.Text);
+    fConfig := TFirebaseConfiguration.Create(edtKey.Text, edtProjectID.Text);
     edtKey.ReadOnly := true;
     edtProjectID.ReadOnly := true;
-  end;
-end;
-
-procedure TfmxMain.CreateRealTimeDBClass;
-begin
-  if not assigned(fRealTimeDB) then
-  begin
-    fRealTimeDB := TRealTimeDB.Create(edtProjectID.Text, fAuth);
     fFirebaseEvent := nil;
   end;
-end;
-
-procedure TfmxMain.edtEMailChangeTracking(Sender: TObject);
-begin
-  btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
-  edtPassword.Visible := false;
-  btnSignUp.Visible := false;
-  btnSignIn.Visible := false;
+  result := fConfig.Auth;
 end;
 
 procedure TfmxMain.btnSettingsClick(Sender: TObject);
@@ -291,100 +259,16 @@ begin
   WipeToTab(tabProjectSettings);
 end;
 
-procedure TfmxMain.btnCheckEMailClick(Sender: TObject);
+procedure TfmxMain.btnSignOutClick(Sender: TObject);
 begin
-  CreateAuthenticationClass;
-  fAuth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
-    OnFetchProvidersError);
-  AniIndicator.Enabled := true;
-  AniIndicator.Visible := true;
-  btnCheckEMail.Enabled := false;
-  lblStatus.Text := rsWait;
+  fConfig.Auth.SignOut;
+  fUID := '';
+  WipeToTab(tabSignIn);
+  FraSelfRegistration.StartEMailEntering;
 end;
 
-procedure TfmxMain.OnFetchProviders(const EMail: string; IsRegistered: boolean;
-  Providers: TStrings);
+procedure TfmxMain.OnUserLogin(const Info: string; User: IFirebaseUser);
 begin
-  AniIndicator.Enabled := false;
-  AniIndicator.Visible := false;
-  if IsRegistered then
-  begin
-    btnSignIn.Visible := true;
-    btnResetPwd.Visible := true;
-    edtPassword.Visible := true;
-    lblStatus.Text := rsEnterPassword;
-  end else begin
-    btnSignUp.Visible := true;
-    edtPassword.Visible := true;
-    edtPassword.Text := ''; // clear default password
-    btnSignIn.Visible := false;
-    btnResetPwd.Visible := false;
-    lblStatus.Text := rsSetupPassword;
-  end;
-  edtPassword.SetFocus;
-  btnCheckEMail.Visible := false;
-end;
-
-procedure TfmxMain.OnFetchProvidersError(const Info, ErrMsg: string);
-begin
-  AniIndicator.Enabled := false;
-  AniIndicator.Visible := false;
-  lblStatus.Text := Info + ': ' + ErrMsg;
-  btnCheckEMail.Enabled := true;
-end;
-
-procedure TfmxMain.btnSignInClick(Sender: TObject);
-begin
-  fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
-    OnUserResponse, OnUserError);
-  AniIndicator.Enabled := true;
-  AniIndicator.Visible := true;
-  btnSignIn.Enabled := false;
-  btnResetPwd.Enabled := false;
-  lblStatus.Text := rsWait;
-end;
-
-procedure TfmxMain.btnSignUpClick(Sender: TObject);
-begin
-  fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
-    OnUserResponse, OnUserError);
-  AniIndicator.Enabled := true;
-  AniIndicator.Visible := true;
-  btnSignUp.Enabled := false;
-  lblStatus.Text := rsWait;
-end;
-
-procedure TfmxMain.btnReconnectClick(Sender: TObject);
-begin
-  StartListener;
-end;
-
-procedure TfmxMain.btnResetPwdClick(Sender: TObject);
-begin
-  fAuth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
-  AniIndicator.Enabled := true;
-  AniIndicator.Visible := true;
-  btnSignIn.Enabled := false;
-  btnResetPwd.Enabled := false;
-  lblStatus.Text := rsWait;
-end;
-
-procedure TfmxMain.OnUserError(const Info, ErrMsg: string);
-begin
-  AniIndicator.Enabled := false;
-  AniIndicator.Visible := false;
-  lblStatus.Text := Info + ': ' + ErrMsg;
-  btnSignIn.Enabled := true;
-  btnResetPwd.Enabled := true;
-  btnSignUp.Enabled := true;
-end;
-
-procedure TfmxMain.OnUserResponse(const Info: string;
-  User: IFirebaseUser);
-begin
-  AniIndicator.Enabled := false;
-  AniIndicator.Visible := false;
-  lblStatus.Text := 'Logged in to Cloud Clipboard';
   fUID := User.UID;
   if User.IsDisplayNameAvailable and not User.DisplayName.IsEmpty then
     lblUserInfo.Text := 'Logged in user name: ' + User.DisplayName
@@ -393,15 +277,9 @@ begin
   StartClipboard;
 end;
 
-procedure TfmxMain.OnResetPwd(const Info: string; Response: IFirebaseResponse);
+procedure TfmxMain.btnReconnectClick(Sender: TObject);
 begin
-  AniIndicator.Enabled := false;
-  AniIndicator.Visible := false;
-  btnSignIn.Enabled := true;
-  if Response.StatusOk then
-    lblStatus.Text := 'Please check your email box to renew your password.'
-  else
-    lblStatus.Text := Response.ErrorMsgOrStatusText;
+  StartListener;
 end;
 
 procedure TfmxMain.WipeToTab(ActiveTab: TTabItem);
@@ -426,13 +304,12 @@ procedure TfmxMain.StartClipboard;
 begin
   SaveSettings;
   WipeToTab(tabClipboard);
-  CreateRealTimeDBClass;
   StartListener;
 end;
 
 procedure TfmxMain.StartListener;
 begin
-  fFirebaseEvent := fRealTimeDB.ListenForValueEvents(['cb', fUID],
+  fFirebaseEvent := fConfig.RealTimeDB.ListenForValueEvents(['cb', fUID],
     OnRecData, OnRecDataStop, OnRecDataError);
   btnReconnect.Visible := false;
   btnSendToCloud.Visible := true;
@@ -442,7 +319,7 @@ end;
 
 procedure TfmxMain.StopListener;
 begin
-  if assigned(fRealTimeDB) and assigned(fFirebaseEvent) then
+  if assigned(fConfig) and assigned(fFirebaseEvent) then
     fFirebaseEvent.StopListening('stopEvent');
 end;
 
@@ -467,7 +344,7 @@ begin
         Data.AddPair('picture', GetClipboardPictAsBase64);
       end else
         exit;
-      fRealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
+      fConfig.RealTimeDB.Put(['cb', fUID], Data, OnPutResp, OnPutError);
     finally
       Data.Free;
     end;
@@ -648,42 +525,6 @@ begin
   end;
 end;
 
-function TfmxMain.GetConfigAndPlatform: string;
-begin
-{$IF defined(RELEASE)}
-  result := 'Release Build/';
-{$ELSEIF defined(DEBUG)}
-  result := 'Debug Build/';
-{$ELSE}
-  result := 'Unknown Build/';
-{$IFEND}
-{$IF defined(WIN32)}
-  result := result + 'Win 32';
-{$ELSEIF defined(WIN64)}
-  result := result + 'Win 64';
-{$ELSEIF defined(MACOS32)}
-  result := result + 'Mac 32';
-{$ELSEIF defined(MACOS64)}
-  result := result + 'Mac 64';
-{$ELSEIF defined(MACOS64)}
-  result := result + 'Mac 64';
-{$ELSEIF defined(IOS32)}
-  result := result + 'iOS 32';
-{$ELSEIF defined(IOS64)}
-  result := result + 'iOS 64';
-{$ELSEIF defined(ANDROID32)}
-  result := result + 'Android 32';
-{$ELSEIF defined(ANDROID64)}
-  result := result + 'Android 64';
-{$ELSEIF defined(LINUX32)}
-  result := result + 'Linux 32';
-{$ELSEIF defined(Linux64)}
-  result := result + 'Linux 64';
-{$ELSE}
-  result := result + 'Platform?';
-{$ENDIF}
-end;
-
 {$REGION 'StressTest'}
 procedure TfmxMain.chbTestingChange(Sender: TObject);
 begin
@@ -705,9 +546,9 @@ begin
   memClipboardText.Lines.Add('Timestamp of last sent update : ' +
     FormatDateTime('dd/mm/yy hh:nn:ss:zzz', now));
   memClipboardText.Lines.Add('Sender''s token refresh time . : ' +
-    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', fAuth.TokenExpiryDT));
+    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', fConfig.Auth.TokenExpiryDT));
   memClipboardText.Lines.Add('Sender''s config and platform  : ' +
-    GetConfigAndPlatform);
+    TFirebaseHelpers.GetConfigAndPlatform);
   btnSendToCloudClick(Sender);
   inc(fStressTestCounter);
 end;

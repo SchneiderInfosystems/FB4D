@@ -60,6 +60,8 @@ type
     class function ConvertIDtoGUID(const FBID: string): TGuid;
     class function IsEMailAdress(const EMail: string): boolean;
     class function IsMainThread: boolean;
+    class function GetConfigAndPlatform: string;
+    class function GetPlatform: string;
   private
     const
       cBase62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -554,6 +556,44 @@ begin
   result := TThread.Current.ThreadID = System.MainThreadID;
 end;
 
+class function TFirebaseHelpers.GetPlatform: string;
+begin
+{$IF defined(WIN32)}
+  result := 'Win32';
+{$ELSEIF defined(WIN64)}
+  result := 'Win64';
+{$ELSEIF defined(MACOS32)}
+  result := 'Mac32';
+{$ELSEIF defined(MACOS64)}
+  result := 'Mac64';
+{$ELSEIF defined(IOS32)}
+  result := 'iOS32';
+{$ELSEIF defined(IOS64)}
+  result := 'iOS64';
+{$ELSEIF defined(ANDROID32)}
+  result := 'Android32';
+{$ELSEIF defined(ANDROID64)}
+  result := 'Android64';
+{$ELSEIF defined(LINUX32)}
+  result := 'Linux32';
+{$ELSEIF defined(Linux64)}
+  result := 'Linux64';
+{$ELSE}
+  result := 'Platform?';
+{$ENDIF}
+end;
+
+class function TFirebaseHelpers.GetConfigAndPlatform: string;
+begin
+{$IF defined(RELEASE)}
+  result := 'Release Build/';
+{$ELSEIF defined(DEBUG)}
+  result := 'Debug Build/';
+{$ELSE}
+  result := 'Unknown Build/';
+{$IFEND}
+  result := result + GetPlatform;
+end;
 { TJSONHelpers }
 
 function TJSONHelpers.GetIntegerValue: integer;
