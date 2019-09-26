@@ -169,9 +169,6 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       end
       inherited layUserInfo: TLayout
         Size.Width = 414.000000000000000000
-        inherited btnSignOut: TButton
-          OnClick = nil
-        end
         inherited lblUserInfo: TLabel
           Size.Width = 301.000000000000000000
         end

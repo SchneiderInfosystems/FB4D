@@ -62,11 +62,6 @@ inherited fmxMain_Macintosh: TfmxMain_Macintosh
         Position.X = 560.000000000000000000
         Size.Width = 112.000000000000000000
       end
-      inherited layUserInfo: TLayout
-        inherited btnSignOut: TButton
-          OnClick = nil
-        end
-      end
     end
   end
 end

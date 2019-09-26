@@ -195,7 +195,6 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Size.Width = 450.000000000000000000
         inherited btnSignOut: TButton
           Size.Width = 95.000000000000000000
-          OnClick = nil
         end
         inherited lblUserInfo: TLabel
           StyledSettings = [Family, Style, FontColor]
