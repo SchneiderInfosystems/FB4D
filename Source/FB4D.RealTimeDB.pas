@@ -521,7 +521,7 @@ begin
           end;
           fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token), fStream);
           // reopen stream
-          FStream.Free;
+          fStream.Free;
           fStream := TMemoryStream.Create;
         end;
       except
