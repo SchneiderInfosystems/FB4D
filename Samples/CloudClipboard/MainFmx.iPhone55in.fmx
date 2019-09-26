@@ -27,8 +27,8 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Size.Height = 30.000000000000000000
       end
       inherited btnEnteredProjSettings: TButton
-        Position.X = -1374.000000000000000000
-        Position.Y = 1990.000000000000000000
+        Position.X = -1660.000000000000000000
+        Position.Y = 2226.000000000000000000
         Size.Width = 44.000000000000000000
         Size.Height = 44.000000000000000000
       end
@@ -108,7 +108,7 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       inherited aniRTDB: TAniIndicator
         Anchors = [akLeft, akBottom]
         Position.X = 16.000000000000000000
-        Position.Y = 1356.000000000000000000
+        Position.Y = 1592.000000000000000000
       end
       inherited btnFromClipBoard: TButton
         Align = Bottom
@@ -135,7 +135,7 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
           394s
           426s)
         inherited tabText: TTabItem
-          Size.Width = 197.000000000000000000
+          Size.Width = 25.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 41.000000000000000000
           ExplicitSize.cy = 26.000000000000000000
@@ -149,7 +149,7 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
           end
         end
         inherited tabGraphic: TTabItem
-          Size.Width = 197.000000000000000000
+          Size.Width = 42.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 61.000000000000000000
           ExplicitSize.cy = 26.000000000000000000
@@ -160,11 +160,11 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -1148.000000000000000000
-        Position.Y = 1840.000000000000000000
+        Position.X = -1434.000000000000000000
+        Position.Y = 2076.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
-        Position.Y = 1836.000000000000000000
+        Position.Y = 2072.000000000000000000
         Size.Width = 0.000000000000000000
       end
       inherited layUserInfo: TLayout

@@ -46,9 +46,52 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
       inherited FraSelfRegistration: TFraSelfRegistration
         Size.Width = 450.000000000000000000
         Size.Height = 645.000000000000000000
+        inherited AniIndicator: TAniIndicator
+          Margins.Bottom = 450.000000000000000000
+        end
+        inherited btnCheckEMail: TButton
+          Size.Width = 300.000000000000000000
+        end
+        inherited btnResetPwd: TButton
+          Size.Width = 300.000000000000000000
+        end
+        inherited btnSignIn: TButton
+          Size.Width = 300.000000000000000000
+        end
+        inherited btnSignUp: TButton
+          Size.Width = 300.000000000000000000
+        end
+        inherited edtEMail: TEdit
+          Margins.Bottom = 250.000000000000000000
+          Size.Width = 300.000000000000000000
+          inherited txtEMail: TText
+            Position.Y = -32.000000000000000000
+            Size.Width = 300.000000000000000000
+            TextSettings.HorzAlign = Leading
+          end
+        end
+        inherited edtPassword: TEdit
+          Margins.Bottom = 100.000000000000000000
+          Size.Width = 300.000000000000000000
+          inherited txtPassword: TText
+            Position.Y = -32.000000000000000000
+            Size.Width = 300.000000000000000000
+            TextSettings.HorzAlign = Leading
+          end
+        end
+        inherited lblStatus: TLabel
+          Margins.Top = 350.000000000000000000
+          Size.Width = 300.000000000000000000
+          Size.Height = 159.000000000000000000
+        end
       end
       inherited layToolbar: TLayout
         Size.Width = 450.000000000000000000
+        inherited lblVersionInfo: TLabel
+          Size.Width = 161.000000000000000000
+          Size.Height = 23.000000000000000000
+          Size.PlatformDefault = False
+        end
       end
     end
     inherited tabClipboard: TTabItem
@@ -80,7 +123,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Left = 20.000000000000000000
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 10.000000000000000000
-        Position.Y = 2590.000000000000000000
+        Position.Y = 2805.000000000000000000
         Size.Width = 0.000000000000000000
       end
       inherited btnFromClipBoard: TButton
@@ -140,21 +183,24 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -932.000000000000000000
-        Position.Y = 1714.000000000000000000
+        Position.X = -1182.000000000000000000
+        Position.Y = 1929.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
-        Position.Y = 1710.000000000000000000
+        Position.Y = 1925.000000000000000000
         Size.Width = 0.000000000000000000
       end
       inherited layUserInfo: TLayout
         Position.Y = 51.000000000000000000
         Size.Width = 450.000000000000000000
         inherited btnSignOut: TButton
+          Size.Width = 95.000000000000000000
           OnClick = nil
         end
         inherited lblUserInfo: TLabel
-          Size.Width = 337.000000000000000000
+          StyledSettings = [Family, Style, FontColor]
+          Size.Width = 315.000000000000000000
+          TextSettings.Font.Size = 8.000000000000000000
         end
       end
     end
