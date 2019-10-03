@@ -267,10 +267,8 @@ procedure TFraSelfRegistration.OnUserError(const Info, ErrMsg: string);
 begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
+  StartEMailEntering;
   lblStatus.Text := Info + ': ' + ErrMsg;
-  btnSignIn.Enabled := true;
-  btnResetPwd.Enabled := true;
-  btnSignUp.Enabled := true;
 end;
 
 procedure TFraSelfRegistration.OnUserResponse(const Info: string;
