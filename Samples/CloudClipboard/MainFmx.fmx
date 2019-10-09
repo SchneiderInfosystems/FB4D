@@ -94,6 +94,13 @@ object fmxMain: TfmxMain
         Text = 'btnEnteredProjSettings'
         OnClick = btnEnteredProjSettingsClick
       end
+      object btnClearSettings: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 144.000000000000000000
+        TabOrder = 3
+        Text = 'Clear'
+        OnClick = btnClearSettingsClick
+      end
     end
     object tabSignIn: TTabItem
       CustomIcon = <
@@ -123,7 +130,7 @@ object fmxMain: TfmxMain
         object lblVersionInfo: TLabel
           Position.X = 72.000000000000000000
           Position.Y = 16.000000000000000000
-          Text = 'Version Sep-2019'
+          Text = 'Version Oct-2019'
           TabOrder = 0
         end
         object btnSettings: TButton

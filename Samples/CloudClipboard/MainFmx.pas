@@ -67,6 +67,7 @@ type
     layUserInfo: TLayout;
     btnSignOut: TButton;
     lblUserInfo: TLabel;
+    btnClearSettings: TButton;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSettingsClick(Sender: TObject);
@@ -79,6 +80,7 @@ type
     procedure tmrTestingTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnSignOutClick(Sender: TObject);
+    procedure btnClearSettingsClick(Sender: TObject);
   private
     fConfig: IFirebaseConfiguration;
     fUID: string;
@@ -230,6 +232,14 @@ begin
     ) + FileName + TFirebaseHelpers.GetPlatform + '.ini';
 end;
 
+procedure TfmxMain.btnClearSettingsClick(Sender: TObject);
+begin
+  edtKey.Text := '';
+  edtProjectID.Text := '';
+  fConfig.Auth.SignOut;
+  SaveSettings;
+end;
+
 procedure TfmxMain.btnEnteredProjSettingsClick(Sender: TObject);
 begin
   if edtKey.Text.IsEmpty then
@@ -239,6 +249,7 @@ begin
   else begin
     SaveSettings;
     WipeToTab(tabSignIn);
+    FraSelfRegistration.StartEMailEntering;
   end;
 end;
 
@@ -274,6 +285,7 @@ begin
     lblUserInfo.Text := 'Logged in user name: ' + User.DisplayName
   else
     lblUserInfo.Text := 'Logged in user eMail: ' + User.EMail;
+  lblUserInfo.Text := lblUserInfo.Text + #13 + 'UserID: ' + fUID;
   StartClipboard;
 end;
 
@@ -398,7 +410,7 @@ begin
   if JSONObj.Pairs[1].JsonValue is TJSONObject then
   begin
     inc(fReceivedUpdates);
-    Data := JSONObj.Pairs[1].JsonValue  as TJSONObject;
+    Data := JSONObj.Pairs[1].JsonValue as TJSONObject;
     // '{"text":"payload of clipboard","type":"text"}'
     if Data.GetValue('type').Value = 'text' then
     begin
