@@ -18,7 +18,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.Height = 25.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 6
-    Text = 'Check EMail Address'
+    Text = 'Check Email Address'
     OnClick = btnCheckEMailClick
   end
   object btnResetPwd: TButton
@@ -67,7 +67,7 @@ object FraSelfRegistration: TFraSelfRegistration
       Size.Width = 96.000000000000000000
       Size.Height = 25.000000000000000000
       Size.PlatformDefault = False
-      Text = 'EMail address:'
+      Text = 'Email address'
       TextSettings.HorzAlign = Trailing
     end
   end

@@ -81,7 +81,7 @@ uses
 {$R *.fmx}
 
 resourcestring
-  rsEnterEMail = 'Enter your e-mail address for registration';
+  rsEnterEMail = 'Enter your e-mail address for sign-in or registration';
   rsWait = 'Please wait for Firebase';
   rsEnterPassword = 'Enter your password for registration';
   rsSetupPassword = 'Setup a new password for future registrations';
