@@ -543,7 +543,7 @@ begin
           fStream := TMemoryStream.Create;
         end;
       except
-         on e: exception do
+        on e: exception do
           if assigned(fOnListenError) then
           begin
             ErrMsg := e.Message;
@@ -681,6 +681,7 @@ var
   Lines: TArray<string>;
   EventName, Data, ErrMsg: string;
   Params: TRequestResourceParam;
+  JSONObj: TJSONObject;
 begin
   try
     if assigned(fStream) then
@@ -725,20 +726,17 @@ begin
             Abort := true;
           end else if Data.Length > 0 then
           begin
-            fListenPartialResp := '';
-            TThread.Queue(nil,
-              procedure
-              var
-                JSONObj: TJSONObject;
-              begin
-                JSONObj := TJSONObject.ParseJSONValue(Data) as TJSONObject;
-                if assigned(JSONObj) then
-                try
+            JSONObj := TJSONObject.ParseJSONValue(Data) as TJSONObject;
+            if assigned(JSONObj) then
+            begin
+              fListenPartialResp := '';
+              TThread.Queue(nil,
+                procedure
+                begin
                   fOnListenEvent(EventName, Params, JSONObj);
-                finally
                   JSONObj.Free;
-                end;
-              end);
+                end);
+            end;
           end;
         end;
       end;
