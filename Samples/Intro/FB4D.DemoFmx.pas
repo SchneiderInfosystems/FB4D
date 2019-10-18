@@ -175,6 +175,10 @@ type
     trbMinTestInt: TTrackBar;
     lblMinTestInt: TLabel;
     btnLinkEMailPwd: TButton;
+    btnStartTransReadOnly: TButton;
+    btnStartTransReadWrite: TButton;
+    btnCommitTrans: TButton;
+    btnRollBackTrans: TButton;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -226,10 +230,15 @@ type
     procedure btnRunQueryClick(Sender: TObject);
     procedure trbMinTestIntChange(Sender: TObject);
     procedure btnLinkEMailPwdClick(Sender: TObject);
+    procedure btnStartTransReadOnlyClick(Sender: TObject);
+    procedure btnStartTransReadWriteClick(Sender: TObject);
+    procedure btnRollBackTransClick(Sender: TObject);
+    procedure btnCommitTransClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
-    fFirestoreObject: IStorageObject;
+    fStorageObject: IStorageObject;
     fDatabase: IFirestoreDatabase;
+    fTransaction: TTransaction;
     fRealTimeDB: IRealTimeDB;
     fFirebaseEvent: IFirebaseEvent;
     fDownloadStream: TFileStream;
@@ -654,11 +663,11 @@ begin
   // We could use also fStorage here but in order to demontrate the more simple
   // way of synchronous calls we use a local TFirebaseStorage
   try
-    fFirestoreObject := Storage.GetSynchronous(GetStorageFileName);
+    fStorageObject := Storage.GetSynchronous(GetStorageFileName);
     memoResp.Lines.Text := 'Firestore object synchronous retrieven';
-    ShowFirestoreObject(fFirestoreObject);
-    if assigned(fFirestoreObject) then
-      btnDownloadSync.Enabled := fFirestoreObject.DownloadToken > ''
+    ShowFirestoreObject(fStorageObject);
+    if assigned(fStorageObject) then
+      btnDownloadSync.Enabled := fStorageObject.DownloadToken > ''
     else
       btnDownloadSync.Enabled := false;
     btnDownloadAsync.Enabled := btnDownloadSync.Enabled;
@@ -691,7 +700,7 @@ begin
   btnDownloadAsync.Enabled := btnDownloadSync.Enabled;
   btnDeleteSync.Enabled := btnDownloadSync.Enabled;
   btnDeleteAsync.Enabled := btnDeleteSync.Enabled;
-  fFirestoreObject := Obj;
+  fStorageObject := Obj;
 end;
 
 procedure TfmxFirebaseDemo.OnGetStorageError(const RequestID, ErrMsg: string);
@@ -725,15 +734,15 @@ end;
 
 procedure TfmxFirebaseDemo.btnDownloadAsyncClick(Sender: TObject);
 begin
-  Assert(assigned(fFirestoreObject), 'Firestore object is missing');
-  SaveDialog.FileName := fFirestoreObject.ObjectName(false);
+  Assert(assigned(fStorageObject), 'Firestore object is missing');
+  SaveDialog.FileName := fStorageObject.ObjectName(false);
   if SaveDialog.Execute then
   begin
     FreeAndNil(fDownloadStream);
     fDownloadStream := TFileStream.Create(SaveDialog.FileName, fmCreate);
-    fFirestoreObject.DownloadToStream(SaveDialog.FileName, fDownloadStream,
+    fStorageObject.DownloadToStream(SaveDialog.FileName, fDownloadStream,
       OnDownload, OnDownloadError);
-    memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' download started');
+    memoResp.Lines.Add(fStorageObject.ObjectName(true) + ' download started');
   end;
 end;
 
@@ -741,14 +750,14 @@ procedure TfmxFirebaseDemo.btnDownloadSyncClick(Sender: TObject);
 var
   Stream: TFileStream;
 begin
-  Assert(assigned(fFirestoreObject), 'Firestore object is missing');
-  SaveDialog.FileName := fFirestoreObject.ObjectName(false);
+  Assert(assigned(fStorageObject), 'Firestore object is missing');
+  SaveDialog.FileName := fStorageObject.ObjectName(false);
   if SaveDialog.Execute then
   begin
     Stream := TFileStream.Create(SaveDialog.FileName, fmCreate);
     try
-      fFirestoreObject.DownloadToStreamSynchronous(Stream);
-      memoResp.Lines.Add(fFirestoreObject.ObjectName(true) + ' downloaded to ' +
+      fStorageObject.DownloadToStreamSynchronous(Stream);
+      memoResp.Lines.Add(fStorageObject.ObjectName(true) + ' downloaded to ' +
         SaveDialog.FileName);
     finally
       Stream.Free;
@@ -916,6 +925,7 @@ begin
   begin
     fDatabase := TFirestoreDatabase.Create(edtProjectID.Text, fAuth);
     edtProjectID.enabled := false;
+    fTransaction := '';
   end;
   result := true;
 end;
@@ -948,18 +958,28 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.btnGetClick(Sender: TObject);
+var
+  Query: TQueryParams;
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   if not CheckFirestoreFields(false) then
     exit;
+  Query := nil;
+  if not fTransaction.IsEmpty then
+  begin
+    Query := TQueryParams.Create;
+    Query.Add('transaction', [fTransaction]);
+  end;
   if not chbUseChildDoc.IsChecked then
-    fDatabase.Get([edtCollection.Text, edtDocument.Text], nil,
+    fDatabase.Get([edtCollection.Text, edtDocument.Text], Query,
       OnFirestoreGet, OnFirestoreError)
   else
     fDatabase.Get([edtCollection.Text, edtDocument.Text,
-      edtChildCollection.Text, edtChildDocument.Text], nil,
+      edtChildCollection.Text, edtChildDocument.Text], Query,
       OnFirestoreGet, OnFirestoreError);
+  if assigned(Query) then
+    Query.Free;
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreGet(const Info: string;
@@ -1305,11 +1325,19 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.btnRunQueryClick(Sender: TObject);
+var
+  Query: TQueryParams;
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   if not CheckFirestoreFields(false) then
     exit;
+  Query := nil;
+  if not fTransaction.IsEmpty then
+  begin
+    Query := TQueryParams.Create;
+    Query.Add('transaction', [fTransaction]);
+  end;
   // the following structured query expects a db built with 'Docs for Run Query'
   if not chbUseChildDoc.IsChecked then
     fDatabase.RunQuery(
@@ -1318,7 +1346,7 @@ begin
           TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
             trunc(trbMinTestInt.Value))).
         OrderBy('testInt', odAscending),
-      OnFirestoreGet, OnFirestoreError)
+      OnFirestoreGet, OnFirestoreError, Query)
   else
     fDatabase.RunQuery([edtCollection.Text, edtDocument.Text],
       TStructuredQuery.CreateForSelect(['testInt', 'documentCreated', 'info']).
@@ -1335,9 +1363,79 @@ begin
 //        EndAt(TFirestoreDocument.CreateCursor.AddOrUpdateField(
 //          TJSONObject.SetInteger('testInt', 85)), false).
         Limit(10).Offset(1),
-      OnFirestoreGet, OnFirestoreError)
+      OnFirestoreGet, OnFirestoreError, Query);
 end;
 
+procedure TfmxFirebaseDemo.btnStartTransReadOnlyClick(Sender: TObject);
+begin
+  if not CheckAndCreateFirestoreDBClass(memFirestore) then
+    exit;
+  try
+    fTransaction := fDatabase.BeginTransactionSynchronous(ttReadOnly);
+    memFirestore.Lines.Add('Read only transaction started');
+  except
+    on e: EFirebaseResponse do
+      memFirestore.Lines.Add('Transaction failed: ' + e.Message);
+  end;
+  btnStartTransReadWrite.Visible := false;
+  btnStartTransReadOnly.Visible := false;
+  btnCommitTrans.Visible := true;
+  btnRollBackTrans.Visible := true;
+end;
+
+procedure TfmxFirebaseDemo.btnStartTransReadWriteClick(Sender: TObject);
+begin
+  if not CheckAndCreateFirestoreDBClass(memFirestore) then
+    exit;
+  try
+    fTransaction := fDatabase.BeginTransactionSynchronous(ttReadOnly);
+    memFirestore.Lines.Add('Read/Write transaction started');
+  except
+    on e: EFirebaseResponse do
+      memFirestore.Lines.Add('Transaction failed: ' + e.Message);
+  end;
+  btnStartTransReadWrite.Visible := false;
+  btnStartTransReadOnly.Visible := false;
+  btnCommitTrans.Visible := true;
+  btnRollBackTrans.Visible := true;
+end;
+
+procedure TfmxFirebaseDemo.btnRollBackTransClick(Sender: TObject);
+begin
+  try
+    fDatabase.RollBackTransactionSynchronous(fTransaction);
+  except
+    on e: EFirebaseResponse do
+      memFirestore.Lines.Add('Roll back failed: ' + e.Message);
+  end;
+  fTransaction := '';
+  btnCommitTrans.Visible := false;
+  btnRollBackTrans.Visible := false;
+  btnStartTransReadWrite.Visible := true;
+  btnStartTransReadOnly.Visible := true;
+end;
+
+procedure TfmxFirebaseDemo.btnCommitTransClick(Sender: TObject);
+var
+  dt: TDateTime;
+begin
+  try
+    dt := fDatabase.CommitTransactionSynchronous(fTransaction);
+    if dt > 0 then
+      memFirestore.Lines.Add('Transaction commited at ' +
+        DateTimeToStr(TFirebaseHelpers.ConvertToLocalDateTime(dt)))
+    else
+      memFirestore.Lines.Add('Transaction: nothing to commit');
+  except
+    on e: EFirebaseResponse do
+      memFirestore.Lines.Add('Commit failed: ' + e.Message);
+  end;
+  fTransaction := '';
+  btnCommitTrans.Visible := false;
+  btnRollBackTrans.Visible := false;
+  btnStartTransReadWrite.Visible := true;
+  btnStartTransReadOnly.Visible := true;
+end;
 {$ENDREGION}
 
 {$REGION 'Realtime DB'}

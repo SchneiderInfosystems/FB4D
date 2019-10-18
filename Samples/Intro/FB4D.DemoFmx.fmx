@@ -1159,7 +1159,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object btnDeleteDoc: TButton
         Position.X = 720.000000000000000000
-        Position.Y = 23.000000000000000000
+        Position.Y = 22.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -1178,7 +1178,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         OnClick = btnPatchDocClick
       end
       object chbUseChildDoc: TCheckBox
-        Position.X = 376.000000000000000000
+        Position.X = 360.000000000000000000
         Position.Y = 62.000000000000000000
         Size.Width = 145.000000000000000000
         Size.Height = 19.000000000000000000
@@ -1222,7 +1222,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object btnRunQuery: TButton
         Enabled = False
         Position.X = 848.000000000000000000
-        Position.Y = 23.000000000000000000
+        Position.Y = 22.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -1260,6 +1260,50 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Position.Y = 56.000000000000000000
         Text = 'Min testInt Val: 50'
         TabOrder = 14
+      end
+      object btnStartTransReadOnly: TButton
+        Position.X = 512.000000000000000000
+        Position.Y = 60.000000000000000000
+        Size.Width = 161.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 18
+        Text = 'Start Transaction Read Only'
+        OnClick = btnStartTransReadOnlyClick
+      end
+      object btnStartTransReadWrite: TButton
+        Enabled = False
+        Position.X = 680.000000000000000000
+        Position.Y = 60.000000000000000000
+        Size.Width = 161.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 16
+        Text = 'Start Transaction Read/Write'
+        OnClick = btnStartTransReadWriteClick
+      end
+      object btnCommitTrans: TButton
+        Position.X = 512.000000000000000000
+        Position.Y = 60.000000000000000000
+        Size.Width = 161.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 17
+        Text = 'Commit Transaction'
+        Visible = False
+        OnClick = btnCommitTransClick
+      end
+      object btnRollBackTrans: TButton
+        Enabled = False
+        Position.X = 680.000000000000000000
+        Position.Y = 60.000000000000000000
+        Size.Width = 161.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 15
+        Text = 'Roll Back Transaction'
+        Visible = False
+        OnClick = btnRollBackTransClick
       end
     end
     object tabStorage: TTabItem
