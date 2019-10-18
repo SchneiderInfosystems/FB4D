@@ -723,9 +723,11 @@ begin
     memoResp.Lines.Add('Updated: ' +
       DateTimeToStr(Obj.updateTime));
     memoResp.Lines.Add('Download URL: ' + Obj.DownloadUrl);
+    memoResp.Lines.Add('Download Token: ' + Obj.DownloadToken);
     memoResp.Lines.Add('MD5 hash code: ' + Obj.MD5HashCode);
     memoResp.Lines.Add('E-Tag: ' + Obj.etag);
-    memoResp.Lines.Add('generation: ' + IntTostr(Obj.generation));
+    memoResp.Lines.Add('Generation: ' + IntTostr(Obj.generation));
+    memoResp.Lines.Add('StorageClass: ' + Obj.storageClass);
     memoResp.Lines.Add('Meta Generation: ' +
       IntTostr(Obj.metaGeneration));
   end else
