@@ -243,16 +243,21 @@ type
     Documents: IFirestoreDocuments) of object;
   TOnDocument = procedure(const Info: string;
     Document: IFirestoreDocument) of object;
+  TTransactionType = (ttReadOnly, ttReadWrite);
+  TTransaction = string; // A base64 encoded ID
   IFirestoreDatabase = interface(IInterface)
     procedure RunQuery(StructuredQuery: IStructuredQuery;
-      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError); overload;
+      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
+      QueryParams: TQueryParams = nil); overload;
     procedure RunQuery(DocumentPath: TRequestResourceParam;
       StructuredQuery: IStructuredQuery; OnDocuments: TOnDocuments;
-      OnRequestError: TOnRequestError); overload;
-    function RunQuerySynchronous(
-      StructuredQuery: IStructuredQuery): IFirestoreDocuments; overload;
+      OnRequestError: TOnRequestError;
+      QueryParams: TQueryParams = nil); overload;
+    function RunQuerySynchronous(StructuredQuery: IStructuredQuery;
+      QueryParams: TQueryParams = nil): IFirestoreDocuments; overload;
     function RunQuerySynchronous(DocumentPath: TRequestResourceParam;
-      StructuredQuery: IStructuredQuery): IFirestoreDocuments; overload;
+      StructuredQuery: IStructuredQuery;
+      QueryParams: TQueryParams = nil): IFirestoreDocuments; overload;
     procedure Get(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
@@ -279,6 +284,12 @@ type
       OnResponse: TOnResponse; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
+    function BeginTransactionSynchronous(
+      TransactionType: TTransactionType): TTransaction;
+    function CommitTransactionSynchronous(const Transaction: TTransaction;
+      Writes: TJSONArray = nil): TDateTime;
+    procedure RollBackTransactionSynchronous(const Transaction: TTransaction);
+    // Async transaction methods are not yet implemented
   end;
 
 {$IFDEF TOKENJWT}
