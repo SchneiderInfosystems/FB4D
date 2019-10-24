@@ -53,6 +53,7 @@ type
     fAuth: IFirebaseAuthentication;
     fOnUserLogin: TOnUserResponse;
     fOnGetAuth: TOnGetAuth;
+    fAllowSelfRegistration: boolean;
     procedure StartTokenReferesh(const LastToken: string);
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
       Providers: TStrings);
@@ -65,10 +66,11 @@ type
   public
     procedure Initialize(Auth: IFirebaseAuthentication;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
-      const LastEMail: string = '');
+      const LastEMail: string = ''; AllowSelfRegistration: boolean = true);
     procedure InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
-      const LastEMail: string = '') overload;
+      const LastEMail: string = ''; AllowSelfRegistration: boolean = true);
+      overload;
     procedure StartEMailEntering;
     function GetEMail: string;
   end;
@@ -85,16 +87,19 @@ resourcestring
   rsWait = 'Please wait for Firebase';
   rsEnterPassword = 'Enter your password for registration';
   rsSetupPassword = 'Setup a new password for future registrations';
+  rsNotRegisteredEMail = 'The entered e-mail is not registered';
   rsPleaseCheckEMail = 'Please check your e-mail inbox to renew your password.';
   rsLoggedIn = 'Successful logged in';
 
 procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
-  OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string);
+  OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
+  AllowSelfRegistration: boolean);
 begin
   fAuth := Auth;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := nil;
   edtEMail.Text := LastEMail;
+  fAllowSelfRegistration := AllowSelfRegistration;
   if LastRefreshToken.IsEmpty then
     StartEMailEntering
   else
@@ -102,12 +107,14 @@ begin
 end;
 
 procedure TFraSelfRegistration.InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
-  OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string);
+  OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
+  AllowSelfRegistration: boolean);
 begin
   fAuth := nil;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := OnGetAuth;
   edtEMail.Text := LastEMail;
+  fAllowSelfRegistration := AllowSelfRegistration;
   if LastRefreshToken.IsEmpty then
     StartEMailEntering
   else
@@ -146,7 +153,7 @@ begin
   if not assigned(fAuth) and assigned(fOnGetAuth) then
     fAuth := fOnGetAuth;
   Assert(assigned(fAuth), 'Auth is not initialized');
-  fAuth.FetchProvidersForEMail(edtEmail.Text, OnFetchProviders,
+  fAuth.FetchProvidersForEMail(trim(edtEmail.Text), OnFetchProviders,
     OnFetchProvidersError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -167,17 +174,26 @@ begin
     btnResetPwd.Visible := true;
     btnResetPwd.Enabled := true;
     lblStatus.Text := rsEnterPassword;
-  end else begin
+    edtPassword.Text := '';
+    edtPassword.Visible := true;
+    edtPassword.SetFocus;
+    btnCheckEMail.Visible := false;
+  end
+  else if fAllowSelfRegistration then
+  begin
     btnSignUp.Visible := true;
     btnSignUp.Enabled := true;
     btnSignIn.Visible := false;
     btnResetPwd.Visible := false;
     lblStatus.Text := rsSetupPassword;
+    edtPassword.Text := '';
+    edtPassword.Visible := true;
+    edtPassword.SetFocus;
+    btnCheckEMail.Visible := false;
+  end else begin
+    lblStatus.Text := rsNotRegisteredEMail;
+    edtEMail.SetFocus;
   end;
-  edtPassword.Text := '';
-  edtPassword.Visible := true;
-  edtPassword.SetFocus;
-  btnCheckEMail.Visible := false;
 end;
 
 procedure TFraSelfRegistration.OnFetchProvidersError(const Info, ErrMsg: string);
@@ -190,7 +206,7 @@ end;
 
 procedure TFraSelfRegistration.btnSignInClick(Sender: TObject);
 begin
-  fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
+  fAuth.SignInWithEmailAndPassword(trim(edtEmail.Text), edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -201,7 +217,7 @@ end;
 
 procedure TFraSelfRegistration.btnSignUpClick(Sender: TObject);
 begin
-  fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
+  fAuth.SignUpWithEmailAndPassword(trim(edtEmail.Text), edtPassword.Text,
     OnUserResponse, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
@@ -211,7 +227,7 @@ end;
 
 procedure TFraSelfRegistration.btnResetPwdClick(Sender: TObject);
 begin
-  fAuth.SendPasswordResetEMail(edtEMail.Text, OnResetPwd, OnUserError);
+  fAuth.SendPasswordResetEMail(trim(edtEMail.Text), OnResetPwd, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
@@ -283,7 +299,7 @@ end;
 
 function TFraSelfRegistration.GetEMail: string;
 begin
-  result := edtEmail.Text;
+  result := trim(edtEmail.Text);
 end;
 
 end.
