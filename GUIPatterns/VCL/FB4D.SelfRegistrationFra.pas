@@ -26,25 +26,27 @@ unit FB4D.SelfRegistrationFra;
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
-  FMX.Objects, FMX.Edit, FMX.Controls.Presentation,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.ExtCtrls, Vcl.WinXCtrls,
   FB4D.Interfaces;
 
 type
   TOnGetAuth = function : IFirebaseAuthentication of object;
   TFraSelfRegistration = class(TFrame)
-    AniIndicator: TAniIndicator;
+    AniIndicator: TActivityIndicator;
+    pnlStatus: TPanel;
+    gdpAcitivityInd: TGridPanel;
+    pnlCheckRegistered: TPanel;
     btnCheckEMail: TButton;
     btnResetPwd: TButton;
     btnSignIn: TButton;
     btnSignUp: TButton;
-    edtEMail: TEdit;
-    txtEMail: TText;
-    edtPassword: TEdit;
-    txtPassword: TText;
+    edtEMail: TLabeledEdit;
+    pnlPassword: TPanel;
+    edtPassword: TLabeledEdit;
     lblStatus: TLabel;
-    procedure edtEMailChangeTracking(Sender: TObject);
+    procedure edtEMailChange(Sender: TObject);
     procedure btnCheckEMailClick(Sender: TObject);
     procedure btnSignInClick(Sender: TObject);
     procedure btnSignUpClick(Sender: TObject);
@@ -80,7 +82,7 @@ implementation
 uses
   FB4D.Helpers;
 
-{$R *.fmx}
+{$R *.dfm}
 
 resourcestring
   rsEnterEMail = 'Enter your e-mail address for sign-in or registration';
@@ -126,7 +128,7 @@ begin
   edtEMail.Visible := true;
   btnCheckEMail.Visible := true;
   btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
-  lblStatus.Text := rsEnterEMail;
+  lblStatus.Caption := rsEnterEMail;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
@@ -134,11 +136,11 @@ begin
   edtEMail.SetFocus;
 end;
 
-procedure TFraSelfRegistration.edtEMailChangeTracking(Sender: TObject);
+procedure TFraSelfRegistration.edtEMailChange(Sender: TObject);
 begin
   if edtPassword.Visible then
   begin
-    lblStatus.Text := rsEnterEMail;
+    lblStatus.Caption := rsEnterEMail;
     edtPassword.Visible := false;
     btnCheckEMail.Visible := true;
     btnSignUp.Visible := false;
@@ -158,7 +160,7 @@ begin
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnCheckEMail.Enabled := false;
-  lblStatus.Text := rsWait;
+  lblStatus.Caption := rsWait;
 end;
 
 procedure TFraSelfRegistration.OnFetchProviders(const EMail: string;
@@ -173,7 +175,7 @@ begin
     btnSignIn.Enabled := true;
     btnResetPwd.Visible := true;
     btnResetPwd.Enabled := true;
-    lblStatus.Text := rsEnterPassword;
+    lblStatus.Caption := rsEnterPassword;
     edtPassword.Text := '';
     edtPassword.Visible := true;
     edtPassword.SetFocus;
@@ -185,13 +187,13 @@ begin
     btnSignUp.Enabled := true;
     btnSignIn.Visible := false;
     btnResetPwd.Visible := false;
-    lblStatus.Text := rsSetupPassword;
+    lblStatus.Caption := rsSetupPassword;
     edtPassword.Text := '';
     edtPassword.Visible := true;
     edtPassword.SetFocus;
     btnCheckEMail.Visible := false;
   end else begin
-    lblStatus.Text := rsNotRegisteredEMail;
+    lblStatus.Caption := rsNotRegisteredEMail;
     edtEMail.SetFocus;
   end;
 end;
@@ -200,7 +202,7 @@ procedure TFraSelfRegistration.OnFetchProvidersError(const Info, ErrMsg: string)
 begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
-  lblStatus.Text := Info + ': ' + ErrMsg;
+  lblStatus.Caption := Info + ': ' + ErrMsg;
   btnCheckEMail.Enabled := true;
 end;
 
@@ -212,7 +214,7 @@ begin
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
   btnResetPwd.Enabled := false;
-  lblStatus.Text := rsWait;
+  lblStatus.Caption := rsWait;
 end;
 
 procedure TFraSelfRegistration.btnSignUpClick(Sender: TObject);
@@ -222,7 +224,7 @@ begin
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnSignUp.Enabled := false;
-  lblStatus.Text := rsWait;
+  lblStatus.Caption := rsWait;
 end;
 
 procedure TFraSelfRegistration.btnResetPwdClick(Sender: TObject);
@@ -232,7 +234,7 @@ begin
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
   btnResetPwd.Enabled := false;
-  lblStatus.Text := rsWait;
+  lblStatus.Caption := rsWait;
 end;
 
 procedure TFraSelfRegistration.OnResetPwd(const Info: string; Response: IFirebaseResponse);
@@ -241,9 +243,9 @@ begin
   AniIndicator.Visible := false;
   btnSignIn.Enabled := true;
   if Response.StatusOk then
-    lblStatus.Text := rsPleaseCheckEMail
+    lblStatus.Caption := rsPleaseCheckEMail
   else
-    lblStatus.Text := Response.ErrorMsgOrStatusText;
+    lblStatus.Caption := Response.ErrorMsgOrStatusText;
 end;
 
 procedure TFraSelfRegistration.StartTokenReferesh(const LastToken: string);
@@ -255,7 +257,7 @@ begin
   AniIndicator.Visible := true;
   edtEMail.Visible := false;
   btnCheckEMail.Visible := false;
-  lblStatus.Text := rsWait;
+  lblStatus.Caption := rsWait;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
@@ -284,7 +286,7 @@ begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
   StartEMailEntering;
-  lblStatus.Text := Info + ': ' + ErrMsg;
+  lblStatus.Caption := Info + ': ' + ErrMsg;
 end;
 
 procedure TFraSelfRegistration.OnUserResponse(const Info: string;
@@ -292,7 +294,7 @@ procedure TFraSelfRegistration.OnUserResponse(const Info: string;
 begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
-  lblStatus.Text := rsLoggedIn;
+  lblStatus.Caption := rsLoggedIn;
   if assigned(fOnUserLogin) then
     fOnUserLogin(Info, User);
 end;

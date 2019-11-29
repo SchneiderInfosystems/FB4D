@@ -1,0 +1,36 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{C3A65292-9E18-49D9-A926-FB6DA127732A}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="RTDB_PerUserReadWrite_VCL">
+        <MSBuild Projects="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj"/>
+    </Target>
+    <Target Name="RTDB_PerUserReadWrite_VCL:Clean">
+        <MSBuild Projects="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="RTDB_PerUserReadWrite_VCL:Make">
+        <MSBuild Projects="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="RTDB_PerUserReadWrite_VCL"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="RTDB_PerUserReadWrite_VCL:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="RTDB_PerUserReadWrite_VCL:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
