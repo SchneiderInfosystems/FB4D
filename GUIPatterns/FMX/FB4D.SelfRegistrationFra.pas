@@ -54,6 +54,8 @@ type
     fOnUserLogin: TOnUserResponse;
     fOnGetAuth: TOnGetAuth;
     fAllowSelfRegistration: boolean;
+    fRequireVerificatedEMail: boolean;
+    fReqInfo: string;
     procedure StartTokenReferesh(const LastToken: string);
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
       Providers: TStrings);
@@ -63,14 +65,17 @@ type
     procedure OnUserResponse(const Info: string; User: IFirebaseUser);
     procedure OnTokenRefresh(TokenRefreshed: boolean);
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
+    procedure OnVerificationMailSent(const RequestID: string;
+      Response: IFirebaseResponse);
   public
     procedure Initialize(Auth: IFirebaseAuthentication;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
-      const LastEMail: string = ''; AllowSelfRegistration: boolean = true);
+      const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
+      RequireVerificatedEMail: boolean = false);
     procedure InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
-      const LastEMail: string = ''; AllowSelfRegistration: boolean = true);
-      overload;
+      const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
+      RequireVerificatedEMail: boolean = false);
     procedure StartEMailEntering;
     function GetEMail: string;
   end;
@@ -88,18 +93,21 @@ resourcestring
   rsEnterPassword = 'Enter your password for registration';
   rsSetupPassword = 'Setup a new password for future registrations';
   rsNotRegisteredEMail = 'The entered e-mail is not registered';
-  rsPleaseCheckEMail = 'Please check your e-mail inbox to renew your password.';
+  rsPleaseCheckEMail = 'Please check your e-mail inbox to renew your password';
   rsLoggedIn = 'Successful logged in';
+  rsPleaseCheckEMailForVerify =
+    'Please check your e-mail inbox to confirm your email address';
 
 procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
-  AllowSelfRegistration: boolean);
+  AllowSelfRegistration, RequireVerificatedEMail: boolean);
 begin
   fAuth := Auth;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := nil;
   edtEMail.Text := LastEMail;
   fAllowSelfRegistration := AllowSelfRegistration;
+  fRequireVerificatedEMail := RequireVerificatedEMail;
   if LastRefreshToken.IsEmpty then
     StartEMailEntering
   else
@@ -108,13 +116,14 @@ end;
 
 procedure TFraSelfRegistration.InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
-  AllowSelfRegistration: boolean);
+  AllowSelfRegistration, RequireVerificatedEMail: boolean);
 begin
   fAuth := nil;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := OnGetAuth;
   edtEMail.Text := LastEMail;
   fAllowSelfRegistration := AllowSelfRegistration;
+  fRequireVerificatedEMail := RequireVerificatedEMail;
   if LastRefreshToken.IsEmpty then
     StartEMailEntering
   else
@@ -260,6 +269,7 @@ begin
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
   edtPassword.Visible := false;
+  fReqInfo := 'AfterTokenRefresh';
   fAuth.RefreshToken(LastToken, OnTokenRefresh, OnUserError);
 end;
 
@@ -272,10 +282,20 @@ begin
 end;
 
 procedure TFraSelfRegistration.OnGetUserData(FirebaseUserList: TFirebaseUserList);
+var
+  User: IFirebaseUser;
 begin
   if FirebaseUserList.Count = 1 then
-    OnUserResponse('AfterTokenRefresh', FirebaseUserList[0])
-  else
+  begin
+    User := FirebaseUserList[0];
+    if fRequireVerificatedEMail then
+      if User.IsEMailVerified <> tsbTrue then
+      begin
+        fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
+        exit;
+      end;
+    OnUserResponse(fReqInfo, User);
+  end else
     StartEMailEntering;
 end;
 
@@ -290,6 +310,20 @@ end;
 procedure TFraSelfRegistration.OnUserResponse(const Info: string;
   User: IFirebaseUser);
 begin
+  if fRequireVerificatedEMail then
+    case User.IsEMailVerified of
+      tsbUnspecified:
+        begin
+          fReqInfo := 'GetUserData';
+          fAuth.GetUserData(OnGetUserData, OnUserError);
+          exit;
+        end;
+      tsbFalse:
+        begin
+          fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
+          exit;
+        end;
+    end;
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
   lblStatus.Text := rsLoggedIn;
@@ -300,6 +334,15 @@ end;
 function TFraSelfRegistration.GetEMail: string;
 begin
   result := trim(edtEmail.Text);
+end;
+
+procedure TFraSelfRegistration.OnVerificationMailSent(const RequestID: string;
+  Response: IFirebaseResponse);
+begin
+  AniIndicator.Enabled := false;
+  AniIndicator.Visible := false;
+  lblStatus.Text := rsPleaseCheckEMailForVerify;
+  btnSignIn.Enabled := true;
 end;
 
 end.
