@@ -1302,8 +1302,20 @@ end;
 
 function TFirebaseUser.IsEMailVerified: TThreeStateBoolean;
 var
+  {$IFDEF TOKENJWT}
+  Val: TJSONValue;
+  {$ENDIF}
   bool: boolean;
 begin
+  {$IFDEF TOKENJWT}
+  if fClaimFields.TryGetValue('email_verified', Val) then
+  begin
+    if Val.GetValue<boolean> then
+      exit(tsbTrue)
+    else
+      exit(tsbFalse);
+  end;
+  {$ENDIF}
   if not fJSONResp.TryGetValue('emailVerified', bool) then
     result := tsbUnspecified
   else if bool then
