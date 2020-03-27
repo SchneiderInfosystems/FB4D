@@ -12,7 +12,8 @@ This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki).
 
 ### Prerequisites
 
-This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.2 Tokio and are ready for Delphi 10.3 Rio Update 2. 
+This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.2 Tokio and are ready for Delphi 10.3 Rio Update 3. 
+#### Hint: Delphi 10.3 Update 1 is not longer supported because of an issue in the RTL. 
 
 ### Supported Platforms
 
