@@ -358,7 +358,7 @@ begin
     Response.CheckForJSONObj;
     result := TFirestoreDocuments.CreateFromJSONDocumentsObj(Response)
   end else
-    raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
+    result := nil;
 end;
 
 procedure TFirestoreDatabase.CreateDocument(DocumentPath: TRequestResourceParam;
