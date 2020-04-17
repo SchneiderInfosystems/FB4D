@@ -1267,43 +1267,20 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 161.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 18
+        TabOrder = 16
         Text = 'Start Transaction Read Only'
         OnClick = btnStartTransReadOnlyClick
       end
-      object btnStartTransReadWrite: TButton
-        Enabled = False
-        Position.X = 680.000000000000000000
-        Position.Y = 60.000000000000000000
-        Size.Width = 161.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 16
-        Text = 'Start Transaction Read/Write'
-        OnClick = btnStartTransReadWriteClick
-      end
-      object btnCommitTrans: TButton
+      object btnStopTrans: TButton
         Position.X = 512.000000000000000000
         Position.Y = 60.000000000000000000
         Size.Width = 161.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 17
-        Text = 'Commit Transaction'
-        Visible = False
-        OnClick = btnCommitTransClick
-      end
-      object btnRollBackTrans: TButton
-        Enabled = False
-        Position.X = 680.000000000000000000
-        Position.Y = 60.000000000000000000
-        Size.Width = 161.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
         TabOrder = 15
-        Text = 'Roll Back Transaction'
+        Text = 'Stop Transaction'
         Visible = False
-        OnClick = btnRollBackTransClick
+        OnClick = btnStopTransClick
       end
     end
     object tabStorage: TTabItem

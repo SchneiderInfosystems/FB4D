@@ -176,9 +176,7 @@ type
     lblMinTestInt: TLabel;
     btnLinkEMailPwd: TButton;
     btnStartTransReadOnly: TButton;
-    btnStartTransReadWrite: TButton;
-    btnCommitTrans: TButton;
-    btnRollBackTrans: TButton;
+    btnStopTrans: TButton;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -231,9 +229,7 @@ type
     procedure trbMinTestIntChange(Sender: TObject);
     procedure btnLinkEMailPwdClick(Sender: TObject);
     procedure btnStartTransReadOnlyClick(Sender: TObject);
-    procedure btnStartTransReadWriteClick(Sender: TObject);
-    procedure btnRollBackTransClick(Sender: TObject);
-    procedure btnCommitTransClick(Sender: TObject);
+    procedure btnStopTransClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fStorageObject: IStorageObject;
@@ -1373,69 +1369,20 @@ begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   try
-    fTransaction := fDatabase.BeginTransactionSynchronous(ttReadOnly);
+    fTransaction := fDatabase.BeginReadOnlyTransactionSynchronous;
     memFirestore.Lines.Add('Read only transaction started');
   except
     on e: EFirebaseResponse do
       memFirestore.Lines.Add('Transaction failed: ' + e.Message);
   end;
-  btnStartTransReadWrite.Visible := false;
   btnStartTransReadOnly.Visible := false;
-  btnCommitTrans.Visible := true;
-  btnRollBackTrans.Visible := true;
+  btnStopTrans.Visible := true;
 end;
 
-procedure TfmxFirebaseDemo.btnStartTransReadWriteClick(Sender: TObject);
+procedure TfmxFirebaseDemo.btnStopTransClick(Sender: TObject);
 begin
-  if not CheckAndCreateFirestoreDBClass(memFirestore) then
-    exit;
-  try
-    fTransaction := fDatabase.BeginTransactionSynchronous(ttReadOnly);
-    memFirestore.Lines.Add('Read/Write transaction started');
-  except
-    on e: EFirebaseResponse do
-      memFirestore.Lines.Add('Transaction failed: ' + e.Message);
-  end;
-  btnStartTransReadWrite.Visible := false;
-  btnStartTransReadOnly.Visible := false;
-  btnCommitTrans.Visible := true;
-  btnRollBackTrans.Visible := true;
-end;
-
-procedure TfmxFirebaseDemo.btnRollBackTransClick(Sender: TObject);
-begin
-  try
-    fDatabase.RollBackTransactionSynchronous(fTransaction);
-  except
-    on e: EFirebaseResponse do
-      memFirestore.Lines.Add('Roll back failed: ' + e.Message);
-  end;
   fTransaction := '';
-  btnCommitTrans.Visible := false;
-  btnRollBackTrans.Visible := false;
-  btnStartTransReadWrite.Visible := true;
-  btnStartTransReadOnly.Visible := true;
-end;
-
-procedure TfmxFirebaseDemo.btnCommitTransClick(Sender: TObject);
-var
-  dt: TDateTime;
-begin
-  try
-    dt := fDatabase.CommitTransactionSynchronous(fTransaction);
-    if dt > 0 then
-      memFirestore.Lines.Add('Transaction commited at ' +
-        DateTimeToStr(TFirebaseHelpers.ConvertToLocalDateTime(dt)))
-    else
-      memFirestore.Lines.Add('Transaction: nothing to commit');
-  except
-    on e: EFirebaseResponse do
-      memFirestore.Lines.Add('Commit failed: ' + e.Message);
-  end;
-  fTransaction := '';
-  btnCommitTrans.Visible := false;
-  btnRollBackTrans.Visible := false;
-  btnStartTransReadWrite.Visible := true;
+  btnStopTrans.Visible := false;
   btnStartTransReadOnly.Visible := true;
 end;
 {$ENDREGION}

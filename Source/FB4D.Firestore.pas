@@ -47,6 +47,8 @@ type
     fOnPatchError, fOnDeleteError: TOnRequestError;
     fOnCreateDocument, fOnInsertUpdateDocument, fOnPatchDocument: TOnDocument;
     fOnDelete: TOnResponse;
+    fOnTransaction: TOnBeginTransaction;
+    fOnTransactionError: TOnRequestError;
     function BaseURI: string;
     procedure OnQueryResponse(const RequestID: string;
       Response: IFirebaseResponse);
@@ -59,6 +61,8 @@ type
     procedure OnPatchResponse(const RequestID: string;
       Response: IFirebaseResponse);
     procedure OnDeleteResponse(const RequestID: string;
+      Response: IFirebaseResponse);
+    procedure BeginReadOnlyTransactionRespose(const RequestID: string;
       Response: IFirebaseResponse);
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
@@ -101,13 +105,9 @@ type
       OnResponse: TOnResponse; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
-    function BeginTransactionSynchronous(
-      TransactionType: TTransactionType): TTransaction;
-    function CommitTransactionSynchronous(const Transaction: TTransaction;
-      Writes: TJSONArray = nil): TDateTime;
-    procedure RollBackTransactionSynchronous(const Transaction: TTransaction);
-    // Async transaction methods are not yet implemented
-
+    procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
+      OnRequestError: TOnRequestError);
+    function BeginReadOnlyTransactionSynchronous: TTransaction;
     property ProjectID: string read fProjectID;
     property DatabaseID: string read fDatabaseID;
   end;
@@ -611,28 +611,60 @@ begin
   result := Request.SendRequestSynchronous(Params, rmDELETE, nil, QueryParams);
 end;
 
-function TFirestoreDatabase.BeginTransactionSynchronous(
-  TransactionType: TTransactionType): TTransaction;
+procedure TFirestoreDatabase.BeginReadOnlyTransaction(
+  OnBeginTransaction: TOnBeginTransaction; OnRequestError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+  Data: TJSONObject;
+begin
+  fOnTransaction := OnBeginTransaction;
+  fOnTransactionError := OnRequestError;
+  Assert(assigned(fAuth), 'Authentication is required');
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_BEGINTRANS,
+    rsBeginTrans, fAuth);
+  Data := TJSONObject.Create(TJSONPair.Create('options', TJSONObject.Create(
+    TJSONPair.Create('readOnly', TJSONObject.Create))));
+  Request.SendRequest(nil, rmPOST, Data, nil, tmBearer,
+    BeginReadOnlyTransactionRespose, OnRequestError);
+end;
+
+procedure TFirestoreDatabase.BeginReadOnlyTransactionRespose(
+  const RequestID: string; Response: IFirebaseResponse);
+var
+  Res: TJSONObject;
+begin
+  try
+    Response.CheckForJSONObj;
+    Res := Response.GetContentAsJSONObj;
+    try
+      if assigned(fOnTransaction) then
+        fOnTransaction(Res.GetValue<string>('transaction'));
+    finally
+      Res.Free;
+    end;
+  except
+    on e: Exception do
+    begin
+      if assigned(fOnTransactionError) then
+        fOnTransactionError(RequestID, e.Message)
+      else
+        TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
+    end;
+  end;
+end;
+
+function TFirestoreDatabase.BeginReadOnlyTransactionSynchronous: TTransaction;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
-  Data, Options, Res: TJSONObject;
+  Data, Res: TJSONObject;
 begin
   Assert(assigned(fAuth), 'Authentication is required');
   result := '';
   Request := TFirebaseRequest.Create(BaseURI + METHODE_BEGINTRANS,
     rsBeginTrans, fAuth);
-  case TransactionType of
-    ttReadOnly:
-      Options := TJSONObject.Create(
-        TJSONPair.Create('readOnly', TJSONObject.Create));
-    ttReadWrite:
-      Options := TJSONObject.Create(
-        TJSONPair.Create('readWrite', TJSONObject.Create));
-    else
-      Options := TJSONObject.Create;
-  end;
-  Data := TJSONObject.Create(TJSONPair.Create('options', Options));
+  Data := TJSONObject.Create(TJSONPair.Create('options', TJSONObject.Create(
+    TJSONPair.Create('readOnly', TJSONObject.Create))));
   try
     Response := Request.SendRequestSynchronous(nil, rmPOST, Data, nil);
     if Response.StatusOk then
@@ -650,60 +682,6 @@ begin
   end;
 end;
 
-function TFirestoreDatabase.CommitTransactionSynchronous(
-  const Transaction: TTransaction; Writes: TJSONArray): TDateTime;
-var
-  Request: IFirebaseRequest;
-  Response: IFirebaseResponse;
-  Data, Res: TJSONObject;
-begin
-  Assert(assigned(fAuth), 'Authentication is required');
-  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
-    rsCommitTrans, fAuth);
-  if assigned(Writes) then
-    Data := TJSONObject.Create(TJSONPair.Create('writes', Writes))
-  else
-    Data := TJSONObject.Create;
-  try
-    Data.AddPair(TJSONPair.Create('transaction', Transaction));
-    Response := Request.SendRequestSynchronous(nil, rmPOST, Data, nil);
-    if Response.StatusOk then
-    begin
-      Res := Response.GetContentAsJSONObj;
-      try
-        if Res.GetValue('commitTime') <> nil then
-          result := Res.GetValue<TDateTime>('commitTime')
-        else
-          result := 0; // nothing to commit
-      finally
-        Res.Free;
-      end;
-    end else
-      raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
-  finally
-    Data.Free;
-  end;
-end;
-
-procedure TFirestoreDatabase.RollBackTransactionSynchronous(
-  const Transaction: TTransaction);
-var
-  Request: IFirebaseRequest;
-  Response: IFirebaseResponse;
-  Data: TJSONObject;
-begin
-  Assert(assigned(fAuth), 'Authentication is required');
-  Request := TFirebaseRequest.Create(BaseURI + METHODE_ROLLBACK,
-    rsRollBackTrans, fAuth);
-  Data := TJSONObject.Create(TJSONPair.Create('transaction', Transaction));
-  try
-    Response := Request.SendRequestSynchronous(nil, rmPOST, Data, nil);
-    if not Response.StatusOk then
-      raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
-  finally
-    Data.Free;
-  end;
-end;
 
 { TStructuredQuery }
 

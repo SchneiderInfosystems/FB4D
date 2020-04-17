@@ -243,8 +243,8 @@ type
     Documents: IFirestoreDocuments) of object;
   TOnDocument = procedure(const Info: string;
     Document: IFirestoreDocument) of object;
-  TTransactionType = (ttReadOnly, ttReadWrite);
   TTransaction = string; // A base64 encoded ID
+  TOnBeginTransaction = procedure(Transaction: TTransaction) of object;
   IFirestoreDatabase = interface(IInterface)
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
@@ -284,12 +284,9 @@ type
       OnResponse: TOnResponse; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
-    function BeginTransactionSynchronous(
-      TransactionType: TTransactionType): TTransaction;
-    function CommitTransactionSynchronous(const Transaction: TTransaction;
-      Writes: TJSONArray = nil): TDateTime;
-    procedure RollBackTransactionSynchronous(const Transaction: TTransaction);
-    // Async transaction methods are not yet implemented
+    procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
+      OnRequestError: TOnRequestError);
+    function BeginReadOnlyTransactionSynchronous: TTransaction;
   end;
 
 {$IFDEF TOKENJWT}
