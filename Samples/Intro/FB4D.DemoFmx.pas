@@ -27,11 +27,14 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  System.StrUtils, System.JSON, System.Sensors,
+  System.StrUtils, System.JSON,
+{$IFNDEF LINUX64}
+  System.Sensors,
+{$ENDIF}
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
   FMX.Edit, FMX.ScrollBox, FMX.Memo, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.TabControl, FMX.DateTimeCtrls, FMX.ListBox, FMX.Layouts, FMX.EditBox,
-  FMX.SpinBox,
+  FMX.SpinBox, FMX.Memo.Types,
   FB4D.Interfaces, FB4D.RealTimeDB;
 
 type
