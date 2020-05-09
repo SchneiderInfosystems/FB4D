@@ -26,7 +26,10 @@ unit FB4D.Document;
 interface
 
 uses
-  System.Classes, System.JSON, System.SysUtils, System.Sensors,
+  System.Classes, System.JSON, System.SysUtils,
+{$IFNDEF LINUX64}
+  System.Sensors,
+{$ENDIF}
   FB4D.Interfaces, FB4D.Response, FB4D.Request;
 
 {$WARN DUPLICATE_CTOR_DTOR OFF}

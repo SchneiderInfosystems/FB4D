@@ -26,7 +26,10 @@ unit FB4D.Helpers;
 interface
 
 uses
-  System.Classes, System.Types, System.SysUtils, System.Sensors,
+  System.Classes, System.Types, System.SysUtils,
+{$IFNDEF LINUX64}
+  System.Sensors,
+{$ENDIF}
   System.JSON, System.Generics.Collections,
   FB4D.Interfaces;
 
@@ -127,17 +130,16 @@ implementation
 
 uses
   System.Character,
-{$IFDEF MSWINDOWS}
+{$IF Declared(VCL)}
   WinAPI.Windows,
+  VCL.Forms,
+{$ELSEIF Declared(FMX)}
+  FMX.Types,
+  FMX.Forms,
 {$ELSE}
   FMX.Types,
-{$ENDIF}
-{$IFDEF FMX}
   FMX.Forms,
-{$ENDIF}
-{$IFDEF VCL}
-  VCL.Forms,
-{$ENDIF}
+{$IFEND}
   System.DateUtils, System.NetEncoding, System.JSONConsts, System.Math,
   System.Net.HttpClient,
   IdGlobalProtocols;
@@ -289,11 +291,13 @@ end;
 
 class procedure TFirebaseHelpers.Log(msg: string);
 begin
-{$IFDEF MSWINDOWS}
-  OutputDebugString(PChar(msg));
-{$ELSE}
+{$IF Declared(FMX)}
   FMX.Types.Log.d(msg, []);
   // there is a bug in DE 10.2 when the wrong method is calling?
+{$ELSEIF Declared(VCL)}
+  OutputDebugString(PChar(msg));
+{$ELSE}
+  writeln(msg);
 {$ENDIF}
 end;
 
@@ -310,15 +314,18 @@ end;
 
 class function TFirebaseHelpers.AppIsTerminated: boolean;
 begin
-  // In case of compiler error undeclared identifier 'application'
-  // add '$(FrameworkType)' into the project settings as conditional defines
-  // for the BASE configuration
+{$IF Declared(VCL) OR Declared(FMX)}
   result := Application.Terminated;
+{$ELSE}
+  result := false;
+{$ENDIF}
 end;
 
 class procedure TFirebaseHelpers.SleepAndMessageLoop(SleepInMs: cardinal);
 begin
+{$IF Declared(VCL) OR Declared(FMX)}
   Application.ProcessMessages;
+{$ENDIF}
   Sleep(SleepInMs);
 end;
 
@@ -594,6 +601,7 @@ begin
 {$IFEND}
   result := result + GetPlatform;
 end;
+
 { TJSONHelpers }
 
 function TJSONHelpers.GetIntegerValue: integer;

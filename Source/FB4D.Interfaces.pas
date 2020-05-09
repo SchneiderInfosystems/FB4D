@@ -25,12 +25,19 @@ unit FB4D.Interfaces;
 interface
 
 uses
-  System.Classes, System.Types, System.SysUtils,
-  System.JSON, System.Sensors, System.Generics.Collections,
+  System.Classes, System.Types, System.SysUtils, System.JSON,
+{$IFNDEF LINUX64}
+  System.Sensors,
+{$ENDIF}
+  System.Generics.Collections,
 {$IFDEF TOKENJWT}
   JOSE.Core.JWT,
 {$ENDIF}
   REST.Types;
+
+{$IFDEF LINUX64}
+{$I LinuxTypeDecl.inc}
+{$ENDIF}
 
 type
   /// <summary>
@@ -536,5 +543,9 @@ const
   cPath = 'path';
 
 implementation
+
+{$IFDEF LINUX64}
+{$I LinuxTypeImpl.inc}
+{$ENDIF}
 
 end.
