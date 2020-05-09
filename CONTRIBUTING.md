@@ -3,7 +3,7 @@
 Every contribution is welcome!
 
 ## Reporting Bugs
-This section guides you through submitting a bug report for FB4D. Following these guidelines helps developers and the community understand your report, reproduce the behavior and find related reports.
+This section guides you through submitting a bug report for FB4D. Following these guidelines helps developers and the community understand your report, reproduce the behavior, and find related reports.
 
 ### Before Submitting A Bug Report
 Before creating bug reports, please check this list as you might find out that you don't need to create one. 
@@ -16,9 +16,9 @@ Explain the problem and include additional details to help maintainers reproduce
 Describe the exact steps which reproduce the problem in as many details as possible. Provide specific examples to demonstrate the steps.
 Include links to files or GitHub projects, or copy/pasteable snippets, which you use in those examples. 
 If you're providing snippets in the issue, use Markdown code blocks.
-Describe the behavior you observed after following the steps and point out what exactly is the problem with that behavior. Explain which behavior you expected to see instead and why.
+Describe the behavior you observed after following the steps and point out what exactly is the problem with that behavior. Explain which response you expected to see instead and why.
 
-Include also screenshots and MP4 videos which shows the issue and following the described steps and clearly demonstrate the problem.
+Include also screenshots and MP4 videos that show the issue and following the described steps and clearly demonstrate the problem.
 
 ## Push requests for new Code
 
@@ -26,4 +26,4 @@ If you miss functionality or have solved an open issue do not hesitate to send a
 
 ## Review of Documentation
 
-If you miss some explanaition do not hesitate to ask us by submit an issue labeled with "Documentation". If you see missundertanding documentation, any hint is welcome!
+If you miss some explanations, do not hesitate to ask us by submitting an issue labeled with _Documentation_. If you see misunderstanding  documentation, any hint is welcome!
