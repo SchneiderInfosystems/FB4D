@@ -560,7 +560,9 @@ begin
       fThread := nil;
     end);
   fThread.OnTerminate := OnStopListening;
+  {$IFNDEF LINUX64}
   fThread.NameThreadForDebugging('FB4D.RTDB.ListenEvent', fThread.ThreadID);
+  {$ENDIF}
   fThread.FreeOnTerminate := true;
   fThread.Start;
   result := TFirebaseEvent.Create(Self, ResourceParams);
@@ -586,7 +588,7 @@ const
   cData = 'data: ';
   cKeepAlive = 'keep-alive';
   cRevokeToken = 'auth_revoked';
-{$IFDEF MACOS}
+{$IFDEF POSIX}
 var
   Params: TRequestResourceParam;
   ErrMsg: string;
@@ -607,6 +609,7 @@ begin
             EventName, Data: string;
             JSONObj: TJSONObject;
           begin
+            sleep(1); // is required because of RSP-28205
             ss := TStringStream.Create;
             try
               Assert(fReadPos >= 0, 'Invalid stream read position');
