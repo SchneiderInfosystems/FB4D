@@ -12,12 +12,13 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 ### Prerequisites
 
-This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.2 Tokio and are ready for Delphi 10.3 Rio Update 3. 
+This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.3 Rio Update 3 and are ready for Delphi 10.4 Sydney.
+
 #### Hint: Delphi 10.3 Update 1 is not longer supported because of an issue in the RTL. 
 
 ### Supported Platforms
 
-**FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac32, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verifcation requires the installation of the OpenSSL libraries and is not tested yet). 
+**FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac64/32, Linux64 by using FMXLinux, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verifcation requires the installation of the OpenSSL libraries). For more information about using OpenSSL see the [installation of OpenSSL](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D#install-openssl)
 
 ### Submodules
 
