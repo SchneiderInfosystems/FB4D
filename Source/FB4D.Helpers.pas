@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2019 Christoph Schneider                                 }
+{  Copyright (c) 2018-2020 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -94,6 +94,7 @@ type
       Val: TDateTime): TJSONPair;
     class function SetNullValue: TJSONObject;
     class function SetNull(const VarName: string): TJSONPair;
+    function IsNull: boolean;
     function GetReference: string; overload;
     function GetReference(const Name: string): string; overload;
     class function SetReferenceValue(const ProjectID, Ref: string): TJSONObject;
@@ -113,6 +114,7 @@ type
     function GetMapSize: integer; overload;
     function GetMapSize(const Name: string): integer; overload;
     function GetMapItem(Ind: integer): TJSONPair; overload;
+    function GetMapItem(const Name: string): TJSONObject; overload;
     function GetMapItem(const Name: string; Ind: integer): TJSONPair; overload;
     class function SetArray(const VarName: string;
       ArrayVars: array of TJSONValue): TJSONPair;
@@ -773,6 +775,11 @@ begin
   result := TJSONPair.Create(VarName, SetNullValue);
 end;
 
+function TJSONHelpers.IsNull: boolean;
+begin
+  result := GetValue<TJSONValue>('nullValue') is TJSONNull;
+end;
+
 function TJSONHelpers.GetReference: string;
 begin
   result := GetValue<string>('referenceValue');
@@ -879,12 +886,25 @@ function TJSONHelpers.GetMapItem(Ind: integer): TJSONPair;
 var
   Obj: TJSONObject;
 begin
-  Obj := GetValue<TJSONObject>('mapValue').
-    GetValue<TJSONObject>('fields');
+  Obj := GetValue<TJSONObject>('mapValue').GetValue<TJSONObject>('fields');
   if (Ind < 0) or (Ind >= Obj.Count) then
     raise EJSONException.CreateFmt(rsMapItemOutOfBounds, [Ind]);
   result := Obj.Pairs[Ind];
 end;
+
+function TJSONHelpers.GetMapItem(const Name: string): TJSONObject;
+var
+  Obj: TJSONObject;
+  Ind: integer;
+begin
+  Obj := GetValue<TJSONObject>('mapValue').GetValue<TJSONObject>('fields');
+  if assigned(Obj) then
+    for Ind := 0 to Obj.Count - 1 do
+      if SameText(Obj.Pairs[Ind].JsonString.Value, Name) then
+        exit(Obj.Pairs[Ind].JsonValue as TJSONObject);
+  raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
 
 function TJSONHelpers.GetMapItem(const Name: string; Ind: integer): TJSONPair;
 var
