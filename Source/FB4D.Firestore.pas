@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2019 Christoph Schneider                                 }
+{  Copyright (c) 2018-2020 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
