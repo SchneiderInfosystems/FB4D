@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2020 Christoph Schneider                                 }
@@ -38,11 +38,12 @@ type
     fConfig: IFirebaseConfiguration;
     fErrMsg: string;
     fReqID: string;
-    fInfo: string;
-    fCallBack: boolean;
-    fDoc: IFirestoreDocument;
+    fInfo, fInfo2: string;
+    fCallBack: integer;
+    fDoc, fDoc2: IFirestoreDocument;
     procedure OnError(const RequestID, ErrMsg: string);
     procedure OnDoc(const Info: string; Document: IFirestoreDocument);
+    procedure OnDoc2(const Info: string; Document: IFirestoreDocument);
     procedure OnDocs(const Info: string; Documents: IFirestoreDocuments);
   public
     [Setup]
@@ -53,13 +54,15 @@ type
     [TestCase]
     procedure CreateUpdateGetDocumentSynchronous;
     procedure CreateUpdateGetDocument;
+
+    procedure ConcurrentUpdateDocuments;
   end;
 
 implementation
 
 uses
   VCL.Forms,
-  FB4D.Configuration, FB4D.Helpers;
+  FB4D.Configuration, FB4D.Helpers, FB4D.Document;
 
 {$I FBConfig.inc}
 
@@ -77,7 +80,7 @@ begin
   fErrMsg := '';
   fReqID := '';
   fInfo := '';
-  fCallBack := false;
+  fCallBack := 0;
   fDoc := nil;
 end;
 
@@ -94,7 +97,15 @@ procedure UT_FirestoreDB.OnDoc(const Info: string;
 begin
   fDoc := Document;
   fInfo := Info;
-  fCallBack := true;
+  inc(fCallBack);
+end;
+
+procedure UT_FirestoreDB.OnDoc2(const Info: string;
+  Document: IFirestoreDocument);
+begin
+  fDoc2 := Document;
+  fInfo2 := Info;
+  inc(fCallBack);
 end;
 
 procedure UT_FirestoreDB.OnDocs(const Info: string;
@@ -105,14 +116,14 @@ begin
   else
     fDoc := Documents.Document(0);
   fInfo := Info;
-  fCallBack := true;
+  inc(fCallBack);
 end;
 
 procedure UT_FirestoreDB.OnError(const RequestID, ErrMsg: string);
 begin
   fReqID := RequestID;
   fErrMsg := ErrMsg;
-  fCallBack := true;
+  inc(fCallBack);
 end;
 
 procedure UT_FirestoreDB.CreateUpdateGetDocumentSynchronous;
@@ -181,7 +192,7 @@ var
   Doc: IFirestoreDocument;
 begin
   fConfig.Database.CreateDocument([cDBPath], nil, OnDoc, OnError);
-  while not fCallBack do
+  while fCallBack < 1 do
     Application.ProcessMessages;
   Status('CreateDocument passed: ' + fInfo);
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
@@ -204,9 +215,9 @@ begin
   Doc := fDoc;
 
   fDoc := nil;
-  fCallBack := false;
+  fCallBack := 0;
   fConfig.Database.InsertOrUpdateDocument([cDBPath, DocName], Doc, nil, OnDoc, OnError);
-  while not fCallBack do
+  while fCallBack < 1 do
     Application.ProcessMessages;
   Status('InsertOrUpdateDocument passed: ' + fInfo);
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
@@ -222,9 +233,9 @@ begin
   Assert.IsTrue(Doc.FieldByName('Item4').GetMapItem('Item4.4').IsNull, 'Item4.4 value does not match');
   Status('Document check passed');
 
-  fCallBack := false;
+  fCallBack := 0;
   fConfig.Database.Get([cDBPath, DocName], nil, OnDocs, OnError);
-  while not fCallBack do
+  while fCallBack < 1 do
     Application.ProcessMessages;
   Status('Get passed: ' + fInfo);
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
@@ -241,6 +252,30 @@ begin
   Status('Document check 2 passed');
 end;
 
+procedure UT_FirestoreDB.ConcurrentUpdateDocuments;
+const
+  Doc1Name = 'Doc1';
+  Doc2Name = 'Doc2';
+var
+  Doc1, Doc2: IFirestoreDocument;
+begin
+  Doc1 := TFirestoreDocument.Create(Doc1Name);
+  Doc1.AddOrUpdateField(TJSONObject.SetString('TestField', 'Alpha 😀'));
+
+  Doc2 := TFirestoreDocument.Create(Doc2Name);
+  Doc2.AddOrUpdateField(TJSONObject.SetString('TestField2', 'Beta 👨'));
+
+  fConfig.Database.InsertOrUpdateDocument([cDBPath, Doc1Name], Doc1, nil, OnDoc, OnError);
+  fConfig.Database.InsertOrUpdateDocument([cDBPath, Doc2Name], Doc2, nil, OnDoc2, OnError);
+  while fCallBack < 2 do
+    Application.ProcessMessages;
+  Status('InsertOrUpdateDocument passed: ' + fInfo);
+  Status('InsertOrUpdateDocument 2 passed: ' + fInfo2);
+  Assert.IsNotNull(fDoc, 'Document 1 nil');
+  Assert.IsNotNull(fDoc2, 'Document 2 nil');
+  Assert.AreEqual(fDoc.DocumentName(false), Doc1Name);
+  Assert.AreEqual(fDoc2.DocumentName(false), Doc2Name);
+end;
 
 initialization
   TDUnitX.RegisterTestFixture(UT_FirestoreDB);
