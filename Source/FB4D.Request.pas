@@ -49,11 +49,13 @@ type
     procedure InternalSendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
+      OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
     procedure InternalSendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
+      OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
     procedure SendRequestAfterTokenRefresh(TokenRefreshed: boolean);
     procedure SendStreamRequestAfterTokenRefresh(TokenRefreshed: boolean);
   protected
@@ -66,11 +68,13 @@ type
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
+      OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
+      OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
     function SendRequestSynchronous(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue = nil;
       QueryParams: TQueryParams = nil;
@@ -93,17 +97,19 @@ type
     fContentType: TRESTContentType;
     fQueryParams: TQueryParams;
     fTokenMode: TTokenMode;
-    fOnResponse: TOnResponse;
+    fOnResponse: TOnFirebaseResp;
+    fOnSuccess: TOnSuccess;
     fOnRequestError: TOnRequestError;
   public
     constructor Create(Req: TFirebaseRequest; ResParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue; QueryParams: TQueryParams;
-      TokenMode: TTokenMode; OnResponse: TOnResponse;
-      OnRequestError: TOnRequestError); overload;
+      TokenMode: TTokenMode; OnResponse: TOnFirebaseResp;
+      OnRequestError: TOnRequestError; OnSuccess: TOnSuccess); overload;
     constructor Create(Req: TFirebaseRequest; ResParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
+      OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
     destructor Destroy; override;
     property BaseURI: string read fBaseURI;
     property RequestID: string read fRequestID;
@@ -115,7 +121,8 @@ type
     property ContentType: TRESTContentType read fContentType;
     property QueryParams: TQueryParams read fQueryParams;
     property TokenMode: TTokenMode read fTokenMode;
-    property OnResponse: TOnResponse read fOnResponse;
+    property OnResponse: TOnFirebaseResp read fOnResponse;
+    property OnSuccess: TOnSuccess read fOnSuccess;
     property OnRequestError: TOnRequestError read fOnRequestError;
   end;
 
@@ -134,7 +141,8 @@ resourcestring
 constructor TResendRequest.Create(Req: TFirebaseRequest;
   ResParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TJSONValue; QueryParams: TQueryParams; TokenMode: TTokenMode;
-  OnResponse: TOnResponse; OnRequestError: TOnRequestError);
+  OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+  OnSuccess: TOnSuccess);
 var
   c: integer;
   key: string;
@@ -157,13 +165,14 @@ begin
   fTokenMode := TokenMode;
   fOnResponse := OnResponse;
   fOnRequestError := OnRequestError;
+  fOnSuccess := OnSuccess;
 end;
 
 constructor TResendRequest.Create(Req: TFirebaseRequest;
   ResParams: TRequestResourceParam; Method: TRESTRequestMethod; Data: TStream;
   ContentType: TRESTContentType; QueryParams: TQueryParams;
-  TokenMode: TTokenMode; OnResponse: TOnResponse;
-  OnRequestError: TOnRequestError);
+  TokenMode: TTokenMode; OnResponse: TOnFirebaseResp;
+  OnRequestError: TOnRequestError; OnSuccess: TOnSuccess);
 var
   c: integer;
   key: string;
@@ -186,6 +195,7 @@ begin
   fTokenMode := TokenMode;
   fOnResponse := OnResponse;
   fOnRequestError := OnRequestError;
+  fOnSuccess := OnSuccess;
 end;
 
 destructor TResendRequest.Destroy;
@@ -263,7 +273,8 @@ end;
 procedure TFirebaseRequest.InternalSendRequest(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TJSONValue; QueryParams: TQueryParams; TokenMode: TTokenMode;
-  OnResponse: TOnResponse; OnRequestError: TOnRequestError);
+  OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+  OnSuccess: TOnSuccess);
 var
   Client: TRestClient;
   Request: TRestRequest;
@@ -307,7 +318,8 @@ begin
       try
         try
           if assigned(OnResponse) and not TFirebaseHelpers.AppIsTerminated then
-            OnResponse(RequestID, TFirebaseResponse.Create(Response));
+            OnResponse(RequestID, TFirebaseResponse.Create(Response,
+              OnRequestError, OnSuccess));
         except
           on e: exception do
             if assigned(OnRequestError) then
@@ -351,8 +363,8 @@ end;
 procedure TFirebaseRequest.InternalSendRequest(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TStream; ContentType: TRESTContentType; QueryParams:TQueryParams;
-  TokenMode: TTokenMode; OnResponse: TOnResponse;
-  OnRequestError: TOnRequestError);
+  TokenMode: TTokenMode; OnResponse: TOnFirebaseResp;
+  OnRequestError: TOnRequestError; OnSuccess: TOnSuccess);
 var
   Client: TRestClient;
   Request: TRestRequest;
@@ -392,7 +404,8 @@ begin
       try
         try
           if assigned(OnResponse) and not TFirebaseHelpers.AppIsTerminated then
-            OnResponse(RequestID, TFirebaseResponse.Create(Response));
+            OnResponse(RequestID, TFirebaseResponse.Create(Response,
+              OnRequestError, OnSuccess));
         except
           on e: exception do
             if assigned(OnRequestError) then
@@ -485,35 +498,37 @@ end;
 
 procedure TFirebaseRequest.SendRequest(ResourceParams: TRequestResourceParam;
   Method: TRESTRequestMethod; Data: TJSONValue; QueryParams: TQueryParams;
-  TokenMode: TTokenMode; OnResponse: TOnResponse;
-  OnRequestError: TOnRequestError);
+  TokenMode: TTokenMode; OnResponse: TOnFirebaseResp;
+  OnRequestError: TOnRequestError; OnSuccess: TOnSuccess);
 begin
   if (TokenMode > tmNoToken) and assigned(fAuth) and fAuth.NeedTokenRefresh then
   begin
     // Captured entire parameters for later send request
     fResendRequest := TResendRequest.Create(self, ResourceParams,
-      Method, Data, QueryParams, TokenMode, OnResponse, OnRequestError);
+      Method, Data, QueryParams, TokenMode, OnResponse, OnRequestError,
+      OnSuccess);
     fAuth.RefreshToken(SendRequestAfterTokenRefresh, OnRequestError);
   end else
     InternalSendRequest(ResourceParams, Method, Data, QueryParams, TokenMode,
-      OnResponse, OnRequestError);
+      OnResponse, OnRequestError, OnSuccess);
 end;
 
 procedure TFirebaseRequest.SendRequest(ResourceParams: TRequestResourceParam;
   Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
   QueryParams: TQueryParams; TokenMode: TTokenMode;
-  OnResponse: TOnResponse; OnRequestError: TOnRequestError);
+  OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+  OnSuccess: TOnSuccess);
 begin
   if (TokenMode > tmNoToken) and assigned(fAuth) and fAuth.NeedTokenRefresh then
   begin
     // Captured entire parameters for later send request
     fResendRequest := TResendRequest.Create(self, ResourceParams,
       Method, Data, ContentType, QueryParams, TokenMode, OnResponse,
-      OnRequestError);
+      OnRequestError, OnSuccess);
     fAuth.RefreshToken(SendStreamRequestAfterTokenRefresh, OnRequestError);
   end else
     InternalSendRequest(ResourceParams, Method, Data, ContentType, QueryParams,
-      TokenMode, OnResponse, OnRequestError);
+      TokenMode, OnResponse, OnRequestError, OnSuccess);
 end;
 
 procedure TFirebaseRequest.SendRequestAfterTokenRefresh(
@@ -528,7 +543,7 @@ begin
       Request := TFirebaseRequest.Create(BaseURI, RequestID, Auth);
       try
         Request.InternalSendRequest(ResParams, Method, Data, QueryParams,
-          TokenMode, OnResponse, OnRequestError);
+          TokenMode, OnResponse, OnRequestError, OnSuccess);
       finally
         Request.Free;
       end;
@@ -551,7 +566,7 @@ begin
       Request := TFirebaseRequest.Create(BaseURI, RequestID, Auth);
       try
         Request.InternalSendRequest(ResParams, Method, DataStream, ContentType,
-          QueryParams, TokenMode, OnResponse, OnRequestError);
+          QueryParams, TokenMode, OnResponse, OnRequestError, OnSuccess);
       finally
         Request.Free;
       end;

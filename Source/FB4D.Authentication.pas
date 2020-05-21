@@ -50,13 +50,6 @@ type
       {$ENDIF}
       fExpiresAt: TDateTime;
       fRefreshToken: string;
-      fOnUserResponse: TOnUserResponse;
-      fOnFetchProviders: TOnFetchProviders;
-      fOnFetchProvidersError: TOnRequestError;
-      fOnPasswordVerification: TOnPasswordVerification;
-      fOnGetUserData: TOnGetUserData;
-      fOnRefreshToken: TOnTokenRefresh;
-      fOnError: TOnRequestError;
     function SignWithEmailAndPasswordSynchronous(SignType: TSignType;
       const Email: string = ''; const Password: string = ''): IFirebaseUser;
     procedure SignWithEmailAndPassword(SignType: TSignType; const Info: string;
@@ -96,7 +89,7 @@ type
     // Logout
     procedure SignOut;
     // Send EMail for EMail Verification
-    procedure SendEmailVerification(OnResponse: TOnResponse;
+    procedure SendEmailVerification(OnResponse: TOnFirebaseResp;
       OnError: TOnRequestError);
     procedure SendEmailVerificationSynchronous;
     // Providers
@@ -106,24 +99,24 @@ type
       Strings: TStrings): boolean; // returns true if EMail is registered
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
-      OnResponse: TOnResponse; OnError: TOnRequestError);
+      OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
     procedure SendPasswordResetEMailSynchronous(const Email: string);
     procedure VerifyPasswordResetCode(const ResetPasswortCode: string;
       OnPasswordVerification: TOnPasswordVerification; OnError: TOnRequestError);
     function VerifyPasswordResetCodeSynchronous(const ResetPasswortCode: string):
       TPasswordVerificationResult;
     procedure ConfirmPasswordReset(const ResetPasswortCode, NewPassword: string;
-      OnResponse: TOnResponse; OnError: TOnRequestError);
+      OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
     procedure ConfirmPasswordResetSynchronous(const ResetPasswortCode,
       NewPassword: string);
     // Change password, Change email, Update Profile Data
     // let field empty which shall not be changed
     procedure ChangeProfile(const EMail, Password, DisplayName,
-      PhotoURL: string; OnResponse: TOnResponse; OnError: TOnRequestError);
+      PhotoURL: string; OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
     procedure ChangeProfileSynchronous(const EMail, Password, DisplayName,
       PhotoURL: string);
     // Delete signed in user account
-    procedure DeleteCurrentUser(OnResponse: TOnResponse;
+    procedure DeleteCurrentUser(OnResponse: TOnFirebaseResp;
       OnError: TOnRequestError);
     procedure DeleteCurrentUserSynchronous;
     // Get User Data
@@ -263,7 +256,7 @@ begin
   fAuthenticated := false;
 end;
 
-procedure TFirebaseAuthentication.SendEmailVerification(OnResponse: TOnResponse;
+procedure TFirebaseAuthentication.SendEmailVerification(OnResponse: TOnFirebaseResp;
   OnError: TOnRequestError);
 var
   Data: TJSONObject;
@@ -279,7 +272,7 @@ begin
     Data.AddPair(TJSONPair.Create('idToken', fToken));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['getOobConfirmationCode'], rmPost, Data, Params,
-      tmNoToken, OnResponse, OnError);
+      tmNoToken, OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Params.Free;
     Data.Free;
@@ -341,8 +334,8 @@ begin
     {$ENDIF}
     fExpiresAt := User.ExpiresAt;
     fRefreshToken := User.RefreshToken;
-    if assigned(fOnUserResponse) then
-      fOnUserResponse(RequestID, User);
+    if assigned(Response.OnSuccess.OnUserResponse) then
+      Response.OnSuccess.OnUserResponse(RequestID, User);
   except
     on e: EFirebaseResponse do
     begin
@@ -351,15 +344,15 @@ begin
         ErrMsg := rsEnableAnonymousLogin
       else
         ErrMsg := e.Message;
-      if assigned(fOnError) then
-        fOnError(RequestID, ErrMsg)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, ErrMsg)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, ErrMsg]));
     end;
     on e: Exception do
     begin
-      if assigned(fOnError) then
-        fOnError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -377,8 +370,6 @@ var
   Params: TQueryParams;
   Request: IFirebaseRequest;
 begin
-  fOnUserResponse := OnUserResponse;
-  fOnError := OnError;
   fAuthenticated := false;
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, Info);
@@ -392,7 +383,7 @@ begin
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Params.Add('key', [ApiKey]);
     Request.SendRequest([ResourceStr[SignType]], rmPost, Data, Params,
-      tmNoToken, OnUserResp, OnError);
+      tmNoToken, OnUserResp, OnError, TOnSuccess.CreateUser(OnUserResponse));
   finally
     Params.Free;
     Data.Free;
@@ -451,8 +442,6 @@ var
   Params: TQueryParams;
   Request: IFirebaseRequest;
 begin
-  fOnFetchProviders := OnFetchProviders;
-  fOnFetchProvidersError := OnError;
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, EMail);
   Params := TQueryParams.Create;
@@ -461,7 +450,8 @@ begin
     Data.AddPair(TJSONPair.Create('continueUri', 'http://locahost'));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['createAuthUri'], rmPOST, Data, Params, tmNoToken,
-      OnFetchProvidersResp, onError);
+      OnFetchProvidersResp, onError,
+      TOnSuccess.CreateFetchProviders(OnFetchProviders));
   finally
     Params.Free;
     Data.Free;
@@ -493,16 +483,16 @@ begin
         for c := 0 to ResArr.Count - 1 do
           Providers.Add(ResArr.Items[c].ToString);
       end;
-      if assigned(fOnFetchProviders) then
-        fOnFetchProviders(RequestID, Registered, Providers);
+      if assigned(Response.OnSuccess.OnFetchProviders) then
+        Response.OnSuccess.OnFetchProviders(RequestID, Registered, Providers);
     finally
       Providers.Free;
       ResObj.Free;
     end;
   except
     on e: exception do
-      if assigned(fOnFetchProvidersError) then
-        fOnFetchProvidersError(RequestID, e.Message);
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message);
   end;
 end;
 
@@ -547,7 +537,7 @@ begin
 end;
 
 procedure TFirebaseAuthentication.SendPasswordResetEMail(const Email: string;
-  OnResponse: TOnResponse; OnError: TOnRequestError);
+  OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
 var
   Data: TJSONObject;
   Params: TQueryParams;
@@ -562,7 +552,7 @@ begin
     Data.AddPair(TJSONPair.Create('requestType', 'PASSWORD_RESET'));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['getOobConfirmationCode'], rmPost, Data, Params,
-      tmNoToken, OnResponse, OnError);
+      tmNoToken, OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Params.Free;
     Data.Free;
@@ -604,8 +594,6 @@ var
   Params: TQueryParams;
   Request: IFirebaseRequest;
 begin
-  fOnPasswordVerification := OnPasswordVerification;
-  fOnError := OnError;
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL,
     rsVerifyPasswordResetCode);
@@ -614,7 +602,8 @@ begin
     Data.AddPair(TJSONPair.Create('oobCode', ResetPasswortCode));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['resetPassword'], rmPost,
-      Data, Params, tmNoToken, OnVerifyPasswordResp, OnError);
+      Data, Params, tmNoToken, OnVerifyPasswordResp, OnError,
+      TOnSuccess.CreatePasswordVerification(OnPasswordVerification));
   finally
     Data.Free;
   end;
@@ -660,25 +649,25 @@ end;
 procedure TFirebaseAuthentication.OnVerifyPasswordResp(const RequestID: string;
   Response: IFirebaseResponse);
 begin
-  if assigned(fOnPasswordVerification) then
+  if assigned(Response.OnSuccess.OnPasswordVerification) then
   begin
     if Response.StatusOk then
-      fOnPasswordVerification(RequestID, pvrPassed)
+      Response.OnSuccess.OnPasswordVerification(RequestID, pvrPassed)
     else if SameText(Response.ErrorMsg, TFirebaseResponse.ExceptOpNotAllowed) then
-      fOnPasswordVerification(RequestID, pvrOpNotAllowed)
+      Response.OnSuccess.OnPasswordVerification(RequestID, pvrOpNotAllowed)
     else if SameText(Response.ErrorMsg, TFirebaseResponse.ExceptExpiredOobCode) then
-      fOnPasswordVerification(RequestID, pvrpvrExpired)
+      Response.OnSuccess.OnPasswordVerification(RequestID, pvrpvrExpired)
     else if SameText(Response.ErrorMsg, TFirebaseResponse.ExceptInvalidOobCode) then
-      fOnPasswordVerification(RequestID, pvrInvalid)
-    else if assigned(fOnError) then
-      fOnError(RequestID, Response.ErrorMsg)
+      Response.OnSuccess.OnPasswordVerification(RequestID, pvrInvalid)
+    else if assigned(Response.OnError) then
+      Response.OnError(RequestID, Response.ErrorMsg)
     else
       TFirebaseHelpers.Log('Verify password failed: ' + Response.ErrorMsg);
   end;
 end;
 
 procedure TFirebaseAuthentication.ConfirmPasswordReset(const ResetPasswortCode,
-  NewPassword: string; OnResponse: TOnResponse; OnError: TOnRequestError);
+  NewPassword: string; OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
 var
   Data: TJSONObject;
   Params: TQueryParams;
@@ -693,7 +682,7 @@ begin
     Data.AddPair(TJSONPair.Create('newPassword', NewPassword));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['resetPassword'], rmPost, Data,
-      Params, tmNoToken, OnResponse, OnError);
+      Params, tmNoToken, OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Params.Free;
     Data.Free;
@@ -728,7 +717,7 @@ begin
 end;
 
 procedure TFirebaseAuthentication.ChangeProfile(const EMail, Password,
-  DisplayName, PhotoURL: string; OnResponse: TOnResponse;
+  DisplayName, PhotoURL: string; OnResponse: TOnFirebaseResp;
   OnError: TOnRequestError);
 var
   Data: TJSONObject;
@@ -766,7 +755,7 @@ begin
     Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL,
       Format(rsChangeProfile, [Info.CommaText]));
     Request.SendRequest(['setAccountInfo'], rmPost, Data, Params, tmNoToken,
-      OnResponse, OnError);
+      OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Info.Free;
     Params.Free;
@@ -835,8 +824,6 @@ var
   Params: TQueryParams;
   Request: TFirebaseRequest;
 begin
-  fOnUserResponse := OnUserResponse;
-  fOnError := OnError;
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
   Params := TQueryParams.Create;
@@ -847,7 +834,7 @@ begin
     Data.AddPair(TJSONPair.Create('password', Password));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['accounts:update'], rmPost, Data, Params, tmNoToken,
-      OnUserResp, OnError);
+      OnUserResp, OnError, TOnSuccess.CreateUser(OnUserResponse));
   finally
     Params.Free;
     Request.Free;
@@ -915,7 +902,7 @@ begin
   end;
 end;
 
-procedure TFirebaseAuthentication.DeleteCurrentUser(OnResponse: TOnResponse;
+procedure TFirebaseAuthentication.DeleteCurrentUser(OnResponse: TOnFirebaseResp;
   OnError: TOnRequestError);
 var
   Data: TJSONObject;
@@ -929,7 +916,7 @@ begin
     Params.Add('key', [ApiKey]);
     Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, rsDeleteCurrentUser);
     Request.SendRequest(['deleteAccount'], rmPost, Data, Params, tmNoToken,
-      OnResponse, OnError);
+      OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Params.Free;
     Data.Free;
@@ -943,8 +930,6 @@ var
   Params: TQueryParams;
   Request: IFirebaseRequest;
 begin
-  fOnGetUserData := OnGetUserData;
-  fOnError := OnError;
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, rsRetriveUserList);
   Params := TQueryParams.Create;
@@ -952,7 +937,7 @@ begin
     Data.AddPair(TJSONPair.Create('idToken', fToken));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['getAccountInfo'], rmPost, Data, Params, tmNoToken,
-      OnUserListResp, OnError);
+      OnUserListResp, OnError, TOnSuccess.CreateGetUserData(OnGetUserData));
   finally
     Params.Free;
     Data.Free;
@@ -1012,7 +997,7 @@ begin
   try
     if not Response.StatusOk then
       Response.CheckForJSONObj
-    else if assigned(fOnGetUserData) then
+    else if assigned(Response.OnSuccess.OnGetUserData) then
     begin
       UserList := TFirebaseUserList.Create;
       UsersObj := Response.GetContentAsJSONObj;
@@ -1023,7 +1008,7 @@ begin
         for c := 0 to Users.Count - 1 do
           UserList.Add(TFirebaseUser.Create(
             Users.Items[c].Clone as TJSONObject, false));
-        fOnGetUserData(UserList);
+        Response.OnSuccess.OnGetUserData(UserList);
       finally
         UsersObj.Free;
         UserList.Free;
@@ -1031,8 +1016,8 @@ begin
     end;
   except
     on e: exception do
-      if assigned(fOnError) then
-        fOnError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log('Firebase GetAccountInfo failed: ' + e.Message);
   end;
@@ -1045,8 +1030,6 @@ var
   Params: TQueryParams;
   Request: IFirebaseRequest;
 begin
-  fOnRefreshToken := OnTokenRefresh;
-  fOnError := OnError;
   fAuthenticated := false;
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_REFRESH_AUTH_URL, rsRefreshToken);
@@ -1056,7 +1039,8 @@ begin
     Data.AddPair(TJSONPair.Create('refresh_token', fRefreshToken));
     Params.Add('key', [ApiKey]);
     Request.SendRequest([], rmPost, Data, Params, tmNoToken,
-      CheckAndRefreshTokenResp, OnError);
+      CheckAndRefreshTokenResp, OnError,
+      TOnSuccess.CreateRefreshToken(OnTokenRefresh));
   finally
     Params.Free;
     Data.Free;
@@ -1094,15 +1078,15 @@ begin
       begin
         fRefreshToken := ''
       end
-      else if assigned(fOnRefreshToken) then
-        fOnRefreshToken(true);
+      else if assigned(Response.OnSuccess.OnRefreshToken) then
+        Response.OnSuccess.OnRefreshToken(true);
     finally
       NewToken.Free;
     end;
   except
     on e: exception do
-      if assigned(fOnError) then
-        fOnError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log('Firebase RefreshToken failed: ' + e.Message);
   end;

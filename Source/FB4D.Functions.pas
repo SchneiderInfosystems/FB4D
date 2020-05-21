@@ -36,8 +36,6 @@ type
   private
     fProjectID: string;
     fAuth: IFirebaseAuthentication;
-    fOnSucess: TOnFunctionSuccess;
-    fOnError: TOnRequestError;
     function BaseURL: string;
     procedure OnResp(const RequestID: string; Response: IFirebaseResponse);
   public
@@ -83,15 +81,13 @@ var
   Request: IFirebaseRequest;
   Data: TJSONObject;
 begin
-  fOnSucess := OnSuccess;
-  fOnError := OnRequestError;
   Data := TJSONObject.Create;
   try
     Data.AddPair('data', Params);
     Request := TFirebaseRequest.Create(BaseURL,
       Format(rsFunctionCall, [FunctionName]), fAuth);
     Request.SendRequest([FunctionName], rmPost, Data, nil, tmBearer,
-      OnResp, OnRequestError);
+      OnResp, OnRequestError, TOnSuccess.CreateFunctionSuccess(OnSuccess));
   finally
     Data.Free;
   end;
@@ -109,17 +105,18 @@ begin
       Msg := Response.ErrorMsg;
       if Msg.IsEmpty then
         Msg := Response.StatusText;
-      if assigned(fOnError) then
-        fOnError(RequestID, Msg);
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, Msg);
     end else begin
       Obj := Response.GetContentAsJSONObj;
       try
         if Obj.TryGetValue('result', ResultObj) then
         begin
-          if assigned(fOnSucess) then
-            fOnSucess(RequestID, ResultObj);
-        end else
-          fOnError(RequestID, Format(rsUnexpectedResult,
+          if assigned(Response.OnSuccess.OnFunctionSuccess) then
+            Response.OnSuccess.OnFunctionSuccess(RequestID, ResultObj);
+        end
+        else if assigned(Response.OnError) then
+          Response.OnError(RequestID, Format(rsUnexpectedResult,
             [RequestID, Response.ContentAsString]));
       finally
         Obj.Free;
@@ -127,8 +124,8 @@ begin
     end;
   except
     on e: exception do
-      if assigned(fOnError) then
-        fOnError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log('Exception in OnResponse: ' + e.Message);
   end;

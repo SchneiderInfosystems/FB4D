@@ -42,13 +42,6 @@ type
     fProjectID: string;
     fDatabaseID: string;
     fAuth: IFirebaseAuthentication;
-    fOnQueryDocuments, fOnGetDocuments: TOnDocuments;
-    fOnQueryError, fOnGetError, fOnCreateError, fOnInsertUpdateError,
-    fOnPatchError, fOnDeleteError: TOnRequestError;
-    fOnCreateDocument, fOnInsertUpdateDocument, fOnPatchDocument: TOnDocument;
-    fOnDelete: TOnResponse;
-    fOnTransaction: TOnBeginTransaction;
-    fOnTransactionError: TOnRequestError;
     function BaseURI: string;
     procedure OnQueryResponse(const RequestID: string;
       Response: IFirebaseResponse);
@@ -102,7 +95,7 @@ type
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       Mask: TStringDynArray = []): IFirestoreDocument;
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError);
+      OnDeleteResp: TOnFirebaseResp; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
@@ -224,13 +217,12 @@ var
   Request: IFirebaseRequest;
   Query: TJSONObject;
 begin
-  fOnQueryDocuments := OnDocuments;
-  fOnQueryError := OnRequestError;
   Request := TFirebaseRequest.Create(BaseURI + METHODE_RUNQUERY,
     rsRunQuery + StructuredQuery.GetInfo, fAuth);
   Query := StructuredQuery.AsJSON;
   Request.SendRequest([''], rmPost, Query, QueryParams, tmBearer,
-    OnQueryResponse, OnRequestError);
+    OnQueryResponse, OnRequestError,
+    TOnSuccess.CreateFirestoreDocs(OnDocuments));
 end;
 
 procedure TFirestoreDatabase.OnQueryResponse(const RequestID: string;
@@ -241,13 +233,13 @@ begin
   try
     Response.CheckForJSONArr;
     Documents := TFirestoreDocuments.CreateFromJSONArr(Response);
-    if assigned(fOnQueryDocuments) then
-      fOnQueryDocuments(RequestID, Documents);
+    if assigned(Response.OnSuccess.OnDocuments) then
+      Response.OnSuccess.OnDocuments(RequestID, Documents);
   except
     on e: Exception do
     begin
-      if assigned(fOnQueryError) then
-        fOnQueryError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -277,14 +269,13 @@ var
   Request: IFirebaseRequest;
   Query: TJSONObject;
 begin
-  fOnQueryDocuments := OnDocuments;
-  fOnQueryError := OnRequestError;
   Request := TFirebaseRequest.Create(BaseURI +
     TFirebaseHelpers.EncodeResourceParams(DocumentPath) + METHODE_RUNQUERY,
     rsRunQuery + StructuredQuery.GetInfo, fAuth);
   Query := StructuredQuery.AsJSON;
   Request.SendRequest([''], rmPost, Query, QueryParams, tmBearer,
-    OnQueryResponse, OnRequestError);
+    OnQueryResponse, OnRequestError,
+    TOnSuccess.CreateFirestoreDocs(OnDocuments));
 end;
 
 function TFirestoreDatabase.RunQuerySynchronous(
@@ -311,12 +302,10 @@ procedure TFirestoreDatabase.Get(Params: TRequestResourceParam;
 var
   Request: IFirebaseRequest;
 begin
-  fOnGetDocuments := OnDocuments;
-  fOnGetError := OnRequestError;
   Request := TFirebaseRequest.Create(BaseURI, rsGetDocument +
     TFirebaseHelpers.ArrStrToCommaStr(Params), fAuth);
   Request.SendRequest(Params, rmGet, nil, QueryParams, tmBearer,
-    OnGetResponse, OnRequestError);
+    OnGetResponse, OnRequestError, TOnSuccess.CreateFirestoreDocs(OnDocuments));
 end;
 
 procedure TFirestoreDatabase.OnGetResponse(const RequestID: string;
@@ -331,13 +320,13 @@ begin
       Documents := TFirestoreDocuments.CreateFromJSONDocumentsObj(Response);
     end else
       Documents := nil;
-    if assigned(fOnGetDocuments) then
-      fOnGetDocuments(RequestID, Documents);
+    if assigned(Response.OnSuccess.OnDocuments) then
+      Response.OnSuccess.OnDocuments(RequestID, Documents);
   except
     on e: Exception do
     begin
-      if assigned(fOnGetError) then
-        fOnGetError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -367,12 +356,10 @@ procedure TFirestoreDatabase.CreateDocument(DocumentPath: TRequestResourceParam;
 var
   Request: IFirebaseRequest;
 begin
-  fOnCreateDocument := OnDocument;
-  fOnCreateError := OnRequestError;
   Request := TFirebaseRequest.Create(BaseURI, rsCreateDoc +
     TFirebaseHelpers.ArrStrToCommaStr(DocumentPath), fAuth);
   Request.SendRequest(DocumentPath, rmPost, nil, QueryParams, tmBearer,
-    OnCreateResponse, fOnCreateError);
+    OnCreateResponse, OnRequestError, TOnSuccess.CreateFirestoreDoc(OnDocument));
 end;
 
 procedure TFirestoreDatabase.OnCreateResponse(const RequestID: string;
@@ -387,13 +374,13 @@ begin
       Document := TFirestoreDocument.CreateFromJSONObj(Response);
     end else
       Document := nil;
-    if assigned(fOnCreateDocument) then
-      fOnCreateDocument(RequestID, Document);
+    if assigned(Response.OnSuccess.OnDocument) then
+      Response.OnSuccess.OnDocument(RequestID, Document);
   except
     on e: Exception do
     begin
-      if assigned(fOnCreateError) then
-        fOnCreateError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -426,15 +413,14 @@ procedure TFirestoreDatabase.InsertOrUpdateDocument(
 var
   Request: IFirebaseRequest;
 begin
-  fOnInsertUpdateDocument := OnDocument;
-  fOnInsertUpdateError := OnRequestError;
   Request := TFirebaseRequest.Create(BaseURI, rsInsertOrUpdateDoc +
     TFirebaseHelpers.ArrStrToCommaStr(DocumentPath), fAuth);
 {$IFDEF DEBUG}
   TFirebaseHelpers.Log(' Document: ' + Document.AsJSON.ToJSON);
 {$ENDIF}
   Request.SendRequest(DocumentPath, rmPatch, Document.AsJSON, QueryParams,
-    tmBearer, OnInsertOrUpdateResponse, OnRequestError);
+    tmBearer, OnInsertOrUpdateResponse, OnRequestError,
+    TOnSuccess.CreateFirestoreDoc(OnDocument));
 end;
 
 procedure TFirestoreDatabase.OnInsertOrUpdateResponse(const RequestID: string;
@@ -449,14 +435,14 @@ begin
       Document := TFirestoreDocument.CreateFromJSONObj(Response);
     end else
       Document := nil;
-    if assigned(fOnInsertUpdateDocument) then
-      fOnInsertUpdateDocument(RequestID, Document);
+    if assigned(Response.OnSuccess.OnDocument) then
+      Response.OnSuccess.OnDocument(RequestID, Document);
     Document := nil;
   except
     on e: Exception do
     begin
-      if assigned(fOnInsertUpdateError) then
-        fOnInsertUpdateError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -493,8 +479,6 @@ var
   Request: IFirebaseRequest;
   QueryParams: TQueryParams;
 begin
-  fOnPatchDocument := OnDocument;
-  fOnPatchError := OnRequestError;
   Request := TFirebaseRequest.Create(BaseURI, rsPatchDoc +
     TFirebaseHelpers.ArrStrToCommaStr(DocumentPath), fAuth);
 {$IFDEF DEBUG}
@@ -507,7 +491,8 @@ begin
     if length(Mask) > 0 then
       QueryParams.Add('mask.fieldPaths', Mask);
     Request.SendRequest(DocumentPath, rmPatch, DocumentPart.AsJSON, QueryParams,
-      tmBearer, OnPatchResponse, OnRequestError);
+      tmBearer, OnPatchResponse, OnRequestError,
+      TOnSuccess.CreateFirestoreDoc(OnDocument));
   finally
     QueryParams.Free;
   end;
@@ -525,13 +510,13 @@ begin
       Document := TFirestoreDocument.CreateFromJSONObj(Response);
     end else
       Document := nil;
-    if assigned(fOnPatchDocument) then
-      fOnPatchDocument(RequestID, Document);
+    if assigned(Response.OnSuccess.OnDocument) then
+      Response.OnSuccess.OnDocument(RequestID, Document);
   except
     on e: Exception do
     begin
-      if assigned(fOnPatchError) then
-        fOnPatchError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -571,17 +556,15 @@ begin
 end;
 
 procedure TFirestoreDatabase.Delete(Params: TRequestResourceParam;
-  QueryParams: TQueryParams; OnResponse: TOnResponse;
+  QueryParams: TQueryParams; OnDeleteResp: TOnFirebaseResp;
   OnRequestError: TOnRequestError);
 var
   Request: IFirebaseRequest;
 begin
-  fOnDelete := OnResponse;
-  fOnDeleteError := OnRequestError;
   Request := TFirebaseRequest.Create(BaseURI, rsDeleteDoc +
     TFirebaseHelpers.ArrStrToCommaStr(Params), fAuth);
   Request.SendRequest(Params, rmDELETE, nil, QueryParams, tmBearer,
-    OnDeleteResponse, OnRequestError);
+    OnDeleteResponse, OnRequestError, TOnSuccess.Create(OnDeleteResp));
 end;
 
 procedure TFirestoreDatabase.OnDeleteResponse(const RequestID: string;
@@ -589,13 +572,13 @@ procedure TFirestoreDatabase.OnDeleteResponse(const RequestID: string;
 begin
   try
     Response.CheckForJSONObj;
-    if assigned(fOnDelete) then
-      fOnDelete(RequestID, Response);
+    if assigned(Response.OnSuccess.OnResponse) then
+      Response.OnSuccess.OnResponse(RequestID, Response);
   except
     on e: Exception do
     begin
-      if assigned(fOnDeleteError) then
-        fOnDeleteError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -617,15 +600,14 @@ var
   Request: IFirebaseRequest;
   Data: TJSONObject;
 begin
-  fOnTransaction := OnBeginTransaction;
-  fOnTransactionError := OnRequestError;
   Assert(assigned(fAuth), 'Authentication is required');
   Request := TFirebaseRequest.Create(BaseURI + METHODE_BEGINTRANS,
     rsBeginTrans, fAuth);
   Data := TJSONObject.Create(TJSONPair.Create('options', TJSONObject.Create(
     TJSONPair.Create('readOnly', TJSONObject.Create))));
   Request.SendRequest(nil, rmPOST, Data, nil, tmBearer,
-    BeginReadOnlyTransactionRespose, OnRequestError);
+    BeginReadOnlyTransactionRespose, OnRequestError,
+    TOnSuccess.CreateFirestoreTransaction(OnBeginTransaction));
 end;
 
 procedure TFirestoreDatabase.BeginReadOnlyTransactionRespose(
@@ -637,16 +619,17 @@ begin
     Response.CheckForJSONObj;
     Res := Response.GetContentAsJSONObj;
     try
-      if assigned(fOnTransaction) then
-        fOnTransaction(Res.GetValue<string>('transaction'));
+      if assigned(Response.OnSuccess.OnBeginTransaction) then
+        Response.OnSuccess.OnBeginTransaction(
+          Res.GetValue<string>('transaction'));
     finally
       Res.Free;
     end;
   except
     on e: Exception do
     begin
-      if assigned(fOnTransactionError) then
-        fOnTransactionError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;

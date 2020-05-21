@@ -36,10 +36,6 @@ type
   private
     fBucket: string;
     fAuth: IFirebaseAuthentication;
-    fOnGetStorage: TOnGetStorage;
-    fOnDelStorage: TOnDeleteStorage;
-    fOnUpload: TOnUploadFromStream;
-    fOnGetError, fOnDelError, fOnUploadError: TOnRequestError;
     function BaseURL: string;
     procedure OnGetResponse(const RequestID: string;
       Response: IFirebaseResponse);
@@ -130,11 +126,9 @@ procedure TFirebaseStorage.Get(const ObjectName, RequestID: string;
 var
   Request: IFirebaseRequest;
 begin
-  fOnGetStorage := OnGetStorage;
-  fOnGetError := OnGetError;
   Request := TFirebaseRequest.Create(BaseURL, RequestID, fAuth);
   Request.SendRequest([ObjectName], rmGet, nil, nil, tmBearer, OnGetResponse,
-    OnGetError);
+    OnGetError, TOnSuccess.CreateGetStorage(OnGetStorage));
 end;
 
 procedure TFirebaseStorage.OnGetResponse(const RequestID: string;
@@ -142,15 +136,15 @@ procedure TFirebaseStorage.OnGetResponse(const RequestID: string;
 begin
   try
     Response.CheckForJSONObj;
-    if assigned(fOnGetStorage) then
-      fOnGetStorage(RequestID, TStorageObject.Create(Response))
+    if assigned(Response.OnSuccess.OnGetStorage) then
+      Response.OnSuccess.OnGetStorage(RequestID, TStorageObject.Create(Response))
     else
       TFirebaseHelpers.Log(Response.ContentAsString);
   except
     on e: Exception do
     begin
-      if assigned(fOnGetError) then
-        fOnGetError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -203,8 +197,6 @@ var
   Request: IFirebaseRequest;
   QueryParams: TQueryParams;
 begin
-  fOnUpload := OnUpload;
-  fOnUploadError := OnUploadError;
 {$IF CompilerVersion >= 33.0}
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream DE 10.3.1');
@@ -216,7 +208,8 @@ begin
     QueryParams.Add('uploadType', ['media']);
     QueryParams.Add('name',  [ObjectName]);
     Request.SendRequest([], rmPost, Stream, ContentType,
-      QueryParams, tmBearer, OnUploadFromStream, fOnUploadError);
+      QueryParams, tmBearer, OnUploadFromStream, OnUploadError,
+      TOnSuccess.CreateUpload(OnUpload));
   finally
     QueryParams.Free;
   end;
@@ -236,7 +229,8 @@ begin
     QueryParams.Add('uploadType', ['media']);
     QueryParams.Add('name',  [ObjectName]);
     Request.SendRequest([BaseURL[length(BaseURL)]], rmPost, Stream, ContentType,
-      QueryParams, tmBearer, OnUploadFromStream, fOnUploadError);
+      QueryParams, tmBearer, OnUploadFromStream, OnUploadError,
+      TOnSuccess.CreateUpload(OnUpload));
   finally
     QueryParams.Free;
   end;
@@ -254,15 +248,15 @@ begin
   {$ENDIF}
   try
     Response.CheckForJSONObj;
-    if assigned(fOnUpload) then
-      fOnUpload(RequestID, TStorageObject.Create(Response))
+    if assigned(Response.OnSuccess.OnUpload) then
+      Response.OnSuccess.OnUpload(RequestID, TStorageObject.Create(Response))
     else
       TFirebaseHelpers.Log(Response.ContentAsString);
   except
     on e: Exception do
     begin
-      if assigned(fOnUploadError) then
-        fOnUploadError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;
@@ -290,11 +284,9 @@ procedure TFirebaseStorage.Delete(const ObjectName: string;
 var
   Request: IFirebaseRequest;
 begin
-  fOnDelStorage := OnDelete;
-  fOnDelError := OnDelError;
   Request := TFirebaseRequest.Create(BaseURL, ObjectName, fAuth);
   Request.SendRequest([ObjectName], rmDelete, nil, nil, tmBearer, OnDelResponse,
-    OnDelError);
+    OnDelError, TOnSuccess.CreateDelStorage(OnDelete));
 end;
 
 procedure TFirebaseStorage.OnDelResponse(const RequestID: string;
@@ -303,19 +295,19 @@ begin
   try
     if Response.StatusOk then
     begin
-      if assigned(fOnDelStorage) then
-        fOnDelStorage(RequestID)
+      if assigned(Response.OnSuccess.OnDelStorage) then
+        Response.OnSuccess.OnDelStorage(RequestID)
     end
-    else if assigned(fOnDelError) then
-      fOnDelError(RequestID, Response.ErrorMsgOrStatusText)
+    else if assigned(Response.OnError) then
+      Response.OnError(RequestID, Response.ErrorMsgOrStatusText)
     else
       TFirebaseHelpers.Log(Format(rsFBFailureIn,
         [RequestID, Response.ErrorMsgOrStatusText]));
   except
     on e: Exception do
     begin
-      if assigned(fOnDelError) then
-        fOnDelError(RequestID, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
       else
         TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
     end;

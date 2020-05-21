@@ -57,12 +57,8 @@ type
     fClient: THTTPClient;
     fStream: TMemoryStream;
     fReadPos: Int64;
-    fOnGetValue, fOnPutValue, fOnPostValue, fOnPatchValue: TOnGetValue;
-    fOnDelete: TOnDelete;
+    fOnListenError: TOnRequestError;
     fOnListenEvent: TOnReceiveEvent;
-    fOnGetError, fOnPutError, fOnPostError, fOnPatchError, fOnDeleteError,
-    fOnListenError, fOnGetServerVarError: TOnRequestError;
-    fOnServerVariable: TOnServerVariable;
     fLastKeepAliveMsg: TDateTime;
     fRequireTokenRenew: boolean;
     fStopWaiting: boolean;
@@ -77,10 +73,10 @@ type
     function RespSynchronous(Response: IFirebaseResponse): TJSONValue;
     procedure SendRequest(const RequestID: string;
       ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
-      Data: TJSONValue = nil; QueryParams: TQueryParams = nil;
-      OnResponse: TOnResponse = nil; OnRequestError: TOnRequestError = nil);
+      Data: TJSONValue; QueryParams: TQueryParams; OnResponse: TOnFirebaseResp;
+      OnRequestError: TOnRequestError; OnSuccess: TOnSuccess);
     procedure OnResponse(const RequestID: string;
-      Response: IFirebaseResponse; OnValue: TOnGetValue;
+      Response: IFirebaseResponse; OnValue: TOnRTDBValue;
       OnError: TOnRequestError);
     procedure OnGetResponse(const RequestID: string;
       Response: IFirebaseResponse);
@@ -92,33 +88,35 @@ type
       Response: IFirebaseResponse);
     procedure OnDeleteResponse(const RequestID: string;
       Response: IFirebaseResponse);
-    procedure OnServerVarResp(const VarName: string; Resp: IFirebaseResponse);
+    procedure OnServerVarResp(const VarName: string;
+      Response: IFirebaseResponse);
     procedure OnRecData(const Sender: TObject; ContentLength,
       ReadCount: Int64; var Abort: Boolean);
     procedure InitListen;
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication);
-    procedure Get(ResourceParams: TRequestResourceParam; OnGetValue: TOnGetValue;
-      OnRequestError: TOnRequestError; QueryParams: TQueryParams = nil);
+    procedure Get(ResourceParams: TRequestResourceParam;
+      OnGetValue: TOnRTDBValue; OnRequestError: TOnRequestError;
+      QueryParams: TQueryParams = nil);
     function GetSynchronous(ResourceParams: TRequestResourceParam;
       QueryParams: TQueryParams = nil): TJSONValue;
     procedure Put(ResourceParams: TRequestResourceParam; Data: TJSONValue;
-      OnPutValue: TOnGetValue; OnRequestError: TOnRequestError;
+      OnPutValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function PutSynchronous(ResourceParams: TRequestResourceParam;
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue;
     procedure Post(ResourceParams: TRequestResourceParam; Data: TJSONValue;
-      OnPostValue: TOnGetValue; OnRequestError: TOnRequestError;
+      OnPostValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function PostSynchronous(ResourceParams: TRequestResourceParam;
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue;
     procedure Patch(ResourceParams: TRequestResourceParam; Data: TJSONValue;
-      OnPatchValue: TOnGetValue; OnRequestError: TOnRequestError;
+      OnPatchValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function PatchSynchronous(ResourceParams: TRequestResourceParam;
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue;
     procedure Delete(ResourceParams: TRequestResourceParam;
-      OnDelete: TOnDelete; OnRequestError: TOnRequestError;
+      OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function DeleteSynchronous(ResourceParams: TRequestResourceParam;
       QueryParams: TQueryParams = nil): boolean;
@@ -129,7 +127,8 @@ type
     function GetLastKeepAliveTimeStamp: TDateTime;
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
-      OnServerVariable: TOnServerVariable = nil; OnError: TOnRequestError = nil);
+      OnServerVariable: TOnRTDBServerVariable = nil;
+      OnError: TOnRequestError = nil);
     function GetServerVariablesSynchronous(const ServerVarName: string;
       ResourceParams: TRequestResourceParam): TJSONValue;
   end;
@@ -190,27 +189,27 @@ end;
 
 procedure TRealTimeDB.SendRequest(const RequestID: string;
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
-  Data: TJSONValue; QueryParams: TQueryParams; OnResponse: TOnResponse;
-  OnRequestError: TOnRequestError);
+  Data: TJSONValue; QueryParams: TQueryParams; OnResponse: TOnFirebaseResp;
+  OnRequestError: TOnRequestError; OnSuccess: TOnSuccess);
 var
   Request: IFirebaseRequest;
 begin
   Request := TFirebaseRequest.Create(fBaseURL, RequestID, fAuth);
-  Request.SendRequest(AddJSONExtToRequest(ResourceParams), Method, Data,
-    QueryParams, tmAuthParam, OnResponse, OnRequestError);
+  Request.SendRequest(AddJSONExtToRequest(ResourceParams), Method,
+    Data, QueryParams, tmAuthParam, OnResponse, OnRequestError, OnSuccess);
 end;
 
 procedure TRealTimeDB.Get(ResourceParams: TRequestResourceParam;
-  OnGetValue: TOnGetValue; OnRequestError: TOnRequestError; QueryParams: TQueryParams);
+  OnGetValue: TOnRTDBValue; OnRequestError: TOnRequestError;
+  QueryParams: TQueryParams);
 begin
-  fOnGetValue := OnGetValue;
-  fOnGetError := OnRequestError;
   SendRequest(TFirebaseHelpers.ArrStrToCommaStr(ResourceParams), ResourceParams,
-    rmGet, nil, QueryParams, OnGetResponse, OnRequestError);
+    rmGet, nil, QueryParams, OnGetResponse, OnRequestError,
+    TOnSuccess.CreateRTDBValue(OnGetValue));
 end;
 
 procedure TRealTimeDB.OnResponse(const RequestID: string;
-  Response: IFirebaseResponse; OnValue: TOnGetValue; OnError: TOnRequestError);
+  Response: IFirebaseResponse; OnValue: TOnRTDBValue; OnError: TOnRequestError);
 var
   Val: TJSONValue;
 begin
@@ -244,7 +243,8 @@ end;
 procedure TRealTimeDB.OnGetResponse(const RequestID: string;
   Response: IFirebaseResponse);
 begin
-  OnResponse(RequestID, Response, fOnGetValue, fOnGetError);
+  OnResponse(RequestID, Response, Response.OnSuccess.OnRTDBValue,
+    Response.OnError);
 end;
 
 function TRealTimeDB.RespSynchronous(Response: IFirebaseResponse): TJSONValue;
@@ -274,19 +274,19 @@ begin
 end;
 
 procedure TRealTimeDB.Put(ResourceParams: TRequestResourceParam;
-  Data: TJSONValue; OnPutValue: TOnGetValue; OnRequestError: TOnRequestError;
+  Data: TJSONValue; OnPutValue: TOnRTDBValue; OnRequestError: TOnRequestError;
   QueryParams: TQueryParams);
 begin
-  fOnPutValue := OnPutValue;
-  fOnPutError := OnRequestError;
   SendRequest(TFirebaseHelpers.ArrStrToCommaStr(ResourceParams), ResourceParams,
-    rmPut, Data, QueryParams, OnPutResponse, OnRequestError);
+    rmPut, Data, QueryParams, OnPutResponse, OnRequestError,
+    TOnSuccess.CreateRTDBValue(OnPutValue));
 end;
 
 procedure TRealTimeDB.OnPutResponse(const RequestID: string;
   Response: IFirebaseResponse);
 begin
-  OnResponse(RequestID, Response, fOnPutValue, fOnPutError);
+  OnResponse(RequestID, Response, Response.OnSuccess.OnRTDBValue,
+    Response.OnError);
 end;
 
 function TRealTimeDB.PutSynchronous(ResourceParams: TRequestResourceParam;
@@ -320,19 +320,19 @@ begin
 end;
 
 procedure TRealTimeDB.Post(ResourceParams: TRequestResourceParam;
-  Data: TJSONValue; OnPostValue: TOnGetValue; OnRequestError: TOnRequestError;
+  Data: TJSONValue; OnPostValue: TOnRTDBValue; OnRequestError: TOnRequestError;
   QueryParams: TQueryParams = nil);
 begin
-  fOnPostValue := OnPostValue;
-  fOnPostError := OnRequestError;
   SendRequest(TFirebaseHelpers.ArrStrToCommaStr(ResourceParams), ResourceParams,
-    rmPost, Data, QueryParams, OnPostResponse, OnRequestError);
+    rmPost, Data, QueryParams, OnPostResponse, OnRequestError,
+    TOnSuccess.CreateRTDBValue(OnPostValue));
 end;
 
 procedure TRealTimeDB.OnPostResponse(const RequestID: string;
   Response: IFirebaseResponse);
 begin
-  OnResponse(RequestID, Response, fOnPostValue, fOnPostError);
+  OnResponse(RequestID, Response, Response.OnSuccess.OnRTDBValue,
+    Response.OnError);
 end;
 
 function TRealTimeDB.PatchSynchronous(ResourceParams: TRequestResourceParam;
@@ -346,19 +346,19 @@ begin
 end;
 
 procedure TRealTimeDB.Patch(ResourceParams: TRequestResourceParam;
-  Data: TJSONValue; OnPatchValue: TOnGetValue; OnRequestError: TOnRequestError;
+  Data: TJSONValue; OnPatchValue: TOnRTDBValue; OnRequestError: TOnRequestError;
   QueryParams: TQueryParams = nil);
 begin
-  fOnPatchValue := OnPatchValue;
-  fOnPatchError := OnRequestError;
   SendRequest(TFirebaseHelpers.ArrStrToCommaStr(ResourceParams), ResourceParams,
-    rmPatch, Data, QueryParams, OnPatchResponse, OnRequestError);
+    rmPatch, Data, QueryParams, OnPatchResponse, OnRequestError,
+    TOnSuccess.CreateRTDBValue(OnPatchValue));
 end;
 
 procedure TRealTimeDB.OnPatchResponse(const RequestID: string;
   Response: IFirebaseResponse);
 begin
-  OnResponse(RequestID, Response, fOnPatchValue, fOnPatchError);
+  OnResponse(RequestID, Response, Response.OnSuccess.OnRTDBValue,
+    Response.OnError);
 end;
 
 function TRealTimeDB.DeleteSynchronous(ResourceParams: TRequestResourceParam;
@@ -377,13 +377,12 @@ begin
 end;
 
 procedure TRealTimeDB.Delete(ResourceParams: TRequestResourceParam;
-  OnDelete: TOnDelete; OnRequestError: TOnRequestError;
+  OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError;
   QueryParams: TQueryParams);
 begin
-  fOnDelete := OnDelete;
-  fOnDeleteError := OnRequestError;
   SendRequest(TFirebaseHelpers.ArrStrToCommaStr(ResourceParams), ResourceParams,
-   rmDelete, nil, QueryParams, OnDeleteResponse, OnRequestError);
+   rmDelete, nil, QueryParams, OnDeleteResponse, OnRequestError,
+   TOnSuccess.CreateRTDBDelete(OnDelete));
 end;
 
 procedure TRealTimeDB.OnDeleteResponse(const RequestID: string;
@@ -391,16 +390,16 @@ procedure TRealTimeDB.OnDeleteResponse(const RequestID: string;
 begin
   if Response.StatusOk then
   begin
-    if assigned(fOnDelete) then
-      fOnDelete(SplitString(RequestID, ','), true)
+    if assigned(Response.OnSuccess.OnRTDBDelete) then
+      Response.OnSuccess.OnRTDBDelete(SplitString(RequestID, ','), true)
   end else
   if Response.StatusNotFound then
   begin
-    if assigned(fOnDelete) then
-      fOnDelete(SplitString(RequestID, ','), false)
+    if assigned(Response.OnSuccess.OnRTDBDelete) then
+      Response.OnSuccess.OnRTDBDelete(SplitString(RequestID, ','), false)
   end
-  else if assigned(fOnDeleteError) then
-    fOnDeleteError(RequestID, Response.ErrorMsgOrStatusText)
+  else if assigned(Response.OnError) then
+    Response.OnError(RequestID, Response.ErrorMsgOrStatusText)
   else
     TFirebaseHelpers.Log(Format(rsFBFailureIn,
       [RequestID, Response.ErrorMsgOrStatusText]));
@@ -425,48 +424,47 @@ begin
 end;
 
 procedure TRealTimeDB.GetServerVariables(const ServerVarName: string;
-  ResourceParams: TRequestResourceParam; OnServerVariable: TOnServerVariable;
+  ResourceParams: TRequestResourceParam; OnServerVariable: TOnRTDBServerVariable;
   OnError: TOnRequestError);
 var
   Data: TJSONObject;
 begin
-  fOnServerVariable := OnServerVariable;
-  fOnGetServerVarError := OnError;
   Data := TJSONObject.Create(TJSONPair.Create('.sv', ServerVarName));
   try
     SendRequest(ServerVarName, ResourceParams, rmPut, Data, nil,
-      OnServerVarResp, OnError);
+      OnServerVarResp, OnError,
+      TOnSuccess.CreateRTDBServerVariable(OnServerVariable));
   finally
     Data.Free;
   end;
 end;
 
 procedure TRealTimeDB.OnServerVarResp(const VarName: string;
-  Resp: IFirebaseResponse);
+  Response: IFirebaseResponse);
 var
   Val: TJSONValue;
 begin
   try
-    if resp.StatusOk then
+    if Response.StatusOk then
     begin
-      Val := resp.GetContentAsJSONVal;
+      Val := Response.GetContentAsJSONVal;
       try
-        if assigned(fOnServerVariable) then
-          fOnServerVariable(VarName, Val);
+        if assigned(Response.OnSuccess.OnRTDBServerVariable) then
+          Response.OnSuccess.OnRTDBServerVariable(VarName, Val);
       finally
         Val.Free;
       end;
-    end else if assigned(fOnGetServerVarError) then
+    end else if assigned(Response.OnError) then
     begin
-      if not resp.ErrorMsg.IsEmpty then
-        fOnGetServerVarError(Varname, resp.ErrorMsg)
+      if not Response.ErrorMsg.IsEmpty then
+        Response.OnError(Varname, Response.ErrorMsg)
       else
-        fOnGetServerVarError(Varname, resp.StatusText);
+        Response.OnError(Varname, Response.StatusText);
     end;
   except
     on e: exception do
-      if assigned(fOnGetServerVarError) then
-        fOnGetServerVarError(Varname, e.Message)
+      if assigned(Response.OnError) then
+        Response.OnError(Varname, e.Message)
       else
         TFirebaseHelpers.Log('Exception in OnServerVarResp: ' + e.Message);
   end;
@@ -527,12 +525,12 @@ begin
           if (Resp.StatusCode < 200) or (Resp.StatusCode >= 300) then
           begin
             ErrMsg := Resp.StatusText;
-            if assigned(fOnListenError) then
+            if assigned(OnError) then
             begin
               TThread.Queue(nil,
                 procedure
                 begin
-                  fOnListenError(Info, ErrMsg);
+                  OnError(Info, ErrMsg);
                 end)
             end else
               TFirebaseHelpers.Log(Format(rsEvtStartFailed, [Info, ErrMsg]));
@@ -544,13 +542,13 @@ begin
         end;
       except
         on e: exception do
-          if assigned(fOnListenError) then
+          if assigned(OnError) then
           begin
             ErrMsg := e.Message;
             TThread.Queue(nil,
               procedure
               begin
-                fOnListenError(Info, ErrMsg);
+                OnError(Info, ErrMsg);
               end)
           end else
             TFirebaseHelpers.Log(Format(rsEvtListenerFailed, [Info, e.Message]));

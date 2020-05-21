@@ -36,6 +36,8 @@ type
   private
     fHttpResp: IHTTPResponse;
     fRestResp: TRESTResponse;
+    fOnError: TOnRequestError;
+    fOnSuccess: TOnSuccess;
   public
     const
       ExceptOpNotAllowed = 'OPERATION_NOT_ALLOWED';
@@ -46,7 +48,8 @@ type
       ExceptExpiredOobCode = 'EXPIRED_OOB_CODE';
       ExceptInvalidOobCode = 'INVALID_OOB_CODE';
     constructor Create(HTTPResponse: IHTTPResponse); overload;
-    constructor Create(RestResponse: TRESTResponse); overload;
+    constructor Create(RestResponse: TRESTResponse;
+      OnError: TOnRequestError; OnSuccess: TOnSuccess); overload;
 
     function ContentAsString: string;
     function GetContentAsJSONObj: TJSONObject;
@@ -63,6 +66,8 @@ type
     function StatusText: string;
     function ErrorMsg: string;
     function ErrorMsgOrStatusText: string;
+    function GetOnError: TOnRequestError;
+    function GetOnSuccess: TOnSuccess;
   end;
 
 implementation
@@ -86,13 +91,18 @@ begin
   inherited Create;
   fRestResp := nil;
   fHttpResp := HTTPResponse;
+  fOnSuccess.Create(nil);
+  fOnError := nil;
 end;
 
-constructor TFirebaseResponse.Create(RestResponse: TRESTResponse);
+constructor TFirebaseResponse.Create(RestResponse: TRESTResponse;
+  OnError: TOnRequestError; OnSuccess: TOnSuccess);
 begin
   inherited Create;
   fRestResp := RestResponse;
   fHttpResp := nil;
+  fOnSuccess := OnSuccess;
+  fOnError := OnError;
 end;
 
 function TFirebaseResponse.StatusCode: integer;
@@ -294,6 +304,16 @@ begin
     else
       EFirebaseResponse.CreateFmt(rsTimeZoneIsNotSupported, [Ord(TimeZone)]);
   end;
+end;
+
+function TFirebaseResponse.GetOnError: TOnRequestError;
+begin
+  result := fOnError;
+end;
+
+function TFirebaseResponse.GetOnSuccess: TOnSuccess;
+begin
+  result := fOnSuccess;
 end;
 
 end.

@@ -51,6 +51,89 @@ type
   /// </summary>
   EFirebaseResponse = class(Exception);
 
+  IFirebaseUser = interface;
+  IFirebaseResponse = interface;
+  IFirestoreDocument = interface;
+  IFirestoreDocuments = interface;
+  IStorageObject = interface;
+
+  TOnRequestError = procedure(const RequestID, ErrMsg: string) of object;
+  TRequestResourceParam = TStringDynArray;
+  TOnFirebaseResp = procedure(const RequestID: string;
+    Response: IFirebaseResponse) of object;
+
+  TFirebaseUserList = TList<IFirebaseUser>;
+  TPasswordVerificationResult = (pvrOpNotAllowed, pvrPassed, pvrpvrExpired,
+    pvrInvalid);
+  TOnUserResponse = procedure(const Info: string; User: IFirebaseUser) of object;
+  TOnFetchProviders = procedure(const EMail: string; IsRegistered: boolean;
+    Providers: TStrings) of object;
+  TOnPasswordVerification = procedure(const Info: string;
+    Result: TPasswordVerificationResult) of object;
+  TOnGetUserData = procedure(FirebaseUserList: TFirebaseUserList) of object;
+  TOnTokenRefresh = procedure(TokenRefreshed: boolean) of object;
+
+  TOnRTDBValue = procedure(ResourceParams: TRequestResourceParam;
+    Val: TJSONValue) of object;
+  TOnRTDBDelete = procedure(Params: TRequestResourceParam; Success: boolean)
+    of object;
+  TOnRTDBServerVariable = procedure(const ServerVar: string; Val: TJSONValue)
+    of object;
+
+  TOnDocument = procedure(const Info: string;
+    Document: IFirestoreDocument) of object;
+  TOnDocuments = procedure(const Info: string;
+    Documents: IFirestoreDocuments) of object;
+  TTransaction = string; // A base64 encoded ID
+  TOnBeginTransaction = procedure(Transaction: TTransaction) of object;
+
+  TOnGetStorage = procedure(const RequestID: string; Obj: IStorageObject)
+    of object;
+  TOnDeleteStorage = procedure(const ObjectName: string) of object;
+  TOnUploadFromStream = procedure(const ObjectName: string; Obj: IStorageObject)
+    of object;
+
+  TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of
+    object;
+
+  TOnSuccess = record
+    OnResponse: TOnFirebaseResp;
+    OnUserResponse: TOnUserResponse;
+    OnFetchProviders: TOnFetchProviders;
+    OnPasswordVerification: TOnPasswordVerification;
+    OnGetUserData: TOnGetUserData;
+    OnRefreshToken: TOnTokenRefresh;
+    OnRTDBValue: TOnRTDBValue;
+    OnRTDBDelete: TOnRTDBDelete;
+    OnRTDBServerVariable: TOnRTDBServerVariable;
+    OnDocument: TOnDocument;
+    OnDocuments: TOnDocuments;
+    OnBeginTransaction: TOnBeginTransaction;
+    OnGetStorage: TOnGetStorage;
+    OnDelStorage: TOnDeleteStorage;
+    OnUpload: TOnUploadFromStream;
+    OnFunctionSuccess: TOnFunctionSuccess;
+    constructor Create(OnResp: TOnFirebaseResp);
+    constructor CreateUser(OnUserResp: TOnUserResponse);
+    constructor CreateFetchProviders(OnFetchProvidersResp: TOnFetchProviders);
+    constructor CreatePasswordVerification(
+      OnPasswordVerificationResp: TOnPasswordVerification);
+    constructor CreateGetUserData(OnGetUserDataResp: TOnGetUserData);
+    constructor CreateRefreshToken(OnRefreshTokenResp: TOnTokenRefresh);
+    constructor CreateRTDBValue(OnRTDBValueResp: TOnRTDBValue);
+    constructor CreateRTDBDelete(OnRTDBDeleteResp: TOnRTDBDelete);
+    constructor CreateRTDBServerVariable(
+      OnRTDBServerVariableResp: TOnRTDBServerVariable);
+    constructor CreateFirestoreDoc(OnDocumentResp: TOnDocument);
+    constructor CreateFirestoreDocs(OnDocumentsResp: TOnDocuments);
+    constructor CreateFirestoreTransaction(
+      OnBeginTransactionResp: TOnBeginTransaction);
+    constructor CreateGetStorage(OnGetStorageResp: TOnGetStorage);
+    constructor CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
+    constructor CreateUpload(OnUploadResp: TOnUploadFromStream);
+    constructor CreateFunctionSuccess(OnFunctionSuccessResp: TOnFunctionSuccess);
+  end;
+
   /// <summary>
   /// Interface for handling REST response from all Firebase Services
   /// </summary>
@@ -70,24 +153,26 @@ type
     function ErrorMsg: string;
     function ErrorMsgOrStatusText: string;
     function GetServerTime(TimeZone: TTimeZone): TDateTime;
-  end;
+    function GetOnSuccess: TOnSuccess;
+    function GetOnError: TOnRequestError;
+    property OnSuccess: TOnSuccess read GetOnSuccess;
+    property OnError: TOnRequestError read GetOnError;
+   end;
 
   TQueryParams = TDictionary<string, TStringDynArray>;
   TTokenMode = (tmNoToken, tmBearer, tmAuthParam);
   IFirebaseRequest = interface;
-  TOnResponse = procedure(const RequestID: string;
-    Response: IFirebaseResponse) of object;
-  TOnRequestError = procedure(const RequestID, ErrMsg: string) of object;
-  TRequestResourceParam = TStringDynArray;
   IFirebaseRequest = interface(IInterface)
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
+      OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError); overload;
+      OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
     function SendRequestSynchronous(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue = nil;
       QueryParams: TQueryParams = nil; TokenMode: TTokenMode = tmBearer):
@@ -105,40 +190,34 @@ type
     function IsStopped: boolean;
   end;
 
-  TOnGetValue = procedure(ResourceParams: TRequestResourceParam; Val: TJSONValue)
-    of object;
-  TOnDelete = procedure(Params: TRequestResourceParam; Success: boolean)
-    of object;
   TOnReceiveEvent = procedure(const Event: string;
     Params: TRequestResourceParam; JSONObj: TJSONObject) of object;
-  TOnServerVariable = procedure(const ServerVar: string; Val: TJSONValue)
-    of object;
   TOnServerTimeStamp = procedure(ServerTime: TDateTime) of object;
   TOnStopListenEvent = TNotifyEvent;
   TOnAuthRevokedEvent = procedure(TokenRenewPassed: boolean) of object;
   IRealTimeDB = interface(IInterface)
     procedure Get(ResourceParams: TRequestResourceParam;
-      OnGetValue: TOnGetValue; OnRequestError: TOnRequestError;
+      OnGetValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function GetSynchronous(ResourceParams: TRequestResourceParam;
       QueryParams: TQueryParams = nil): TJSONValue; // The caller has to free the TJSONValue
     procedure Put(ResourceParams: TRequestResourceParam; Data: TJSONValue;
-      OnPutValue: TOnGetValue; OnRequestError: TOnRequestError;
+      OnPutValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function PutSynchronous(ResourceParams: TRequestResourceParam;
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue; // The caller has to free the TJSONValue
     procedure Post(ResourceParams: TRequestResourceParam; Data: TJSONValue;
-      OnPostValue: TOnGetValue; OnRequestError: TOnRequestError;
+      OnPostValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function PostSynchronous(ResourceParams: TRequestResourceParam;
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue; // The caller has to free the TJSONValue
     procedure Patch(ResourceParams: TRequestResourceParam; Data: TJSONValue;
-      OnPatchValue: TOnGetValue; OnRequestError: TOnRequestError;
+      OnPatchValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function PatchSynchronous(ResourceParams: TRequestResourceParam;
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue; // The caller has to free the TJSONValue
     procedure Delete(ResourceParams: TRequestResourceParam;
-      OnDelete: TOnDelete; OnRequestError: TOnRequestError;
+      OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
     function DeleteSynchronous(ResourceParams: TRequestResourceParam;
       QueryParams: TQueryParams = nil): boolean;
@@ -151,7 +230,8 @@ type
     // To retrieve server variables like timestamp and future variables
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
-      OnServerVariable: TOnServerVariable = nil; OnError: TOnRequestError = nil);
+      OnServerVariable: TOnRTDBServerVariable = nil;
+      OnError: TOnRequestError = nil);
     function GetServerVariablesSynchronous(const ServerVarName: string;
       ResourceParams: TRequestResourceParam): TJSONValue;
   end;
@@ -246,12 +326,6 @@ type
     function GetInfo: string;
   end;
 
-  TOnDocuments = procedure(const Info: string;
-    Documents: IFirestoreDocuments) of object;
-  TOnDocument = procedure(const Info: string;
-    Document: IFirestoreDocument) of object;
-  TTransaction = string; // A base64 encoded ID
-  TOnBeginTransaction = procedure(Transaction: TTransaction) of object;
   IFirestoreDatabase = interface(IInterface)
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
@@ -288,7 +362,7 @@ type
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       Mask: TStringDynArray = []): IFirestoreDocument;
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
-      OnResponse: TOnResponse; OnRequestError: TOnRequestError);
+      OnDeleteResponse: TOnFirebaseResp; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
@@ -351,17 +425,6 @@ type
     function ExpiresAt: TDateTime;
     function RefreshToken: string;
   end;
-  TFirebaseUserList = TList<IFirebaseUser>;
-
-  TPasswordVerificationResult = (pvrOpNotAllowed, pvrPassed, pvrpvrExpired,
-    pvrInvalid);
-  TOnUserResponse = procedure(const Info: string; User: IFirebaseUser) of object;
-  TOnFetchProviders = procedure(const EMail: string; IsRegistered: boolean;
-    Providers: TStrings) of object;
-  TOnPasswordVerification = procedure(const Info: string;
-    Result: TPasswordVerificationResult) of object;
-  TOnGetUserData = procedure(FirebaseUserList: TFirebaseUserList) of object;
-  TOnTokenRefresh = procedure(TokenRefreshed: boolean) of object;
   EFirebaseAuthentication = class(Exception);
 
   /// <summary>
@@ -394,7 +457,7 @@ type
     // Logout
     procedure SignOut;
     // Send EMail for EMail Verification
-    procedure SendEmailVerification(OnResponse: TOnResponse;
+    procedure SendEmailVerification(OnResponse: TOnFirebaseResp;
       OnError: TOnRequestError);
     procedure SendEmailVerificationSynchronous;
     // Providers
@@ -404,24 +467,24 @@ type
       Strings: TStrings): boolean; // returns true if EMail is registered
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
-      OnResponse: TOnResponse; OnError: TOnRequestError);
+      OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
     procedure SendPasswordResetEMailSynchronous(const Email: string);
     procedure VerifyPasswordResetCode(const ResetPasswortCode: string;
       OnPasswordVerification: TOnPasswordVerification; OnError: TOnRequestError);
     function VerifyPasswordResetCodeSynchronous(const ResetPasswortCode: string):
       TPasswordVerificationResult;
     procedure ConfirmPasswordReset(const ResetPasswortCode, NewPassword: string;
-      OnResponse: TOnResponse; OnError: TOnRequestError);
+      OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
     procedure ConfirmPasswordResetSynchronous(const ResetPasswortCode,
       NewPassword: string);
     // Change password, Change email, Update Profile Data
     // let field empty which shall not be changed
     procedure ChangeProfile(const EMail, Password, DisplayName,
-      PhotoURL: string; OnResponse: TOnResponse; OnError: TOnRequestError);
+      PhotoURL: string; OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
     procedure ChangeProfileSynchronous(const EMail, Password, DisplayName,
       PhotoURL: string);
     // Delete signed in user account
-    procedure DeleteCurrentUser(OnResponse: TOnResponse;
+    procedure DeleteCurrentUser(OnResponse: TOnFirebaseResp;
       OnError: TOnRequestError);
     procedure DeleteCurrentUserSynchronous;
     // Get User Data
@@ -446,8 +509,6 @@ type
   end;
 
   EFirebaseFunctions = class(Exception);
-  TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of
-    object;
   IFirebaseFunctions = interface(IInterface)
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
@@ -456,7 +517,6 @@ type
       Params: TJSONObject = nil): TJSONObject;
   end;
 
-  IStorageObject = interface;
   TOnDownload = procedure(const RequestID: string; Obj: IStorageObject)
     of object;
   TOnDownloadError = procedure(Obj: IStorageObject;
@@ -483,11 +543,6 @@ type
     function metaGeneration: Int64;
   end;
 
-  TOnGetStorage = procedure(const RequestID: string; Obj: IStorageObject)
-    of object;
-  TOnDeleteStorage = procedure(const ObjectName: string) of object;
-  TOnUploadFromStream = procedure(const ObjectName: string; Obj: IStorageObject)
-    of object;
   IFirebaseStorage = interface(IInterface)
     procedure Get(const ObjectName, RequestID: string;
       OnGetStorage: TOnGetStorage; OnGetError: TOnRequestError);
@@ -547,5 +602,122 @@ implementation
 {$IFDEF LINUX64}
 {$I LinuxTypeImpl.inc}
 {$ENDIF}
+
+{ TOnSuccess }
+
+constructor TOnSuccess.Create(OnResp: TOnFirebaseResp);
+begin
+  OnResponse := OnResp;
+  OnUserResponse := nil;
+  OnFetchProviders := nil;
+  OnPasswordVerification := nil;
+  OnGetUserData := nil;
+  OnRefreshToken := nil;
+  OnRTDBValue := nil;
+  OnRTDBDelete := nil;
+  OnRTDBServerVariable := nil;
+  OnDocument := nil;
+  OnDocuments := nil;
+  OnBeginTransaction := nil;
+  OnGetStorage := nil;
+  OnDelStorage := nil;
+  OnUpload := nil;
+  OnFunctionSuccess := nil;
+end;
+
+constructor TOnSuccess.CreateUser(OnUserResp: TOnUserResponse);
+begin
+  Create(nil);
+  OnUserResponse := OnUserResp;
+end;
+
+constructor TOnSuccess.CreateFetchProviders(
+  OnFetchProvidersResp: TOnFetchProviders);
+begin
+  Create(nil);
+  OnFetchProviders := OnFetchProvidersResp;
+end;
+
+constructor TOnSuccess.CreatePasswordVerification(
+  OnPasswordVerificationResp: TOnPasswordVerification);
+begin
+  Create(nil);
+  OnPasswordVerification := OnPasswordVerificationResp;
+end;
+
+constructor TOnSuccess.CreateGetUserData(OnGetUserDataResp: TOnGetUserData);
+begin
+  Create(nil);
+  OnGetUserData := OnGetUserDataResp;
+end;
+
+constructor TOnSuccess.CreateRefreshToken(OnRefreshTokenResp: TOnTokenRefresh);
+begin
+  Create(nil);
+  OnRefreshToken := OnRefreshTokenResp;
+end;
+
+constructor TOnSuccess.CreateRTDBValue(OnRTDBValueResp: TOnRTDBValue);
+begin
+  Create(nil);
+  OnRTDBValue := OnRTDBValueResp;
+end;
+
+constructor TOnSuccess.CreateRTDBDelete(OnRTDBDeleteResp: TOnRTDBDelete);
+begin
+  Create(nil);
+  OnRTDBDelete := OnRTDBDeleteResp;
+end;
+
+constructor TOnSuccess.CreateRTDBServerVariable(
+  OnRTDBServerVariableResp: TOnRTDBServerVariable);
+begin
+  Create(nil);
+  OnRTDBServerVariable := OnRTDBServerVariableResp;
+end;
+
+constructor TOnSuccess.CreateFirestoreDoc(OnDocumentResp: TOnDocument);
+begin
+  Create(nil);
+  OnDocument := OnDocumentResp;
+end;
+
+constructor TOnSuccess.CreateFirestoreDocs(OnDocumentsResp: TOnDocuments);
+begin
+  Create(nil);
+  OnDocuments := OnDocumentsResp;
+end;
+
+constructor TOnSuccess.CreateFirestoreTransaction(
+  OnBeginTransactionResp: TOnBeginTransaction);
+begin
+  Create(nil);
+  OnBeginTransaction := OnBeginTransactionResp;
+end;
+
+constructor TOnSuccess.CreateGetStorage(OnGetStorageResp: TOnGetStorage);
+begin
+  Create(nil);
+  OnGetStorage := OnGetStorageResp;
+end;
+
+constructor TOnSuccess.CreateUpload(OnUploadResp: TOnUploadFromStream);
+begin
+  Create(nil);
+  OnUpload := OnUploadResp;
+end;
+
+constructor TOnSuccess.CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
+begin
+  Create(nil);
+  OnDelStorage := OnDelStorageResp;
+end;
+
+constructor TOnSuccess.CreateFunctionSuccess(
+  OnFunctionSuccessResp: TOnFunctionSuccess);
+begin
+  Create(nil);
+  OnFunctionSuccess := OnFunctionSuccessResp;
+end;
 
 end.
