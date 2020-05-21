@@ -709,14 +709,16 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.ShowFirestoreObject(Obj: IStorageObject);
+var
+  sizeInBytes: extended;
 begin
   if assigned(Obj) then
   begin
     memoResp.Lines.Add('ObjectName: ' + Obj.ObjectName(false));
     memoResp.Lines.Add('Path: ' + Obj.Path);
     memoResp.Lines.Add('Type: ' + Obj.ContentType);
-    memoResp.Lines.Add('Size: ' +
-      Format('%.0n bytes', [extended(Obj.Size)]));
+    sizeInBytes := Obj.Size;
+    memoResp.Lines.Add('Size: ' + Format('%.0n bytes', [SizeInBytes]));
     memoResp.Lines.Add('Created: ' +
       DateTimeToStr(Obj.createTime));
     memoResp.Lines.Add('Updated: ' +
