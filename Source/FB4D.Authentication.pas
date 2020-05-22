@@ -81,17 +81,17 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
-    // Login by using OAuth from Facebook, Twitter, Google, etc.
-    procedure SignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
-      ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
-      OnError: TOnRequestError);
-    function SignInWithOAuthCredentialsSynchronous(const OAuthTokenName,
-      OAuthToken, ProviderID, RequestUri: string): IFirebaseUser;
     // Link new email/password access to anonymous user
     procedure LinkWithEMailAndPassword(const EMail, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
     function LinkWithEMailAndPasswordSynchronous(const EMail,
       Password: string): IFirebaseUser;
+    // Login by using OAuth from Facebook, Twitter, Google, etc.
+    procedure LinkOrSignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
+      ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError);
+    function LinkOrSignInWithOAuthCredentialsSynchronous(const OAuthTokenName,
+      OAuthToken, ProviderID, RequestUri: string): IFirebaseUser;
     // Logout
     procedure SignOut;
     // Send EMail for EMail Verification
@@ -260,7 +260,7 @@ begin
   result := SignWithEmailAndPasswordSynchronous(stLogin, Email, Password);
 end;
 
-procedure TFirebaseAuthentication.SignInWithOAuthCredentials(
+procedure TFirebaseAuthentication.LinkOrSignInWithOAuthCredentials(
   const OAuthTokenName, OAuthToken, ProviderID, RequestUri: string;
   OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
 var
@@ -277,6 +277,8 @@ begin
     Data.AddPair(TJSONPair.Create('postBody',
       OAuthTokenName + '=' + OAuthToken + '&providerId=' + ProviderID));
     Data.AddPair(TJSONPair.Create('requestUri', requestUri));
+    if not fToken.IsEmpty then
+      Data.AddPair(TJSONPair.Create('idToken', fToken));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
     Params.Add('key', [ApiKey]);
@@ -288,7 +290,7 @@ begin
   end;
 end;
 
-function TFirebaseAuthentication.SignInWithOAuthCredentialsSynchronous(
+function TFirebaseAuthentication.LinkOrSignInWithOAuthCredentialsSynchronous(
   const OAuthTokenName, OAuthToken, ProviderID,
   RequestUri: string): IFirebaseUser;
 var
@@ -307,6 +309,8 @@ begin
     Data.AddPair(TJSONPair.Create('postBody',
       OAuthTokenName + '=' + OAuthToken + '&providerId=' + ProviderID));
     Data.AddPair(TJSONPair.Create('requestUri', requestUri));
+    if not fToken.IsEmpty then
+      Data.AddPair(TJSONPair.Create('idToken', fToken));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
     Params.Add('key', [ApiKey]);

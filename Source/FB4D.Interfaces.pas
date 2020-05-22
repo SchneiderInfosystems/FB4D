@@ -462,17 +462,17 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
-    // Login by using OAuth from Facebook, Twitter, Google, etc.
-    procedure SignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
-      ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
-      OnError: TOnRequestError);
-    function SignInWithOAuthCredentialsSynchronous(const OAuthTokenName,
-      OAuthToken, ProviderID, RequestUri: string): IFirebaseUser;
     // Link new email/password access to anonymous user
     procedure LinkWithEMailAndPassword(const EMail, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
     function LinkWithEMailAndPasswordSynchronous(const EMail,
       Password: string): IFirebaseUser;
+    // Login by using OAuth from Facebook, Twitter, Google, etc.
+    procedure LinkOrSignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
+      ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError);
+    function LinkOrSignInWithOAuthCredentialsSynchronous(const OAuthTokenName,
+      OAuthToken, ProviderID, RequestUri: string): IFirebaseUser;
     // Logout
     procedure SignOut;
     // Send EMail for EMail Verification
