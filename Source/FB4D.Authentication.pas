@@ -719,6 +719,7 @@ begin
   end;
 end;
 
+
 procedure TFirebaseAuthentication.SendPasswordResetEMail(const Email: string;
   OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
 var
