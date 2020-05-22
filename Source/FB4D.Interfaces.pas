@@ -421,6 +421,13 @@ type
     function LastLoginAt: TDateTime;
     function IsCreatedAtAvailable: boolean;
     function CreatedAt: TDateTime;
+    // In case of OAuth sign-in
+    function OAuthFederatedId: string;
+    function OAuthProviderId: string;
+    function OAuthIdToken: string;
+    function OAuthAccessToken: string;
+    function OAuthTokenSecret: string;
+    function OAuthRawUserInfo: string;
     // Get Token Details and Claim Fields
     function Token: string;
 {$IFDEF TOKENJWT}
@@ -455,6 +462,12 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
+    // Login by using OAuth from Facebook, Twitter, Google, etc.
+    procedure SignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
+      ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError);
+    function SignInWithOAuthCredentialsSynchronous(const OAuthTokenName,
+      OAuthToken, ProviderID, RequestUri: string): IFirebaseUser;
     // Link new email/password access to anonymous user
     procedure LinkWithEMailAndPassword(const EMail, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);

@@ -81,6 +81,12 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
+    // Login by using OAuth from Facebook, Twitter, Google, etc.
+    procedure SignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
+      ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError);
+    function SignInWithOAuthCredentialsSynchronous(const OAuthTokenName,
+      OAuthToken, ProviderID, RequestUri: string): IFirebaseUser;
     // Link new email/password access to anonymous user
     procedure LinkWithEMailAndPassword(const EMail, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
@@ -174,6 +180,13 @@ type
     function LastLoginAt: TDateTime;
     function IsCreatedAtAvailable: boolean;
     function CreatedAt: TDateTime;
+    // In case of OAuth sign-in
+    function OAuthFederatedId: string;
+    function OAuthProviderId: string;
+    function OAuthIdToken: string;
+    function OAuthAccessToken: string;
+    function OAuthTokenSecret: string;
+    function OAuthRawUserInfo: string;
     // Get Token Details and Claim Fields
     function Token: string;
     {$IFDEF TOKENJWT}
@@ -202,6 +215,7 @@ resourcestring
   rsSignInAnonymously = 'Sign in anonymously';
   rsSignInWithEmail = 'Sign in with email for %s';
   rsSignUpWithEmail = 'Sign up with email for %s';
+  rsSignInWithOAuth = 'Sign in with OAuth for %s';
   rsEnableAnonymousLogin = 'In the firebase console under Authentication/' +
     'Sign-in method firstly enable anonymous sign-in provider.';
   rsSendPasswordResetEMail = 'EMail to reset the password sent to %s';
@@ -244,6 +258,76 @@ function TFirebaseAuthentication.SignInWithEmailAndPasswordSynchronous(
   const Email, Password: string): IFirebaseUser;
 begin
   result := SignWithEmailAndPasswordSynchronous(stLogin, Email, Password);
+end;
+
+procedure TFirebaseAuthentication.SignInWithOAuthCredentials(
+  const OAuthTokenName, OAuthToken, ProviderID, RequestUri: string;
+  OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: IFirebaseRequest;
+begin
+  fAuthenticated := false;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
+    Format(rsSignInWithOAuth, [ProviderID]));
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('postBody',
+      OAuthTokenName + '=' + OAuthToken + '&providerId=' + ProviderID));
+    Data.AddPair(TJSONPair.Create('requestUri', requestUri));
+    Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
+    Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
+    Params.Add('key', [ApiKey]);
+    Request.SendRequest(['accounts:signInWithIdp'], rmPost, Data, Params,
+      tmNoToken, OnUserResp, OnError, TOnSuccess.CreateUser(OnUserResponse));
+  finally
+    Params.Free;
+    Data.Free;
+  end;
+end;
+
+function TFirebaseAuthentication.SignInWithOAuthCredentialsSynchronous(
+  const OAuthTokenName, OAuthToken, ProviderID,
+  RequestUri: string): IFirebaseUser;
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+  User: TFirebaseUser;
+begin
+  result := nil;
+  fAuthenticated := false;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('postBody',
+      OAuthTokenName + '=' + OAuthToken + '&providerId=' + ProviderID));
+    Data.AddPair(TJSONPair.Create('requestUri', requestUri));
+    Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
+    Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
+    Params.Add('key', [ApiKey]);
+    Response := Request.SendRequestSynchronous(['accounts:signInWithIdp'],
+      rmPost, Data, Params, tmNoToken);
+    Response.CheckForJSONObj;
+    fAuthenticated := true;
+    User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
+    fToken := User.fToken;
+    {$IFDEF TOKENJWT}
+    fTokenJWT := User.fTokenJWT;
+    {$ENDIF}
+    fExpiresAt := User.fExpiresAt;
+    fRefreshToken := User.fRefreshToken;
+    result := User;
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
 end;
 
 procedure TFirebaseAuthentication.SignOut;
@@ -1366,6 +1450,42 @@ end;
 function TFirebaseUser.Token: string;
 begin
   result := fToken;
+end;
+
+function TFirebaseUser.OAuthProviderId: string;
+begin
+  if not fJSONResp.TryGetValue('providerId', result) then
+    result := '';
+end;
+
+function TFirebaseUser.OAuthFederatedId: string;
+begin
+  if not fJSONResp.TryGetValue('federatedId', result) then
+    result := '';
+end;
+
+function TFirebaseUser.OAuthIdToken: string;
+begin
+  if not fJSONResp.TryGetValue('oauthIdToken', result) then
+    result := '';
+end;
+
+function TFirebaseUser.OAuthAccessToken: string;
+begin
+  if not fJSONResp.TryGetValue('oauthAccessToken', result) then
+    result := '';
+end;
+
+function TFirebaseUser.OAuthTokenSecret: string;
+begin
+  if not fJSONResp.TryGetValue('oauthTokenSecret', result) then
+    result := '';
+end;
+
+function TFirebaseUser.OAuthRawUserInfo: string;
+begin
+  if not fJSONResp.TryGetValue('rawUserInfo', result) then
+    result := '';
 end;
 
 {$IFDEF TOKENJWT}
