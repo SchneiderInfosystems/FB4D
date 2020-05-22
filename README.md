@@ -16,6 +16,9 @@ This library requires at least Delphi 10 Seattle. The sample projects are develo
 
 #### Hint: Delphi 10.3 Update 1 is not longer supported because of an issue in the RTL. 
 
+#### Hint: The project _FB4D_samples_VCL_ cannot be compiled with Delphi 10.1 Berlin and Seattle because of missing TCardPanel. 
+The underlying FraSelfRegistration is not affected by this and can be used from Delphi 10 Seattle.  
+
 ### Supported Platforms
 
 **FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac64/32, Linux64 by using FMXLinux, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verifcation requires the installation of the OpenSSL libraries). For more information about using OpenSSL see the [installation of OpenSSL](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D#install-openssl)
