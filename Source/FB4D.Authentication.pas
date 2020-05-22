@@ -58,6 +58,8 @@ type
     procedure OnUserResp(const RequestID: string; Response: IFirebaseResponse);
     procedure OnFetchProvidersResp(const RequestID: string;
       Response: IFirebaseResponse);
+    procedure OnDeleteProvidersResp(const RequestID: string;
+      Response: IFirebaseResponse);
     procedure OnVerifyPasswordResp(const RequestID: string;
       Response: IFirebaseResponse);
     procedure OnUserListResp(const RequestID: string;
@@ -102,7 +104,10 @@ type
     procedure FetchProvidersForEMail(const EMail: string;
       OnFetchProviders: TOnFetchProviders; OnError: TOnRequestError);
     function FetchProvidersForEMailSynchronous(const EMail: string;
-      Strings: TStrings): boolean; // returns true if EMail is registered
+      Providers: TStrings): boolean; // returns true if EMail is registered
+    procedure DeleteProviders(Providers: TStrings;
+      OnProviderDeleted: TOnFirebaseResp; OnError: TOnRequestError);
+    function DeleteProvidersSynchronous(Providers: TStrings): boolean;
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
       OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
@@ -180,6 +185,9 @@ type
     function LastLoginAt: TDateTime;
     function IsCreatedAtAvailable: boolean;
     function CreatedAt: TDateTime;
+    // Provider User Info
+    function ProviderCount: integer;
+    function Provider(ProviderNo: integer): TProviderInfo;
     // In case of OAuth sign-in
     function OAuthFederatedId: string;
     function OAuthProviderId: string;
@@ -221,6 +229,8 @@ resourcestring
   rsSendPasswordResetEMail = 'EMail to reset the password sent to %s';
   rsSendVerificationEMail = 'EMail to verify the email sent';
   rsVerifyPasswordResetCode = 'Verify password reset code';
+  rsFetchProviders = 'Fetch providers for %s';
+  rsDeleteProviders = 'Delete providers %s';
   rsConfirmPasswordReset = 'Confirm password reset';
   rsChangeProfile = 'Change profile for %s';
   rsDeleteCurrentUser = 'Delete signed-in user account';
@@ -531,7 +541,8 @@ var
   Request: IFirebaseRequest;
 begin
   Data := TJSONObject.Create;
-  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, EMail);
+  Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL,
+    Format(rsFetchProviders, [EMail]));
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('identifier', Email));
@@ -585,7 +596,7 @@ begin
 end;
 
 function TFirebaseAuthentication.FetchProvidersForEMailSynchronous(
-  const EMail: string; Strings: TStrings): boolean;
+  const EMail: string; Providers: TStrings): boolean;
 var
   Data, ResObj: TJSONObject;
   Params: TQueryParams;
@@ -613,9 +624,9 @@ begin
       ResArr := ResObj.GetValue('allProviders') as TJSONArray;
       if not assigned(ResArr) then
         raise EFirebaseAuthentication.Create('JSON field allProviders missing');
-      Strings.Clear;
+      Providers.Clear;
       for c := 0 to ResArr.Count - 1 do
-        Strings.Add(ResArr.Items[c].ToString);
+        Providers.Add(ResArr.Items[c].ToString);
     end;
   finally
     ResObj.Free;
@@ -623,6 +634,91 @@ begin
     Data.Free;
   end;
 end;
+
+procedure TFirebaseAuthentication.DeleteProviders(Providers: TStrings;
+  OnProviderDeleted: TOnFirebaseResp; OnError: TOnRequestError);
+var
+  Data: TJSONObject;
+  DelArr: TJSONArray;
+  Provider: string;
+  Params: TQueryParams;
+  Request: IFirebaseRequest;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
+    Format(rsDeleteProviders, [Providers.CommaText]));
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    DelArr := TJSONArray.Create;
+    for Provider in Providers do
+      DelArr.Add(Provider);
+    Data.AddPair(TJSONPair.Create('deleteProvider', DelArr));
+    Params.Add('key', [ApiKey]);
+    Request.SendRequest(['accounts:update'], rmPOST, Data, Params, tmNoToken,
+      OnDeleteProvidersResp, onError, TOnSuccess.Create(OnProviderDeleted));
+  finally
+    Params.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.OnDeleteProvidersResp(const RequestID: string;
+  Response: IFirebaseResponse);
+begin
+  try
+    if Response.StatusOk then
+    begin
+      Response.CheckForJSONObj;
+      if assigned(Response.OnSuccess.OnResponse) then
+        Response.OnSuccess.OnResponse(RequestID, Response);
+    end;
+  except
+    on e: exception do
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message);
+  end;
+end;
+
+function TFirebaseAuthentication.DeleteProvidersSynchronous(
+  Providers: TStrings): boolean;
+var
+  Data: TJSONObject;
+  DelArr: TJSONArray;
+  Provider: string;
+  Params: TQueryParams;
+  Request: TFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  result := false;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    DelArr := TJSONArray.Create;
+    for Provider in Providers do
+      DelArr.Add(Provider);
+    Data.AddPair(TJSONPair.Create('deleteProvider', DelArr));
+    Params.Add('key', [ApiKey]);
+    Response := Request.SendRequestSynchronous(['accounts:update'], rmPost, Data,
+      Params, tmNoToken);
+    if Response.StatusOk then
+    begin
+      Response.CheckForJSONObj;
+      result := true;
+    end;
+    {$IFDEF DEBUG}
+    TFirebaseHelpers.Log(Response.ContentAsString);
+    {$ENDIF}
+  finally
+    Response := nil;
+    Params.Free;
+    Request.Free;
+    Data.Free;
+  end;
+end;
+
 
 procedure TFirebaseAuthentication.SendPasswordResetEMail(const Email: string;
   OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
@@ -1490,6 +1586,39 @@ function TFirebaseUser.OAuthRawUserInfo: string;
 begin
   if not fJSONResp.TryGetValue('rawUserInfo', result) then
     result := '';
+end;
+
+function TFirebaseUser.Provider(ProviderNo: integer): TProviderInfo;
+var
+  ProvArr: TJSONArray;
+  Provider: TJSONObject;
+begin
+  result.ProviderId := '';
+  result.FederatedId := '';
+  result.RawId := '';
+  result.DisplayName := '';
+  result.Email := '';
+  result.ScreenName := '';
+  if fJSONResp.TryGetValue('providerUserInfo', ProvArr) then
+  begin
+    Provider := ProvArr.Items[ProviderNo] as TJSONObject;
+    Provider.TryGetValue('providerId', result.ProviderId);
+    Provider.TryGetValue('federatedId', result.FederatedId);
+    Provider.TryGetValue('rawId', result.RawId);
+    Provider.TryGetValue('displayName', result.DisplayName);
+    Provider.TryGetValue('email', result.Email);
+    Provider.TryGetValue('screenName', result.ScreenName);
+  end;
+end;
+
+function TFirebaseUser.ProviderCount: integer;
+var
+  ProvArr: TJSONArray;
+begin
+  if not fJSONResp.TryGetValue('providerUserInfo', ProvArr) then
+    result := 0
+  else
+    result := ProvArr.Count;
 end;
 
 {$IFDEF TOKENJWT}

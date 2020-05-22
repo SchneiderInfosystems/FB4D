@@ -396,6 +396,15 @@ type
   EFirebaseUser = class(Exception);
   TThreeStateBoolean = (tsbTrue, tsbFalse, tsbUnspecified);
 
+  TProviderInfo = record
+    ProviderId: string;
+    FederatedId: string;
+    RawId: string;
+    DisplayName: string;
+    Email: string;
+    ScreenName: string;
+  end;
+
   /// <summary>
   /// The IFirebaseUser interface provides only getter functions that are used
   /// to retrieve details of the user profile and the access token.
@@ -421,6 +430,9 @@ type
     function LastLoginAt: TDateTime;
     function IsCreatedAtAvailable: boolean;
     function CreatedAt: TDateTime;
+    // Provider User Info
+    function ProviderCount: integer;
+    function Provider(ProviderNo: integer): TProviderInfo;
     // In case of OAuth sign-in
     function OAuthFederatedId: string;
     function OAuthProviderId: string;
@@ -483,7 +495,10 @@ type
     procedure FetchProvidersForEMail(const EMail: string;
       OnFetchProviders: TOnFetchProviders; OnError: TOnRequestError);
     function FetchProvidersForEMailSynchronous(const EMail: string;
-      Strings: TStrings): boolean; // returns true if EMail is registered
+      Providers: TStrings): boolean; // returns true if EMail is registered
+    procedure DeleteProviders(Providers: TStrings;
+      OnProviderDeleted: TOnFirebaseResp; OnError: TOnRequestError);
+    function DeleteProvidersSynchronous(Providers: TStrings): boolean;
     // Reset Password
     procedure SendPasswordResetEMail(const Email: string;
       OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
