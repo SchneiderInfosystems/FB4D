@@ -529,6 +529,8 @@ end;
 {$ENDIF}
 
 procedure TfmxFirebaseDemo.DisplayUser(mem: TMemo; User: IFirebaseUser);
+var
+  c: Integer;
 begin
   mem.Lines.Add('UID: ' + User.UID);
   case User.IsDisabled of
@@ -571,6 +573,30 @@ begin
       edtChangePhotoURL.Text := User.PhotoURL
     else
       edtChangePhotoURL.Text := '';
+  end;
+  if User.ProviderCount > 0 then
+  begin
+    mem.Lines.Add(Format('%d Providers:', [User.ProviderCount]));
+    for c := 0 to User.ProviderCount - 1 do
+    begin
+      mem.Lines.Add(Format('  [%d] Provider Id: %s',
+        [c + 1, User.Provider(c).ProviderId]));
+      if not User.Provider(c).FederatedId.IsEmpty then
+        mem.Lines.Add(Format('  [%d] Federated Id: %s',
+          [c + 1, User.Provider(c).FederatedId]));
+      if not User.Provider(c).RawId.IsEmpty then
+        mem.Lines.Add(Format('  [%d] Raw Id: %s',
+          [c + 1, User.Provider(c).RawId]));
+      if not User.Provider(c).Email.IsEmpty then
+        mem.Lines.Add(Format('  [%d] Email: %s',
+          [c + 1, User.Provider(c).Email]));
+      if not User.Provider(c).DisplayName.IsEmpty then
+        mem.Lines.Add(Format('  [%d] Display Name: %s',
+          [c + 1, User.Provider(c).DisplayName]));
+      if not User.Provider(c).ScreenName.IsEmpty then
+        mem.Lines.Add(Format('  [%d] Screen Name: %s',
+          [c + 1, User.Provider(c).ScreenName]));
+    end;
   end;
 end;
 
