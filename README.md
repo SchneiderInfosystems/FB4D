@@ -16,7 +16,8 @@ This library requires at least Delphi 10 Seattle. The sample projects are develo
 
 #### Hint: Delphi 10.3 Update 1 is not longer supported because of an issue in the RTL. 
 
-#### Hint: The project _FB4D_samples_VCL_ cannot be compiled with Delphi 10.1 Berlin and Seattle because of missing TCardPanel. The underliying FraSelfRegistration is not affected from this and can be used from Delphi 10 Seattle.  
+#### Hint: The project _FB4D_samples_VCL_ cannot be compiled with Delphi 10.1 Berlin and Seattle because of missing TCardPanel. 
+The underlying FraSelfRegistration is not affected by this and can be used from Delphi 10 Seattle.  
 
 ### Supported Platforms
 
