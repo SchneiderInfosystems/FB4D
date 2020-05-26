@@ -46,10 +46,10 @@ type
   public
     constructor Create(const BucketName: string; Auth: IFirebaseAuthentication);
     procedure Get(const ObjectName, RequestID: string;
-      OnGetStorage: TOnGetStorage; OnGetError: TOnRequestError);
+      OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
     function GetSynchronous(const ObjectName: string): IStorageObject;
     procedure UploadFromStream(Stream: TStream; const ObjectName: string;
-      ContentType: TRESTContentType; OnUpload: TOnUploadFromStream;
+      ContentType: TRESTContentType; OnUpload: TOnStorage;
       OnUploadError: TOnRequestError);
     function UploadSynchronousFromStream(Stream: TStream;
       const ObjectName: string; ContentType: TRESTContentType): IStorageObject;
@@ -122,13 +122,13 @@ begin
 end;
 
 procedure TFirebaseStorage.Get(const ObjectName, RequestID: string;
-  OnGetStorage: TOnGetStorage; OnGetError: TOnRequestError);
+  OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
 var
   Request: IFirebaseRequest;
 begin
   Request := TFirebaseRequest.Create(BaseURL, RequestID, fAuth);
   Request.SendRequest([ObjectName], rmGet, nil, nil, tmBearer, OnGetResponse,
-    OnGetError, TOnSuccess.CreateGetStorage(OnGetStorage));
+    OnGetError, TOnSuccess.CreateStorage(OnGetStorage));
 end;
 
 procedure TFirebaseStorage.OnGetResponse(const RequestID: string;
@@ -136,8 +136,8 @@ procedure TFirebaseStorage.OnGetResponse(const RequestID: string;
 begin
   try
     Response.CheckForJSONObj;
-    if assigned(Response.OnSuccess.OnGetStorage) then
-      Response.OnSuccess.OnGetStorage(RequestID, TStorageObject.Create(Response))
+    if assigned(Response.OnSuccess.OnStorage) then
+      Response.OnSuccess.OnStorage(RequestID, TStorageObject.Create(Response))
     else
       TFirebaseHelpers.Log(Response.ContentAsString);
   except
@@ -192,7 +192,7 @@ end;
 
 procedure TFirebaseStorage.UploadFromStream(Stream: TStream;
   const ObjectName: string; ContentType: TRESTContentType;
-  OnUpload: TOnUploadFromStream; OnUploadError: TOnRequestError);
+  OnUpload: TOnStorage; OnUploadError: TOnRequestError);
 var
   Request: IFirebaseRequest;
   QueryParams: TQueryParams;
@@ -209,7 +209,7 @@ begin
     QueryParams.Add('name',  [ObjectName]);
     Request.SendRequest([], rmPost, Stream, ContentType,
       QueryParams, tmBearer, OnUploadFromStream, OnUploadError,
-      TOnSuccess.CreateUpload(OnUpload));
+      TOnSuccess.CreateStorage(OnUpload));
   finally
     QueryParams.Free;
   end;
@@ -230,7 +230,7 @@ begin
     QueryParams.Add('name',  [ObjectName]);
     Request.SendRequest([BaseURL[length(BaseURL)]], rmPost, Stream, ContentType,
       QueryParams, tmBearer, OnUploadFromStream, OnUploadError,
-      TOnSuccess.CreateUpload(OnUpload));
+      TOnSuccess.CreateStorage(OnUpload));
   finally
     QueryParams.Free;
   end;
@@ -248,8 +248,8 @@ begin
   {$ENDIF}
   try
     Response.CheckForJSONObj;
-    if assigned(Response.OnSuccess.OnUpload) then
-      Response.OnSuccess.OnUpload(RequestID, TStorageObject.Create(Response))
+    if assigned(Response.OnSuccess.OnStorage) then
+      Response.OnSuccess.OnStorage(RequestID, TStorageObject.Create(Response))
     else
       TFirebaseHelpers.Log(Response.ContentAsString);
   except

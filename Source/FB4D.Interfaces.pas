@@ -66,7 +66,7 @@ type
   TPasswordVerificationResult = (pvrOpNotAllowed, pvrPassed, pvrpvrExpired,
     pvrInvalid);
   TOnUserResponse = procedure(const Info: string; User: IFirebaseUser) of object;
-  TOnFetchProviders = procedure(const EMail: string; IsRegistered: boolean;
+  TOnFetchProviders = procedure(const RequestID: string; IsRegistered: boolean;
     Providers: TStrings) of object;
   TOnPasswordVerification = procedure(const Info: string;
     Result: TPasswordVerificationResult) of object;
@@ -87,11 +87,9 @@ type
   TTransaction = string; // A base64 encoded ID
   TOnBeginTransaction = procedure(Transaction: TTransaction) of object;
 
-  TOnGetStorage = procedure(const RequestID: string; Obj: IStorageObject)
-    of object;
+  TOnStorage = procedure(const RequestIDorObjectName: string;
+    Obj: IStorageObject) of object;
   TOnDeleteStorage = procedure(const ObjectName: string) of object;
-  TOnUploadFromStream = procedure(const ObjectName: string; Obj: IStorageObject)
-    of object;
 
   TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of
     object;
@@ -100,8 +98,7 @@ type
     type TOnSucccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
       oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
       oscRTDBDelete, oscRTDBServerVariable, oscDocument, oscDocuments,
-      oscBeginTransaction, oscGetStorage, oscDelStorage, oscUpload,
-      oscFunctionSuccess);
+      oscBeginTransaction, oscStorage, oscDelStorage, oscFunctionSuccess);
     constructor Create(OnResp: TOnFirebaseResp);
     constructor CreateUser(OnUserResp: TOnUserResponse);
     constructor CreateFetchProviders(OnFetchProvidersResp: TOnFetchProviders);
@@ -117,10 +114,10 @@ type
     constructor CreateFirestoreDocs(OnDocumentsResp: TOnDocuments);
     constructor CreateFirestoreTransaction(
       OnBeginTransactionResp: TOnBeginTransaction);
-    constructor CreateGetStorage(OnGetStorageResp: TOnGetStorage);
+    constructor CreateStorage(OnStorageResp: TOnStorage);
     constructor CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
-    constructor CreateUpload(OnUploadResp: TOnUploadFromStream);
     constructor CreateFunctionSuccess(OnFunctionSuccessResp: TOnFunctionSuccess);
+    {$IFNDEF AUTOREFCOUNT}
     case OnSucccessCase: TOnSucccessCase of
       oscFB: (OnResponse: TOnFirebaseResp);
       oscUser: (OnUserResponse: TOnUserResponse);
@@ -134,10 +131,28 @@ type
       oscDocument: (OnDocument: TOnDocument);
       oscDocuments: (OnDocuments: TOnDocuments);
       oscBeginTransaction: (OnBeginTransaction: TOnBeginTransaction);
-      oscGetStorage: (OnGetStorage: TOnGetStorage);
+      oscStorage: (OnStorage: TOnStorage);
       oscDelStorage: (OnDelStorage: TOnDeleteStorage);
-      oscUpload: (OnUpload: TOnUploadFromStream);
       oscFunctionSuccess: (OnFunctionSuccess: TOnFunctionSuccess);
+    {$ELSE}
+    var
+      OnSucccessCase: TOnSucccessCase;
+      OnResponse: TOnFirebaseResp;
+      OnUserResponse: TOnUserResponse;
+      OnFetchProviders: TOnFetchProviders;
+      OnPasswordVerification: TOnPasswordVerification;
+      OnGetUserData: TOnGetUserData;
+      OnRefreshToken: TOnTokenRefresh;
+      OnRTDBValue: TOnRTDBValue;
+      OnRTDBDelete: TOnRTDBDelete;
+      OnRTDBServerVariable: TOnRTDBServerVariable;
+      OnDocument: TOnDocument;
+      OnDocuments: TOnDocuments;
+      OnBeginTransaction: TOnBeginTransaction;
+      OnStorage: TOnStorage;
+      OnDelStorage: TOnDeleteStorage;
+      OnFunctionSuccess: TOnFunctionSuccess;
+    {$ENDIF}
   end;
 
   /// <summary>
@@ -579,13 +594,13 @@ type
 
   IFirebaseStorage = interface(IInterface)
     procedure Get(const ObjectName, RequestID: string;
-      OnGetStorage: TOnGetStorage; OnGetError: TOnRequestError);
+      OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
     function GetSynchronous(const ObjectName: string): IStorageObject;
     procedure Delete(const ObjectName: string; OnDelete: TOnDeleteStorage;
       OnDelError: TOnRequestError);
     procedure DeleteSynchronous(const ObjectName: string);
     procedure UploadFromStream(Stream: TStream; const ObjectName: string;
-      ContentType: TRESTContentType; OnUpload: TOnUploadFromStream;
+      ContentType: TRESTContentType; OnUpload: TOnStorage;
       OnUploadError: TOnRequestError);
     function UploadSynchronousFromStream(Stream: TStream;
       const ObjectName: string; ContentType: TRESTContentType): IStorageObject;
@@ -657,9 +672,8 @@ begin
   OnDocument := nil;
   OnDocuments := nil;
   OnBeginTransaction := nil;
-  OnGetStorage := nil;
+  OnStorage := nil;
   OnDelStorage := nil;
-  OnUpload := nil;
   OnFunctionSuccess := nil;
 end;
 
@@ -744,18 +758,11 @@ begin
   OnBeginTransaction := OnBeginTransactionResp;
 end;
 
-constructor TOnSuccess.CreateGetStorage(OnGetStorageResp: TOnGetStorage);
+constructor TOnSuccess.CreateStorage(OnStorageResp: TOnStorage);
 begin
   Create(nil);
-  OnSucccessCase := oscGetStorage;
-  OnGetStorage := OnGetStorageResp;
-end;
-
-constructor TOnSuccess.CreateUpload(OnUploadResp: TOnUploadFromStream);
-begin
-  Create(nil);
-  OnSucccessCase := oscUpload;
-  OnUpload := OnUploadResp;
+  OnSucccessCase := oscStorage;
+  OnStorage := OnStorageResp;
 end;
 
 constructor TOnSuccess.CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
