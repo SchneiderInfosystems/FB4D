@@ -141,7 +141,7 @@ uses
 {$ELSE}
   FMX.Types,
   FMX.Forms,
-{$IFEND}
+{$ENDIF}
   System.DateUtils, System.NetEncoding, System.JSONConsts, System.Math,
   System.Net.HttpClient,
   IdGlobalProtocols;
@@ -600,7 +600,7 @@ begin
   result := 'Debug Build/';
 {$ELSE}
   result := 'Unknown Build/';
-{$IFEND}
+{$ENDIF}
   result := result + GetPlatform;
 end;
 
