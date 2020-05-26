@@ -351,7 +351,7 @@ begin
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fIsRegistered, 'EMail not registered');
-  Assert.AreEqual(fEMail, cEMail, 'Wrong EMail');
+  Assert.IsTrue(Pos(cEMail, fEMail) > 0, 'EMail missing in RequestID');
   Assert.IsTrue(Pos('password', fProviders) > 0, 'Password provider missing');
 end;
 
