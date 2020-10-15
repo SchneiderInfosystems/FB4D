@@ -142,7 +142,13 @@ uses
   FMX.Types,
   FMX.Forms,
 {$ENDIF}
-  System.DateUtils, System.NetEncoding, System.JSONConsts, System.Math,
+  System.DateUtils,
+  {$IF CompilerVersion >= 32.0}
+  System.NetEncoding,
+  {$ELSE}
+  FB4D.NetEncoding.Compatibility,
+  {$IFEND}
+  System.JSONConsts, System.Math,
   System.Net.HttpClient,
   IdGlobalProtocols;
 
@@ -294,7 +300,7 @@ end;
 class procedure TFirebaseHelpers.Log(msg: string);
 begin
 {$IF Declared(FMX)}
-  FMX.Types.Log.d(msg, []);
+  FMX.Types.Log.d(TNetEncoding.URL.Decode(msg), []);
   // there is a bug in DE 10.2 when the wrong method is calling?
 {$ELSEIF Declared(VCL)}
   OutputDebugString(PChar(msg));

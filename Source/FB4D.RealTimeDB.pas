@@ -28,7 +28,12 @@ interface
 uses
   System.Types, System.Classes, System.SysUtils, System.StrUtils, System.JSON,
   System.NetConsts, System.Net.HttpClient, System.Net.URLClient,
-  System.NetEncoding, System.Generics.Collections,
+  {$IF CompilerVersion >= 32.0}
+  System.NetEncoding,
+  {$ELSE}
+  FB4D.NetEncoding.Compatibility,
+  {$IFEND}
+  System.Generics.Collections,
   REST.Types,
   FB4D.Interfaces;
 

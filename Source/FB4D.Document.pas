@@ -124,7 +124,12 @@ type
 implementation
 
 uses
-  System.Generics.Collections, System.NetEncoding,
+  System.Generics.Collections,
+  {$IF CompilerVersion >= 32.0}
+  System.NetEncoding,
+  {$ELSE}
+  FB4D.NetEncoding.Compatibility,
+  {$IFEND}
   FB4D.Helpers;
 
 resourcestring

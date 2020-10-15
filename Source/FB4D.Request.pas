@@ -129,7 +129,13 @@ type
 implementation
 
 uses
-  System.NetConsts, System.NetEncoding, System.StrUtils, System.TypInfo,
+  System.NetConsts,
+  {$IF CompilerVersion >= 32.0}
+  System.NetEncoding,
+  {$ELSE}
+  FB4D.NetEncoding.Compatibility,
+  {$IFEND}
+  System.StrUtils, System.TypInfo,
   FB4D.Helpers;
 
 resourcestring
@@ -335,7 +341,9 @@ begin
         FreeAndNil(Client);
       end;
     end,
-    true, true,
+    true, true
+    {$IF CompilerVersion >= 32.0}
+    ,
     procedure(Obj: TObject) // Error Handler
     begin
       try
@@ -357,6 +365,7 @@ begin
         FreeAndNil(Client);
       end;
     end
+    {$IFEND}
   );
 end;
 
@@ -421,7 +430,9 @@ begin
         FreeAndNil(Client);
       end;
     end,
-    true, true,
+    true, true
+    {$IF CompilerVersion >= 32.0}
+    ,
     procedure(Obj: TObject) // Error Handler
     begin
       try
@@ -434,6 +445,7 @@ begin
         FreeAndNil(Client);
       end;
     end
+    {$IFEND}
   );
 end;
 

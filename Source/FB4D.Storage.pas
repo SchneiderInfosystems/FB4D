@@ -87,7 +87,13 @@ type
 implementation
 
 uses
-  System.NetConsts, System.NetEncoding, System.StrUtils,
+  System.NetConsts,
+  {$IF CompilerVersion >= 32.0}
+  System.NetEncoding,
+  {$ELSE}
+  FB4D.NetEncoding.Compatibility,
+  {$IFEND}
+  System.StrUtils,
   FB4D.Helpers;
 
 const
