@@ -307,6 +307,7 @@ type
     function AddOrUpdateField(const FieldName: string;
       Val: TJSONValue): IFirestoreDocument; overload;
     function AsJSON: TJSONObject;
+    function Clone: IFirestoreDocument;
     property Fields[Index: integer]: TJSONObject read FieldValue;
   end;
 

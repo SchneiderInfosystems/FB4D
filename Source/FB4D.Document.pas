@@ -99,6 +99,7 @@ type
       Val: TJSONValue): IFirestoreDocument;
       overload;
     function AsJSON: TJSONObject;
+    function Clone: IFirestoreDocument;
     class function GetFieldType(const FieldType: string): TFirestoreFieldType;
     class function IsCompositeType(FieldType: TFirestoreFieldType): boolean;
   end;
@@ -861,6 +862,11 @@ end;
 function TFirestoreDocument.UpdateTime: TDatetime;
 begin
   result := fUpdated;
+end;
+
+function TFirestoreDocument.Clone: IFirestoreDocument;
+begin
+  result := TFirestoreDocument.CreateFromJSONObj(fJSONObj);
 end;
 
 class function TFirestoreDocument.IsCompositeType(
