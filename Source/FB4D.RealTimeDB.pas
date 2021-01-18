@@ -59,6 +59,7 @@ type
     fReadPos: Int64;
     fOnListenError: TOnRequestError;
     fOnListenEvent: TOnReceiveEvent;
+    fDoNotSynchronizeEvents: boolean;
     fLastKeepAliveMsg: TDateTime;
     fRequireTokenRenew: boolean;
     fStopWaiting: boolean;
@@ -122,8 +123,8 @@ type
       QueryParams: TQueryParams = nil): boolean;
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
-      OnError: TOnRequestError;
-      OnAuthRevoked: TOnAuthRevokedEvent = nil): IFirebaseEvent;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent;
     function GetLastKeepAliveTimeStamp: TDateTime;
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
@@ -483,7 +484,8 @@ end;
 
 function TRealTimeDB.ListenForValueEvents(ResourceParams: TRequestResourceParam;
   ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
-  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent): IFirebaseEvent;
+  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+  DoNotSynchronizeEvents: boolean): IFirebaseEvent;
 var
   URL: string;
   Info, ErrMsg: string;
@@ -494,6 +496,7 @@ begin
   Info :=  TFirebaseHelpers.ArrStrToCommaStr(ResourceParams);
   fOnListenEvent := ListenEvent;
   fOnListenError := OnError;
+  fDoNotSynchronizeEvents := DoNotSynchronizeEvents;
   fListenPartialResp := '';
   fClient := THTTPClient.Create;
   fClient.HandleRedirects := true;
@@ -514,11 +517,14 @@ begin
             if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
               fRequireTokenRenew := false;
             if assigned(OnAuthRevoked) then
-              TThread.Queue(nil,
-                procedure
-                begin
-                  OnAuthRevoked(not fRequireTokenRenew);
-                end);
+              if DoNotSynchronizeEvents then
+                OnAuthRevoked(not fRequireTokenRenew)
+              else
+                TThread.Queue(nil,
+                  procedure
+                  begin
+                    OnAuthRevoked(not fRequireTokenRenew);
+                  end);
           end;
           Resp := fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token),
             fStream);
@@ -527,11 +533,14 @@ begin
             ErrMsg := Resp.StatusText;
             if assigned(OnError) then
             begin
-              TThread.Queue(nil,
-                procedure
-                begin
-                  OnError(Info, ErrMsg);
-                end)
+              if DoNotSynchronizeEvents then
+                OnError(Info, ErrMsg)
+              else
+                TThread.Queue(nil,
+                  procedure
+                  begin
+                    OnError(Info, ErrMsg);
+                  end)
             end else
               TFirebaseHelpers.Log(Format(rsEvtStartFailed, [Info, ErrMsg]));
             fStopWaiting := true;
@@ -545,11 +554,14 @@ begin
           if assigned(OnError) then
           begin
             ErrMsg := e.Message;
-            TThread.Queue(nil,
-              procedure
-              begin
-                OnError(Info, ErrMsg);
-              end)
+            if DoNotSynchronizeEvents then
+              OnError(Info, ErrMsg)
+            else
+              TThread.Queue(nil,
+                procedure
+                begin
+                  OnError(Info, ErrMsg);
+                end)
           end else
             TFirebaseHelpers.Log(Format(rsEvtListenerFailed, [Info, e.Message]));
       end;
@@ -599,6 +611,8 @@ begin
       else begin
         Abort := false;
         Params := GetParams(Sender as TURLRequest);
+        // fDoNotSynchronizeEvents has no effect on Delphi 10.3 and below on
+        // Posix systems
         TThread.Queue(nil,
           procedure
           var
@@ -666,13 +680,16 @@ begin
     begin
       ErrMsg := e.Message;
       if assigned(fOnListenError) then
-        TThread.Queue(nil,
-          procedure
-          begin
-            fOnListenError(rsEvtParserFailed, ErrMsg)
-          end)
-      else
-        TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + ErrMsg);
+        if fDoNotSynchronizeEvents then
+          fOnListenError(rsEvtParserFailed, ErrMsg)
+        else
+          TThread.Queue(nil,
+            procedure
+            begin
+              fOnListenError(rsEvtParserFailed, ErrMsg)
+            end)
+        else
+          TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + ErrMsg);
     end;
   end;
 end;
@@ -731,12 +748,17 @@ begin
             if assigned(JSONObj) then
             begin
               fListenPartialResp := '';
-              TThread.Queue(nil,
-                procedure
-                begin
-                  fOnListenEvent(EventName, Params, JSONObj);
-                  JSONObj.Free;
-                end);
+              if fDoNotSynchronizeEvents then
+              begin
+                fOnListenEvent(EventName, Params, JSONObj);
+                JSONObj.Free;
+              end else
+                TThread.Queue(nil,
+                  procedure
+                  begin
+                    fOnListenEvent(EventName, Params, JSONObj);
+                    JSONObj.Free;
+                  end);
             end;
           end;
         end;
@@ -748,11 +770,14 @@ begin
     begin
       ErrMsg := e.Message;
       if assigned(fOnListenError) then
-        TThread.Queue(nil,
-          procedure
-          begin
-            fOnListenError(rsEvtParserFailed, ErrMsg)
-          end)
+        if fDoNotSynchronizeEvents then
+          fOnListenError(rsEvtParserFailed, ErrMsg)
+        else
+          TThread.Queue(nil,
+            procedure
+            begin
+              fOnListenError(rsEvtParserFailed, ErrMsg)
+            end)
       else
         TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + ErrMsg);
     end;

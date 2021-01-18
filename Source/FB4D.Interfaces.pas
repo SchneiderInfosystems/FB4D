@@ -245,8 +245,8 @@ type
     // long time running request
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
-      OnError: TOnRequestError;
-      OnAuthRevoked: TOnAuthRevokedEvent = nil): IFirebaseEvent;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent;
     function GetLastKeepAliveTimeStamp: TDateTime;
     // To retrieve server variables like timestamp and future variables
     procedure GetServerVariables(const ServerVarName: string;
