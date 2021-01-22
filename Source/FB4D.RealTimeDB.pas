@@ -618,7 +618,8 @@ begin
           var
             ss: TStringStream;
             Lines: TArray<string>;
-            EventName, Data: string;
+            EventName: string;
+            DataUTF8: RawByteString;
             JSONObj: TJSONObject;
           begin
             sleep(1); // is required because of RSP-28205
@@ -643,10 +644,10 @@ begin
             begin
               EventName := Lines[0].Substring(length(cEvent));
               if Lines[1].StartsWith(cData) then
-                Data := Lines[1].Substring(length(cData))
+                DataUTF8 := RawByteString(Lines[1].Substring(length(cData)))
               else begin
                 // resynch
-                Data := '';
+                DataUTF8 := '';
                 fListenPartialResp := '';
               end;
               if EventName = cKeepAlive then
@@ -659,9 +660,10 @@ begin
                 fRequireTokenRenew := true;
                 fListenPartialResp := '';
                 fStopWaiting := true;
-              end else if Data.Length > 0 then
+              end else if length(DataUTF8) > 0 then
               begin
-                JSONObj := TJSONObject.ParseJSONValue(Data) as TJSONObject;
+                JSONObj := TJSONObject.ParseJSONValue(UTF8ToString(DataUTF8)) as
+                  TJSONObject;
                 if assigned(JSONObj) then
                 try
                   fListenPartialResp := '';
@@ -697,7 +699,8 @@ end;
 var
   ss: TStringStream;
   Lines: TArray<string>;
-  EventName, Data, ErrMsg: string;
+  EventName, ErrMsg: string;
+  DataUTF8: RawByteString;
   Params: TRequestResourceParam;
   JSONObj: TJSONObject;
 begin
@@ -726,10 +729,10 @@ begin
         begin
           EventName := Lines[0].Substring(length(cEvent));
           if Lines[1].StartsWith(cData) then
-            Data := Lines[1].Substring(length(cData))
+            DataUTF8 := RawByteString(Lines[1].Substring(length(cData)))
           else begin
             // resynch
-            Data := '';
+            DataUTF8 := '';
             fListenPartialResp := '';
           end;
           if EventName = cKeepAlive then
@@ -742,9 +745,10 @@ begin
             fRequireTokenRenew := true;
             fListenPartialResp := '';
             Abort := true;
-          end else if Data.Length > 0 then
+          end else if length(DataUTF8) > 0 then
           begin
-            JSONObj := TJSONObject.ParseJSONValue(Data) as TJSONObject;
+            JSONObj := TJSONObject.ParseJSONValue(UTF8ToString(DataUTF8)) as
+              TJSONObject;
             if assigned(JSONObj) then
             begin
               fListenPartialResp := '';
