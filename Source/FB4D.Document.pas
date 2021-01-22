@@ -110,6 +110,7 @@ type
     fJSONObj: TJSONObject;
     fDocumentList: array of IFirestoreDocument;
     fServerTimeStampUTC: TDatetime;
+    fPageToken: string;
     fSkippedResults: integer;
   public
     constructor CreateFromJSONDocumentsObj(Response: IFirebaseResponse);
@@ -120,6 +121,9 @@ type
     function Document(Ind: integer): IFirestoreDocument;
     function ServerTimeStamp(TimeZone: TTimeZone): TDateTime;
     function SkippedResults: integer;
+    function MorePagesToLoad: boolean;
+    function PageToken: string;
+    procedure AddPageTokenToNextQuery(Query: TQueryParams);
   end;
 
 implementation
@@ -158,6 +162,7 @@ var
 begin
   inherited Create;
   fSkippedResults := 0;
+  fPageToken := '';
   fJSONArr := Response.GetContentAsJSONArr;
   SetLength(fDocumentList, 0);
   if fJSONArr.Count < 1 then
@@ -213,6 +218,8 @@ begin
     fDocumentList[0] := TFirestoreDocument.CreateFromJSONObj(fJSONObj);
   end;
   fServerTimeStampUTC := Response.GetServerTime(tzUTC);
+  if not fJSONObj.TryGetValue<string>('nextPageToken', fPageToken) then
+    fPageToken := '';
 end;
 
 class function TFirestoreDocuments.IsJSONDocumentsObj(
@@ -227,10 +234,10 @@ end;
 
 destructor TFirestoreDocuments.Destroy;
 begin
-  if assigned(fJSONArr) then
-    fJSONArr.Free
-  else if assigned(fJSONObj) then
-    fJSONObj.Free;
+  if assigned(fJSONObj) then
+    fJSONObj.Free
+  else if assigned(fJSONArr) then
+    fJSONArr.Free;
   SetLength(fDocumentList, 0);
   inherited;
 end;
@@ -265,6 +272,22 @@ end;
 function TFirestoreDocuments.SkippedResults: integer;
 begin
   result := fSkippedResults;
+end;
+
+function TFirestoreDocuments.MorePagesToLoad: boolean;
+begin
+  result := not fPageToken.IsEmpty;
+end;
+
+function TFirestoreDocuments.PageToken: string;
+begin
+  result := fPageToken;
+end;
+
+procedure TFirestoreDocuments.AddPageTokenToNextQuery(Query: TQueryParams);
+begin
+  if MorePagesToLoad then
+    Query.AddPageToken(fPageToken);
 end;
 
 { TFirestoreDocument }

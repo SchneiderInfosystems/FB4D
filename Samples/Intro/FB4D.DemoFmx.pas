@@ -180,6 +180,8 @@ type
     btnLinkEMailPwd: TButton;
     btnStartTransReadOnly: TButton;
     btnStopTrans: TButton;
+    chbLimitTo10Docs: TCheckBox;
+    chbUsePageToken: TCheckBox;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -233,6 +235,7 @@ type
     procedure btnLinkEMailPwdClick(Sender: TObject);
     procedure btnStartTransReadOnlyClick(Sender: TObject);
     procedure btnStopTransClick(Sender: TObject);
+    procedure edtDocumentChangeTracking(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fStorageObject: IStorageObject;
@@ -251,6 +254,7 @@ type
     procedure OnRecDataError(const Info, ErrMsg: string);
     procedure OnRecDataStop(Sender: TObject);
     procedure ShowDocument(Doc: IFirestoreDocument);
+    procedure CheckDocument;
     procedure OnUserResp(const Info: string; Response: IFirebaseResponse);
     procedure OnUserResponse(const Info: string; User: IFirebaseUser);
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
@@ -334,6 +338,7 @@ begin
     edtCollection.Text := IniFile.ReadString('Firestore', 'Collection', '');
     edtDocument.Text := IniFile.ReadString('Firestore', 'Document', '');
     chbUseChildDoc.IsChecked := IniFile.ReadBool('Firestore', 'UseChild', false);
+    chbLimitTo10Docs.IsChecked := IniFile.ReadBool('Firestore', 'Limited', false);
     edtChildCollection.Text := IniFile.ReadString('Firestore', 'ChildCol', '');
     edtChildDocument.Text := IniFile.ReadString('Firestore', 'ChildDoc', '');
     cboDemoDocType.ItemIndex := IniFile.ReadInteger('Firestore', 'DocType', 0);
@@ -341,6 +346,7 @@ begin
   finally
     IniFile.Free;
   end;
+  CheckDocument;
 end;
 
 procedure TfmxFirebaseDemo.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -366,6 +372,7 @@ begin
     IniFile.WriteString('Firestore', 'Collection', edtCollection.Text);
     IniFile.WriteString('Firestore', 'Document', edtDocument.Text);
     IniFile.WriteBool('Firestore', 'UseChild', chbUseChildDoc.IsChecked);
+    IniFile.WriteBool('Firestore', 'Limited', chbLimitTo10Docs.IsChecked);
     IniFile.WriteString('Firestore', 'ChildCol', edtChildCollection.Text);
     IniFile.WriteString('Firestore', 'ChildDoc', edtChildDocument.Text);
     IniFile.WriteInteger('Firestore', 'DocType', cboDemoDocType.ItemIndex);
@@ -463,6 +470,11 @@ procedure TfmxFirebaseDemo.btnPasswordResetClick(Sender: TObject);
 begin
   CreateAuthenticationClass;
   fAuth.SendPasswordResetEMail(edtEmail.Text, OnUserResp, OnUserError);
+end;
+
+procedure TfmxFirebaseDemo.edtDocumentChangeTracking(Sender: TObject);
+begin
+  CheckDocument;
 end;
 
 procedure TfmxFirebaseDemo.edtEmailChange(Sender: TObject);
@@ -994,12 +1006,15 @@ begin
     exit;
   if not CheckFirestoreFields(false) then
     exit;
-  Query := nil;
   if not fTransaction.IsEmpty then
-  begin
-    Query := TQueryParams.Create;
-    Query.Add('transaction', [fTransaction]);
-  end;
+    Query := TQueryParams.CreateQueryParams.AddTransaction(fTransaction)
+  else
+    Query := nil;
+  if chbLimitTo10Docs.IsChecked then
+    Query := TQueryParams.CreateQueryParams(Query).AddPageSize(10);
+  if chbUsePageToken.IsChecked then
+    Query := TQueryParams.CreateQueryParams(Query).AddPageToken(
+      chbUsePageToken.TagString);
   if not chbUseChildDoc.IsChecked then
     fDatabase.Get([edtCollection.Text, edtDocument.Text], Query,
       OnFirestoreGet, OnFirestoreError)
@@ -1020,13 +1035,19 @@ begin
   try
     if assigned(Docs) and (Docs.Count > 0) then
     begin
-      if Docs.SkippedResults = 0 then
+      if Docs.MorePagesToLoad then
+        memFirestore.Lines.Add(Docs.Count.ToString +
+          ' documents fetched but more documents available')
+      else if (Docs.SkippedResults = 0) and (Docs.Count > 1) then
         memFirestore.Lines.Add(Docs.Count.ToString + ' documents')
-      else
+      else if Docs.SkippedResults > 0 then
         memFirestore.Lines.Add(Docs.Count.ToString + ' documents, skipped ' +
           Docs.SkippedResults.ToString);
+      chbUsePageToken.IsChecked := Docs.MorePagesToLoad;
+      chbUsePageToken.Visible := chbUsePageToken.IsChecked;
+      chbUsePageToken.TagString := Docs.PageToken;
       for c := 0 to Docs.Count - 1 do
-        ShowDocument(Docs.Document(c))
+        ShowDocument(Docs.Document(c));
     end else
       ShowDocument(nil);
   except
@@ -1335,6 +1356,15 @@ begin
     memFirestore.Lines.Add('No document found');
 end;
 
+procedure TfmxFirebaseDemo.CheckDocument;
+begin
+  chbLimitTo10Docs.Visible := edtDocument.Text.IsEmpty;
+  chbUseChildDoc.Visible := not chbLimitTo10Docs.Visible;
+  edtChildCollection.Visible := chbUseChildDoc.IsChecked;
+  edtChildDocument.Visible := chbUseChildDoc.IsChecked;
+  chbUsePageToken.Visible := false;
+end;
+
 procedure TfmxFirebaseDemo.chbUseChildDocChange(Sender: TObject);
 begin
   if chbUseChildDoc.IsChecked and edtDocument.Text.IsEmpty then
@@ -1361,12 +1391,10 @@ begin
     exit;
   if not CheckFirestoreFields(false) then
     exit;
-  Query := nil;
   if not fTransaction.IsEmpty then
-  begin
-    Query := TQueryParams.Create;
-    Query.Add('transaction', [fTransaction]);
-  end;
+    Query := TQueryParams.CreateQueryParams.AddTransaction(fTransaction)
+  else
+    Query := nil;
   // the following structured query expects a db built with 'Docs for Run Query'
   if not chbUseChildDoc.IsChecked then
     fDatabase.RunQuery(
@@ -1459,33 +1487,19 @@ begin
 end;
 
 function TfmxFirebaseDemo.GetOptions: TQueryParams;
-const
-  sQuery = '"$%s"';
 begin
   result := nil;
   if (cboOrderBy.ItemIndex = 1) and (not edtColumName.Text.IsEmpty) then
-  begin
-    result := TQueryParams.Create;
-    result.Add(cGetQueryParamOrderBy, ['"' + edtColumName.Text + '"']);
-  end
+    result := TQueryParams.CreateQueryParams.AddOrderBy(edtColumName.Text)
   else if cboOrderBy.ItemIndex > 1 then
-  begin
-    result := TQueryParams.Create;
-    result.Add(cGetQueryParamOrderBy,
-      [Format(sQuery, [cboOrderBy.Items[cboOrderBy.ItemIndex]])])
-  end;
+    result := TQueryParams.CreateQueryParams.AddOrderByType(
+      cboOrderBy.Items[cboOrderBy.ItemIndex]);
   if spbLimitToFirst.Value > 0 then
-  begin
-    if not assigned(result) then
-      result := TQueryParams.Create;
-    result.Add(cGetQueryParamLimitToFirst, [spbLimitToFirst.Value.toString]);
-  end;
+    result := TQueryParams.CreateQueryParams(result).
+      AddLimitToFirst(trunc(spbLimitToFirst.Value));
   if spbLimitToLast.Value > 0 then
-  begin
-    if not assigned(result) then
-      result := TQueryParams.Create;
-    result.Add(cGetQueryParamLimitToLast, [spbLimitToLast.Value.toString]);
-  end;
+    result := TQueryParams.CreateQueryParams(result).
+      AddLimitToLast(trunc(spbLimitToLast.Value));
 end;
 
 function TfmxFirebaseDemo.GetPathFromResParams(

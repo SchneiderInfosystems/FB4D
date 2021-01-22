@@ -316,6 +316,9 @@ type
     function Document(Ind: integer): IFirestoreDocument;
     function ServerTimeStamp(TimeZone: TTimeZone): TDateTime;
     function SkippedResults: integer;
+    function MorePagesToLoad: boolean;
+    function PageToken: string;
+    procedure AddPageTokenToNextQuery(Query: TQueryParams);
   end;
 
   TWhereOperator = (woUnspecific, woLessThan, woLessThanOrEqual,
@@ -634,6 +637,10 @@ const
   cGetQueryParamStartAt = 'startAt';
   cGetQueryParamEndAt = 'endAt';
   cGetQueryParamEqualTo = 'equalTo';
+
+  cFirestorePageSize = 'pageSize';
+  cFirestorePageToken = 'pageToken';
+  cFirestoreTransaction = 'transaction';
 
   // Vars at GetServerVariables
   cServerVariableTimeStamp = 'timestamp';

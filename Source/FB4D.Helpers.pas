@@ -125,6 +125,18 @@ type
       overload;
   end;
 
+  TQueryParamsHelper = class helper for TQueryParams
+    class function CreateQueryParams(CheckThisInstanceFirst: TQueryParams =
+      nil): TQueryParams;
+    function AddOrderBy(const FieldName: string): TQueryParams;
+    function AddOrderByType(const TypeName: string): TQueryParams;
+    function AddLimitToFirst(LimitToFirst: integer): TQueryParams;
+    function AddLimitToLast(LimitToLast: integer): TQueryParams;
+    function AddTransaction(const Transaction: string): TQueryParams;
+    function AddPageSize(PageSize: integer): TQueryParams;
+    function AddPageToken(const PageToken: string): TQueryParams;
+  end;
+
 resourcestring
   rsFBFailureIn = 'Firebase failure in %s: %s';
 
@@ -999,6 +1011,68 @@ begin
     result := (Val as TJSONObject).GetArrayItem(Ind)
   else
     raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+{ TQueryParamsHelper }
+
+class function TQueryParamsHelper.CreateQueryParams(
+  CheckThisInstanceFirst: TQueryParams): TQueryParams;
+begin
+  if Assigned(CheckThisInstanceFirst) then
+    result := CheckThisInstanceFirst
+  else
+    result := TQueryParams.Create;
+end;
+
+function TQueryParamsHelper.AddLimitToFirst(
+  LimitToFirst: integer): TQueryParams;
+begin
+  Add(cGetQueryParamLimitToFirst, [LimitToFirst.ToString]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddLimitToLast(LimitToLast: integer): TQueryParams;
+begin
+  Add(cGetQueryParamLimitToLast, [LimitToLast.ToString]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddOrderBy(const FieldName: string): TQueryParams;
+begin
+  if not FieldName.IsEmpty then
+    Add(cGetQueryParamOrderBy, ['"' + FieldName + '"']);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddOrderByType(
+  const TypeName: string): TQueryParams;
+const
+  sQuery = '"$%s"';
+begin
+  if not TypeName.IsEmpty then
+    Add(cGetQueryParamOrderBy, [Format(sQuery, [TypeName])]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddPageSize(PageSize: integer): TQueryParams;
+begin
+  Add(cFirestorePageSize, [PageSize.ToString]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddPageToken(const PageToken: string): TQueryParams;
+begin
+  if not PageToken.IsEmpty then
+    Add(cFirestorePageToken, [PageToken]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddTransaction(
+  const Transaction: string): TQueryParams;
+begin
+  if not Transaction.IsEmpty then
+    Add(cFirestoreTransaction, ['"' + Transaction + '"']);
+  result := self;
 end;
 
 end.
