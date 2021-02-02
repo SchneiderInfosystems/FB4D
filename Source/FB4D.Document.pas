@@ -550,9 +550,9 @@ var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
-  if assigned(Val) then
-    result := Val.GetValue<string>('stringValue')
-  else
+  if not assigned(Val) then
+    result := Default
+  else if not Val.TryGetValue<string>('stringValue', result) then
     result := Default;
 end;
 
@@ -573,9 +573,9 @@ var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
-  if assigned(Val) then
-    result := Val.GetValue<integer>('integerValue')
-  else
+  if not assigned(Val) then
+    result := Default
+  else if not Val.TryGetValue<integer>('integerValue', result) then
     result := Default;
 end;
 
@@ -596,9 +596,9 @@ var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
-  if assigned(Val) then
-    result := Val.GetValue<double>('doubleValue')
-  else
+  if not assigned(Val) then
+    result := Default
+  else if not Val.TryGetValue<double>('doubleValue', result) then
     result := Default;
 end;
 
@@ -620,9 +620,9 @@ var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
-  if assigned(Val) then
-    result := Val.GetValue<TDateTime>('timestampValue')
-  else
+  if not assigned(Val) then
+    result := Default
+  else if not Val.TryGetValue<TDateTime>('timestampValue', result) then
     result := Default;
 end;
 
@@ -643,9 +643,9 @@ var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
-  if assigned(Val) then
-    result := Val.GetValue<boolean>('booleanValue')
-  else
+  if not assigned(Val) then
+    result := Default
+  else if not Val.TryGetValue<boolean>('booleanValue', result) then
     result := Default;
 end;
 
@@ -684,8 +684,10 @@ var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
-  if assigned(Val) then
-    result := ConvertRefPath(Val.GetValue<string>('referenceValue'))
+  if not assigned(Val) then
+    result := Default
+  else if Val.TryGetValue<string>('referenceValue', result) then
+    result := ConvertRefPath(result)
   else
     result := Default;
 end;
