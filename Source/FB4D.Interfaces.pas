@@ -669,7 +669,7 @@ begin
     OnSucccessCase := oscFB
   else
     OnSucccessCase := oscUndef;
-  OnResponse := OnResp;
+  {$IFDEF AUTOREFCOUNT}
   OnUserResponse := nil;
   OnFetchProviders := nil;
   OnPasswordVerification := nil;
@@ -684,6 +684,8 @@ begin
   OnStorage := nil;
   OnDelStorage := nil;
   OnFunctionSuccess := nil;
+  {$ENDIF}
+  OnResponse := OnResp;
 end;
 
 constructor TOnSuccess.CreateUser(OnUserResp: TOnUserResponse);
