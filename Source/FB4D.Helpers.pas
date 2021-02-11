@@ -403,7 +403,7 @@ class function TFirebaseHelpers.CreateAutoID: string;
 
   function GetBase62(b: Byte): char;
   begin
-    result := cBase62[b mod 62]; // reduce 64 to 62
+    result := cBase62[low(cBase62) + b mod 62]; // reduce 64 to 62
   end;
 
 var
