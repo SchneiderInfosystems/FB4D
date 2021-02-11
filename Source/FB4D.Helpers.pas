@@ -305,9 +305,15 @@ end;
 
 class procedure TFirebaseHelpers.Log(msg: string);
 begin
+  if AppIsTerminated then
+    exit;
 {$IF Declared(FMX)}
+  {$IFDEF LINUX}
+  writeln(msg);  // Workaround for RSP-32303
+  {$ELSE}
   FMX.Types.Log.d(msg, []);
   // there is a bug in DE 10.2 when the wrong method is calling?
+  {$ENDIF}
 {$ELSEIF Declared(VCL)}
   OutputDebugString(PChar(msg));
 {$ELSE}
