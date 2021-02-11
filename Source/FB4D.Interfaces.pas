@@ -176,6 +176,7 @@ type
     function GetServerTime(TimeZone: TTimeZone): TDateTime;
     function GetOnSuccess: TOnSuccess;
     function GetOnError: TOnRequestError;
+    function HeaderValue(const HeaderName: string): string;
     property OnSuccess: TOnSuccess read GetOnSuccess;
     property OnError: TOnRequestError read GetOnError;
    end;

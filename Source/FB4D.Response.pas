@@ -68,6 +68,7 @@ type
     function ErrorMsgOrStatusText: string;
     function GetOnError: TOnRequestError;
     function GetOnSuccess: TOnSuccess;
+    function HeaderValue(const HeaderName: string): string;
   end;
 
 implementation
@@ -304,6 +305,13 @@ begin
     else
       EFirebaseResponse.CreateFmt(rsTimeZoneIsNotSupported, [Ord(TimeZone)]);
   end;
+end;
+
+function TFirebaseResponse.HeaderValue(const HeaderName: string): string;
+begin
+  result := '';
+  if assigned(fHttpResp) then
+    result := fHttpResp.HeaderValue[HeaderName];
 end;
 
 function TFirebaseResponse.GetOnError: TOnRequestError;
