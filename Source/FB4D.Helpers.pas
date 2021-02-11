@@ -47,9 +47,9 @@ type
     class function EncodeQueryParams(QueryParams: TQueryParams): string;
     class function EncodeQueryParamsWithToken(QueryParams: TQueryParams;
       const EncodedToken: string): string;
-    class function EncodeResourceParams(ResourceParams: TStringDynArray): string;
-    class function AddParamToResParams(ResourceParams: TStringDynArray;
-      const Param: string): TStringDynArray;
+    class function EncodeResourceParams(Params: TRequestResourceParam): string;
+    class function AddParamToResParams(Params: TRequestResourceParam;
+      const Param: string): TRequestResourceParam;
     class function EncodeToken(const Token: string): string;
     class function ArrStrToCommaStr(Arr: array of string): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
@@ -241,7 +241,7 @@ begin
 end;
 
 class function TFirebaseHelpers.EncodeResourceParams(
-  ResourceParams: TStringDynArray): string;
+  Params: TRequestResourceParam): string;
 const
   PathUnsafeChars: TURLEncoding.TUnsafeChars =
     [Ord('"'), Ord('<'), Ord('>'), Ord('^'), Ord('`'), Ord('{'), Ord('}'),
@@ -253,9 +253,9 @@ var
   i: integer;
 begin
   result := '';
-  for i := low(ResourceParams) to high(ResourceParams) do
-    result := result + '/' + TNetEncoding.URL.Encode(ResourceParams[i],
-      PathUnsafeChars, Option);
+  for i := low(Params) to high(Params) do
+    result := result + '/' + TNetEncoding.URL.Encode(Params[i], PathUnsafeChars,
+      Option);
 end;
 
 class function TFirebaseHelpers.EncodeToken(const Token: string): string;
@@ -316,14 +316,14 @@ begin
 end;
 
 class function TFirebaseHelpers.AddParamToResParams(
-  ResourceParams: TStringDynArray; const Param: string): TStringDynArray;
+  Params: TRequestResourceParam; const Param: string): TRequestResourceParam;
 var
   c: integer;
 begin
-  SetLength(result, length(ResourceParams) + 1);
-  for c := low(ResourceParams) to high(ResourceParams) do
-    result[c] := ResourceParams[c];
-  result[length(ResourceParams)] := Param;
+  SetLength(result, length(Params) + 1);
+  for c := low(Params) to high(Params) do
+    result[c] := Params[c];
+  result[length(Params)] := Param;
 end;
 
 class function TFirebaseHelpers.AppIsTerminated: boolean;
