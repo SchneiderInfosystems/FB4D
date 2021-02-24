@@ -19,7 +19,7 @@ This library requires at least Delphi 10 Seattle. The sample projects are develo
 #### Hint: The project _FB4D_samples_VCL_ cannot be compiled with Delphi 10.1 Berlin and Seattle because of missing TCardPanel. 
 The underlying FraSelfRegistration is not affected by this and can be used from Delphi 10 Seattle.  
 
-Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi)
+Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
 
 ### Supported Platforms
 
