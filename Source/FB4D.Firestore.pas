@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -30,8 +30,8 @@ uses
   System.Net.HttpClient, System.Net.URLClient,
   System.Generics.Collections,
   REST.Types,
-  FB4D.Interfaces, FB4D.Response, FB4D.Request,
-  FB4D.Document;
+  FB4D.Interfaces, FB4D.Response, FB4D.Request, FB4D.Document,
+  FB4D.FireStore.Listener;
 
 const
   DefaultDatabaseID = '(default)';
@@ -42,6 +42,7 @@ type
     fProjectID: string;
     fDatabaseID: string;
     fAuth: IFirebaseAuthentication;
+    fListener: TListenerThread;
     function BaseURI: string;
     procedure OnQueryResponse(const RequestID: string;
       Response: IFirebaseResponse);
@@ -60,6 +61,7 @@ type
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
       const DatabaseID: string = DefaultDatabaseID);
+    destructor Destroy; override;
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil); overload;
@@ -98,6 +100,18 @@ type
       OnDeleteResp: TOnFirebaseResp; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
+    // Listener subscription
+    function SubscribeDocument(DocPath: TRequestResourceParam;
+      OnChangedDoc: TOnChangedDocument;
+      OnDeletedDoc: TOnDeletedDocument): cardinal;
+    function SubscribeQuery(Query: IStructuredQuery;
+      OnChangedDoc: TOnChangedDocument;
+      OnDeletedDoc: TOnDeletedDocument): cardinal;
+    procedure Unsubscribe(TargetID: cardinal);
+    procedure StartListener(OnStopListening: TOnStopListenEvent;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil);
+    procedure StopListener;
+    // Transaction
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
       OnRequestError: TOnRequestError);
     function BeginReadOnlyTransactionSynchronous: TTransaction;
@@ -203,6 +217,14 @@ begin
   fProjectID := ProjectID;
   fAuth := Auth;
   fDatabaseID := DatabaseID;
+  fListener := TListenerThread.Create(ProjectID, DatabaseID, Auth);
+end;
+
+destructor TFirestoreDatabase.Destroy;
+begin
+ if fListener.IsRunning then
+    fListener.StopListener;
+  inherited;
 end;
 
 function TFirestoreDatabase.BaseURI: string;
@@ -665,6 +687,39 @@ begin
   end;
 end;
 
+{$REGION 'Listener subscription'}
+function TFirestoreDatabase.SubscribeDocument(DocPath: TRequestResourceParam;
+  OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument): cardinal;
+begin
+  result := fListener.SubscribeDocument(DocPath, OnChangedDoc, OnDeletedDoc);
+end;
+
+function TFirestoreDatabase.SubscribeQuery(Query: IStructuredQuery;
+  OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument): cardinal;
+begin
+  result := fListener.SubscribeQuery(Query, OnChangedDoc, OnDeletedDoc);
+end;
+
+procedure TFirestoreDatabase.Unsubscribe(TargetID: cardinal);
+begin
+  fListener.Unsubscribe(TargetID);
+end;
+
+procedure TFirestoreDatabase.StartListener(OnStopListening: TOnStopListenEvent;
+  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent);
+begin
+  fListener.RegisterEvents(OnStopListening, OnError, OnAuthRevoked);
+  fListener.Start;
+end;
+
+procedure TFirestoreDatabase.StopListener;
+begin
+  fListener.StopListener;
+  // Recreate thread because a thread cannot be restarted
+//  fListener.Free;
+  fListener := TListenerThread.Create(fProjectID, fDatabaseID, fAuth);
+end;
+{$ENDREGION}
 
 { TStructuredQuery }
 

@@ -354,6 +354,11 @@ type
     function GetInfo: string;
   end;
 
+  TOnChangedDocument = procedure(ChangedDocument: IFirestoreDocument) of object;
+  TOnDeletedDocument = procedure(const DeleteDocumentPath: string;
+    TimeStamp: TDateTime) of object;
+  EFirestoreListener = class(Exception);
+
   IFirestoreDatabase = interface(IInterface)
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
@@ -393,6 +398,18 @@ type
       OnDeleteResponse: TOnFirebaseResp; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
+    // Listener subscription
+    function SubscribeDocument(DocumentPath: TRequestResourceParam;
+      OnChangedDoc: TOnChangedDocument;
+      OnDeletedDoc: TOnDeletedDocument): cardinal;
+    function SubscribeQuery(Query: IStructuredQuery;
+      OnChangedDoc: TOnChangedDocument;
+      OnDeletedDoc: TOnDeletedDocument): cardinal;
+    procedure Unsubscribe(TargetID: cardinal);
+    procedure StartListener(OnStopListening: TOnStopListenEvent;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil);
+    procedure StopListener;
+    // Transaction
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
       OnRequestError: TOnRequestError);
     function BeginReadOnlyTransactionSynchronous: TTransaction;
