@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -26,7 +26,7 @@ unit FB4D.Authentication;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.Types,
+  System.Classes, System.SysUtils, System.Types, System.SyncObjs,
   System.JSON, System.JSON.Types,
   System.Net.HttpClient,
   System.Generics.Collections,
@@ -43,6 +43,7 @@ type
       TSignType = (stNewUser, stLogin, stAnonymousLogin);
     var
       fApiKey: string;
+      fCSForToken: TCriticalSection;
       fAuthenticated: boolean;
       fToken: string;
       {$IFDEF TOKENJWT}
@@ -50,6 +51,7 @@ type
       {$ENDIF}
       fExpiresAt: TDateTime;
       fRefreshToken: string;
+      fTokenRefreshCount: cardinal;
     function SignWithEmailAndPasswordSynchronous(SignType: TSignType;
       const Email: string = ''; const Password: string = ''): IFirebaseUser;
     procedure SignWithEmailAndPassword(SignType: TSignType; const Info: string;
@@ -66,8 +68,10 @@ type
       Response: IFirebaseResponse);
     procedure CheckAndRefreshTokenResp(const RequestID: string;
       Response: IFirebaseResponse);
+    procedure AddPairForTokenId(Data: TJSONObject);
   public
     constructor Create(const ApiKey: string);
+    destructor Destroy; override;
     // Create new User with email and password
     procedure SignUpWithEmailAndPassword(const Email,
       Password: string; OnUserResponse: TOnUserResponse;
@@ -139,7 +143,8 @@ type
       OnError: TOnRequestError); overload;
     procedure RefreshToken(const LastRefreshToken: string;
       OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
-    function CheckAndRefreshTokenSynchronous: boolean;
+    function CheckAndRefreshTokenSynchronous(
+      IgnoreExpiryCheck: boolean = false): boolean;
     // Getter methods
     function Authenticated: boolean;
     function Token: string;
@@ -149,6 +154,7 @@ type
     function TokenExpiryDT: TDateTime;
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
+    function GetTokenRefreshCount: cardinal;
     property ApiKey: string read fApiKey;
   end;
 
@@ -243,6 +249,14 @@ constructor TFirebaseAuthentication.Create(const ApiKey: string);
 begin
   inherited Create;
   fApiKey := ApiKey;
+  fCSForToken := TCriticalSection.Create;
+  fTokenRefreshCount := 1; // begin with 1 and use 0 as sentinel
+end;
+
+destructor TFirebaseAuthentication.Destroy;
+begin
+  fCSForToken.Free;
+  inherited;
 end;
 
 procedure TFirebaseAuthentication.SignInAnonymously(
@@ -270,6 +284,17 @@ begin
   result := SignWithEmailAndPasswordSynchronous(stLogin, Email, Password);
 end;
 
+procedure TFirebaseAuthentication.AddPairForTokenId(Data: TJSONObject);
+begin
+  fCSForToken.Acquire;
+  try
+    if not fToken.IsEmpty then
+      Data.AddPair(TJSONPair.Create('idToken', fToken));
+  finally
+    fCSForToken.Release;
+  end;
+end;
+
 procedure TFirebaseAuthentication.LinkOrSignInWithOAuthCredentials(
   const OAuthTokenName, OAuthToken, ProviderID, RequestUri: string;
   OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
@@ -287,8 +312,7 @@ begin
     Data.AddPair(TJSONPair.Create('postBody',
       OAuthTokenName + '=' + OAuthToken + '&providerId=' + ProviderID));
     Data.AddPair(TJSONPair.Create('requestUri', requestUri));
-    if not fToken.IsEmpty then
-      Data.AddPair(TJSONPair.Create('idToken', fToken));
+    AddPairForTokenId(Data);
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
     Params.Add('key', [ApiKey]);
@@ -319,22 +343,27 @@ begin
     Data.AddPair(TJSONPair.Create('postBody',
       OAuthTokenName + '=' + OAuthToken + '&providerId=' + ProviderID));
     Data.AddPair(TJSONPair.Create('requestUri', requestUri));
-    if not fToken.IsEmpty then
-      Data.AddPair(TJSONPair.Create('idToken', fToken));
+    AddPairForTokenId(Data);
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
     Params.Add('key', [ApiKey]);
     Response := Request.SendRequestSynchronous(['accounts:signInWithIdp'],
       rmPost, Data, Params, tmNoToken);
     Response.CheckForJSONObj;
-    fAuthenticated := true;
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
-    fToken := User.fToken;
-    {$IFDEF TOKENJWT}
-    fTokenJWT := User.fTokenJWT;
-    {$ENDIF}
-    fExpiresAt := User.fExpiresAt;
-    fRefreshToken := User.fRefreshToken;
+    fCSForToken.Acquire;
+    try
+      fAuthenticated := true;
+      fToken := User.fToken;
+      {$IFDEF TOKENJWT}
+      fTokenJWT := User.fTokenJWT;
+      {$ENDIF}
+      fExpiresAt := User.fExpiresAt;
+      fRefreshToken := User.fRefreshToken;
+      inc(fTokenRefreshCount);
+    finally
+      fCSForToken.Release;
+    end;
     result := User;
   finally
     Response := nil;
@@ -346,12 +375,18 @@ end;
 
 procedure TFirebaseAuthentication.SignOut;
 begin
-  fToken := '';
-  {$IFDEF TOKENJWT}
-  fTokenJWT := nil;
-  {$ENDIF}
-  fRefreshToken := '';
-  fAuthenticated := false;
+  fCSForToken.Acquire;
+  try
+    fToken := '';
+    {$IFDEF TOKENJWT}
+    fTokenJWT := nil;
+    {$ENDIF}
+    fRefreshToken := '';
+    fAuthenticated := false;
+    inc(fTokenRefreshCount);
+  finally
+    fCSForToken.Release;
+  end;
 end;
 
 procedure TFirebaseAuthentication.SendEmailVerification(OnResponse: TOnFirebaseResp;
@@ -367,7 +402,7 @@ begin
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('requestType', 'VERIFY_EMAIL'));
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['getOobConfirmationCode'], rmPost, Data, Params,
       tmNoToken, OnResponse, OnError, TOnSuccess.Create(nil));
@@ -389,7 +424,7 @@ begin
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('requestType', 'VERIFY_EMAIL'));
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
     Response := Request.SendRequestSynchronous(['getOobConfirmationCode'],
       rmPost, Data, Params, tmNoToken);
@@ -424,14 +459,23 @@ var
 begin
   try
     Response.CheckForJSONObj;
-    fAuthenticated := true;
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
-    fToken := User.Token;
-    {$IFDEF TOKENJWT}
-    fTokenJWT := User.TokenJWT;
-    {$ENDIF}
-    fExpiresAt := User.ExpiresAt;
-    fRefreshToken := User.RefreshToken;
+    fCSForToken.Acquire;
+    try
+      fAuthenticated := true;
+      if fToken <> User.Token then
+      begin
+        fToken := User.Token;
+        {$IFDEF TOKENJWT}
+        fTokenJWT := User.TokenJWT;
+        {$ENDIF}
+        inc(fTokenRefreshCount);
+      end;
+      fExpiresAt := User.ExpiresAt;
+      fRefreshToken := User.RefreshToken;
+    finally
+      fCSForToken.Release;
+    end;
     if assigned(Response.OnSuccess.OnUserResponse) then
       Response.OnSuccess.OnUserResponse(RequestID, User);
   except
@@ -516,14 +560,23 @@ begin
     Response := Request.SendRequestSynchronous([ResourceStr[SignType]], rmPost,
       Data, Params, tmNoToken);
     Response.CheckForJSONObj;
-    fAuthenticated := true;
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
-    fToken := User.fToken;
-    {$IFDEF TOKENJWT}
-    fTokenJWT := User.fTokenJWT;
-    {$ENDIF}
-    fExpiresAt := User.fExpiresAt;
-    fRefreshToken := User.fRefreshToken;
+    fCSForToken.Acquire;
+    try
+      fAuthenticated := true;
+      if fToken <> User.fToken then
+      begin
+        fToken := User.fToken;
+        {$IFDEF TOKENJWT}
+        fTokenJWT := User.fTokenJWT;
+        {$ENDIF}
+        inc(fTokenRefreshCount);
+      end;
+      fExpiresAt := User.fExpiresAt;
+      fRefreshToken := User.fRefreshToken;
+    finally
+      fCSForToken.Release;
+    end;
     result := User;
   finally
     Response := nil;
@@ -649,7 +702,7 @@ begin
     Format(rsDeleteProviders, [Providers.CommaText]));
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     DelArr := TJSONArray.Create;
     for Provider in Providers do
       DelArr.Add(Provider);
@@ -695,7 +748,7 @@ begin
   Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     DelArr := TJSONArray.Create;
     for Provider in Providers do
       DelArr.Add(Provider);
@@ -718,7 +771,6 @@ begin
     Data.Free;
   end;
 end;
-
 
 procedure TFirebaseAuthentication.SendPasswordResetEMail(const Email: string;
   OnResponse: TOnFirebaseResp; OnError: TOnRequestError);
@@ -913,7 +965,7 @@ begin
   Params := TQueryParams.Create;
   Info := TStringList.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'FALSE'));
     if not EMail.IsEmpty then
     begin
@@ -961,7 +1013,7 @@ begin
   Params := TQueryParams.Create;
   Info := TStringList.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'FALSE'));
     if not EMail.IsEmpty then
     begin
@@ -1012,7 +1064,7 @@ begin
   Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'TRUE'));
     Data.AddPair(TJSONPair.Create('email', EMail));
     Data.AddPair(TJSONPair.Create('password', Password));
@@ -1038,7 +1090,7 @@ begin
   Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL);
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'TRUE'));
     Data.AddPair(TJSONPair.Create('email', EMail));
     Data.AddPair(TJSONPair.Create('password', Password));
@@ -1069,7 +1121,7 @@ begin
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
     Response := Request.SendRequestSynchronous(['deleteAccount'], rmPost, Data,
       Params, tmNoToken);
@@ -1096,7 +1148,7 @@ begin
   Data := TJSONObject.Create;
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
     Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, rsDeleteCurrentUser);
     Request.SendRequest(['deleteAccount'], rmPost, Data, Params, tmNoToken,
@@ -1118,7 +1170,7 @@ begin
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL, rsRetriveUserList);
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['getAccountInfo'], rmPost, Data, Params, tmNoToken,
       OnUserListResp, OnError, TOnSuccess.CreateGetUserData(OnGetUserData));
@@ -1142,7 +1194,7 @@ begin
   Request := TFirebaseRequest.Create(GOOGLE_PASSWORD_URL);
   Params := TQueryParams.Create;
   try
-    Data.AddPair(TJSONPair.Create('idToken', fToken));
+    Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
     Response := Request.SendRequestSynchronous(['getAccountInfo'], rmPost, Data,
       Params, tmNoToken);
@@ -1246,25 +1298,26 @@ var
 begin
   try
     Response.CheckForJSONObj;
-    fAuthenticated := true;
     NewToken := Response.GetContentAsJSONObj;
+    fCSForToken.Acquire;
     try
+      fAuthenticated := true;
       if not NewToken.TryGetValue('access_token', fToken) then
         raise EFirebaseUser.Create('access_token not found');
       {$IFDEF TOKENJWT}
       fTokenJWT := TTokenJWT.Create(fToken);
       {$ENDIF}
+      inc(fTokenRefreshCount);
       if NewToken.TryGetValue('expires_in', ExpiresInSec) then
         fExpiresAt := now + ExpiresInSec / 24 / 3600
       else
         fExpiresAt := now;
       if not NewToken.TryGetValue('refresh_token', fRefreshToken) then
-      begin
         fRefreshToken := ''
-      end
       else if assigned(Response.OnSuccess.OnRefreshToken) then
         Response.OnSuccess.OnRefreshToken(true);
     finally
+      fCSForToken.Release;
       NewToken.Free;
     end;
   except
@@ -1276,7 +1329,8 @@ begin
   end;
 end;
 
-function TFirebaseAuthentication.CheckAndRefreshTokenSynchronous: boolean;
+function TFirebaseAuthentication.CheckAndRefreshTokenSynchronous(
+  IgnoreExpiryCheck: boolean = false): boolean;
 var
   Data: TJSONObject;
   Params: TQueryParams;
@@ -1286,7 +1340,18 @@ var
   ExpiresInSec: integer;
 begin
   if not NeedTokenRefresh then
-    exit(false);
+  begin
+    {$IFDEF DEBUG}
+    TFirebaseHelpers.Log(
+      'CheckAndRefreshTokenSynchronous failed because token not yet (' +
+      TimeToStr(now) + ') expired: ' + TimeToStr(fExpiresAt));
+    {$ENDIF}
+    if not IgnoreExpiryCheck then
+      exit(false)
+    else
+      TFirebaseHelpers.Log(
+        'CheckAndRefreshTokenSynchronous failed ignored!!!');
+  end;
   result := false;
   fAuthenticated := false;
   Data := TJSONObject.Create;
@@ -1299,14 +1364,16 @@ begin
     Response := Request.SendRequestSynchronous([], rmPost, Data, Params,
       tmNoToken);
     Response.CheckForJSONObj;
-    fAuthenticated := true;
     NewToken := Response.GetContentAsJSONObj;
+    fCSForToken.Acquire;
     try
+      fAuthenticated := true;
       if not NewToken.TryGetValue('access_token', fToken) then
         raise EFirebaseAuthentication.Create('access_token not found');
       {$IFDEF TOKENJWT}
       fTokenJWT := TTokenJWT.Create(fToken);
       {$ENDIF}
+      inc(fTokenRefreshCount);
       if NewToken.TryGetValue('expires_in', ExpiresInSec) then
         fExpiresAt := now + ExpiresInSec / 24 / 3600
       else
@@ -1316,6 +1383,7 @@ begin
       else
         exit(true);
     finally
+      fCSForToken.Release;
       NewToken.Free;
     end;
   finally
@@ -1335,31 +1403,61 @@ function TFirebaseAuthentication.NeedTokenRefresh: boolean;
 const
   safetyMargin = 5 / 3600 / 24; // 5 sec
 begin
-  if fAuthenticated then
-    result := now + safetyMargin > fExpiresAt
-  else
-    result := false;
+  fCSForToken.Acquire;
+  try
+    if fAuthenticated then
+      result := now + safetyMargin > fExpiresAt
+    else
+      result := false;
+  finally
+    fCSForToken.Release;
+  end;
+end;
+
+function TFirebaseAuthentication.GetTokenRefreshCount: cardinal;
+begin
+  result := fTokenRefreshCount;
 end;
 
 function TFirebaseAuthentication.GetRefreshToken: string;
 begin
-  result := fRefreshToken;
+  fCSForToken.Acquire;
+  try
+    result := fRefreshToken;
+  finally
+    fCSForToken.Release;
+  end;
 end;
 
 function TFirebaseAuthentication.Token: string;
 begin
-  result := fToken;
+  fCSForToken.Acquire;
+  try
+    result := fToken;
+  finally
+    fCSForToken.Release;
+  end;
 end;
 
 function TFirebaseAuthentication.TokenExpiryDT: TDateTime;
 begin
-  result := fExpiresAt;
+  fCSForToken.Acquire;
+  try
+    result := fExpiresAt;
+  finally
+    fCSForToken.Release;
+  end;
 end;
 
 {$IFDEF TOKENJWT}
 function TFirebaseAuthentication.TokenJWT: ITokenJWT;
 begin
-  result := fTokenJWT;
+  fCSForToken.Acquire;
+  try
+    result := fTokenJWT;
+  finally
+    fCSForToken.Release;
+  end;
 end;
 {$ENDIF}
 

@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -550,7 +550,8 @@ type
       OnError: TOnRequestError); overload;
     procedure RefreshToken(const LastRefreshToken: string;
       OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
-    function CheckAndRefreshTokenSynchronous: boolean;
+    function CheckAndRefreshTokenSynchronous(
+      IgnoreExpiryCheck: boolean = false): boolean;
     // Getter methods
     function Authenticated: boolean;
     function Token: string;
@@ -560,6 +561,7 @@ type
     function TokenExpiryDT: TDateTime;
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
+    function GetTokenRefreshCount: cardinal;
   end;
 
   EFirebaseFunctions = class(Exception);
