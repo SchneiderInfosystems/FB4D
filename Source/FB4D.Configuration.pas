@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -64,11 +64,13 @@ type
     /// </summary>
     constructor Create(const GoogleServicesFile: string); overload;
 
+    function ProjectID: string;
     function Auth: IFirebaseAuthentication;
     function RealTimeDB: IRealTimeDB;
     function Database: IFirestoreDatabase;
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
+    class function GetLibVersionInfo: string;
   end;
 
 implementation
@@ -77,6 +79,8 @@ uses
   System.IOUtils,
   FB4D.Authentication, FB4D.RealTimeDB, FB4D.Firestore, FB4D.Storage,
   FB4D.Functions;
+
+{$I FB4DVersion.inc}
 
 { TFirebaseConfiguration }
 
@@ -153,6 +157,17 @@ begin
   if not assigned(fFunctions) then
     fFunctions := TFirebaseFunctions.Create(fProjectID, fAuth);
   result := fFunctions;
+end;
+
+function TFirebaseConfiguration.ProjectID: string;
+begin
+  result := fProjectID;
+end;
+
+class function TFirebaseConfiguration.GetLibVersionInfo: string;
+begin
+  result := Format('FB4D V%d.%d.%d.%d',
+    [cLibMajorVersion, cLibMinorVersion, cLibReleaseVersion, cLibBuildVersion]);
 end;
 
 end.

@@ -625,6 +625,7 @@ type
   /// </summary>
   EFirebaseConfiguration = class(Exception);
   IFirebaseConfiguration = interface(IInterface)
+    function ProjectID: string;
     function Auth: IFirebaseAuthentication;
     function RealTimeDB: IRealTimeDB;
     function Database: IFirestoreDatabase;
