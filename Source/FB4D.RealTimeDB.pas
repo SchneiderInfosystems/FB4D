@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -516,7 +516,8 @@ begin
           begin
             if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
               fRequireTokenRenew := false;
-            if assigned(OnAuthRevoked) then
+            if assigned(OnAuthRevoked) and
+               not TFirebaseHelpers.AppIsTerminated then
               if DoNotSynchronizeEvents then
                 OnAuthRevoked(not fRequireTokenRenew)
               else
@@ -667,7 +668,9 @@ begin
                 if assigned(JSONObj) then
                 try
                   fListenPartialResp := '';
-                  fOnListenEvent(EventName, Params, JSONObj);
+                  if assigned(fOnListenEvent) and
+                     not TFirebaseHelpers.AppIsTerminated then
+                    fOnListenEvent(EventName, Params, JSONObj);
                 finally
                   JSONObj.Free;
                 end;
@@ -681,7 +684,7 @@ begin
     on e: Exception do
     begin
       ErrMsg := e.Message;
-      if assigned(fOnListenError) then
+      if assigned(fOnListenError) and not TFirebaseHelpers.AppIsTerminated then
         if fDoNotSynchronizeEvents then
           fOnListenError(rsEvtParserFailed, ErrMsg)
         else
@@ -752,17 +755,19 @@ begin
             if assigned(JSONObj) then
             begin
               fListenPartialResp := '';
-              if fDoNotSynchronizeEvents then
-              begin
-                fOnListenEvent(EventName, Params, JSONObj);
-                JSONObj.Free;
-              end else
-                TThread.Queue(nil,
-                  procedure
-                  begin
-                    fOnListenEvent(EventName, Params, JSONObj);
-                    JSONObj.Free;
-                  end);
+              if assigned(fOnListenEvent) and
+                 not TFirebaseHelpers.AppIsTerminated then
+                if fDoNotSynchronizeEvents then
+                begin
+                  fOnListenEvent(EventName, Params, JSONObj);
+                  JSONObj.Free;
+                end else
+                  TThread.Queue(nil,
+                    procedure
+                    begin
+                      fOnListenEvent(EventName, Params, JSONObj);
+                      JSONObj.Free;
+                    end);
             end;
           end;
         end;
@@ -773,7 +778,7 @@ begin
     on e: Exception do
     begin
       ErrMsg := e.Message;
-      if assigned(fOnListenError) then
+      if assigned(fOnListenError) and not TFirebaseHelpers.AppIsTerminated then
         if fDoNotSynchronizeEvents then
           fOnListenError(rsEvtParserFailed, ErrMsg)
         else
