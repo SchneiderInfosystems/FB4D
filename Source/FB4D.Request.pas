@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -279,10 +279,8 @@ var
   Client: TRestClient;
   Request: TRestRequest;
   Response: TRESTResponse;
-  SourceStr: TStringStream;
   RequestID: string;
 begin
-  SourceStr := nil;
   Client := TRestClient.Create(fBaseURI);
   Request := TRestRequest.Create(Client);
   Response := TRESTResponse.Create(Client);
@@ -295,10 +293,7 @@ begin
     Request.AddAuthParameter('Authorization', 'Bearer ' + EncodeToken,
       pkHTTPHEADER, [poDoNotEncode]);
   if Data <> nil then
-  begin
-    SourceStr := TStringStream.Create(Data.ToJSON);
-    Request.AddBody(SourceStr, TRESTContentType.ctAPPLICATION_JSON);
-  end;
+    Request.Body.Add(Data.ToJSON, TRESTContentType.ctAPPLICATION_JSON);
   if assigned(fAuth) and (TokenMode = tmAuthParam) and fAuth.Authenticated then
     Request.Resource := TFirebaseHelpers.EncodeResourceParams(ResourceParams) +
       TFirebaseHelpers.EncodeQueryParamsWithToken(QueryParams, EncodeToken)
@@ -329,7 +324,6 @@ begin
                 [RequestID, e.Message]));
         end;
       finally
-        FreeAndNil(SourceStr);
         FreeAndNil(Response);
         FreeAndNil(Request);
         FreeAndNil(Client);
@@ -351,7 +345,6 @@ begin
             OnRequestError(RequestID, Exception(Obj).Message);
         end;
       finally
-        FreeAndNil(SourceStr);
         FreeAndNil(Response);
         FreeAndNil(Request);
         FreeAndNil(Client);
@@ -369,7 +362,6 @@ var
   Client: TRestClient;
   Request: TRestRequest;
   Response: TRESTResponse;
-  SourceStr: TStringStream;
   RequestID: string;
 begin
   Client := TRestClient.Create(fBaseURI);
@@ -415,7 +407,6 @@ begin
                 [RequestID, e.Message]));
         end;
       finally
-        FreeAndNil(SourceStr);
         FreeAndNil(Response);
         FreeAndNil(Request);
         FreeAndNil(Client);
@@ -428,7 +419,6 @@ begin
         if Assigned(Obj) and (Obj is Exception) and assigned(OnRequestError) then
           OnRequestError(RequestID, Exception(Obj).Message);
       finally
-        FreeAndNil(SourceStr);
         FreeAndNil(Response);
         FreeAndNil(Request);
         FreeAndNil(Client);
@@ -474,7 +464,7 @@ end;
 
 procedure TFirebaseRequest.RESTRequestAfterExecute(Sender: TCustomRESTRequest);
 begin
-  {$IFDEF VER320} // In DE 10.1 and former this leads to an AV
+  {$IFNDEF VER320} // In DE 10.1 and former this leads to an AV
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log(' Exe: ' +
     GetEnumName(TypeInfo(TRESTRequestMethod), ord(Sender.Method)) + ': ' +
