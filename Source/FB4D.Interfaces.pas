@@ -265,6 +265,8 @@ type
     fftMap);
   IFirestoreDocument = interface(IInterface)
     function DocumentName(FullPath: boolean): string;
+    function DocumentFullPath: TRequestResourceParam;
+    function DocumentPathWithinDatabase: TRequestResourceParam;
     function CreateTime: TDateTime;
     function UpdateTime: TDatetime;
     function CountFields: integer;

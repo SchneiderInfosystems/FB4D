@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -54,6 +54,8 @@ type
     constructor CreateFromJSONObj(JSONObj: TJSONObject); overload;
     destructor Destroy; override;
     function DocumentName(FullPath: boolean): string;
+    function DocumentFullPath: TRequestResourceParam;
+    function DocumentPathWithinDatabase: TRequestResourceParam;
     function CreateTime: TDateTime;
     function UpdateTime: TDatetime;
     function CountFields: integer;
@@ -137,6 +139,8 @@ resourcestring
   rsInvalidDocNode = 'Invalid document node: %s';
   rsNotObj = 'not an object: ';
   rsInvalidDocArr = 'Invalid document - not an array: %s';
+  rsInvalidDocumentPath =
+    'Invalid document path "%s", expected "projects/*/database/*/documents"';
   rsDocIndexOutOfBound = 'Index out of bound for document list';
   rsInvalidDocNodeCountLess3 = 'Invalid document - node count less 3';
   rsJSONFieldNameMissing = 'JSON field name missing';
@@ -295,6 +299,7 @@ end;
 constructor TFirestoreDocument.Create(const Name: string);
 begin
   inherited Create;
+  fDocumentName := Name;
   fJSONObjOwned := true;
   fJSONObj := TJSONObject.Create;
   fJSONObj.AddPair('name', Name);
@@ -370,6 +375,7 @@ var
   FieldsObj: TJSONObject;
   Ind: integer;
 begin
+  Assert(Assigned(fJSONObj), 'Missing JSON Object for document in AddOrUpdateField');
   if not fJSONObj.TryGetValue('fields', FieldsObj) then
   begin
     FieldsObj := TJSONObject.Create;
@@ -429,6 +435,27 @@ begin
   result := fDocumentName;
   if not FullPath then
     result := result.SubString(result.LastDelimiter('/') + 1);
+end;
+
+function TFirestoreDocument.DocumentFullPath: TRequestResourceParam;
+begin
+  result := fDocumentName.Split(['/']);
+end;
+
+function TFirestoreDocument.DocumentPathWithinDatabase: TRequestResourceParam;
+var
+  RemovedProjAndDB: string;
+  c, p: integer;
+begin
+  p := 0;
+  for c := 1 to 5 do
+  begin
+    p := Pos('/', fDocumentName, p + 1);
+    if p = 0 then
+      raise EFirestoreDocument.CreateFmt(rsInvalidDocumentPath, [fDocumentName]);
+  end;
+  RemovedProjAndDB := copy(fDocumentName, p + 1);
+  result := RemovedProjAndDB.Split(['/']);
 end;
 
 function TFirestoreDocument.FieldName(Ind: integer): string;
