@@ -27,7 +27,7 @@ Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.
 
 #### Limitation on Linux64
 
-Due to a bug in the Linux RTL, all HTTPRequests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses.
+Due to a bug in the Linux RTL, all HTTPRequests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. This bug affects all Delphi version which supports Linux64 up to the newest Delphi 10.4.2. 
 
 [For more information check and vote for RSP-33177](https://quality.embarcadero.com/browse/RSP-33177)
 
