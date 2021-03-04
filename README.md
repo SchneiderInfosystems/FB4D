@@ -19,9 +19,17 @@ This library requires at least Delphi 10 Seattle. The sample projects are develo
 #### Hint: The project _FB4D_samples_VCL_ cannot be compiled with Delphi 10.1 Berlin and Seattle because of missing TCardPanel. 
 The underlying FraSelfRegistration is not affected by this and can be used from Delphi 10 Seattle.  
 
+Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
+
 ### Supported Platforms
 
 **FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac64/32, Linux64 by using FMXLinux, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verifcation requires the installation of the OpenSSL libraries). For more information about using OpenSSL see the [installation of OpenSSL](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D#install-openssl)
+
+#### Limitation on Linux64
+
+Due to a bug in the Linux RTL, all HTTPRequests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. This bug affects all Delphi version which supports Linux64 up to the newest Delphi 10.4.2. 
+
+[For more information check and vote for RSP-33177](https://quality.embarcadero.com/browse/RSP-33177)
 
 ### Submodules
 
