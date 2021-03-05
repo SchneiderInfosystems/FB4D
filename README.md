@@ -18,9 +18,6 @@ This library requires at least Delphi 10.3 Rio. The sample projects are develope
 
 #### Hint: Delphi 10.3 Update 1 is not longer supported because of an issue in the RTL. 
 
-#### Hint: The project _FB4D_samples_VCL_ cannot be compiled with Delphi 10.1 Berlin and Seattle because of missing TCardPanel. 
-The underlying FraSelfRegistration is not affected by this and can be used from Delphi 10 Seattle.  
-
 Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
 
 ### Supported Platforms
