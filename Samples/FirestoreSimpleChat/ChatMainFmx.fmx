@@ -15,7 +15,7 @@ object fmxChatMain: TfmxChatMain
     Size.Width = 640.000000000000000000
     Size.Height = 565.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     TabPosition = None
     Sizes = (
@@ -27,7 +27,7 @@ object fmxChatMain: TfmxChatMain
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
@@ -130,7 +130,7 @@ object fmxChatMain: TfmxChatMain
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
       Size.PlatformDefault = False
