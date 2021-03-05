@@ -109,8 +109,10 @@ uses
   REST.Types,
   FB4D.Document, FB4D.Response, FB4D.Request;
 
+{$IFDEF DEBUG}
 {$DEFINE ParserLog}
-{$DEFINE ParserLogDetails}
+{.$DEFINE ParserLogDetails}
+{$ENDIF}
 
 const
   cBaseURL = 'https://firestore.googleapis.com/google.firestore.v1.Firestore';
@@ -655,10 +657,6 @@ begin
       QueryParams.Add('CVER', [cCVER]);
       QueryParams.Add('X-HTTP-Session-Id', ['gsessionid']);
       QueryParams.Add('$httpHeaders', [cHttpHeaders]);
-
-//      QueryParams.Add('zx', [copy(TFirebaseHelpers.CreateAutoID, 1, 12)]);
-//      QueryParams.Add('t', ['2']);
-
       Response := Request.SendRequestSynchronous(cResourceParams, rmPost,
         DataStr, TRESTContentType.ctTEXT_PLAIN, QueryParams, tmBearer);
       if Response.StatusOk then
@@ -713,11 +711,6 @@ begin
         QueryParams.Add('SID', [fSID]);
         QueryParams.Add('AID', [fLastTelegramNo.ToString]);
         QueryParams.Add('TYPE', ['xmlhttp']);
-
-//            QueryParams.Add('CI', ['0']);
-//            QueryParams.Add('zx', [copy(TFirebaseHelpers.CreateAutoID, 1, 12)]);
-//            QueryParams.Add('t', ['1']);
-
         URL := cBaseURL +
           TFirebaseHelpers.EncodeResourceParams(cResourceParams) +
           TFirebaseHelpers.EncodeQueryParams(QueryParams);
