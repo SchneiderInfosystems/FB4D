@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -40,11 +40,22 @@ type
     fReqID: string;
     fInfo, fInfo2: string;
     fCallBack: integer;
+    fStopped: boolean;
     fDoc, fDoc2: IFirestoreDocument;
+    fChangedDocName: string;
+    fChangedDocC: integer;
+    fChangedDocF1: string;
+    fChangedDocF2: integer;
+    fDeletedDoc: string;
     procedure OnError(const RequestID, ErrMsg: string);
     procedure OnDoc(const Info: string; Document: IFirestoreDocument);
     procedure OnDoc2(const Info: string; Document: IFirestoreDocument);
     procedure OnDocs(const Info: string; Documents: IFirestoreDocuments);
+    procedure OnDocChanged(ChangedDocument: IFirestoreDocument);
+    procedure OnDocDeleted(const DeleteDocumentPath: string;
+      TimeStamp: TDateTime);
+    procedure OnDocDel(const RequestID: string; Response: IFirebaseResponse);
+    procedure OnStop(Sender: TObject);
   public
     [Setup]
     procedure Setup;
@@ -54,8 +65,8 @@ type
     [TestCase]
     procedure CreateUpdateGetDocumentSynchronous;
     procedure CreateUpdateGetDocument;
-
     procedure ConcurrentUpdateDocuments;
+    procedure FirestoreListenerForSingleDocument;
   end;
 
 implementation
@@ -70,6 +81,8 @@ const
   cEMail = 'Integration.Tester@FB4D.org';
   cPassword = 'It54623!';
   cDBPath = 'TestNode';
+  cTestF1 = 'TestField1';
+  cTestF2 = 'testField2';
 
 { UT_FirestoreDB }
 
@@ -82,12 +95,21 @@ begin
   fInfo := '';
   fCallBack := 0;
   fDoc := nil;
+  fDoc2 := nil;
+  fChangedDocName := '';
+  fChangedDocC := -1;
+  fChangedDocF1 := '';
+  fChangedDocF2 := -1;
+  fDeletedDoc := '';
+  fStopped := false;
 end;
 
 procedure UT_FirestoreDB.TearDown;
 begin
   if assigned(fDoc) then
     fConfig.Database.DeleteSynchronous([cDBPath, fDoc.DocumentName(false)]);
+  if assigned(fDoc2) then
+    fConfig.Database.DeleteSynchronous([cDBPath, fDoc2.DocumentName(false)]);
   fConfig.Auth.DeleteCurrentUserSynchronous;
   fConfig := nil;
 end;
@@ -108,6 +130,29 @@ begin
   inc(fCallBack);
 end;
 
+procedure UT_FirestoreDB.OnDocChanged(ChangedDocument: IFirestoreDocument);
+begin
+  fChangedDocName := ChangedDocument.DocumentName(false);
+  fChangedDocC := ChangedDocument.CountFields;
+  fChangedDocF1 := ChangedDocument.GetStringValue(cTestF1);
+  fChangedDocF2 := ChangedDocument.GetIntegerValueDef(cTestF2, -1);
+  inc(fCallBack);
+end;
+
+procedure UT_FirestoreDB.OnDocDel(const RequestID: string;
+  Response: IFirebaseResponse);
+begin
+  fInfo2 := RequestID;
+  inc(fCallBack);
+end;
+
+procedure UT_FirestoreDB.OnDocDeleted(const DeleteDocumentPath: string;
+  TimeStamp: TDateTime);
+begin
+  fDeletedDoc := DeleteDocumentPath;
+  inc(fCallBack);
+end;
+
 procedure UT_FirestoreDB.OnDocs(const Info: string;
   Documents: IFirestoreDocuments);
 begin
@@ -123,6 +168,12 @@ procedure UT_FirestoreDB.OnError(const RequestID, ErrMsg: string);
 begin
   fReqID := RequestID;
   fErrMsg := ErrMsg;
+  inc(fCallBack);
+end;
+
+procedure UT_FirestoreDB.OnStop(Sender: TObject);
+begin
+  fStopped := true;
   inc(fCallBack);
 end;
 
@@ -276,6 +327,73 @@ begin
   Assert.AreEqual(fDoc.DocumentName(false), Doc1Name);
   Assert.AreEqual(fDoc2.DocumentName(false), Doc2Name);
 end;
+
+procedure UT_FirestoreDB.FirestoreListenerForSingleDocument;
+const
+  cTestString = 'First test';
+  cTestString2 = 'First 😀 Test';
+  cTestInt = 4711;
+var
+  DocID: string;
+  Doc: IFirestoreDocument;
+begin
+  DocID := TFirebaseHelpers.CreateAutoID;
+  fConfig.Database.SubscribeDocument([cDBPath, DocID], OnDocChanged, OnDocDeleted);
+  fConfig.Database.StartListener(OnStop, OnError);
+
+  Doc := TFirestoreDocument.Create(DocID);
+  Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString));
+  Doc.AddOrUpdateField(TJSONObject.SetInteger(cTestF2, cTestInt));
+  fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
+
+  while fCallBack < 2 do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.AreEqual(fDoc.DocumentName(false), DocID);
+  Status('InsertOrUpdateDocument passed: ' + fInfo);
+
+  Assert.AreEqual(fChangedDocName, DocID);
+  Assert.AreEqual(fChangedDocF1, cTestString);
+  Assert.AreEqual(fChangedDocF2, cTestInt);
+  Assert.AreEqual(fChangedDocC, 2);
+  Status('OnDocChanged check passed');
+
+  fCallBack := 0;
+  Doc := TFirestoreDocument.Create(DocID);
+  Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString2));
+  fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
+
+  while fCallBack < 2 do
+    Application.ProcessMessages;
+
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.AreEqual(fDoc.DocumentName(false), DocID);
+  Status('2nd InsertOrUpdateDocument passed: ' + fInfo);
+
+  Assert.AreEqual(fChangedDocName, DocID);
+  Assert.AreEqual(fChangedDocF1, cTestString2);
+  Assert.AreEqual(fChangedDocF2, -1);
+  Assert.AreEqual(fChangedDocC, 1);
+  Status('2nd OnDocChanged check passed');
+
+  fCallBack := 0;
+  fDeletedDoc := ''; // it is unclear why the FS reports a first that this document was deleted
+  fConfig.Database.Delete([cDBPath, DocID], nil, OnDocDel, onError);
+
+  while fCallBack < 2 do
+    Application.ProcessMessages;
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.AreEqual(fDeletedDoc, fDoc.DocumentName(true));
+  Status('3rd: Document deletion check passed');
+  fDoc := nil;
+
+  fConfig.Database.StopListener;
+  while not fStopped do
+    Application.ProcessMessages;
+  Status('Listener stopped properly');
+end;
+
+
 
 initialization
   TDUnitX.RegisterTestFixture(UT_FirestoreDB);
