@@ -349,13 +349,13 @@ begin
   while fCallBack < 2 do
     Application.ProcessMessages;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
-  Assert.AreEqual(fDoc.DocumentName(false), DocID);
+  Assert.AreEqual(fDoc.DocumentName(false), DocID, 'DocID');
   Status('InsertOrUpdateDocument passed: ' + fInfo);
 
-  Assert.AreEqual(fChangedDocName, DocID);
-  Assert.AreEqual(fChangedDocF1, cTestString);
-  Assert.AreEqual(fChangedDocF2, cTestInt);
-  Assert.AreEqual(fChangedDocC, 2);
+  Assert.AreEqual(fChangedDocName, DocID, 'Changed Doc ID');
+  Assert.AreEqual(fChangedDocF1, cTestString , 'F1');
+  Assert.AreEqual(fChangedDocF2, cTestInt, 'F2');
+  Assert.AreEqual(fChangedDocC, 2, 'FCount');
   Status('OnDocChanged check passed');
 
   fCallBack := 0;
@@ -367,13 +367,13 @@ begin
     Application.ProcessMessages;
 
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
-  Assert.AreEqual(fDoc.DocumentName(false), DocID);
+  Assert.AreEqual(fDoc.DocumentName(false), DocID, '2nd DocID');
   Status('2nd InsertOrUpdateDocument passed: ' + fInfo);
 
-  Assert.AreEqual(fChangedDocName, DocID);
-  Assert.AreEqual(fChangedDocF1, cTestString2);
-  Assert.AreEqual(fChangedDocF2, -1);
-  Assert.AreEqual(fChangedDocC, 1);
+  Assert.AreEqual(fChangedDocName, DocID, '2nd Changed Doc ID');
+  Assert.AreEqual(fChangedDocF1, cTestString2, '2nd F1');
+  Assert.AreEqual(fChangedDocF2, -1, '2nd F2');
+  Assert.AreEqual(fChangedDocC, 1, '2nd FCount');
   Status('2nd OnDocChanged check passed');
 
   fCallBack := 0;
@@ -383,7 +383,7 @@ begin
   while fCallBack < 2 do
     Application.ProcessMessages;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
-  Assert.AreEqual(fDeletedDoc, fDoc.DocumentName(true));
+  Assert.AreEqual(fDeletedDoc, fDoc.DocumentName(true), 'DeleteDoc ID wrong');
   Status('3rd: Document deletion check passed');
   fDoc := nil;
 
