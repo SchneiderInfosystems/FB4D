@@ -21,36 +21,61 @@
 {                                                                              }
 {******************************************************************************}
 
-program FB4D.IntegrationTests;
+unit Config;
 
-// Console Tester not support because a windows event handler is required for
-// aysnchrouns functions
+interface
 
-{$STRONGLINKTYPES ON}
 uses
-  System.SysUtils,
-  {$IFDEF TESTINSIGHT}
-  TestInsight.DUnitX,
-  {$ENDIF }
-  DUnitX.Loggers.GUI.VCL,
-  DUnitX.Loggers.Xml.NUnit,
+  System.Classes, System.SysUtils,
   DUnitX.TestFramework,
-  Config in 'Config.pas',
-  RealTimeDB in 'RealTimeDB.pas',
-  FBFunction in 'FBFunction.pas',
-  FirestoreDB in 'FirestoreDB.pas',
-  Authentication in 'Authentication.pas';
+  FB4D.Interfaces;
 
-begin
-{$IFDEF TESTINSIGHT}
-  TestInsight.DUnitX.RunRegisteredTests;
-  exit;
-{$ENDIF}
-  try
-    TDUnitX.CheckCommandLine;
-    DUnitX.Loggers.GUI.VCL.Run;
-  except
-    on E: Exception do
-      System.Writeln(E.ClassName, ': ', E.Message);
+{$M+}
+type
+  [TestFixture]
+  UT_Config = class(TObject)
+  private
+    fConfig: IFirebaseConfiguration;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
+    [TestCase]
+    procedure CheckConfig;
   end;
+
+implementation
+
+uses
+  FB4D.Configuration;
+
+{$I FBConfig.inc}
+
+{ UT_Config }
+
+procedure UT_Config.Setup;
+begin
+  fConfig := TFirebaseConfiguration.Create(cApiKey, cProjectID, cBucket);
+end;
+
+procedure UT_Config.TearDown;
+begin
+  fConfig := nil;
+end;
+
+procedure UT_Config.CheckConfig;
+begin
+  Assert.AreEqual(fConfig.ProjectID, cProjectID);
+  Assert.IsNotNull(fConfig.Auth);
+  Assert.IsNotNull(fConfig.RealTimeDB);
+  Assert.IsNotNull(fConfig.Database);
+  Assert.IsNotNull(fConfig.Storage);
+  Assert.IsNotNull(fConfig.Functions);
+  Status('Passed for ' + TFirebaseConfiguration.GetLibVersionInfo);
+end;
+
+initialization
+  TDUnitX.RegisterTestFixture(UT_Config);
 end.
