@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -182,6 +182,16 @@ type
     btnStopTrans: TButton;
     chbLimitTo10Docs: TCheckBox;
     chbUsePageToken: TCheckBox;
+    tbFSListener: TTabItem;
+    edtCollectionIDForFSListener: TEdit;
+    Label29: TLabel;
+    btnStartFSListener: TButton;
+    btnStopFSListener: TButton;
+    memScanFS: TMemo;
+    GroupBox1: TGroupBox;
+    GroupBox2: TGroupBox;
+    edtDocPathForFSListener: TEdit;
+    Label30: TLabel;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -236,6 +246,8 @@ type
     procedure btnStartTransReadOnlyClick(Sender: TObject);
     procedure btnStopTransClick(Sender: TObject);
     procedure edtDocumentChangeTracking(Sender: TObject);
+    procedure btnStartFSListenerClick(Sender: TObject);
+    procedure btnStopFSListenerClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fStorageObject: IStorageObject;
@@ -269,6 +281,13 @@ type
       Doc: IFirestoreDocument);
     procedure OnFirestoreDeleted(const RequestID: string;
       Response: IFirebaseResponse);
+    procedure OnFSChangedDocInCollection(Doc: IFirestoreDocument);
+    procedure OnFSChangedDoc(Doc: IFirestoreDocument);
+    procedure OnFSDeletedDocCollection(const DelDocPath: string; TS: TDateTime);
+    procedure OnFSDeletedDoc(const DelDocPath: string; TS: TDateTime);
+    procedure OnFSStopListening(Sender: TObject);
+    procedure OnFSRequestError(const RequestID, ErrMsg: string);
+    procedure OnFSAuthRevoked(TokenRenewPassed: boolean);
     function CheckFirestoreFields(InsUpdGetWF: boolean): boolean;
     function CheckAndCreateRealTimeDBClass(Log: TMemo): boolean;
     function GetRTDBPath: TStringDynArray;
@@ -312,13 +331,15 @@ uses
   FB4D.OAuth,
 {$ENDIF}
   FB4D.Response, FB4D.Request, FB4D.Functions, FB4D.Storage,
-  FB4D.Firestore, FB4D.Document;
+  FB4D.Firestore, FB4D.Document, FB4D.Configuration;
 
 {$REGION 'Form Handling'}
 procedure TfmxFirebaseDemo.FormShow(Sender: TObject);
 var
   IniFile: TIniFile;
 begin
+  Caption := Caption + ' - ' + TFirebaseHelpers.GetPlatform +
+    ' [' + TFirebaseConfiguration.GetLibVersionInfo + ']';
   OpenDialog.Filter := TBitmapCodecManager.GetFilterString;
   TabControl.ActiveTab := tabAuth;
   IniFile := TIniFile.Create(IncludeTrailingPathDelimiter(TPath.GetHomePath) +
@@ -343,6 +364,9 @@ begin
     edtChildDocument.Text := IniFile.ReadString('Firestore', 'ChildDoc', '');
     cboDemoDocType.ItemIndex := IniFile.ReadInteger('Firestore', 'DocType', 0);
     btnRunQuery.Enabled := IniFile.ReadBool('Firestore', 'RunQueryEnabled', false);
+    edtCollectionIDForFSListener.Text := IniFile.ReadString('Firestore',
+      'ListenerColID', '');
+    edtDocPathForFSListener.Text := IniFile.ReadString('Firestore', 'DocPath', '');
   finally
     IniFile.Free;
   end;
@@ -377,6 +401,9 @@ begin
     IniFile.WriteString('Firestore', 'ChildDoc', edtChildDocument.Text);
     IniFile.WriteInteger('Firestore', 'DocType', cboDemoDocType.ItemIndex);
     IniFile.WriteBool('Firestore', 'RunQueryEnabled', btnRunQuery.Enabled);
+    IniFile.WriteString('Firestore', 'ListenerColID',
+      edtCollectionIDForFSListener.Text);
+    IniFile.WriteString('Firestore', 'DocPath', edtDocPathForFSListener.Text);
   finally
     IniFile.Free;
   end;
@@ -1446,6 +1473,96 @@ begin
 end;
 {$ENDREGION}
 
+{$REGION 'Firestore Listener'}
+procedure TfmxFirebaseDemo.btnStartFSListenerClick(Sender: TObject);
+var
+  Targets: string;
+begin
+  if not CheckAndCreateFirestoreDBClass(memScanFS) then
+    exit;
+  memScanFS.Lines.Clear;
+  Targets := '';
+  if not edtCollectionIDForFSListener.Text.IsEmpty then
+  begin
+    fDatabase.SubscribeQuery(TStructuredQuery.CreateForCollection(
+      edtCollectionIDForFSListener.Text), OnFSChangedDocInCollection,
+      OnFSDeletedDocCollection);
+    Targets := 'Target-1: Collection ';
+  end;
+  if not edtDocPathForFSListener.Text.IsEmpty then
+  begin
+    fDatabase.SubscribeDocument(edtDocPathForFSListener.Text.Split(['/']),
+      OnFSChangedDoc, OnFSDeletedDoc);
+    Targets := Targets + 'Target-2: Single Doc ';
+  end;
+  if not Targets.IsEmpty then
+  begin
+    memScanFS.Lines.Add('Listener started for ' + Targets);
+    fDatabase.StartListener(OnFSStopListening, OnFSRequestError, OnFSAuthRevoked);
+    btnStartFSListener.Enabled := false;
+    btnStopFSListener.Enabled := true;
+  end else
+    memScanFS.Lines.Add('No target defined for starting listener');
+end;
+
+procedure TfmxFirebaseDemo.btnStopFSListenerClick(Sender: TObject);
+begin
+  if not CheckAndCreateFirestoreDBClass(memFirestore) then
+    exit;
+  fDatabase.StopListener;
+  btnStopFSListener.Enabled := false;
+end;
+
+procedure TfmxFirebaseDemo.OnFSChangedDocInCollection(
+  Doc: IFirestoreDocument);
+begin
+  memScanFS.Lines.Add('Target-1: ' + TimeToStr(now) + ': Doc changed ' +
+    Doc.DocumentName(true));
+  memScanFS.Lines.Add(Doc.AsJSON.ToJSON);
+end;
+
+procedure TfmxFirebaseDemo.OnFSChangedDoc(Doc: IFirestoreDocument);
+begin
+  memScanFS.Lines.Add('Target-2: ' + TimeToStr(now) + ': Doc changed ' +
+    Doc.DocumentName(true));
+  memScanFS.Lines.Add(Doc.AsJSON.ToJSON);
+end;
+
+procedure TfmxFirebaseDemo.OnFSDeletedDocCollection(const DelDocPath: string;
+  TS: TDateTime);
+begin
+  memScanFS.Lines.Add('Target-1: ' + TimeToStr(TS) + ': Doc deleted ' +
+    DelDocPath);
+end;
+
+procedure TfmxFirebaseDemo.OnFSDeletedDoc(const DelDocPath: string;
+  TS: TDateTime);
+begin
+  memScanFS.Lines.Add('Target-2: ' + TimeToStr(TS) + ': Doc deleted ' +
+    DelDocPath);
+end;
+
+procedure TfmxFirebaseDemo.OnFSStopListening(Sender: TObject);
+begin
+  memScanFS.Lines.Add(TimeToStr(now) + ': Listener stopped');
+  btnStartFSListener.Enabled := true;
+end;
+
+procedure TfmxFirebaseDemo.OnFSRequestError(const RequestID, ErrMsg: string);
+begin
+  memScanFS.Lines.Add(TimeToStr(now) + ': Listener error ' + ErrMsg);
+end;
+
+procedure TfmxFirebaseDemo.OnFSAuthRevoked(TokenRenewPassed: boolean);
+begin
+  if TokenRenewPassed then
+    memScanFS.Lines.Add(TimeToStr(now) + ': Token renew passed')
+  else
+    memScanFS.Lines.Add(TimeToStr(now) + ': Token renew failed');
+end;
+
+{$ENDREGION}
+
 {$REGION 'Realtime DB'}
 const
   sUnauthorized = 'Unauthorized';
@@ -1892,7 +2009,7 @@ begin
 end;
 {$ENDREGION}
 
-{$REGION 'Scan RT DB Event'}
+{$REGION 'Realtime DB Listener'}
 procedure TfmxFirebaseDemo.btnNotifyEventClick(Sender: TObject);
 begin
   if not CheckAndCreateRealTimeDBClass(memScans) then

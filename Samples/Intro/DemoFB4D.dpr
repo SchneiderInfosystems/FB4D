@@ -42,7 +42,8 @@ uses
   FB4D.Helpers in '..\..\Source\FB4D.Helpers.pas',
   FB4D.Storage in '..\..\Source\FB4D.Storage.pas',
   FB4D.RealTimeDB in '..\..\Source\FB4D.RealTimeDB.pas',
-  FB4D.FireStore.Listener in '..\..\Source\FB4D.FireStore.Listener.pas';
+  FB4D.FireStore.Listener in '..\..\Source\FB4D.FireStore.Listener.pas',
+  FB4D.Configuration in '..\..\Source\FB4D.Configuration.pas';
 
 {$R *.res}
 

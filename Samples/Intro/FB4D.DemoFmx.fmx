@@ -47,6 +47,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       995s
       725s
       995s
+      725s
+      995s
       725s)
     object tabAuth: TTabItem
       CustomIcon = <
@@ -1008,22 +1010,22 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         item
         end>
       IsSelected = False
-      Size.Width = 151.000000000000000000
+      Size.Width = 135.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
       TabOrder = 0
-      Text = 'Scan Real Time DB Event'
+      Text = 'Real Time DB Listener'
       ExplicitSize.cx = 151.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
       object btnNotifyEvent: TButton
-        Position.X = 40.000000000000000000
+        Position.X = 32.000000000000000000
         Position.Y = 54.000000000000000000
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        Text = 'Notify Event Handler'
+        Text = 'Start Listener'
         OnClick = btnNotifyEventClick
       end
       object memScans: TMemo
@@ -1046,23 +1048,23 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 2
-        Text = 'Stop Event Handler'
+        Text = 'Stop Listener'
         OnClick = btnStopEventClick
       end
       object edtRTDBEventPath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 6
-        Position.X = 128.000000000000000000
+        Position.X = 120.000000000000000000
         Position.Y = 23.000000000000000000
-        Size.Width = 857.000000000000000000
+        Size.Width = 833.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Data base path separated by /'
         object Label26: TLabel
-          Position.X = -112.000000000000000000
+          Position.X = -96.000000000000000000
           Position.Y = 2.000000000000000000
-          Size.Width = 105.000000000000000000
+          Size.Width = 89.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
           TextSettings.HorzAlign = Trailing
@@ -1304,6 +1306,110 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 18
         Text = 'Get next page'
+      end
+    end
+    object tbFSListener: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 111.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Firestore Listener'
+      object btnStartFSListener: TButton
+        Position.X = 32.000000000000000000
+        Position.Y = 86.000000000000000000
+        Size.Width = 137.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Start Listener'
+        OnClick = btnStartFSListenerClick
+      end
+      object btnStopFSListener: TButton
+        Enabled = False
+        Position.X = 200.000000000000000000
+        Position.Y = 86.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Stop Listener'
+        OnClick = btnStopFSListenerClick
+      end
+      object memScanFS: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Position.X = 32.000000000000000000
+        Position.Y = 120.000000000000000000
+        Size.Width = 924.000000000000000000
+        Size.Height = 592.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Viewport.Width = 920.000000000000000000
+        Viewport.Height = 588.000000000000000000
+      end
+      object GroupBox1: TGroupBox
+        Position.X = 32.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 289.000000000000000000
+        Size.Height = 57.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Target 1: Entire Collection'
+        TabOrder = 7
+        object edtCollectionIDForFSListener: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 6
+          Position.X = 80.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 193.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 'Enter Collection ID'
+          object Label29: TLabel
+            Position.X = -72.000000000000000000
+            Position.Y = 2.000000000000000000
+            Size.Width = 65.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = 'Collection:'
+            TabOrder = 0
+          end
+        end
+      end
+      object GroupBox2: TGroupBox
+        Position.X = 336.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 473.000000000000000000
+        Size.Height = 57.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Target 2: Single Document'
+        TabOrder = 6
+        object edtDocPathForFSListener: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 6
+          Position.X = 80.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 377.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 'Enter Document Path seperated by /'
+          object Label30: TLabel
+            Position.X = -64.000000000000000000
+            Position.Y = 2.000000000000000000
+            Size.Width = 57.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = 'Doc Path:'
+            TabOrder = 0
+          end
+        end
       end
     end
     object tabStorage: TTabItem
