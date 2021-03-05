@@ -12,7 +12,9 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 ### Prerequisites
 
-This library requires at least Delphi 10 Seattle. The sample projects are developed with Delphi 10.3 Rio Update 3 and are ready for Delphi 10.4 Sydney.
+This library requires at least Delphi 10.3 Rio. The sample projects are developed with Delphi 10.4.1 Sydney and are ready for Delphi 10.4.2.
+
+#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. 
 
 #### Hint: Delphi 10.3 Update 1 is not longer supported because of an issue in the RTL. 
 
