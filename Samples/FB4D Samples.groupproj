@@ -15,6 +15,9 @@
         <Projects Include="CloudClipboard\CloudClipBoard.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="FirestoreSimpleChat\FSSimpleChat.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,14 +62,23 @@
     <Target Name="CloudClipBoard:Make">
         <MSBuild Projects="CloudClipboard\CloudClipBoard.dproj" Targets="Make"/>
     </Target>
+    <Target Name="FSSimpleChat">
+        <MSBuild Projects="FirestoreSimpleChat\FSSimpleChat.dproj"/>
+    </Target>
+    <Target Name="FSSimpleChat:Clean">
+        <MSBuild Projects="FirestoreSimpleChat\FSSimpleChat.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FSSimpleChat:Make">
+        <MSBuild Projects="FirestoreSimpleChat\FSSimpleChat.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard"/>
+        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard;FSSimpleChat"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean"/>
+        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean;FSSimpleChat:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make"/>
+        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make;FSSimpleChat:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
