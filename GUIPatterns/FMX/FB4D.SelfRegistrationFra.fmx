@@ -17,7 +17,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.Width = 376.000000000000000000
     Size.Height = 25.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 6
+    TabOrder = 3
     Text = 'Check Email Address'
     OnClick = btnCheckEMailClick
   end
@@ -27,7 +27,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.Width = 377.000000000000000000
     Size.Height = 25.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 11
+    TabOrder = 7
     Text = 'Reset password'
     OnClick = btnResetPwdClick
   end
@@ -38,7 +38,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.Width = 377.000000000000000000
     Size.Height = 25.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 8
+    TabOrder = 4
     Text = 'Sign-In'
     OnClick = btnSignInClick
   end
@@ -49,18 +49,19 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.Width = 377.000000000000000000
     Size.Height = 25.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 9
+    TabOrder = 5
     Text = 'Sign-Up'
     OnClick = btnSignUpClick
   end
   object edtEMail: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     Align = Center
-    TabOrder = 0
+    TabOrder = 1
     Margins.Bottom = 120.000000000000000000
     Size.Width = 377.000000000000000000
     Size.Height = 32.000000000000000000
     Size.PlatformDefault = False
+    TextPrompt = 'Enter your email address'
     OnChangeTracking = edtEMailChangeTracking
     object txtEMail: TText
       Position.X = -104.000000000000000000
@@ -74,12 +75,13 @@ object FraSelfRegistration: TFraSelfRegistration
   object edtPassword: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     Align = Center
-    TabOrder = 1
+    TabOrder = 2
     Password = True
     Margins.Bottom = 30.000000000000000000
     Size.Width = 377.000000000000000000
     Size.Height = 32.000000000000000000
     Size.PlatformDefault = False
+    TextPrompt = 'Enter your password'
     object txtPassword: TText
       Position.X = -104.000000000000000000
       Size.Width = 96.000000000000000000
@@ -91,12 +93,41 @@ object FraSelfRegistration: TFraSelfRegistration
   end
   object lblStatus: TLabel
     Align = Center
-    Margins.Top = 200.000000000000000000
+    Margins.Top = 220.000000000000000000
     Size.Width = 500.000000000000000000
-    Size.Height = 25.000000000000000000
+    Size.Height = 40.000000000000000000
     Size.PlatformDefault = False
     TextSettings.HorzAlign = Center
     Text = 'lblStatus'
-    TabOrder = 7
+    TabOrder = 9
+  end
+  object btnRegisterDisplayName: TButton
+    Align = Center
+    Default = True
+    Margins.Top = 300.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = 'Register Display Name'
+    OnClick = btnRegisterDisplayNameClick
+  end
+  object edtDisplayName: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Align = Center
+    TabOrder = 0
+    Margins.Top = 220.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 32.000000000000000000
+    Size.PlatformDefault = False
+    TextPrompt = 'Enter your display name'
+    object txtDisplayName: TText
+      Position.X = -104.000000000000000000
+      Size.Width = 96.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'Display name'
+      TextSettings.HorzAlign = Trailing
+    end
   end
 end

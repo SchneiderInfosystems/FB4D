@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -44,18 +44,25 @@ type
     edtPassword: TEdit;
     txtPassword: TText;
     lblStatus: TLabel;
+    btnRegisterDisplayName: TButton;
+    edtDisplayName: TEdit;
+    txtDisplayName: TText;
     procedure edtEMailChangeTracking(Sender: TObject);
     procedure btnCheckEMailClick(Sender: TObject);
     procedure btnSignInClick(Sender: TObject);
     procedure btnSignUpClick(Sender: TObject);
     procedure btnResetPwdClick(Sender: TObject);
+    procedure btnRegisterDisplayNameClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fOnUserLogin: TOnUserResponse;
     fOnGetAuth: TOnGetAuth;
     fAllowSelfRegistration: boolean;
     fRequireVerificatedEMail: boolean;
+    fRegisterDisplayName: boolean;
     fReqInfo: string;
+    fInfo: string;
+    fUser: IFirebaseUser;
     procedure StartTokenReferesh(const LastToken: string);
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
       Providers: TStrings);
@@ -67,15 +74,19 @@ type
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
     procedure OnVerificationMailSent(const RequestID: string;
       Response: IFirebaseResponse);
+    procedure OnChangedProfile(const RequestID: string;
+      Response: IFirebaseResponse);
   public
     procedure Initialize(Auth: IFirebaseAuthentication;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
-      RequireVerificatedEMail: boolean = false);
+      RequireVerificatedEMail: boolean = false;
+      RegisterDisplayName: boolean = false);
     procedure InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
-      RequireVerificatedEMail: boolean = false);
+      RequireVerificatedEMail: boolean = false;
+      RegisterDisplayName: boolean = false);
     procedure StartEMailEntering;
     function GetEMail: string;
   end;
@@ -97,17 +108,21 @@ resourcestring
   rsLoggedIn = 'Successful logged in';
   rsPleaseCheckEMailForVerify =
     'Please check your e-mail inbox to confirm your email address';
+  rsWriteProfileData = 'Your %s will be registrated';
 
 procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
-  AllowSelfRegistration, RequireVerificatedEMail: boolean);
+  AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName: boolean);
 begin
   fAuth := Auth;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := nil;
   edtEMail.Text := LastEMail;
+  edtDisplayName.Visible := false;
+  btnRegisterDisplayName.Visible := false;
   fAllowSelfRegistration := AllowSelfRegistration;
   fRequireVerificatedEMail := RequireVerificatedEMail;
+  fRegisterDisplayName := RegisterDisplayName;
   if LastRefreshToken.IsEmpty then
     StartEMailEntering
   else
@@ -116,14 +131,17 @@ end;
 
 procedure TFraSelfRegistration.InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
-  AllowSelfRegistration, RequireVerificatedEMail: boolean);
+  AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName: boolean);
 begin
   fAuth := nil;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := OnGetAuth;
   edtEMail.Text := LastEMail;
+  edtDisplayName.Visible := false;
+  btnRegisterDisplayName.Visible := false;
   fAllowSelfRegistration := AllowSelfRegistration;
   fRequireVerificatedEMail := RequireVerificatedEMail;
+  fRegisterDisplayName := RegisterDisplayName;
   if LastRefreshToken.IsEmpty then
     StartEMailEntering
   else
@@ -132,6 +150,8 @@ end;
 
 procedure TFraSelfRegistration.StartEMailEntering;
 begin
+  fInfo := '';
+  fUser := nil;
   edtEMail.Visible := true;
   btnCheckEMail.Visible := true;
   btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
@@ -327,8 +347,15 @@ begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
   lblStatus.Text := rsLoggedIn;
-  if assigned(fOnUserLogin) then
-    fOnUserLogin(Info, User);
+  fInfo := Info;
+  fUser := User;
+  if fRegisterDisplayName and
+    (not User.IsDisplayNameAvailable or User.DisplayName.IsEmpty) then
+  begin
+    edtDisplayName.Visible := true;
+    btnRegisterDisplayName.Visible := true;
+  end else if assigned(fOnUserLogin) then
+    fOnUserLogin(fInfo, fUser);
 end;
 
 function TFraSelfRegistration.GetEMail: string;
@@ -343,6 +370,21 @@ begin
   AniIndicator.Visible := false;
   lblStatus.Text := rsPleaseCheckEMailForVerify;
   btnSignIn.Enabled := true;
+end;
+
+procedure TFraSelfRegistration.btnRegisterDisplayNameClick(Sender: TObject);
+begin
+  edtDisplayName.Visible := false;
+  btnRegisterDisplayName.Visible := false;
+  lblStatus.Text := Format(rsWriteProfileData, [txtDisplayName.Text]);
+  fAuth.ChangeProfile('', '', edtDisplayName.Text, '', OnChangedProfile,
+    OnUserError);
+end;
+
+procedure TFraSelfRegistration.OnChangedProfile(const RequestID: string;
+  Response: IFirebaseResponse);
+begin
+  fAuth.GetUserData(OnGetUserData, OnUserError);
 end;
 
 end.
