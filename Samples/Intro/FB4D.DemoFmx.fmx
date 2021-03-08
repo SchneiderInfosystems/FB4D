@@ -14,15 +14,15 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     Anchors = [akTop, akRight]
     TabOrder = 0
-    Position.X = 787.000000000000000000
+    Position.X = 539.000000000000000000
     Position.Y = 16.000000000000000000
-    Size.Width = 180.000000000000000000
+    Size.Width = 270.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TextPrompt = 'Enter Project ID from FB Settings'
+    TextPrompt = 'Enter Project ID  from Firebase Console>Settings'
     object Text1: TText
-      Position.X = -80.000000000000000000
-      Size.Width = 81.000000000000000000
+      Position.X = -64.000000000000000000
+      Size.Width = 65.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       Text = 'Project ID'
@@ -425,20 +425,20 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         DataDetectorTypes = []
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
-        Position.Y = 256.000000000000000000
+        Position.Y = 288.000000000000000000
         Size.Width = 956.000000000000000000
-        Size.Height = 456.000000000000000000
+        Size.Height = 424.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
         Viewport.Width = 952.000000000000000000
-        Viewport.Height = 452.000000000000000000
+        Viewport.Height = 420.000000000000000000
       end
       object edtPath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 6
         Position.X = 120.000000000000000000
-        Position.Y = 15.000000000000000000
+        Position.Y = 47.000000000000000000
         Size.Width = 857.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -457,11 +457,11 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object TabControlRTDB: TTabControl
         Anchors = [akLeft, akTop, akRight]
         Position.X = 24.000000000000000000
-        Position.Y = 47.000000000000000000
+        Position.Y = 79.000000000000000000
         Size.Width = 953.000000000000000000
         Size.Height = 200.000000000000000000
         Size.PlatformDefault = False
-        TabIndex = 0
+        TabIndex = 1
         TabOrder = 7
         TabPosition = Top
         Sizes = (
@@ -481,7 +481,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
-          IsSelected = True
+          IsSelected = False
           Size.Width = 39.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
@@ -624,7 +624,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
-          IsSelected = False
+          IsSelected = True
           Size.Width = 38.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
@@ -1004,6 +1004,29 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
         end
       end
+      object edtFirebaseURL: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 4
+        Position.X = 120.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 857.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 
+          'Enter Firebase URL from Console>Realtime DB (e.g. https:<project' +
+          'ID>-default-rtdb.<ServerLocation>.firebasedatabase.app'
+        Left = 8
+        Top = 147
+        object txtFirebaseURL: TText
+          Position.X = -104.000000000000000000
+          Size.Width = 96.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Firebase URL:'
+          TextSettings.HorzAlign = Trailing
+        end
+      end
     end
     object tabScanRTEvent: TTabItem
       CustomIcon = <
@@ -1020,7 +1043,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       ExplicitSize.cy = 26.000000000000000000
       object btnNotifyEvent: TButton
         Position.X = 32.000000000000000000
-        Position.Y = 54.000000000000000000
+        Position.Y = 62.000000000000000000
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -1033,17 +1056,17 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         DataDetectorTypes = []
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 32.000000000000000000
-        Position.Y = 86.000000000000000000
+        Position.Y = 96.000000000000000000
         Size.Width = 924.000000000000000000
-        Size.Height = 626.000000000000000000
+        Size.Height = 616.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
         Viewport.Width = 920.000000000000000000
-        Viewport.Height = 622.000000000000000000
+        Viewport.Height = 612.000000000000000000
       end
       object btnStopEvent: TButton
         Position.X = 192.000000000000000000
-        Position.Y = 54.000000000000000000
+        Position.Y = 62.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -1055,22 +1078,32 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 6
-        Position.X = 120.000000000000000000
-        Position.Y = 23.000000000000000000
-        Size.Width = 833.000000000000000000
+        Position.X = 124.000000000000000000
+        Position.Y = 31.000000000000000000
+        Size.Width = 825.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Data base path separated by /'
         object Label26: TLabel
-          Position.X = -96.000000000000000000
+          Position.X = -92.000000000000000000
           Position.Y = 2.000000000000000000
-          Size.Width = 89.000000000000000000
+          Size.Width = 81.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
-          TextSettings.HorzAlign = Trailing
           Text = 'Database Path:'
           TabOrder = 0
         end
+      end
+      object lblFirebaseURL: TLabel
+        StyledSettings = [Family, Style, FontColor]
+        Position.X = 32.000000000000000000
+        Position.Y = 6.000000000000000000
+        Size.Width = 921.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Size = 10.000000000000000000
+        Text = 'Enter Firebase URL in Real Time DB tab'
+        TabOrder = 7
       end
     end
     object tabFirestore: TTabItem
@@ -1319,6 +1352,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       StyleLookup = ''
       TabOrder = 0
       Text = 'Firestore Listener'
+      ExplicitSize.cx = 111.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
       object btnStartFSListener: TButton
         Position.X = 32.000000000000000000
         Position.Y = 86.000000000000000000
@@ -1457,7 +1492,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Text = 'Object'
         TabOrder = 4
       end
-      object memoResp: TMemo
+      object memStorageResp: TMemo
         Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
         DataDetectorTypes = []
         Anchors = [akLeft, akTop, akRight, akBottom]
@@ -1577,19 +1612,17 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 4
-    Position.X = 120.000000000000000000
+    Position.X = 96.000000000000000000
     Position.Y = 16.000000000000000000
-    Size.Width = 580.000000000000000000
+    Size.Width = 345.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TextPrompt = 
-      'Enter firebase Web API key from Firebase Console > Project Overv' +
-      'iew > Settings > General> Your Project'
+    TextPrompt = 'Enter Web API key from Firebase Console>Settings>General'
     Left = 8
     Top = 147
     object Text2: TText
-      Position.X = -104.000000000000000000
-      Size.Width = 104.000000000000000000
+      Position.X = -80.000000000000000000
+      Size.Width = 80.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       Text = 'Web API Key'

@@ -95,7 +95,8 @@ type
       ReadCount: Int64; var Abort: Boolean);
     procedure InitListen;
   public
-    constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication);
+    constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication); deprecated;
+    constructor CreateByURL(const FirebaseURL: string; Auth: IFirebaseAuthentication);
     procedure Get(ResourceParams: TRequestResourceParam;
       OnGetValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
@@ -134,13 +135,13 @@ type
       ResourceParams: TRequestResourceParam): TJSONValue;
   end;
 
+const
+  GOOGLE_FIREBASE = 'https://%s.firebaseio.com';
+
 implementation
 
 uses
   FB4D.Helpers, FB4D.Request;
-
-const
-  GOOGLE_FIREBASE = 'https://%s.firebaseio.com';
 
 resourcestring
   rsEvtListenerFailed = 'Event listener for %s failed: %s';
@@ -155,6 +156,15 @@ begin
   inherited Create;
   Assert(assigned(Auth), 'Authentication not initalized');
   fBaseURL := Format(GOOGLE_FIREBASE, [ProjectID]);
+  fAuth := Auth;
+  InitListen;
+end;
+
+constructor TRealTimeDB.CreateByURL(const FirebaseURL: string;
+  Auth: IFirebaseAuthentication);
+begin
+  Assert(assigned(Auth), 'Authentication not initalized');
+  fBaseURL := FirebaseURL;
   fAuth := Auth;
   InitListen;
 end;

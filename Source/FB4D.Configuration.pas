@@ -43,6 +43,7 @@ type
     fApiKey: string;
     fProjectID: string;
     fBucket: string;
+    fFirebaseURL: string;
     fAuth: IFirebaseAuthentication;
     fRealTimeDB: IRealTimeDB;
     fDatabase: IFirestoreDatabase;
@@ -55,7 +56,7 @@ type
     /// as parameter.
     /// </summary>
     constructor Create(const ApiKey, ProjectID: string;
-      const Bucket: string = ''); overload;
+      const Bucket: string = ''; const FirebaseURL: string = ''); overload;
 
     /// <summary>
     /// The second constructor parses the google-services.json file that shall
@@ -85,11 +86,15 @@ uses
 { TFirebaseConfiguration }
 
 constructor TFirebaseConfiguration.Create(const ApiKey, ProjectID,
-  Bucket: string);
+  Bucket, FirebaseURL: string);
 begin
   fApiKey := ApiKey;
   fProjectID := ProjectID;
   fBucket := Bucket;
+  if FirebaseURL.IsEmpty then
+    fFirebaseURL := Format(GOOGLE_FIREBASE, [fProjectID])
+  else
+    fFirebaseURL := FirebaseURL;
 end;
 
 constructor TFirebaseConfiguration.Create(const GoogleServicesFile: string);
@@ -106,6 +111,7 @@ begin
     ProjInfo := JsonObj.GetValue<TJSONObject>('project_info');
     Assert(assigned(ProjInfo), '"project_info" missing in Google-Services.json');
     fProjectID := ProjInfo.GetValue<string>('project_id');
+    fFirebaseURL := ProjInfo.GetValue<string>('firebase_url');
     fBucket := ProjInfo.GetValue<string>('storage_bucket');
     Client := JsonObj.GetValue<TJSONArray>('client');
     Assert(assigned(Client), '"client" missing in Google-Services.json');
@@ -131,7 +137,7 @@ function TFirebaseConfiguration.RealTimeDB: IRealTimeDB;
 begin
   Assert(not fProjectID.IsEmpty, 'ProjectID is required for RealTimeDB');
   if not assigned(fRealTimeDB) then
-    fRealTimeDB := TRealTimeDB.Create(fProjectID, Auth);
+    fRealTimeDB := TRealTimeDB.CreateByURL(fFirebaseURL, Auth);
   result := fRealTimeDB;
 end;
 

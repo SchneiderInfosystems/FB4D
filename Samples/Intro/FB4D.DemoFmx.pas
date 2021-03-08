@@ -64,7 +64,7 @@ type
     btnGetStorageSynch: TButton;
     btnGetStorageAsynch: TButton;
     Label10: TLabel;
-    memoResp: TMemo;
+    memStorageResp: TMemo;
     btnDownloadSync: TButton;
     btnDownloadAsync: TButton;
     SaveDialog: TSaveDialog;
@@ -192,6 +192,9 @@ type
     GroupBox2: TGroupBox;
     edtDocPathForFSListener: TEdit;
     Label30: TLabel;
+    edtFirebaseURL: TEdit;
+    txtFirebaseURL: TText;
+    lblFirebaseURL: TLabel;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -272,7 +275,7 @@ type
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
     procedure OnTokenRefresh(TokenRefreshed: boolean);
     procedure OnUserError(const Info, ErrMsg: string);
-    procedure CreateAuthenticationClass;
+    function CheckAndCreateAuthenticationClass: boolean;
     function CheckAndCreateFirestoreDBClass(Log: TMemo): boolean;
     procedure OnFirestoreError(const Info, ErrMsg: string);
     procedure OnFirestoreGet(const Info: string; Docs: IFirestoreDocuments);
@@ -304,6 +307,7 @@ type
     procedure OnPostError(const RequestID, ErrMsg: string);
     procedure OnDeleteResp(Params: TRequestResourceParam; Success: boolean);
     procedure OnDeleteError(const RequestID, ErrMsg: string);
+    function CheckAndCreateStorageClass: boolean;
     procedure ShowFirestoreObject(Obj: IStorageObject);
     function GetStorageFileName: string;
     procedure OnGetStorage(const RequestID: string; Obj: IStorageObject);
@@ -350,6 +354,12 @@ begin
       '');
     edtEmail.Text := IniFile.ReadString('Authentication', 'User', '');
     edtPassword.Text := IniFile.ReadString('Authentication', 'Pwd', '');
+    if not edtKey.Text.IsEmpty and not edtProjectID.Text.IsEmpty then
+      // Downward compatibility for databases created before 2021
+      edtFirebaseURL.Text := IniFile.ReadString('RTDB', 'FirebaseURL',
+        Format(GOOGLE_FIREBASE, [edtProjectID.Text]))
+    else
+      edtFirebaseURL.Text := IniFile.ReadString('RTDB', 'FirebaseURL', '');
     edtPath.Text := IniFile.ReadString('RTDB', 'DBPath', 'TestNode');
     edtRTDBEventPath.Text := IniFile.ReadString('RTDBEvent', 'DBPath',
       'TestNode');
@@ -388,6 +398,7 @@ begin
     IniFile.WriteString('Authentication', 'User', edtEmail.Text);
     {$MESSAGE 'Attention: Password will be stored in your inifile in clear text'}
     IniFile.WriteString('Authentication', 'Pwd', edtPassword.Text);
+    IniFile.WriteString('RTDB', 'FirebaseURL', edtFirebaseURL.Text);
     IniFile.WriteString('RTDB', 'DBPath', edtPath.Text);
     IniFile.WriteString('RTDBEvent', 'DBPath', edtRTDBEventPath.Text);
     IniFile.WriteString('Storage', 'Bucket', edtStorageBucket.Text);
@@ -422,19 +433,26 @@ end;
 {$ENDREGION }
 
 {$REGION 'Authentication'}
-procedure TfmxFirebaseDemo.CreateAuthenticationClass;
+function TfmxFirebaseDemo.CheckAndCreateAuthenticationClass: boolean;
 begin
+  result := true;
   if not assigned(fAuth) then
   begin
+    if edtKey.Text.IsEmpty then
+    begin
+      memUser.Lines.Add('Enter Web API Key frist');
+      memUser.GoToTextEnd;
+      exit(false);
+    end;
     fAuth := TFirebaseAuthentication.Create(edtKey.Text);
     edtKey.ReadOnly := true;
-    edtProjectID.ReadOnly := true;
   end;
 end;
 
 procedure TfmxFirebaseDemo.btnLoginClick(Sender: TObject);
 begin
-  CreateAuthenticationClass;
+  if not CheckAndCreateAuthenticationClass then
+    exit;
   if edtEMail.Text.IsEmpty then
   begin
     fAuth.SignInAnonymously(OnUserResponse, OnUserError);
@@ -447,7 +465,8 @@ end;
 
 procedure TfmxFirebaseDemo.btnSignUpNewUserClick(Sender: TObject);
 begin
-  CreateAuthenticationClass;
+  if not CheckAndCreateAuthenticationClass then
+    exit;
   fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
 end;
@@ -495,7 +514,8 @@ end;
 
 procedure TfmxFirebaseDemo.btnPasswordResetClick(Sender: TObject);
 begin
-  CreateAuthenticationClass;
+  if not CheckAndCreateAuthenticationClass then
+    exit;
   fAuth.SendPasswordResetEMail(edtEmail.Text, OnUserResp, OnUserError);
 end;
 
@@ -702,12 +722,28 @@ end;
 
 procedure TfmxFirebaseDemo.btnSendEMailVerificationClick(Sender: TObject);
 begin
-  CreateAuthenticationClass;
+  if not CheckAndCreateAuthenticationClass then
+    exit;
   fAuth.SendEmailVerification(OnUserResp, OnUserError);
 end;
 {$ENDREGION}
 
 {$REGION 'Storage'}
+function TfmxFirebaseDemo.CheckAndCreateStorageClass: boolean;
+begin
+  if not CheckSignedIn(memStorageResp) then
+    exit(false)
+  else if edtStorageBucket.Text.IsEmpty then
+  begin
+    memStorageResp.Lines.Add('Please enter the Storage bucket first!');
+    memStorageResp.GoToTextEnd;
+    edtStorageBucket.SetFocus;
+    exit(false);
+  end;
+  fStorage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+  edtStorageBucket.enabled := false;
+  result := true;
+end;
 
 function TfmxFirebaseDemo.GetStorageFileName: string;
 begin
@@ -718,36 +754,25 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.btnGetStorageSynchClick(Sender: TObject);
-var
-  Storage: TFirebaseStorage;
 begin
-  if not CheckSignedIn(memoResp) then
+  if not CheckAndCreateStorageClass then
     exit;
-  Storage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
-  // We could use also fStorage here but in order to demontrate the more simple
-  // way of synchronous calls we use a local TFirebaseStorage
-  try
-    fStorageObject := Storage.GetSynchronous(GetStorageFileName);
-    memoResp.Lines.Text := 'Firestore object synchronous retrieven';
-    ShowFirestoreObject(fStorageObject);
-    if assigned(fStorageObject) then
-      btnDownloadSync.Enabled := fStorageObject.DownloadToken > ''
-    else
-      btnDownloadSync.Enabled := false;
-    btnDownloadAsync.Enabled := btnDownloadSync.Enabled;
-    btnDeleteSync.Enabled := btnDownloadSync.Enabled;
-    btnDeleteAsync.Enabled := btnDeleteSync.Enabled;
-  finally
-    Storage.Free;
-  end;
+  fStorageObject := fStorage.GetSynchronous(GetStorageFileName);
+  memStorageResp.Lines.Text := 'Firestore object synchronous retrieven';
+  ShowFirestoreObject(fStorageObject);
+  if assigned(fStorageObject) then
+    btnDownloadSync.Enabled := fStorageObject.DownloadToken > ''
+  else
+    btnDownloadSync.Enabled := false;
+  btnDownloadAsync.Enabled := btnDownloadSync.Enabled;
+  btnDeleteSync.Enabled := btnDownloadSync.Enabled;
+  btnDeleteAsync.Enabled := btnDeleteSync.Enabled;
 end;
 
 procedure TfmxFirebaseDemo.btnGetStorageAsynchClick(Sender: TObject);
 begin
-  if not CheckSignedIn(memoResp) then
+  if not CheckAndCreateStorageClass then
     exit;
-  if not assigned(fStorage) then
-    fStorage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
   fStorage.Get(GetStorageFileName, 'Get asynchronous Storage', OnGetStorage,
     OnGetStorageError);
 end;
@@ -755,7 +780,7 @@ end;
 procedure TfmxFirebaseDemo.OnGetStorage(const RequestID: string;
   Obj: IStorageObject);
 begin
-  memoResp.Lines.Text := 'Firestore object asynchronous retrieven';
+  memStorageResp.Lines.Text := 'Firestore object asynchronous retrieven';
   ShowFirestoreObject(Obj);
   if assigned(Obj) then
     btnDownloadSync.Enabled := Obj.DownloadToken > ''
@@ -769,8 +794,8 @@ end;
 
 procedure TfmxFirebaseDemo.OnGetStorageError(const RequestID, ErrMsg: string);
 begin
-  memoResp.Lines.Text := 'Error while asynchronous get for ' + RequestID;
-  memoResp.Lines.Add('Error: ' + ErrMsg);
+  memStorageResp.Lines.Text := 'Error while asynchronous get for ' + RequestID;
+  memStorageResp.Lines.Add('Error: ' + ErrMsg);
 end;
 
 procedure TfmxFirebaseDemo.ShowFirestoreObject(Obj: IStorageObject);
@@ -779,25 +804,25 @@ var
 begin
   if assigned(Obj) then
   begin
-    memoResp.Lines.Add('ObjectName: ' + Obj.ObjectName(false));
-    memoResp.Lines.Add('Path: ' + Obj.Path);
-    memoResp.Lines.Add('Type: ' + Obj.ContentType);
+    memStorageResp.Lines.Add('ObjectName: ' + Obj.ObjectName(false));
+    memStorageResp.Lines.Add('Path: ' + Obj.Path);
+    memStorageResp.Lines.Add('Type: ' + Obj.ContentType);
     sizeInBytes := Obj.Size;
-    memoResp.Lines.Add('Size: ' + Format('%.0n bytes', [SizeInBytes]));
-    memoResp.Lines.Add('Created: ' +
+    memStorageResp.Lines.Add('Size: ' + Format('%.0n bytes', [SizeInBytes]));
+    memStorageResp.Lines.Add('Created: ' +
       DateTimeToStr(Obj.createTime));
-    memoResp.Lines.Add('Updated: ' +
+    memStorageResp.Lines.Add('Updated: ' +
       DateTimeToStr(Obj.updateTime));
-    memoResp.Lines.Add('Download URL: ' + Obj.DownloadUrl);
-    memoResp.Lines.Add('Download Token: ' + Obj.DownloadToken);
-    memoResp.Lines.Add('MD5 hash code: ' + Obj.MD5HashCode);
-    memoResp.Lines.Add('E-Tag: ' + Obj.etag);
-    memoResp.Lines.Add('Generation: ' + IntTostr(Obj.generation));
-    memoResp.Lines.Add('StorageClass: ' + Obj.storageClass);
-    memoResp.Lines.Add('Meta Generation: ' +
+    memStorageResp.Lines.Add('Download URL: ' + Obj.DownloadUrl);
+    memStorageResp.Lines.Add('Download Token: ' + Obj.DownloadToken);
+    memStorageResp.Lines.Add('MD5 hash code: ' + Obj.MD5HashCode);
+    memStorageResp.Lines.Add('E-Tag: ' + Obj.etag);
+    memStorageResp.Lines.Add('Generation: ' + IntTostr(Obj.generation));
+    memStorageResp.Lines.Add('StorageClass: ' + Obj.storageClass);
+    memStorageResp.Lines.Add('Meta Generation: ' +
       IntTostr(Obj.metaGeneration));
   end else
-    memoResp.Lines.Text := 'No firestore object';
+    memStorageResp.Lines.Text := 'No firestore object';
 end;
 
 procedure TfmxFirebaseDemo.btnDownloadAsyncClick(Sender: TObject);
@@ -810,7 +835,8 @@ begin
     fDownloadStream := TFileStream.Create(SaveDialog.FileName, fmCreate);
     fStorageObject.DownloadToStream(SaveDialog.FileName, fDownloadStream,
       OnDownload, OnDownloadError);
-    memoResp.Lines.Add(fStorageObject.ObjectName(true) + ' download started');
+    memStorageResp.Lines.Add(fStorageObject.ObjectName(true) +
+      ' download started');
   end;
 end;
 
@@ -825,8 +851,8 @@ begin
     Stream := TFileStream.Create(SaveDialog.FileName, fmCreate);
     try
       fStorageObject.DownloadToStreamSynchronous(Stream);
-      memoResp.Lines.Add(fStorageObject.ObjectName(true) + ' downloaded to ' +
-        SaveDialog.FileName);
+      memStorageResp.Lines.Add(fStorageObject.ObjectName(true) +
+        ' downloaded to ' + SaveDialog.FileName);
     finally
       Stream.Free;
     end;
@@ -836,7 +862,7 @@ end;
 procedure TfmxFirebaseDemo.OnDownload(const RequestID: string;
   Obj: IStorageObject);
 begin
-  memoResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
+  memStorageResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
     SaveDialog.FileName + ' passed');
   FreeAndNil(fDownloadStream);
 end;
@@ -844,21 +870,20 @@ end;
 procedure TfmxFirebaseDemo.OnDownloadError(Obj: IStorageObject;
   const ErrorMsg: string);
 begin
-  memoResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
+  memStorageResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
     SaveDialog.FileName + ' failed: ' + ErrorMsg);
   FreeAndNil(fDownloadStream);
 end;
 
 procedure TfmxFirebaseDemo.btnUploadSynchClick(Sender: TObject);
 var
-  Storage: TFirebaseStorage;
   fs: TFileStream;
   ExtType: string;
   ContentType: TRESTContentType;
   ObjectName: string;
   Obj: IStorageObject;
 begin
-  if not CheckSignedIn(memoResp) then
+  if not CheckAndCreateStorageClass then
     exit;
   if OpenDialog.Execute then
   begin
@@ -875,18 +900,13 @@ begin
       ContentType := TRESTContentType.ctNone;
     edtStorageObject.Text := ExtractFilename(OpenDialog.FileName);
     ObjectName := GetStorageFileName;
-    Storage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+    fs := TFileStream.Create(OpenDialog.FileName, fmOpenRead);
     try
-      fs := TFileStream.Create(OpenDialog.FileName, fmOpenRead);
-      try
-        Obj := Storage.UploadSynchronousFromStream(fs, ObjectName, ContentType);
-        memoResp.Lines.Text := 'Firestore object synchronous uploaded';
-        ShowFirestoreObject(Obj);
-      finally
-        fs.Free;
-      end;
+      Obj := fStorage.UploadSynchronousFromStream(fs, ObjectName, ContentType);
+      memStorageResp.Lines.Text := 'Firestore object synchronous uploaded';
+      ShowFirestoreObject(Obj);
     finally
-      Storage.Free;
+      fs.Free;
     end;
   end;
 end;
@@ -897,12 +917,12 @@ var
   ContentType: TRESTContentType;
   ObjectName: string;
 begin
-  if not CheckSignedIn(memoResp) then
+  if not CheckAndCreateStorageClass then
     exit;
   if assigned(fUploadStream) then
   begin
-    memoResp.Lines.Add('Wait until previous upload is finisehd');
-    memoResp.GoToTextEnd;
+    memStorageResp.Lines.Add('Wait until previous upload is finisehd');
+    memStorageResp.GoToTextEnd;
   end;
   if OpenDialog.Execute then
   begin
@@ -930,45 +950,40 @@ end;
 procedure TfmxFirebaseDemo.OnUpload(const ObjectName: string;
   Obj: IStorageObject);
 begin
-  memoResp.Lines.Text := 'Firestore object asynchronous uploaded';
+  memStorageResp.Lines.Text := 'Firestore object asynchronous uploaded';
   ShowFirestoreObject(Obj);
   FreeAndNil(fUploadStream);
 end;
 
 procedure TfmxFirebaseDemo.OnUploadError(const RequestID, ErrorMsg: string);
 begin
-  memoResp.Lines.Text := 'Error while asynchronous upload of ' + RequestID;
-  memoResp.Lines.Add('Error: ' + ErrorMsg);
+  memStorageResp.Lines.Text := 'Error while asynchronous upload of ' + RequestID;
+  memStorageResp.Lines.Add('Error: ' + ErrorMsg);
   FreeAndNil(fUploadStream);
 end;
 
 procedure TfmxFirebaseDemo.btnDeleteSyncClick(Sender: TObject);
-var
-  Storage: TFirebaseStorage;
 begin
-  Storage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
-  try
-    Storage.DeleteSynchronous(GetStorageFileName);
-    memoResp.Lines.Text := GetStorageFileName + ' synchronous deleted';
-    btnDownloadSync.Enabled := false;
-    btnDownloadAsync.Enabled :=  false;
-    btnDeleteSync.Enabled := false;
-    btnDeleteAsync.Enabled := false;
-  finally
-    Storage.Free;
-  end;
+  if not CheckAndCreateStorageClass then
+    exit;
+  fStorage.DeleteSynchronous(GetStorageFileName);
+  memStorageResp.Lines.Text := GetStorageFileName + ' synchronous deleted';
+  btnDownloadSync.Enabled := false;
+  btnDownloadAsync.Enabled :=  false;
+  btnDeleteSync.Enabled := false;
+  btnDeleteAsync.Enabled := false;
 end;
 
 procedure TfmxFirebaseDemo.btnDeleteAsyncClick(Sender: TObject);
 begin
-  if not assigned(fStorage) then
-    fStorage := TFirebaseStorage.Create(edtStorageBucket.Text, fAuth);
+  if not CheckAndCreateStorageClass then
+    exit;
   fStorage.Delete(GetStorageFileName, OnDeleteStorage, OnDeleteStorageError);
 end;
 
 procedure TfmxFirebaseDemo.OnDeleteStorage(const ObjectName: string);
 begin
-  memoResp.Lines.Text := GetStorageFileName + ' asynchronous deleted';
+  memStorageResp.Lines.Text := GetStorageFileName + ' asynchronous deleted';
   btnDownloadSync.Enabled := false;
   btnDownloadAsync.Enabled :=  false;
   btnDeleteSync.Enabled := false;
@@ -978,10 +993,9 @@ end;
 procedure TfmxFirebaseDemo.OnDeleteStorageError(const RequestID,
   ErrorMsg: string);
 begin
-  memoResp.Lines.Text := 'Error while asynchronous delete of ' + RequestID;
-  memoResp.Lines.Add('Error: ' + ErrorMsg);
+  memStorageResp.Lines.Text := 'Error while asynchronous delete of ' + RequestID;
+  memStorageResp.Lines.Add('Error: ' + ErrorMsg);
 end;
-
 {$ENDREGION}
 
 {$REGION 'Firestore DB'}
@@ -1573,10 +1587,20 @@ const
 function TfmxFirebaseDemo.CheckAndCreateRealTimeDBClass(Log: TMemo): boolean;
 begin
   if not CheckSignedIn(Log) then
+    exit(false)
+  else if edtFirebaseURL.Text.IsEmpty then
+  begin
+    Log.Lines.Add('Please enter your Firebase URL first');
+    Log.GoToTextEnd;
+    edtFirebaseURL.SetFocus;
     exit(false);
+  end;
   if not assigned(fRealTimeDB) then
   begin
-    fRealTimeDB := TRealTimeDB.Create(edtProjectID.Text, fAuth);
+    fRealTimeDB := TRealTimeDB.CreateByURL(edtFirebaseURL.Text, fAuth);
+    lblFirebaseURL.Text := txtFirebaseURL.Text + #9 + edtFirebaseURL.Text;
+    edtProjectID.ReadOnly := true;
+    edtFirebaseURL.ReadOnly := true;
     edtProjectID.enabled := false;
     fFirebaseEvent := nil;
   end;
@@ -1682,7 +1706,7 @@ begin
     else if not(Val is TJSONNull) then
       memRTDB.Lines.Add(Val.ToString)
     else
-      memRTDB.Lines.Add(Format('Path %s not found',
+      memRTDB.Lines.Add(Format('Path "%s" not found or invalid Firebase URL',
         [GetPathFromResParams(ResourceParams)]));
   except
     on e: exception do
