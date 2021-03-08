@@ -53,7 +53,7 @@ type
     /// <summary>
     /// The first constructor requires all secrets of the Firebase project as
     /// ApiKey and Project ID and when using the Storage also the storage Bucket
-    /// as parameter.
+    /// and for accessing the Firebase RT-DB the FirebaseURL as parameters.
     /// </summary>
     constructor Create(const ApiKey, ProjectID: string;
       const Bucket: string = ''; const FirebaseURL: string = ''); overload;
