@@ -31,7 +31,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.StdCtrls,
   FMX.Objects, FMX.Controls.Presentation, FMX.Edit, FMX.TabControl,
   FMX.MultiView, FMX.ScrollBox, FMX.Memo, FMX.Ani, FMX.Layouts,
-  FB4D.Interfaces, FB4D.SelfRegistrationFra;
+  FB4D.Interfaces, FB4D.SelfRegistrationFra, FMX.Memo.Types;
 
 type
   TfmxMain = class(TForm)

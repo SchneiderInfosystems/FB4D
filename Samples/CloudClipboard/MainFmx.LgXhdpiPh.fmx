@@ -202,7 +202,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
           410s
           262s)
         inherited tabText: TTabItem
-          Size.Width = 205.000000000000000000
+          Size.Width = 37.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 649.000000000000000000
           ExplicitSize.cy = 49.000000000000000000
@@ -214,7 +214,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
           end
         end
         inherited tabGraphic: TTabItem
-          Size.Width = 205.000000000000000000
+          Size.Width = 59.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 325.000000000000000000
           ExplicitSize.cy = 49.000000000000000000
@@ -225,8 +225,8 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -1682.000000000000000000
-        Position.Y = 2359.000000000000000000
+        Position.X = -1932.000000000000000000
+        Position.Y = 2574.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
         Align = Bottom

@@ -18,16 +18,16 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
       inherited edtKey: TEdit
-        Size.Width = 368.000000000000000000
+        Size.Width = 82.000000000000000000
         Size.Height = 30.000000000000000000
       end
       inherited edtProjectID: TEdit
-        Size.Width = 368.000000000000000000
+        Size.Width = 82.000000000000000000
         Size.Height = 30.000000000000000000
       end
       inherited btnEnteredProjSettings: TButton
-        Position.X = 340.000000000000000000
-        Position.Y = 144.000000000000000000
+        Position.X = 54.000000000000000000
+        Position.Y = 380.000000000000000000
         Size.Width = 44.000000000000000000
         Size.Height = 44.000000000000000000
       end
@@ -115,7 +115,7 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       inherited aniRTDB: TAniIndicator
         Anchors = [akLeft, akBottom]
         Position.X = 16.000000000000000000
-        Position.Y = 2064.000000000000000000
+        Position.Y = 2300.000000000000000000
       end
       inherited btnFromClipBoard: TButton
         Align = Bottom
@@ -167,8 +167,8 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -2006.000000000000000000
-        Position.Y = 2548.000000000000000000
+        Position.X = -2292.000000000000000000
+        Position.Y = 2784.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
         Align = Bottom

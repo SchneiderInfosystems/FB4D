@@ -34,6 +34,16 @@
             <Overwrite>True</Overwrite>
             <Required>True</Required>
         </DeployFile>
+        <DeployFile Include="Linux64\Release\CloudClipBoard" Condition="'$(Config)'=='Release'">
+            <RemoteDir>CloudClipBoard\</RemoteDir>
+            <RemoteName>CloudClipBoard</RemoteName>
+            <DeployClass>ProjectOutput</DeployClass>
+            <Operation>1</Operation>
+            <LocalCommand/>
+            <RemoteCommand/>
+            <Overwrite>True</Overwrite>
+            <Required>True</Required>
+        </DeployFile>
     </ItemGroup>
     <ItemGroup Condition="'$(Platform)'=='OSX64'">
         <DeployFile Include="OSX64\Release\CloudClipBoard" Condition="'$(Config)'=='Release'">
