@@ -10,6 +10,14 @@ This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki).
 
 You can find more learning videos on the following [YouTube channel](https://www.youtube.com/channel/UC3qSIUzdGqoZA8hcA31X0Og).
 
+### Major Change log
+
+This log informs about interface changes and important library enhancements that need the attention of users of this library.
+
+- March 8, 2021: Real Time Database creation has changed within the Firebase Console. The Firebase ID is no longer sufficient to access newly created RT DBs. A Firebase URL is now required, which can also include the server location. [See more details](FB4D-Reference-IRealTimeDB#create-an-instance-for-the-interface-irealtimedb).
+
+- March 5, 2021: A new listener detects changes within the Firestore Database without pooling. [See more details](FB4D-Reference-IFirestoreDatabase#firestore-listener).
+
 ### Prerequisites
 
 This library requires at least Delphi 10.3 Rio. The sample projects are developed with Delphi 10.4.1 Sydney and are ready for Delphi 10.4.2.
