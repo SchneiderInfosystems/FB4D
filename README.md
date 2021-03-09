@@ -16,7 +16,7 @@ This log informs about interface changes and important library enhancements that
 
 - March 8, 2021: Real Time Database creation has changed within the Firebase Console. The Firebase ID is no longer sufficient to access newly created RT DBs. A Firebase URL is now required, which can also include the server location. [See more details](FB4D-Reference-IRealTimeDB#create-an-instance-for-the-interface-irealtimedb).
 
-- March 5, 2021: A new listener detects changes within the Firestore Database without pooling. [See more details](FB4D-Reference-IFirestoreDatabase#firestore-listener).
+- March 5, 2021: A new listener detects changes within the Firestore Database without pooling. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirestoreDatabase#firestore-listener).
 
 ### Prerequisites
 
