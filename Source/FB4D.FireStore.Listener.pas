@@ -70,6 +70,7 @@ type
     fStopWaiting: boolean;
     fPartialResp: string;
     fLastTelegramNo: integer;
+    fResumeToken: string;
     fTargets: TList<TTarget>;
     function GetTargetIndById(TargetID: cardinal): integer;
     function GetRequestData: string;
@@ -231,17 +232,18 @@ const
   // req0___data__={"database":"projects/<ProjectID>/databases/(default)",
   // "addTarget":{"documents":{"documents":["projects/<ProjectID>/databases/(default)/documents/<DBPath>"]},
   // "targetId":2}}
+  cResumeToken = ',"resumeToken":"%s"';
   cDocumentTemplate =
     '{"database":"%0:s",' +
      '"addTarget":{' +
        '"documents":' +
          '{"documents":["%0:s/documents%1:s"]},' +
-       '"targetId":%2:d}}';
+       '"targetId":%2:d%3:s}}';
   cQueryTemplate =
     '{"database":"%0:s",' +
      '"addTarget":{' +
        '"query":%1:s,' +
-       '"targetId":%2:d}}';
+       '"targetId":%2:d%3:s}}';
   cHead = 'count=%d&ofs=0';
   cTarget= '&req%d___data__=%s';
 var
@@ -253,14 +255,18 @@ begin
   result := Format(cHead, [fTargets.Count]);
   for Target in fTargets do
   begin
+    if fResumeToken.IsEmpty then
+      JSON := ''
+    else
+      JSON := Format(cResumeToken, [fResumeToken]);
     case Target.TargetKind of
       tkDocument:
         JSON := Format(cDocumentTemplate,
-          [fDatabase, Target.DocumentPath, Target.TargetID]);
+          [fDatabase, Target.DocumentPath, Target.TargetID, JSON]);
       tkQuery:
         begin
           JSON := Format(cQueryTemplate,
-            [fDatabase, Target.QueryJSON, Target.TargetID]);
+            [fDatabase, Target.QueryJSON, Target.TargetID, JSON]);
           {$IFDEF ParserLogDetails}
           TFirebaseHelpers.Log('Query: ' + JSON);
           {$ENDIF}
@@ -272,6 +278,14 @@ begin
 end;
 
 procedure TListenerThread.Interprete(const Telegram: string);
+
+  procedure HandleTargetChanged(ChangedObj: TJsonObject);
+  begin
+    ChangedObj.TryGetValue('resumeToken', fResumeToken);
+    {$IFDEF ParserLogDetails}
+    TFirebaseHelpers.Log('ResumeToken: ' + fResumeToken);
+    {$ENDIF}
+  end;
 
   procedure HandleDocChanged(DocChangedObj: TJsonObject);
   var
@@ -366,7 +380,7 @@ begin
       try
         ObjName := Obj.Pairs[0].JsonString.Value;
         if ObjName = cTargetChange then
-          // TargetChanged(Obj.Pairs[0].JsonValue as TJsonObject)
+          HandleTargetChanged(Obj.Pairs[0].JsonValue as TJsonObject)
         else if ObjName = cFilter then
           // Filter(Obj.Pairs[0].JsonValue as TJsonObject)
         else if ObjName = cDocChange then
@@ -735,8 +749,7 @@ begin
       end;
       if fRequireTokenRenew then
       begin
-        if assigned(fAuth) and
-           fAuth.CheckAndRefreshTokenSynchronous(true) then
+        if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
         begin
           {$IFDEF ParserLog}
           TFirebaseHelpers.Log(TimeToStr(now) + ' RequireTokenRenew: sucess');
@@ -774,6 +787,7 @@ begin
     raise EFirestoreListener.Create(
       'RegisterEvents must not be called for started Listener');
   InitListen(true);
+  fResumeToken := '';
   fRequestID := 'Listener for ' + fTargets.Count.ToString + ' target(s)';
   fOnStopListening := OnStopListening;
   fOnListenError := OnError;
