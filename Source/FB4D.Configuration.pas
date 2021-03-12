@@ -65,6 +65,16 @@ type
     /// </summary>
     constructor Create(const GoogleServicesFile: string); overload;
 
+    /// <summary>
+    /// Define Bucket after creation but before access to Storage
+    /// </summary>
+    procedure SetBucket(const Bucket: string);
+
+    /// <summary>
+    /// Define FirebaseURL after creation but before access to RealTimeDB
+    /// </summary>
+    procedure SetFirebaseURL(const FirebaseURL: string);
+
     function ProjectID: string;
     function Auth: IFirebaseAuthentication;
     function RealTimeDB: IRealTimeDB;
@@ -123,6 +133,16 @@ begin
   finally
     JsonObj.Free;
   end;
+end;
+
+procedure TFirebaseConfiguration.SetBucket(const Bucket: string);
+begin
+  fBucket := Bucket;
+end;
+
+procedure TFirebaseConfiguration.SetFirebaseURL(const FirebaseURL: string);
+begin
+  fFirebaseURL := FirebaseURL;
 end;
 
 function TFirebaseConfiguration.Auth: IFirebaseAuthentication;
