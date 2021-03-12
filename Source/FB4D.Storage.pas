@@ -390,7 +390,9 @@ procedure TStorageObject.DownloadToStream(const RequestID: string; Stream: TStre
   OnSuccess: TOnDownload; OnError: TOnDownloadError);
 var
   ErrMsg: string;
+  URL: string;
 begin
+  URL := DownloadURL;
   TThread.CreateAnonymousThread(
     procedure
     var
@@ -401,7 +403,7 @@ begin
       try
         Client := THTTPClient.Create;
         try
-          Response := Client.Get(DownloadUrl, Stream);
+          Response := Client.Get(Url, Stream);
           if TFirebaseHelpers.AppIsTerminated then
             exit;
           if Response.StatusCode = 200 then
