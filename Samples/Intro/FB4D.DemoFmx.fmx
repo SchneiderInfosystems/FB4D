@@ -1474,7 +1474,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 329.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TextPrompt = 'Enter a Storage Bucket URL wiithout gs://'
+        TextPrompt = 'Enter a Storage Bucket URL without gs://'
       end
       object btnGetStorageSynch: TButton
         Position.X = 24.000000000000000000

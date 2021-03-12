@@ -2050,7 +2050,7 @@ end;
 procedure TfmxFirebaseDemo.btnStopEventClick(Sender: TObject);
 begin
   if assigned(fFirebaseEvent) then
-    fFirebaseEvent.StopListening;
+    fFirebaseEvent.StopListening('StopListener');
 end;
 
 procedure TfmxFirebaseDemo.OnRecData(const Event: string;
