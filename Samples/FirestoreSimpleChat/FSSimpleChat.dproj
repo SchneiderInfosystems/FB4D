@@ -6,7 +6,7 @@
         <MainSource>FSSimpleChat.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>37915</TargetedPlatforms>
         <AppType>Application</AppType>
     </PropertyGroup>
@@ -285,6 +285,7 @@
         <DCCReference Include="..\..\Source\FB4D.Functions.pas"/>
         <DCCReference Include="..\..\GUIPatterns\FMX\FB4D.SelfRegistrationFra.pas">
             <Form>FraSelfRegistration</Form>
+            <FormType>fmx</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <BuildConfiguration Include="Release">

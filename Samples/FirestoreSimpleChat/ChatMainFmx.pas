@@ -27,11 +27,12 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
+  System.ImageList, System.Generics.Collections,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
-  FMX.Controls.Presentation, FMX.Edit, FB4D.SelfRegistrationFra, FMX.TabControl,
-  FMX.ListView.Types, FMX.ListView.Appearances, FMX.ListView.Adapters.Base,
-  FMX.Layouts, FMX.ListView, FMX.StdCtrls,
-  FB4D.Interfaces, FB4D.Configuration;
+  FMX.Controls.Presentation, FMX.Edit, FMX.TabControl,FMX.ListView.Types,
+  FMX.ListView.Appearances, FMX.ListView.Adapters.Base, FMX.Layouts,
+  FMX.ListView, FMX.StdCtrls, FMX.MultiResBitmap, FMX.ImgList, FMX.TextLayout,
+  FB4D.Interfaces, FB4D.Configuration, FB4D.SelfRegistrationFra;
 
 type
   TfmxChatMain = class(TForm)
@@ -56,6 +57,10 @@ type
     btnDeleteMessage: TButton;
     btnEditMessage: TButton;
     layFBConfig: TLayout;
+    edtBucket: TEdit;
+    Text1: TText;
+    shpProfile: TCircle;
+    ImageList: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSignOutClick(Sender: TObject);
@@ -66,13 +71,28 @@ type
       const AItem: TListViewItem);
     procedure btnEditMessageClick(Sender: TObject);
     procedure btnDeleteMessageClick(Sender: TObject);
-    procedure lsvChatResized(Sender: TObject);
+    procedure FraSelfRegistrationbtnCheckEMailClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure lsvChatUpdateObjects(const Sender: TObject;
+      const AItem: TListViewItem);
+  private type
+    TPendingProfile = class
+      Items: TList<TListViewItem>;
+      Stream: TStream;
+      constructor Create(FirstItem: TListViewItem);
+      destructor Destroy; override;
+    end;
+  private type
+    TMsgType = (myMsg, foreignMsg);
   private
     fConfig: TFirebaseConfiguration;
     fUID: string;
     fUserName: string;
+    fMyImgIndex: integer;
     fEditDocID: string;
+    fPendingProfiles: TDictionary<string {UID}, TPendingProfile>;
     function GetAuth: IFirebaseAuthentication;
+    function GetStorage: IFirebaseStorage;
     function GetSettingFilename: string;
     procedure SaveSettings;
     procedure OnUserLogin(const Info: string; User: IFirebaseUser);
@@ -80,6 +100,9 @@ type
     procedure WipeToTab(ActiveTab: TTabItem);
     procedure EnterEditMode(const DocPath: string);
     procedure ExitEditMode(ClearEditBox: boolean);
+    function GetMsgTextName(MsgType: TMsgType): string;
+    function GetDetailTextName(MsgType: TMsgType): string;
+    function GetProfileImgName(MsgType: TMsgType): string;
     procedure OnAuthRevoked(TokenRenewPassed: boolean);
     procedure OnChangedColDocument(Document: IFirestoreDocument);
     procedure OnDeletedColDocument(const DeleteDocumentPath: string;
@@ -91,6 +114,11 @@ type
     procedure OnDocWriteError(const RequestID, ErrMsg: string);
     procedure OnDocDelete(const RequestID: string; Response: IFirebaseResponse);
     procedure OnDocDeleteError(const RequestID, ErrMsg: string);
+    function AddProfileImgToImageList(const UID: string; Img: TBitmap): integer;
+    procedure DownloadProfileImgAndAddToImageList(const UID: string;
+      Item: TListViewItem);
+    procedure OnGetStorage(const ObjName: string; Obj: IStorageObject);
+    procedure OnStorageDownload(const ObjName: string; Obj: IStorageObject);
   end;
 
 var
@@ -99,7 +127,7 @@ var
 implementation
 
 uses
-  System.IniFiles, System.IOUtils, System.JSON,
+  System.IniFiles, System.IOUtils, System.JSON, System.Math,
   FB4D.Helpers, FB4D.Firestore, FB4D.Document;
 
 {$R *.fmx}
@@ -129,16 +157,29 @@ begin
     edtKey.Text := IniFile.ReadString('FBProjectSettings', 'APIKey', '');
     edtProjectID.Text :=
       IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
+    edtBucket.Text := IniFile.ReadString('FBProjectSettings', 'Bucket', '');
     LastEMail := IniFile.ReadString('Authentication', 'User', '');
     LastToken := IniFile.ReadString('Authentication', 'Token', '');
   finally
     IniFile.Free;
   end;
+  fPendingProfiles := TDictionary<string, TPendingProfile>.Create;
   TabControl.ActiveTab := tabLogin;
   FraSelfRegistration.InitializeAuthOnDemand(GetAuth, OnUserLogin, LastToken,
     LastEMail, true, false, true);
+  FraSelfRegistration.RequestProfileImg(GetStorage);
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus;
+end;
+
+procedure TfmxChatMain.FormDestroy(Sender: TObject);
+begin
+  fPendingProfiles.Free;
+end;
+
+procedure TfmxChatMain.FraSelfRegistrationbtnCheckEMailClick(Sender: TObject);
+begin
+  FraSelfRegistration.btnCheckEMailClick(Sender);
 end;
 
 procedure TfmxChatMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -155,6 +196,7 @@ begin
   try
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
+    IniFile.WriteString('FBProjectSettings', 'Bucket', edtBucket.Text);
     IniFile.WriteString('Authentication', 'User', FraSelfRegistration.GetEMail);
     if assigned(fConfig) and fConfig.Auth.Authenticated then
       IniFile.WriteString('Authentication', 'Token',
@@ -172,6 +214,15 @@ begin
   result := fConfig.Auth;
   edtKey.Enabled := false;
   edtProjectID.Enabled := false;
+end;
+
+function TfmxChatMain.GetStorage: IFirebaseStorage;
+begin
+  Assert(assigned(fConfig), 'FirebaseConfiguration not initialized');
+  if not edtBucket.Text.IsEmpty then
+    edtBucket.Enabled := false;
+  fConfig.SetBucket(edtBucket.Text);
+  result := fConfig.Storage;
 end;
 
 function TfmxChatMain.GetSettingFilename: string;
@@ -192,6 +243,8 @@ procedure TfmxChatMain.OnUserLogin(const Info: string; User: IFirebaseUser);
 begin
   fUID := User.UID;
   fUserName := User.DisplayName;
+  if assigned(FraSelfRegistration.ProfileImg) then
+    shpProfile.Fill.Bitmap.Bitmap.Assign(FraSelfRegistration.ProfileImg);
   StartChat;
 end;
 
@@ -201,8 +254,8 @@ begin
   fConfig.Auth.SignOut;
   fUID := '';
   fUserName := '';
-  WipeToTab(tabLogin);
   FraSelfRegistration.StartEMailEntering;
+  WipeToTab(tabLogin);
 end;
 
 procedure TfmxChatMain.WipeToTab(ActiveTab: TTabItem);
@@ -234,6 +287,7 @@ begin
   btnDeleteMessage.Visible := false;
   btnPushMessage.Visible := true;
   fEditDocID := '';
+  fMyImgIndex := AddProfileImgToImageList(fUID, FraSelfRegistration.ProfileImg);
   WipeToTab(tabChat);
 end;
 
@@ -248,10 +302,38 @@ begin
         exit(lsvChat.Items[c]);
 end;
 
+function TfmxChatMain.GetMsgTextName(MsgType: TMsgType): string;
+begin
+  if MsgType = myMsg then
+    result := 'Text3'
+  else
+    result := 'Text5';
+end;
+
+function TfmxChatMain.GetDetailTextName(MsgType: TMsgType): string;
+begin
+  if MsgType = myMsg then
+    result := 'Text4'
+  else
+    result := 'Text6';
+end;
+
+function TfmxChatMain.GetProfileImgName(MsgType: TMsgType): string;
+begin
+  if MsgType = myMsg then
+    result := 'Image1'
+  else
+    result := 'Image2';
+end;
+
 procedure TfmxChatMain.OnChangedColDocument(Document: IFirestoreDocument);
 var
   Item: TListViewItem;
   Edited: TDateTime;
+  UID: string;
+  DetailInfo: string;
+  ImgInd: integer;
+  MsgType, InvType: TMsgType;
 begin
   Item := SearchItem(Document.DocumentName(true));
   lsvChat.BeginUpdate;
@@ -262,23 +344,37 @@ begin
       Item.TagString := Document.DocumentName(true);
     end;
     Item.Text := Document.GetStringValueDef('Message', '?');
-    Item.Detail := Document.GetStringValueDef('Sender', '?') + ' at ' +
+    DetailInfo := Document.GetStringValueDef('Sender', '?') + ' at ' +
       DateTimeToStr(TFirebaseHelpers.ConvertToLocalDateTime(
         Document.GetTimeStampValueDef('DateTime', now)));
     Edited := Document.GetTimeStampValueDef('Edited', 0);
     if Edited > 0 then
-      Item.Detail := Item.Detail + ' (edited ' +
+      DetailInfo := DetailInfo + ' (edited ' +
         DateTimeToStr(TFirebaseHelpers.ConvertToLocalDateTime(Edited)) + ')';
-    if Document.GetStringValueDef('UID', '?') = fUID then
+    UID := Document.GetStringValueDef('UID', '?');
+    if UID = fUID then
     begin
-      Item.Tag := 1;
-      Item.Objects.TextObject.TextAlign := TTextAlign.Trailing;
-      Item.Objects.DetailObject.TextAlign := TTextAlign.Trailing;
+      MsgType := myMsg;
+      InvType := foreignMsg;
+      ImgInd := fMyImgIndex;
     end else begin
-      Item.Tag := 0;
-      Item.Objects.TextObject.TextAlign := TTextAlign.Leading;
-      Item.Objects.DetailObject.TextAlign := TTextAlign.Leading;
+      MsgType := foreignMsg;
+      InvType := myMsg;
+      ImgInd := ImageList.Source.IndexOf(UID);
+      if ImgInd < 0 then
+      begin
+        DownloadProfileImgAndAddToImageList(UID, Item);
+        ImgInd := 0; // set to default avatar
+      end else
+        dec(ImgInd);
     end;
+    Item.Tag := ord(MsgType);
+    Item.Data[GetMsgTextName(MsgType)] := Item.Text;
+    Item.Data[GetDetailTextName(MsgType)] := DetailInfo;
+    Item.Data[GetProfileImgName(MsgType)] := ImgInd;
+    Item.Data[GetMsgTextName(InvType)] := ''; // After re-login with other
+    Item.Data[GetDetailTextName(InvType)] := ''; // other user the former
+    Item.Data[GetProfileImgName(InvType)] := -1; // MsgType must removed
   finally
     lsvChat.EndUpdate;
   end;
@@ -290,24 +386,12 @@ end;
 procedure TfmxChatMain.lsvChatItemClick(const Sender: TObject;
   const AItem: TListViewItem);
 begin
-  if AItem.Tag = 1 then // My msg?
+  if AItem.Tag = ord(myMsg) then
   begin
     edtMessage.Text := AItem.Text;
     EnterEditMode(AItem.TagString);
   end else
     ExitEditMode(not fEditDocID.IsEmpty);
-end;
-
-procedure TfmxChatMain.lsvChatResized(Sender: TObject);
-var
-  c: integer;
-begin
-  for c := 0 to lsvChat.ItemCount - 1 do
-    if lsvChat.Items[c].Tag = 1 then
-    begin
-      lsvChat.Items[c].Objects.TextObject.TextAlign := TTextAlign.Trailing;
-      lsvChat.Items[c].Objects.DetailObject.TextAlign := TTextAlign.Trailing;
-    end;
 end;
 
 procedure TfmxChatMain.EnterEditMode(const DocPath: string);
@@ -450,6 +534,160 @@ end;
 procedure TfmxChatMain.OnListenerError(const RequestID, ErrMsg: string);
 begin
   txtError.Text := 'Error in listener: ' + ErrMsg;
+end;
+
+procedure TfmxChatMain.lsvChatUpdateObjects(const Sender: TObject;
+  const AItem: TListViewItem);
+
+  function CalcHeight(MsgText: TListItemText; const Text: string): Integer;
+  const
+    cMinItemHeight = 60;
+  var
+    Layout: TTextLayout;
+  begin
+    Layout := TTextLayoutManager.DefaultTextLayout.Create;
+    try
+      Layout.BeginUpdate;
+      try
+        Layout.Font.Assign(MsgText.Font);
+        Layout.VerticalAlign := MsgText.TextVertAlign;
+        Layout.HorizontalAlign := MsgText.TextAlign;
+        Layout.WordWrap := MsgText.WordWrap;
+        Layout.Trimming := MsgText.Trimming;
+        Layout.MaxSize :=
+          TPointF.Create(MsgText.Width, TTextLayout.MaxLayoutSize.Y);
+        Layout.Text := Text;
+      finally
+        Layout.EndUpdate;
+      end;
+      result := round(Layout.Height);
+      Layout.Text := 'm';
+      result := max(cMinItemHeight, result + round(Layout.Height));
+    finally
+      Layout.Free;
+    end;
+  end;
+
+const
+  cOffsetMsg = 60 - 40;
+  cOffsetDetail = 60 - 42;
+var
+  MsgType: TMsgType;
+  MsgTxt, DetTxt: TListItemText;
+  AvailableWidth: single;
+begin
+  MsgType := TMsgType(AItem.Tag);
+  MsgTxt := TListItemText(AItem.View.FindDrawable(GetMsgTextName(MsgType)));
+  DetTxt := TListItemText(AItem.View.FindDrawable(GetDetailTextName(MsgType)));
+  AvailableWidth := lsvChat.Width - lsvChat.ItemSpaces.Left -
+    lsvChat.ItemSpaces.Right - abs(MsgTxt.PlaceOffset.X);
+  lsvChat.BeginUpdate;
+  try
+    MsgTxt.Width := AvailableWidth;
+    AItem.Height := CalcHeight(MsgTxt, AItem.Text);
+    MsgTxt.Width := AvailableWidth;
+    MsgTxt.Height := AItem.Height;
+    DetTxt.PlaceOffset.Y := AItem.Height - cOffsetDetail;
+  finally
+    lsvChat.EndUpdate;
+  end;
+end;
+
+function TfmxChatMain.AddProfileImgToImageList(const UID: string;
+  Img: TBitmap): integer;
+var
+  SrcItem: TCustomSourceItem;
+  DstItem: TCustomDestinationItem;
+  BmpItem: TCustomBitmapItem;
+begin
+  result := ImageList.Source.IndexOf(UID);
+  if result < 0 then // Profile already stored in case ro re-login?
+  begin
+    SrcItem := ImageList.Source.Add;
+    SrcItem.Name := UID;
+    BmpItem := SrcItem.MultiResBitmap.Add;
+    BmpItem.Scale := 1;
+    BmpItem.Bitmap.Assign(Img);
+    DstItem := ImageList.Destination.Add;
+    with DstItem.Layers.Add do
+    begin
+      Name := UID;
+      SourceRect.Rect := RectF(0, 0, BmpItem.Width, BmpItem.Height);
+    end;
+    with DstItem.Layers.Add do
+    begin
+      Name := 'ProfileMask';
+      SourceRect.Rect := RectF(0, 0, BmpItem.Width, BmpItem.Height);
+    end;
+    result := DstItem.Index;
+  end else
+    dec(result);
+end;
+
+procedure TfmxChatMain.DownloadProfileImgAndAddToImageList(const UID: string;
+  Item: TListViewItem);
+var
+  Profile: TPendingProfile;
+begin
+  if fPendingProfiles.TryGetValue(UID, Profile) then
+    Profile.Items.Add(Item)
+  else begin
+    fPendingProfiles.Add(UID, TPendingProfile.Create(Item));
+    fConfig.Storage.Get(TFraSelfRegistration.cDefaultStoragePathForProfileImg +
+      '/' + UID, UID, OnGetStorage, nil);
+  end;
+end;
+
+procedure TfmxChatMain.OnGetStorage(const ObjName: string; Obj: IStorageObject);
+var
+  Profile: TPendingProfile;
+begin
+  Profile := fPendingProfiles.Items[ObjName];
+  Obj.DownloadToStream(ObjName, Profile.Stream, OnStorageDownload, nil);
+end;
+
+procedure TfmxChatMain.OnStorageDownload(const ObjName: string;
+  Obj: IStorageObject);
+var
+  Profile: TPendingProfile;
+  Bmp: TBitmap;
+  Ind: integer;
+  Item: TListViewItem;
+begin
+  Profile := fPendingProfiles.Items[ObjName];
+  Profile.Stream.Position := 0;
+  Bmp := TBitmap.Create;
+  try
+    Bmp.LoadFromStream(Profile.Stream);
+    Ind := AddProfileImgToImageList(ObjName, Bmp);
+  finally
+    Bmp.Free;
+  end;
+  lsvChat.BeginUpdate;
+  try
+    for Item in Profile.Items do
+      Item.Data['Image2'] := Ind;
+  finally
+    lsvChat.EndUpdate;
+  end;
+  fPendingProfiles.Remove(ObjName);
+  Profile.Free;
+end;
+
+{ TfmxChatMain.TPendingProfile }
+
+constructor TfmxChatMain.TPendingProfile.Create(FirstItem: TListViewItem);
+begin
+  Items := TList<TListViewItem>.Create;
+  Items.Add(FirstItem);
+  Stream := TMemoryStream.Create;
+end;
+
+destructor TfmxChatMain.TPendingProfile.Destroy;
+begin
+  Stream.Free;
+  Items.Free;
+  inherited;
 end;
 
 end.
