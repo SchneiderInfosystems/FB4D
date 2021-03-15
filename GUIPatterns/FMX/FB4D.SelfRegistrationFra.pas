@@ -393,6 +393,10 @@ end;
 
 procedure TFraSelfRegistration.OnUserResponse(const Info: string;
   User: IFirebaseUser);
+const
+  cReqInfo4Photo = 'GetUserDataForPhoto';
+var
+  WaitForDisplayNameOrProfile: boolean;
 begin
   if fRequireVerificatedEMail then
     case User.IsEMailVerified of
@@ -408,9 +412,10 @@ begin
           exit;
         end;
     end;
-  if fRegisterProfileImg and not User.IsPhotoURLAvailable then
+  if fRegisterProfileImg and not User.IsPhotoURLAvailable and
+    not SameText(Info, cReqInfo4Photo) then
   begin
-    fReqInfo := 'GetUserDataForPhoto';
+    fReqInfo := cReqInfo4Photo;
     fAuth.GetUserData(OnGetUserData, OnUserError);
     exit;
   end;
@@ -428,6 +433,7 @@ begin
     shpProfile.Fill.Bitmap.Bitmap.Assign(fDefaultProfileImg);
   end;
   fUser := User;
+  WaitForDisplayNameOrProfile := false;
   if fRegisterDisplayName and User.IsDisplayNameAvailable and
     not User.DisplayName.IsEmpty then
   begin
@@ -438,13 +444,17 @@ begin
   end;
   if fRegisterProfileImg and User.IsPhotoURLAvailable and
     not User.PhotoURL.IsEmpty and fProfileURL.IsEmpty then
-    StartDownloadProfileImg(User.PhotoURL)
+  begin
+    StartDownloadProfileImg(User.PhotoURL);
+    WaitForDisplayNameOrProfile := true;
+  end
   else if fRegisterProfileImg and
     (not User.IsPhotoURLAvailable or User.PhotoURL.IsEmpty) then
   begin
     shpProfile.Visible := true;
-  end
-  else if fRegisterDisplayName and
+    WaitForDisplayNameOrProfile := true;
+  end;
+  if fRegisterDisplayName and
     (not User.IsDisplayNameAvailable or User.DisplayName.IsEmpty) then
   begin
     lblStatus.visible := false;
@@ -452,7 +462,9 @@ begin
     edtDisplayName.SetFocus;
     btnRegisterDisplayName.Visible := true;
     shpProfile.Visible := fRegisterProfileImg;
-  end else if assigned(fOnUserLogin) then
+    WaitForDisplayNameOrProfile := true;
+  end;
+  if assigned(fOnUserLogin) and not WaitForDisplayNameOrProfile then
   begin
     lblStatus.Text := rsLoggedIn;
     fOnUserLogin(fInfo, fUser);
