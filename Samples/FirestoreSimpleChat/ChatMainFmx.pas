@@ -633,6 +633,7 @@ begin
     Profile.Items.Add(Item)
   else begin
     fPendingProfiles.Add(UID, TPendingProfile.Create(Item));
+    GetStorage; // Ensure that Bucket is sent to Config
     fConfig.Storage.Get(TFraSelfRegistration.cDefaultStoragePathForProfileImg +
       '/' + UID, UID, OnGetStorage, nil);
   end;
