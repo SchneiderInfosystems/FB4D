@@ -840,24 +840,11 @@ begin
     else
       fAsyncResult.Cancel;
   end;
-  Timeout := TimeOutInMS div 2;
+  Timeout := TimeOutInMS;
   while not Finished and (Timeout > 0) do
   begin
     TFirebaseHelpers.SleepAndMessageLoop(5);
     dec(Timeout, 5);
-  end;
-  if not Finished then
-  begin
-    // last try
-    fGetFinishedEvent.SetEvent;
-    Timeout := TimeOutInMS div 2;
-    while not Finished and (Timeout > 0) do
-    begin
-      TFirebaseHelpers.SleepAndMessageLoop(5);
-      dec(Timeout, 5);
-    end;
-    if not Finished then
-      raise EFirestoreListener.Create('Listener not stopped because of timeout');
   end;
 end;
 
@@ -866,6 +853,8 @@ procedure TListenerThread.OnRecData(const Sender: TObject; ContentLength,
 var
   ss: TStringStream;
   ErrMsg: string;
+  Retry: integer;
+  StreamReadFailed: boolean;
 begin
   try
     if fStopWaiting then
@@ -879,8 +868,23 @@ begin
         Assert(fReadPos >= 0, 'Invalid stream read position');
         Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count: ' +
           ReadCount.ToString + ' - ' + fReadPos.ToString);
-        fStream.Position := fReadPos;
-        ss.CopyFrom(fStream, ReadCount - fReadPos);
+        Retry := 2;
+        StreamReadFailed := false;
+        repeat
+          fStream.Position := fReadPos;
+          try
+            ss.CopyFrom(fStream, ReadCount - fReadPos);
+            StreamReadFailed := false;
+          except
+            on e: EReadError do
+              if Retry > 0 then
+              begin
+                StreamReadFailed := true;
+                dec(Retry);
+              end else
+                Raise;
+          end;
+        until not StreamReadFailed;
         try
           fPartialResp := fPartialResp + ss.DataString;
           fReadPos := ReadCount;
