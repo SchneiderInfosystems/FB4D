@@ -635,15 +635,18 @@ begin
     fPendingProfiles.Add(UID, TPendingProfile.Create(Item));
     GetStorage; // Ensure that Bucket is sent to Config
     fConfig.Storage.Get(TFraSelfRegistration.cDefaultStoragePathForProfileImg +
-      '/' + UID, UID, OnGetStorage, nil);
+      '/' + UID, OnGetStorage, nil);
   end;
 end;
 
 procedure TfmxChatMain.OnGetStorage(const ObjName: string; Obj: IStorageObject);
 var
   Profile: TPendingProfile;
+  UID: string;
 begin
-  Profile := fPendingProfiles.Items[ObjName];
+  UID := Obj.ObjectName(false);
+  Profile := fPendingProfiles.Items[UID];
+  Assert(assigned(Profile), 'Invalid profile');
   Obj.DownloadToStream(ObjName, Profile.Stream, OnStorageDownload, nil);
 end;
 
@@ -654,13 +657,16 @@ var
   Bmp: TBitmap;
   Ind: integer;
   Item: TListViewItem;
+  UID: string;
 begin
-  Profile := fPendingProfiles.Items[ObjName];
+  UID := Obj.ObjectName(false);
+  Profile := fPendingProfiles.Items[UID];
+  Assert(assigned(Profile), 'Invalid profile');
   Profile.Stream.Position := 0;
   Bmp := TBitmap.Create;
   try
     Bmp.LoadFromStream(Profile.Stream);
-    Ind := AddProfileImgToImageList(ObjName, Bmp);
+    Ind := AddProfileImgToImageList(UID, Bmp);
   finally
     Bmp.Free;
   end;
@@ -671,7 +677,7 @@ begin
   finally
     lsvChat.EndUpdate;
   end;
-  fPendingProfiles.Remove(ObjName);
+  fPendingProfiles.Remove(UID);
   Profile.Free;
 end;
 

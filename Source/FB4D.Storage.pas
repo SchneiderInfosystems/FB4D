@@ -36,26 +36,31 @@ type
   private
     fBucket: string;
     fAuth: IFirebaseAuthentication;
+    fStorageObjs: TDictionary<TObjectName, IStorageObject>;
     function BaseURL: string;
-    procedure OnGetResponse(const RequestID: string;
+    procedure OnGetResponse(const ObjectName: TObjectName;
       Response: IFirebaseResponse);
-    procedure OnDelResponse(const RequestID: string;
+    procedure OnDelResponse(const ObjectName: TObjectName;
       Response: IFirebaseResponse);
-    procedure OnUploadFromStream(const RequestID: string;
+    procedure OnUploadFromStream(const ObjectName: TObjectName;
       Response: IFirebaseResponse);
   public
     constructor Create(const BucketName: string; Auth: IFirebaseAuthentication);
-    procedure Get(const ObjectName, RequestID: string;
-      OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
-    function GetSynchronous(const ObjectName: string): IStorageObject;
-    procedure UploadFromStream(Stream: TStream; const ObjectName: string;
+    destructor Destroy; override;
+    procedure Get(const ObjectName: TObjectName; OnGetStorage: TOnStorage;
+      OnGetError: TOnStorageError); overload;
+    procedure Get(const ObjectName, RequestID: string; OnGetStorage: TOnStorage;
+      OnGetError: TOnRequestError); overload; { deprecated }
+    function GetSynchronous(const ObjectName: TObjectName): IStorageObject;
+    procedure UploadFromStream(Stream: TStream; const ObjectName: TObjectName;
       ContentType: TRESTContentType; OnUpload: TOnStorage;
-      OnUploadError: TOnRequestError);
+      OnUploadError: TOnStorageError);
     function UploadSynchronousFromStream(Stream: TStream;
-      const ObjectName: string; ContentType: TRESTContentType): IStorageObject;
-    procedure Delete(const ObjectName: string; OnDelete: TOnDeleteStorage;
-      OnDelError: TOnRequestError);
-    procedure DeleteSynchronous(const ObjectName: string);
+      const ObjectName: TObjectName;
+      ContentType: TRESTContentType): IStorageObject;
+    procedure Delete(const ObjectName: TObjectName;
+      OnDelete: TOnDeleteStorage; OnDelError: TOnStorageError);
+    procedure DeleteSynchronous(const ObjectName: TObjectName);
   end;
 
   TStorageObject = class(TInterfacedObject, IStorageObject)
@@ -64,7 +69,7 @@ type
   public
     constructor Create(Response: IFirebaseResponse);
     destructor Destroy; override;
-    procedure DownloadToStream(const RequestID: string; Stream: TStream;
+    procedure DownloadToStream(const ObjectName: TObjectName; Stream: TStream;
       OnSuccess: TOnDownload; OnError: TOnDownloadError);
     procedure DownloadToStreamSynchronous(Stream: TStream);
     function ObjectName(IncludePath: boolean = true): string;
@@ -114,15 +119,34 @@ begin
   Assert(assigned(Auth), 'Authentication not initalized');
   fBucket := ExcludeTrailingSlash(BucketName);
   fAuth := Auth;
+  fStorageObjs := TDictionary<TObjectName, IStorageObject>.Create;
 end;
+
+destructor TFirebaseStorage.Destroy;
+begin
+  fStorageObjs.Free;
+  inherited;
+end;
+
 
 function TFirebaseStorage.BaseURL: string;
 begin
   result := Format(GOOGLE_STORAGE, [fBucket]);
 end;
 
-procedure TFirebaseStorage.Get(const ObjectName, RequestID: string;
-  OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
+procedure TFirebaseStorage.Get(const ObjectName: TObjectName;
+  OnGetStorage: TOnStorage; OnGetError: TOnStorageError);
+var
+  Request: IFirebaseRequest;
+begin
+  Request := TFirebaseRequest.Create(BaseURL, ObjectName, fAuth);
+  Request.SendRequest([ObjectName], rmGet, nil, nil, tmBearer, OnGetResponse,
+    OnGetError, TOnSuccess.CreateStorage(OnGetStorage));
+end;
+
+procedure TFirebaseStorage.Get(const ObjectName: TObjectName;
+  const RequestID: string; OnGetStorage: TOnStorage;
+  OnGetError: TOnRequestError);
 var
   Request: IFirebaseRequest;
 begin
@@ -131,28 +155,32 @@ begin
     OnGetError, TOnSuccess.CreateStorage(OnGetStorage));
 end;
 
-procedure TFirebaseStorage.OnGetResponse(const RequestID: string;
+procedure TFirebaseStorage.OnGetResponse(const ObjectName: TObjectName;
   Response: IFirebaseResponse);
+var
+  StorageObj: IStorageObject;
 begin
   try
     Response.CheckForJSONObj;
+    StorageObJ := TStorageObject.Create(Response);
+    fStorageObjs.TryAdd(ObjectName, StorageObJ);
     if assigned(Response.OnSuccess.OnStorage) then
-      Response.OnSuccess.OnStorage(RequestID, TStorageObject.Create(Response))
+      Response.OnSuccess.OnStorage(ObjectName, StorageObj)
     else
       TFirebaseHelpers.Log(Response.ContentAsString);
   except
     on e: Exception do
     begin
       if assigned(Response.OnError) then
-        Response.OnError(RequestID, e.Message)
+        Response.OnError(ObjectName, e.Message)
       else
-        TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
+        TFirebaseHelpers.Log(Format(rsFBFailureIn, [ObjectName, e.Message]));
     end;
   end;
 end;
 
 function TFirebaseStorage.GetSynchronous(
-  const ObjectName: string): IStorageObject;
+  const ObjectName: TObjectName): IStorageObject;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
@@ -164,10 +192,11 @@ begin
   {$ENDIF}
   Response.CheckForJSONObj;
   result := TStorageObject.Create(Response);
+  fStorageObjs.TryAdd(ObjectName, result);
 end;
 
 function TFirebaseStorage.UploadSynchronousFromStream(Stream: TStream;
-  const ObjectName: string; ContentType: TRESTContentType): IStorageObject;
+  const ObjectName: TObjectName; ContentType: TRESTContentType): IStorageObject;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
@@ -185,21 +214,21 @@ begin
     TFirebaseHelpers.Log(Response.ContentAsString);
     {$ENDIF}
     result := TStorageObject.Create(Response);
+    fStorageObjs.TryAdd(ObjectName, result);
   finally
     QueryParams.Free;
   end;
 end;
 
 procedure TFirebaseStorage.UploadFromStream(Stream: TStream;
-  const ObjectName: string; ContentType: TRESTContentType;
-  OnUpload: TOnStorage; OnUploadError: TOnRequestError);
+  const ObjectName: TObjectName; ContentType: TRESTContentType;
+  OnUpload: TOnStorage; OnUploadError: TOnStorageError);
 var
   Request: IFirebaseRequest;
   QueryParams: TQueryParams;
 begin
-{$IF CompilerVersion >= 33.0}
   {$IFDEF DEBUG}
-  TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream DE 10.3.1');
+  TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream');
   {$ENDIF}
   // RSP-23318 is solved since Delphi 10.3.1
   Request := TFirebaseRequest.Create(BaseURL, ObjectName, fAuth);
@@ -213,57 +242,39 @@ begin
   finally
     QueryParams.Free;
   end;
-{$ELSE}
-  {$IFDEF DEBUG}
-  TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream <= DE 10.3.0');
-  {$ENDIF}
-  // Because of RSP-23318 the resource parameters shall not be empty when using
-  // query parameters
-  // https://quality.embarcadero.com/browse/RSP-23318
-  // That is why in the workaround the last segement of the URL must be removed
-  // from the Base URL and added as first resource parameter.
-  Request := TFirebaseRequest.Create(Copy(BaseURL, 1, length(BaseURL) - 2),
-    ObjectName, fAuth);
-  QueryParams := TQueryParams.Create;
-  try
-    QueryParams.Add('uploadType', ['media']);
-    QueryParams.Add('name',  [ObjectName]);
-    Request.SendRequest([BaseURL[length(BaseURL)]], rmPost, Stream, ContentType,
-      QueryParams, tmBearer, OnUploadFromStream, OnUploadError,
-      TOnSuccess.CreateStorage(OnUpload));
-  finally
-    QueryParams.Free;
-  end;
-{$ENDIF}
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log('TFirebaseStorage.UploadFromStream end');
   {$ENDIF}
 end;
 
-procedure TFirebaseStorage.OnUploadFromStream(const RequestID: string;
+procedure TFirebaseStorage.OnUploadFromStream(const ObjectName: TObjectName;
   Response: IFirebaseResponse);
+var
+  StorageObj: IStorageObject;
 begin
   {$IFDEF DEBUG}
-  TFirebaseHelpers.Log('TFirebaseStorage.OnUploadFromStream: ' + RequestID);
+  TFirebaseHelpers.Log('TFirebaseStorage.OnUploadFromStream: ' + ObjectName);
   {$ENDIF}
   try
     Response.CheckForJSONObj;
+    StorageObj := TStorageObject.Create(Response);
+    fStorageObjs.TryAdd(ObjectName, StorageObj);
     if assigned(Response.OnSuccess.OnStorage) then
-      Response.OnSuccess.OnStorage(RequestID, TStorageObject.Create(Response))
+      Response.OnSuccess.OnStorage(ObjectName, StorageObj)
     else
       TFirebaseHelpers.Log(Response.ContentAsString);
   except
     on e: Exception do
     begin
       if assigned(Response.OnError) then
-        Response.OnError(RequestID, e.Message)
+        Response.OnError(ObjectName, e.Message)
       else
-        TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
+        TFirebaseHelpers.Log(Format(rsFBFailureIn, [ObjectName, e.Message]));
     end;
   end;
 end;
 
-procedure TFirebaseStorage.DeleteSynchronous(const ObjectName: string);
+procedure TFirebaseStorage.DeleteSynchronous(const ObjectName: TObjectName);
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
@@ -276,11 +287,12 @@ begin
     TFirebaseHelpers.Log(Response.ContentAsString);
     {$ENDIF}
     raise EStorageObject.CreateFmt('Delete failed: %s', [Response.StatusText]);
-  end;
+  end else
+    fStorageObjs.Remove(ObjectName);
 end;
 
-procedure TFirebaseStorage.Delete(const ObjectName: string;
-  OnDelete: TOnDeleteStorage; OnDelError: TOnRequestError);
+procedure TFirebaseStorage.Delete(const ObjectName: TObjectName;
+  OnDelete: TOnDeleteStorage; OnDelError: TOnStorageError);
 var
   Request: IFirebaseRequest;
 begin
@@ -289,27 +301,28 @@ begin
     OnDelError, TOnSuccess.CreateDelStorage(OnDelete));
 end;
 
-procedure TFirebaseStorage.OnDelResponse(const RequestID: string;
+procedure TFirebaseStorage.OnDelResponse(const ObjectName: TObjectName;
   Response: IFirebaseResponse);
 begin
   try
     if Response.StatusOk then
     begin
       if assigned(Response.OnSuccess.OnDelStorage) then
-        Response.OnSuccess.OnDelStorage(RequestID)
+        Response.OnSuccess.OnDelStorage(ObjectName);
+      fStorageObjs.Remove(ObjectName);
     end
     else if assigned(Response.OnError) then
-      Response.OnError(RequestID, Response.ErrorMsgOrStatusText)
+      Response.OnError(ObjectName, Response.ErrorMsgOrStatusText)
     else
       TFirebaseHelpers.Log(Format(rsFBFailureIn,
-        [RequestID, Response.ErrorMsgOrStatusText]));
+        [ObjectName, Response.ErrorMsgOrStatusText]));
   except
     on e: Exception do
     begin
       if assigned(Response.OnError) then
-        Response.OnError(RequestID, e.Message)
+        Response.OnError(ObjectName, e.Message)
       else
-        TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
+        TFirebaseHelpers.Log(Format(rsFBFailureIn, [ObjectName, e.Message]));
     end;
   end;
 end;
@@ -386,24 +399,24 @@ begin
   end;
 end;
 
-procedure TStorageObject.DownloadToStream(const RequestID: string; Stream: TStream;
-  OnSuccess: TOnDownload; OnError: TOnDownloadError);
-var
-  ErrMsg: string;
-  URL: string;
+procedure TStorageObject.DownloadToStream(const ObjectName: TObjectName;
+  Stream: TStream; OnSuccess: TOnDownload; OnError: TOnDownloadError);
 begin
-  URL := DownloadURL;
+TFirebaseHelpers.Log(fJSONObj.ToJSON);
+
   TThread.CreateAnonymousThread(
     procedure
     var
       Client: THTTPClient;
       Response: IHTTPResponse;
+      ErrMsg: string;
     begin
       TThread.NameThreadForDebugging('StorageObject.DownloadToStream');
       try
         Client := THTTPClient.Create;
         try
-          Response := Client.Get(Url, Stream);
+TFirebaseHelpers.Log(fJSONObj.ToJSON);
+          Response := Client.Get(DownloadURL, Stream);
           if TFirebaseHelpers.AppIsTerminated then
             exit;
           if Response.StatusCode = 200 then
@@ -412,7 +425,8 @@ begin
               TThread.Queue(nil,
                 procedure
                 begin
-                  OnSuccess(RequestID, self);
+TFirebaseHelpers.Log(fJSONObj.ToJSON);
+                  OnSuccess(ObjectName, self);
                 end);
           end else begin
             {$IFDEF DEBUG}

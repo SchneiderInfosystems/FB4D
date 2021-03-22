@@ -87,9 +87,12 @@ type
   TTransaction = string; // A base64 encoded ID
   TOnBeginTransaction = procedure(Transaction: TTransaction) of object;
 
-  TOnStorage = procedure(const RequestIDorObjectName: string;
+  TObjectName = string;
+  TOnStorage = procedure(const ObjectName: TObjectName;
     Obj: IStorageObject) of object;
-  TOnDeleteStorage = procedure(const ObjectName: string) of object;
+  TOnStorageError = procedure(const ObjectName: TObjectName;
+    const ErrMsg: string) of object;
+  TOnDeleteStorage = procedure(const ObjectName: TObjectName) of object;
 
   TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of
     object;
@@ -592,13 +595,13 @@ type
       Params: TJSONObject = nil): TJSONObject;
   end;
 
-  TOnDownload = procedure(const RequestID: string; Obj: IStorageObject)
+  TOnDownload = procedure(const ObjectName: TObjectName; Obj: IStorageObject)
     of object;
   TOnDownloadError = procedure(Obj: IStorageObject;
     const ErrorMsg: string) of object;
   EStorageObject = class(Exception);
   IStorageObject = interface(IInterface)
-    procedure DownloadToStream(const RequestID: string; Stream: TStream;
+    procedure DownloadToStream(const ObjectName: TObjectName; Stream: TStream;
       OnSuccess: TOnDownload; OnError: TOnDownloadError);
     procedure DownloadToStreamSynchronous(Stream: TStream);
     function ObjectName(IncludePath: boolean = true): string;
@@ -619,17 +622,20 @@ type
   end;
 
   IFirebaseStorage = interface(IInterface)
-    procedure Get(const ObjectName, RequestID: string;
-      OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
-    function GetSynchronous(const ObjectName: string): IStorageObject;
-    procedure Delete(const ObjectName: string; OnDelete: TOnDeleteStorage;
-      OnDelError: TOnRequestError);
-    procedure DeleteSynchronous(const ObjectName: string);
-    procedure UploadFromStream(Stream: TStream; const ObjectName: string;
+    procedure Get(const ObjectName: TObjectName; OnGetStorage: TOnStorage;
+      OnGetError: TOnStorageError); overload;
+    procedure Get(const ObjectName, RequestID: string; OnGetStorage: TOnStorage;
+      OnGetError: TOnRequestError); overload; deprecated;
+    function GetSynchronous(const ObjectName: TObjectName): IStorageObject;
+    procedure Delete(const ObjectName: TObjectName; OnDelete: TOnDeleteStorage;
+      OnDelError: TOnStorageError);
+    procedure DeleteSynchronous(const ObjectName: TObjectName);
+    procedure UploadFromStream(Stream: TStream; const ObjectName: TObjectName;
       ContentType: TRESTContentType; OnUpload: TOnStorage;
-      OnUploadError: TOnRequestError);
+      OnUploadError: TOnStorageError);
     function UploadSynchronousFromStream(Stream: TStream;
-      const ObjectName: string; ContentType: TRESTContentType): IStorageObject;
+      const ObjectName: TObjectName;
+      ContentType: TRESTContentType): IStorageObject;
   end;
 
   /// <summary>
