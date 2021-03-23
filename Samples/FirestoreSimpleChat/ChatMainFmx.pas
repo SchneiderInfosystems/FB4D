@@ -132,6 +132,7 @@ uses
   FB4D.Helpers, FB4D.Firestore, FB4D.Document;
 
 {$R *.fmx}
+{$R *.LgXhdpiPh.fmx ANDROID}
 
 const
   cDocID = 'Chat';
