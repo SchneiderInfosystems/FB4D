@@ -40,6 +40,8 @@ type
     function BaseURL: string;
     procedure OnGetResponse(const ObjectName: TObjectName;
       Response: IFirebaseResponse);
+    procedure OnGetAndDownloadResponse(const ObjectName: TObjectName;
+      Response: IFirebaseResponse);
     procedure OnDelResponse(const ObjectName: TObjectName;
       Response: IFirebaseResponse);
     procedure OnUploadFromStream(const ObjectName: TObjectName;
@@ -52,6 +54,10 @@ type
     procedure Get(const ObjectName, RequestID: string; OnGetStorage: TOnStorage;
       OnGetError: TOnRequestError); overload; { deprecated }
     function GetSynchronous(const ObjectName: TObjectName): IStorageObject;
+    procedure GetAndDownload(const ObjectName: TObjectName; Stream: TStream;
+      OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
+    function GetAndDownloadSynchronous(const ObjectName: TObjectName;
+      Stream: TStream): IStorageObject;
     procedure UploadFromStream(Stream: TStream; const ObjectName: TObjectName;
       ContentType: TRESTContentType; OnUpload: TOnStorage;
       OnUploadError: TOnStorageError);
@@ -66,13 +72,19 @@ type
   TStorageObject = class(TInterfacedObject, IStorageObject)
   private
     fJSONObj: TJSONObject;
+    procedure InternalDownloadToStream(const ObjectName: TObjectName;
+      Stream: TStream; OnSuccess: TOnDownload; OnError: TOnDownloadError;
+      OnAlternativeError: TOnStorageError);
   public
     constructor Create(Response: IFirebaseResponse);
     destructor Destroy; override;
     procedure DownloadToStream(const ObjectName: TObjectName; Stream: TStream;
-      OnSuccess: TOnDownload; OnError: TOnDownloadError);
+      OnSuccess: TOnDownload; OnError: TOnDownloadError); overload;
+    procedure DownloadToStream(const ObjectName: TObjectName; Stream: TStream;
+      OnSuccess: TOnDownload; OnError: TOnStorageError); overload;
     procedure DownloadToStreamSynchronous(Stream: TStream);
     function ObjectName(IncludePath: boolean = true): string;
+    class function GetObjectNameWithoutPath(const NameWithPath: string): string;
     function Path: string;
     function LastPathElement: string;
     function ContentType: string;
@@ -193,6 +205,61 @@ begin
   Response.CheckForJSONObj;
   result := TStorageObject.Create(Response);
   fStorageObjs.TryAdd(ObjectName, result);
+end;
+
+procedure TFirebaseStorage.GetAndDownload(const ObjectName: TObjectName;
+  Stream: TStream; OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+begin
+  Request := TFirebaseRequest.Create(BaseURL, ObjectName, fAuth);
+  Request.SendRequest([ObjectName], rmGet, nil, nil, tmBearer,
+    OnGetAndDownloadResponse, OnGetError,
+    TOnSuccess.CreateStorageGetAndDownload(OnGetStorage, OnGetError, Stream));
+end;
+
+procedure TFirebaseStorage.OnGetAndDownloadResponse(
+  const ObjectName: TObjectName; Response: IFirebaseResponse);
+var
+  StorageObj: IStorageObject;
+begin
+  try
+    Response.CheckForJSONObj;
+    StorageObJ := TStorageObject.Create(Response);
+    {$IFDEF DEBUG}
+    TFirebaseHelpers.Log(Response.ContentAsString);
+    {$ENDIF}
+    fStorageObjs.TryAdd(ObjectName, StorageObJ);
+    if assigned(Response.OnSuccess.OnStorageGetAndDown) then
+      StorageObj.DownloadToStream(ObjectName, Response.OnSuccess.DownStream,
+        Response.OnSuccess.OnStorageGetAndDown,
+        Response.OnSuccess.OnStorageError);
+  except
+    on e: Exception do
+    begin
+      if assigned(Response.OnError) then
+        Response.OnError(ObjectName, e.Message)
+      else
+        TFirebaseHelpers.Log(Format(rsFBFailureIn, [ObjectName, e.Message]));
+    end;
+  end;
+end;
+
+function TFirebaseStorage.GetAndDownloadSynchronous(
+  const ObjectName: TObjectName; Stream: TStream): IStorageObject;
+var
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  Request := TFirebaseRequest.Create(BaseURL, '', fAuth);
+  Response := Request.SendRequestSynchronous([ObjectName], rmGet);
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log(Response.ContentAsString);
+  {$ENDIF}
+  Response.CheckForJSONObj;
+  result := TStorageObject.Create(Response);
+  fStorageObjs.TryAdd(ObjectName, result);
+  result.DownloadToStreamSynchronous(Stream);
 end;
 
 function TFirebaseStorage.UploadSynchronousFromStream(Stream: TStream;
@@ -399,11 +466,10 @@ begin
   end;
 end;
 
-procedure TStorageObject.DownloadToStream(const ObjectName: TObjectName;
-  Stream: TStream; OnSuccess: TOnDownload; OnError: TOnDownloadError);
+procedure TStorageObject.InternalDownloadToStream(const ObjectName: TObjectName;
+  Stream: TStream; OnSuccess: TOnDownload; OnError: TOnDownloadError;
+  OnAlternativeError: TOnStorageError);
 begin
-TFirebaseHelpers.Log(fJSONObj.ToJSON);
-
   TThread.CreateAnonymousThread(
     procedure
     var
@@ -415,7 +481,6 @@ TFirebaseHelpers.Log(fJSONObj.ToJSON);
       try
         Client := THTTPClient.Create;
         try
-TFirebaseHelpers.Log(fJSONObj.ToJSON);
           Response := Client.Get(DownloadURL, Stream);
           if TFirebaseHelpers.AppIsTerminated then
             exit;
@@ -425,7 +490,6 @@ TFirebaseHelpers.Log(fJSONObj.ToJSON);
               TThread.Queue(nil,
                 procedure
                 begin
-TFirebaseHelpers.Log(fJSONObj.ToJSON);
                   OnSuccess(ObjectName, self);
                 end);
           end else begin
@@ -438,6 +502,12 @@ TFirebaseHelpers.Log(fJSONObj.ToJSON);
                 procedure
                 begin
                   OnError(self, ErrMsg);
+                end)
+            else if assigned(OnAlternativeError) then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  OnAlternativeError(ObjectName, ErrMsg);
                 end);
           end;
         finally
@@ -445,17 +515,35 @@ TFirebaseHelpers.Log(fJSONObj.ToJSON);
         end;
       except
         on e: exception do
-          if assigned(OnError) then
           begin
             ErrMsg := e.Message;
-            TThread.Queue(nil,
-              procedure
-              begin
-                OnError(self, ErrMsg);
-              end);
+            if assigned(OnError) then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  OnError(self, ErrMsg);
+                end)
+            else if assigned(OnAlternativeError) then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  OnAlternativeError(ObjectName, ErrMsg);
+                end);
           end;
       end;
     end).Start;
+end;
+
+procedure TStorageObject.DownloadToStream(const ObjectName: TObjectName;
+  Stream: TStream; OnSuccess: TOnDownload; OnError: TOnDownloadError);
+begin
+  InternalDownloadToStream(ObjectName, Stream, OnSuccess, OnError, nil);
+end;
+
+procedure TStorageObject.DownloadToStream(const ObjectName: TObjectName;
+  Stream: TStream; OnSuccess: TOnDownload; OnError: TOnStorageError);
+begin
+  InternalDownloadToStream(ObjectName, Stream, OnSuccess, nil, OnError);
 end;
 
 function TStorageObject.ObjectName(IncludePath: boolean): string;
@@ -464,6 +552,12 @@ begin
     raise EStorageObject.Create('JSON field name missing');
   if not IncludePath then
     result := result.SubString(result.LastDelimiter('/') + 1);
+end;
+
+class function TStorageObject.GetObjectNameWithoutPath(
+  const NameWithPath: string): string;
+begin
+  result := NameWithPath.SubString(NameWithPath.LastDelimiter('/') + 1);
 end;
 
 function TStorageObject.Path: string;

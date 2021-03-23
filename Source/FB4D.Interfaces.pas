@@ -101,7 +101,8 @@ type
     type TOnSucccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
       oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
       oscRTDBDelete, oscRTDBServerVariable, oscDocument, oscDocuments,
-      oscBeginTransaction, oscStorage, oscDelStorage, oscFunctionSuccess);
+      oscBeginTransaction, oscStorage, oscStorageGetAndDown, oscDelStorage,
+      oscFunctionSuccess);
     constructor Create(OnResp: TOnFirebaseResp);
     constructor CreateUser(OnUserResp: TOnUserResponse);
     constructor CreateFetchProviders(OnFetchProvidersResp: TOnFetchProviders);
@@ -118,10 +119,12 @@ type
     constructor CreateFirestoreTransaction(
       OnBeginTransactionResp: TOnBeginTransaction);
     constructor CreateStorage(OnStorageResp: TOnStorage);
+    constructor CreateStorageGetAndDownload(OnStorageResp: TOnStorage;
+      OnStorageErrorResp: TOnRequestError; Stream: TStream);
     constructor CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
     constructor CreateFunctionSuccess(OnFunctionSuccessResp: TOnFunctionSuccess);
     {$IFNDEF AUTOREFCOUNT}
-    case OnSucccessCase: TOnSucccessCase of
+    case OnSuccessCase: TOnSucccessCase of
       oscFB: (OnResponse: TOnFirebaseResp);
       oscUser: (OnUserResponse: TOnUserResponse);
       oscFetchProvider: (OnFetchProviders: TOnFetchProviders);
@@ -135,6 +138,10 @@ type
       oscDocuments: (OnDocuments: TOnDocuments);
       oscBeginTransaction: (OnBeginTransaction: TOnBeginTransaction);
       oscStorage: (OnStorage: TOnStorage);
+      oscStorageGetAndDown:
+        (OnStorageGetAndDown: TOnStorage;
+         OnStorageError: TOnRequestError;
+         DownStream: TStream);
       oscDelStorage: (OnDelStorage: TOnDeleteStorage);
       oscFunctionSuccess: (OnFunctionSuccess: TOnFunctionSuccess);
     {$ELSE}
@@ -153,6 +160,9 @@ type
       OnDocuments: TOnDocuments;
       OnBeginTransaction: TOnBeginTransaction;
       OnStorage: TOnStorage;
+      OnStorageGetAndDown: TOnStorage;
+      OnStorageError: TOnRequestError;
+      DownStream: TStream;
       OnDelStorage: TOnDeleteStorage;
       OnFunctionSuccess: TOnFunctionSuccess;
     {$ENDIF}
@@ -604,7 +614,9 @@ type
   EStorageObject = class(Exception);
   IStorageObject = interface(IInterface)
     procedure DownloadToStream(const ObjectName: TObjectName; Stream: TStream;
-      OnSuccess: TOnDownload; OnError: TOnDownloadError);
+      OnSuccess: TOnDownload; OnError: TOnDownloadError); overload;
+    procedure DownloadToStream(const ObjectName: TObjectName; Stream: TStream;
+      OnSuccess: TOnDownload; OnError: TOnStorageError); overload;
     procedure DownloadToStreamSynchronous(Stream: TStream);
     function ObjectName(IncludePath: boolean = true): string;
     function Path: string;
@@ -629,6 +641,10 @@ type
     procedure Get(const ObjectName, RequestID: string; OnGetStorage: TOnStorage;
       OnGetError: TOnRequestError); overload; deprecated;
     function GetSynchronous(const ObjectName: TObjectName): IStorageObject;
+    procedure GetAndDownload(const ObjectName: TObjectName; Stream: TStream;
+      OnGetStorage: TOnStorage; OnGetError: TOnRequestError);
+    function GetAndDownloadSynchronous(const ObjectName: TObjectName;
+      Stream: TStream): IStorageObject;
     procedure Delete(const ObjectName: TObjectName; OnDelete: TOnDeleteStorage;
       OnDelError: TOnStorageError);
     procedure DeleteSynchronous(const ObjectName: TObjectName);
@@ -696,9 +712,9 @@ implementation
 constructor TOnSuccess.Create(OnResp: TOnFirebaseResp);
 begin
   if assigned(OnResp) then
-    OnSucccessCase := oscFB
+    OnSuccessCase := oscFB
   else
-    OnSucccessCase := oscUndef;
+    OnSuccessCase := oscUndef;
   {$IFDEF AUTOREFCOUNT}
   OnUserResponse := nil;
   OnFetchProviders := nil;
@@ -712,16 +728,19 @@ begin
   OnDocuments := nil;
   OnBeginTransaction := nil;
   OnStorage := nil;
+  OnStorageGetAndDown := nil;
   OnDelStorage := nil;
   OnFunctionSuccess := nil;
   {$ENDIF}
+  OnStorageError := nil;
+  DownStream := nil;
   OnResponse := OnResp;
 end;
 
 constructor TOnSuccess.CreateUser(OnUserResp: TOnUserResponse);
 begin
   Create(nil);
-  OnSucccessCase := oscUser;
+  OnSuccessCase := oscUser;
   OnUserResponse := OnUserResp;
 end;
 
@@ -729,7 +748,7 @@ constructor TOnSuccess.CreateFetchProviders(
   OnFetchProvidersResp: TOnFetchProviders);
 begin
   Create(nil);
-  OnSucccessCase := oscFetchProvider;
+  OnSuccessCase := oscFetchProvider;
   OnFetchProviders := OnFetchProvidersResp;
 end;
 
@@ -737,35 +756,35 @@ constructor TOnSuccess.CreatePasswordVerification(
   OnPasswordVerificationResp: TOnPasswordVerification);
 begin
   Create(nil);
-  OnSucccessCase := oscPwdVerification;
+  OnSuccessCase := oscPwdVerification;
   OnPasswordVerification := OnPasswordVerificationResp;
 end;
 
 constructor TOnSuccess.CreateGetUserData(OnGetUserDataResp: TOnGetUserData);
 begin
   Create(nil);
-  OnSucccessCase := oscGetUserData;
+  OnSuccessCase := oscGetUserData;
   OnGetUserData := OnGetUserDataResp;
 end;
 
 constructor TOnSuccess.CreateRefreshToken(OnRefreshTokenResp: TOnTokenRefresh);
 begin
   Create(nil);
-  OnSucccessCase := oscRefreshToken;
+  OnSuccessCase := oscRefreshToken;
   OnRefreshToken := OnRefreshTokenResp;
 end;
 
 constructor TOnSuccess.CreateRTDBValue(OnRTDBValueResp: TOnRTDBValue);
 begin
   Create(nil);
-  OnSucccessCase := oscRTDBValue;
+  OnSuccessCase := oscRTDBValue;
   OnRTDBValue := OnRTDBValueResp;
 end;
 
 constructor TOnSuccess.CreateRTDBDelete(OnRTDBDeleteResp: TOnRTDBDelete);
 begin
   Create(nil);
-  OnSucccessCase := oscRTDBDelete;
+  OnSuccessCase := oscRTDBDelete;
   OnRTDBDelete := OnRTDBDeleteResp;
 end;
 
@@ -773,21 +792,21 @@ constructor TOnSuccess.CreateRTDBServerVariable(
   OnRTDBServerVariableResp: TOnRTDBServerVariable);
 begin
   Create(nil);
-  OnSucccessCase := oscRTDBServerVariable;
+  OnSuccessCase := oscRTDBServerVariable;
   OnRTDBServerVariable := OnRTDBServerVariableResp;
 end;
 
 constructor TOnSuccess.CreateFirestoreDoc(OnDocumentResp: TOnDocument);
 begin
   Create(nil);
-  OnSucccessCase := oscDocument;
+  OnSuccessCase := oscDocument;
   OnDocument := OnDocumentResp;
 end;
 
 constructor TOnSuccess.CreateFirestoreDocs(OnDocumentsResp: TOnDocuments);
 begin
   Create(nil);
-  OnSucccessCase := oscDocuments;
+  OnSuccessCase := oscDocuments;
   OnDocuments := OnDocumentsResp;
 end;
 
@@ -795,21 +814,31 @@ constructor TOnSuccess.CreateFirestoreTransaction(
   OnBeginTransactionResp: TOnBeginTransaction);
 begin
   Create(nil);
-  OnSucccessCase := oscBeginTransaction;
+  OnSuccessCase := oscBeginTransaction;
   OnBeginTransaction := OnBeginTransactionResp;
 end;
 
 constructor TOnSuccess.CreateStorage(OnStorageResp: TOnStorage);
 begin
   Create(nil);
-  OnSucccessCase := oscStorage;
+  OnSuccessCase := oscStorage;
   OnStorage := OnStorageResp;
+end;
+
+constructor TOnSuccess.CreateStorageGetAndDownload(OnStorageResp: TOnStorage;
+  OnStorageErrorResp: TOnRequestError; Stream: TStream);
+begin
+  Create(nil);
+  OnSuccessCase := oscStorageGetAndDown;
+  OnStorageGetAndDown := OnStorageResp;
+  OnStorageError := OnStorageErrorResp;
+  DownStream := Stream;
 end;
 
 constructor TOnSuccess.CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
 begin
   Create(nil);
-  OnSucccessCase := oscDelStorage;
+  OnSuccessCase := oscDelStorage;
   OnDelStorage := OnDelStorageResp;
 end;
 
@@ -817,7 +846,7 @@ constructor TOnSuccess.CreateFunctionSuccess(
   OnFunctionSuccessResp: TOnFunctionSuccess);
 begin
   Create(nil);
-  OnSucccessCase := oscFunctionSuccess;
+  OnSuccessCase := oscFunctionSuccess;
   OnFunctionSuccess := OnFunctionSuccessResp;
 end;
 

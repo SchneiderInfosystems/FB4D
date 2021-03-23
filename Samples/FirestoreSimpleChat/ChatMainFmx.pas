@@ -118,8 +118,9 @@ type
     function AddProfileImgToImageList(const UID: string; Img: TBitmap): integer;
     procedure DownloadProfileImgAndAddToImageList(const UID: string;
       Item: TListViewItem);
-    procedure OnGetStorage(const ObjName: string; Obj: IStorageObject);
     procedure OnStorageDownload(const ObjName: string; Obj: IStorageObject);
+    procedure OnGetStorageError(const ObjectName: TObjectName;
+      const ErrMsg: string);
   end;
 
 var
@@ -129,7 +130,7 @@ implementation
 
 uses
   System.IniFiles, System.IOUtils, System.JSON, System.Math,
-  FB4D.Helpers, FB4D.Firestore, FB4D.Document;
+  FB4D.Helpers, FB4D.Firestore, FB4D.Document, FB4D.Storage;
 
 {$R *.fmx}
 {$R *.LgXhdpiPh.fmx ANDROID}
@@ -639,22 +640,13 @@ begin
   if fPendingProfiles.TryGetValue(UID, Profile) then
     Profile.Items.Add(Item)
   else begin
-    fPendingProfiles.Add(UID, TPendingProfile.Create(Item));
+    Profile := TPendingProfile.Create(Item);
+    fPendingProfiles.Add(UID, Profile);
     GetStorage; // Ensure that Bucket is sent to Config
-    fConfig.Storage.Get(TFraSelfRegistration.cDefaultStoragePathForProfileImg +
-      '/' + UID, OnGetStorage, nil);
+    fConfig.Storage.GetAndDownload(
+      TFraSelfRegistration.cDefaultStoragePathForProfileImg + '/' + UID,
+      Profile.Stream, OnStorageDownload, OnGetStorageError);
   end;
-end;
-
-procedure TfmxChatMain.OnGetStorage(const ObjName: string; Obj: IStorageObject);
-var
-  Profile: TPendingProfile;
-  UID: string;
-begin
-  UID := Obj.ObjectName(false);
-  Profile := fPendingProfiles.Items[UID];
-  Assert(assigned(Profile), 'Invalid profile');
-  Obj.DownloadToStream(ObjName, Profile.Stream, OnStorageDownload, nil);
 end;
 
 procedure TfmxChatMain.OnStorageDownload(const ObjName: string;
@@ -684,6 +676,19 @@ begin
   finally
     lsvChat.EndUpdate;
   end;
+  fPendingProfiles.Remove(UID);
+  Profile.Free;
+end;
+
+procedure TfmxChatMain.OnGetStorageError(const ObjectName: TObjectName;
+  const ErrMsg: string);
+var
+  Profile: TPendingProfile;
+  UID: string;
+begin
+  UID := TStorageObject.GetObjectNameWithoutPath(ObjectName);
+  Profile := fPendingProfiles.Items[UID];
+  Assert(assigned(Profile), 'Invalid profile');
   fPendingProfiles.Remove(UID);
   Profile.Free;
 end;
