@@ -15,7 +15,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
 - March 23, 2021: New IFirebaseStorage.GetAndDownload method in order to simplify the download from the storage and prepare the upcomming cache for storage objects.
-- 
+ 
 - March 12, 2021: New option in FB4D.SelfRegistrationFra to support enter display name and upload profile image when registering a new user.
 
 - March 8, 2021: Real Time Database creation has changed within the Firebase Console. The Firebase ID is no longer sufficient to access newly created RT DBs. A Firebase URL is now required, which can also include the server location. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IRealTimeDB#create-an-instance-for-the-interface-irealtimedb).
