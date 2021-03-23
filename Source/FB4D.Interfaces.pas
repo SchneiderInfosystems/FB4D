@@ -574,6 +574,8 @@ type
       OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
     function CheckAndRefreshTokenSynchronous(
       IgnoreExpiryCheck: boolean = false): boolean;
+    // register call back in all circumstances when the token will be refreshed
+    procedure InstallTokenRefreshNotification(OnTokenRefresh: TOnTokenRefresh);
     // Getter methods
     function Authenticated: boolean;
     function Token: string;

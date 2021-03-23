@@ -52,6 +52,7 @@ type
       fExpiresAt: TDateTime;
       fRefreshToken: string;
       fTokenRefreshCount: cardinal;
+      fOnTokenRefresh: TOnTokenRefresh;
     function SignWithEmailAndPasswordSynchronous(SignType: TSignType;
       const Email: string = ''; const Password: string = ''): IFirebaseUser;
     procedure SignWithEmailAndPassword(SignType: TSignType; const Info: string;
@@ -145,6 +146,8 @@ type
       OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
     function CheckAndRefreshTokenSynchronous(
       IgnoreExpiryCheck: boolean = false): boolean;
+    // register call back in all circumstances when the token will be refreshed
+    procedure InstallTokenRefreshNotification(OnTokenRefresh: TOnTokenRefresh);
     // Getter methods
     function Authenticated: boolean;
     function Token: string;
@@ -251,6 +254,7 @@ begin
   fApiKey := ApiKey;
   fCSForToken := TCriticalSection.Create;
   fTokenRefreshCount := 1; // begin with 1 and use 0 as sentinel
+  fOnTokenRefresh := nil;
 end;
 
 destructor TFirebaseAuthentication.Destroy;
@@ -364,6 +368,8 @@ begin
     finally
       fCSForToken.Release;
     end;
+    if assigned(fOnTokenRefresh) then
+      fOnTokenRefresh(not fRefreshToken.IsEmpty);
     result := User;
   finally
     Response := nil;
@@ -387,6 +393,8 @@ begin
   finally
     fCSForToken.Release;
   end;
+  if assigned(fOnTokenRefresh) then
+    fOnTokenRefresh(false);
 end;
 
 procedure TFirebaseAuthentication.SendEmailVerification(OnResponse: TOnFirebaseResp;
@@ -478,6 +486,8 @@ begin
     end;
     if assigned(Response.OnSuccess.OnUserResponse) then
       Response.OnSuccess.OnUserResponse(RequestID, User);
+    if assigned(fOnTokenRefresh) then
+      fOnTokenRefresh(not fRefreshToken.IsEmpty);
   except
     on e: EFirebaseResponse do
     begin
@@ -577,6 +587,8 @@ begin
     finally
       fCSForToken.Release;
     end;
+    if assigned(fOnTokenRefresh) then
+      fOnTokenRefresh(not fRefreshToken.IsEmpty);
     result := User;
   finally
     Response := nil;
@@ -1281,6 +1293,8 @@ begin
     Params.Free;
     Data.Free;
   end;
+  if assigned(fOnTokenRefresh) then
+    fOnTokenRefresh(not fRefreshToken.IsEmpty);
 end;
 
 procedure TFirebaseAuthentication.RefreshToken(const LastRefreshToken: string;
@@ -1288,6 +1302,12 @@ procedure TFirebaseAuthentication.RefreshToken(const LastRefreshToken: string;
 begin
   fRefreshToken := LastRefreshToken;
   RefreshToken(OnTokenRefresh, OnError);
+end;
+
+procedure TFirebaseAuthentication.InstallTokenRefreshNotification(
+  OnTokenRefresh: TOnTokenRefresh);
+begin
+  fOnTokenRefresh := OnTokenRefresh;
 end;
 
 procedure TFirebaseAuthentication.CheckAndRefreshTokenResp(const RequestID: string;
@@ -1320,6 +1340,8 @@ begin
       fCSForToken.Release;
       NewToken.Free;
     end;
+    if assigned(fOnTokenRefresh) then
+      fOnTokenRefresh(not fRefreshToken.IsEmpty);
   except
     on e: exception do
       if assigned(Response.OnError) then
@@ -1385,6 +1407,8 @@ begin
     finally
       fCSForToken.Release;
       NewToken.Free;
+      if assigned(fOnTokenRefresh) then
+        fOnTokenRefresh(not fRefreshToken.IsEmpty);
     end;
   finally
     Response := nil;

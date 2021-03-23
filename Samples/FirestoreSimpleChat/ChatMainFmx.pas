@@ -95,6 +95,7 @@ type
     function GetStorage: IFirebaseStorage;
     function GetSettingFilename: string;
     procedure SaveSettings;
+    procedure OnTokenRefresh(TokenRefreshed: boolean);
     procedure OnUserLogin(const Info: string; User: IFirebaseUser);
     procedure StartChat;
     procedure WipeToTab(ActiveTab: TTabItem);
@@ -184,7 +185,6 @@ end;
 
 procedure TfmxChatMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  SaveSettings;
   FreeAndNil(fConfig);
 end;
 
@@ -208,10 +208,16 @@ begin
   end;
 end;
 
+procedure TfmxChatMain.OnTokenRefresh(TokenRefreshed: boolean);
+begin
+  SaveSettings;
+end;
+
 function TfmxChatMain.GetAuth: IFirebaseAuthentication;
 begin
   fConfig := TFirebaseConfiguration.Create(edtKey.Text, edtProjectID.Text);
   result := fConfig.Auth;
+  result.InstallTokenRefreshNotification(OnTokenRefresh);
   edtKey.Enabled := false;
   edtProjectID.Enabled := false;
 end;
