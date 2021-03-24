@@ -39,7 +39,8 @@ uses
   RealTimeDB in 'RealTimeDB.pas',
   FBFunction in 'FBFunction.pas',
   FirestoreDB in 'FirestoreDB.pas',
-  Authentication in 'Authentication.pas';
+  Authentication in 'Authentication.pas',
+  FBHelpers in 'FBHelpers.pas';
 
 begin
 {$IFDEF TESTINSIGHT}
