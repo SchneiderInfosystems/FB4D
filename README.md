@@ -21,11 +21,11 @@ This log informs about interface changes and important library enhancements that
 
 ### Prerequisites
 
-This library requires at least Delphi 10.3 Rio. The sample projects are developed with Delphi 10.4.1 Sydney and are ready for Delphi 10.4.2.
+🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
 
-#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. 
+The sample projects are developed and prepared for **Delphi 10.4.2 Sydney**.
 
-#### Hint: Delphi 10.3 Update 1 is not longer supported because of an issue in the RTL. 
+#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are not longer supported because of an issue in the RTL. 
 
 Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
 
