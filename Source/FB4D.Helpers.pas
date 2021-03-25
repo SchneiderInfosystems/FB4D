@@ -37,37 +37,55 @@ type
   TOnSimpleDownloadError = procedure(const DownloadURL, ErrMsg: string) of
     object;
   TOnSimpleDownloadSuccess = procedure(const DownloadURL: string) of object;
+
   TFirebaseHelpers = class
+    // Time conversion functions
     class function CodeRFC3339DateTime(DateTimeStamp: TDateTime): string;
     class function ConvertTimeStampToUTCDateTime(TimeStamp: Int64): TDateTime;
     class function ConvertRFC5322ToUTCDateTime(DateTime: string): TDateTime;
     class function ConvertRFC5322ToLocalDateTime(DateTime: string): TDateTime;
     class function ConvertTimeStampToLocalDateTime(Timestamp: Int64): TDateTime;
     class function ConvertToLocalDateTime(DateTimeStampUTC: TDateTime): TDateTime;
+
+    // Query parameter helpers
     class function EncodeQueryParams(QueryParams: TQueryParams): string;
     class function EncodeQueryParamsWithToken(QueryParams: TQueryParams;
       const EncodedToken: string): string;
+
+    // Request parameter helpers
     class function EncodeResourceParams(Params: TRequestResourceParam): string;
     class function AddParamToResParams(Params: TRequestResourceParam;
       const Param: string): TRequestResourceParam;
+
+    // Encode token for URL based token transmission
     class function EncodeToken(const Token: string): string;
+
+    // Array of string helpers
     class function ArrStrToCommaStr(Arr: array of string): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
-    class procedure Log(msg: string);
-    class function AppIsTerminated: boolean;
-    class procedure SleepAndMessageLoop(SleepInMs: cardinal);
-    class procedure SimpleDownload(const DownloadUrl: string; Stream: TStream;
-      OnSuccess: TOnSimpleDownloadSuccess;
-      OnError: TOnSimpleDownloadError = nil);
+
+    // FBID is based on charset of cBase64: Helpers and converter to GUID
     class function CreateAutoID: string;
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
+
+    // File helpers
+    class procedure SimpleDownload(const DownloadUrl: string; Stream: TStream;
+      OnSuccess: TOnSimpleDownloadSuccess;
+      OnError: TOnSimpleDownloadError = nil);
+
+    // Miscellaneous functions
     class function IsEMailAdress(const EMail: string): boolean;
+
+    // Application helpers
+    class procedure Log(msg: string);
+    class function AppIsTerminated: boolean;
+    class procedure SleepAndMessageLoop(SleepInMs: cardinal);
     class function IsMainThread: boolean;
     class function GetConfigAndPlatform: string;
     class function GetPlatform: string;
   private const
-    cBase64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+?';
+    cBase64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   end;
 
   TJSONHelpers = class helper for TJSONObject
@@ -403,7 +421,6 @@ begin
       end;
     end).Start;
 end;
-
 
 class function TFirebaseHelpers.CreateAutoID: string;
 begin
