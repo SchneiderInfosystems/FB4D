@@ -94,8 +94,7 @@ type
       Response: IFirebaseResponse);
     procedure OnChangedProfile(const RequestID: string;
       Response: IFirebaseResponse);
-    procedure OnProfileImgUpload(const RequestIDorObjectName: string;
-      Obj: IStorageObject);
+    procedure OnProfileImgUpload(Obj: IStorageObject);
     procedure OnProfileImgError(const RequestID, ErrMsg: string);
     procedure StartDownloadProfileImg(PhotoURL: string);
     procedure OnProfileDownload(const DownloadURL: string);
@@ -116,6 +115,8 @@ type
       const StoragePath: string = cDefaultStoragePathForProfileImg;
       ProfileImgSize: integer = cDefaultProfileImgSize);
     procedure StartEMailEntering;
+    procedure InformDelayedStart(const Msg: string);
+    procedure StopDelayedStart;
     function GetEMail: string;
     property ProfileImg: TBitmap read fProfileImg;
     property ProfileURL: string read fProfileURL;
@@ -566,8 +567,7 @@ begin
   end;
 end;
 
-procedure TFraSelfRegistration.OnProfileImgUpload(
-  const RequestIDorObjectName: string; Obj: IStorageObject);
+procedure TFraSelfRegistration.OnProfileImgUpload(Obj: IStorageObject);
 begin
   FreeAndNil(fProfileLoadStream);
   fProfileURL := Obj.DownloadUrl;
@@ -610,6 +610,30 @@ begin
   AniIndicator.Visible := false;
   lblStatus.Text := Format(rsProfileLoadErr, [ErrMsg]);
   FreeAndNil(fProfileLoadStream);
+end;
+
+procedure TFraSelfRegistration.InformDelayedStart(const Msg: string);
+begin
+  edtDisplayName.Visible := false;
+  btnRegisterDisplayName.Visible := false;
+  shpProfile.Visible := false;
+  AniIndicator.Visible := true;
+  AniIndicator.Enabled := true;
+  lblStatus.visible := true;
+  lblStatus.Text := Msg;
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('FraSelfRegistration.InformDelayedStart: ' + Msg);
+  {$ENDIF}
+end;
+
+procedure TFraSelfRegistration.StopDelayedStart;
+begin
+  AniIndicator.Visible := false;
+  AniIndicator.Enabled := false;
+  lblStatus.Text := '';
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('FraSelfRegistration.StopDelayedStart');
+  {$ENDIF}
 end;
 
 end.
