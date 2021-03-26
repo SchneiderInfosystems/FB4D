@@ -8,7 +8,6 @@ object fmxChatMain: TfmxChatMain
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
-  OnClose = FormClose
   OnDestroy = FormDestroy
   DesignerMasterStyle = 0
   object TabControl: TTabControl

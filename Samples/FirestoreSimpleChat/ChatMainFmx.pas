@@ -62,7 +62,6 @@ type
     shpProfile: TCircle;
     ImageList: TImageList;
     procedure FormCreate(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSignOutClick(Sender: TObject);
     procedure btnPushMessageClick(Sender: TObject);
     procedure edtMessageKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char;
@@ -94,6 +93,7 @@ type
     function GetAuth: IFirebaseAuthentication;
     function GetStorage: IFirebaseStorage;
     function GetSettingFilename: string;
+    function GetCacheFolder: string;
     procedure SaveSettings;
     procedure OnTokenRefresh(TokenRefreshed: boolean);
     procedure OnUserLogin(const Info: string; User: IFirebaseUser);
@@ -118,7 +118,7 @@ type
     function AddProfileImgToImageList(const UID: string; Img: TBitmap): integer;
     procedure DownloadProfileImgAndAddToImageList(const UID: string;
       Item: TListViewItem);
-    procedure OnStorageDownload(const ObjName: string; Obj: IStorageObject);
+    procedure OnStorageDownload(Obj: IStorageObject);
     procedure OnGetStorageError(const ObjectName: TObjectName;
       const ErrMsg: string);
   end;
@@ -178,16 +178,12 @@ end;
 procedure TfmxChatMain.FormDestroy(Sender: TObject);
 begin
   fPendingProfiles.Free;
+  FreeAndNil(fConfig);
 end;
 
 procedure TfmxChatMain.FraSelfRegistrationbtnCheckEMailClick(Sender: TObject);
 begin
   FraSelfRegistration.btnCheckEMailClick(Sender);
-end;
-
-procedure TfmxChatMain.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  FreeAndNil(fConfig);
 end;
 
 procedure TfmxChatMain.SaveSettings;
@@ -227,9 +223,12 @@ end;
 function TfmxChatMain.GetStorage: IFirebaseStorage;
 begin
   Assert(assigned(fConfig), 'FirebaseConfiguration not initialized');
-  if not edtBucket.Text.IsEmpty then
+  if not edtBucket.Text.IsEmpty and edtBucket.Enabled then
+  begin
     edtBucket.Enabled := false;
-  fConfig.SetBucket(edtBucket.Text);
+    fConfig.SetBucket(edtBucket.Text);
+    fConfig.Storage.SetupCacheFolder(GetCacheFolder);
+  end;
   result := fConfig.Storage;
 end;
 
@@ -245,6 +244,20 @@ begin
     TPath.GetHomePath
 {$ENDIF}
     ) + FileName + TFirebaseHelpers.GetPlatform + '.ini';
+end;
+
+function TfmxChatMain.GetCacheFolder: string;
+var
+  FileName: string;
+begin
+  FileName := ChangeFileExt(ExtractFileName(ParamStr(0)), '');
+  result := IncludeTrailingPathDelimiter(
+{$IFDEF IOS}
+    TPath.GetDocumentsPath
+{$ELSE}
+    TPath.GetHomePath
+{$ENDIF}
+    ) + IncludeTrailingPathDelimiter(FileName);
 end;
 
 procedure TfmxChatMain.OnUserLogin(const Info: string; User: IFirebaseUser);
@@ -286,6 +299,15 @@ end;
 
 procedure TfmxChatMain.StartChat;
 begin
+  while not fConfig.Storage.IsCacheScanFinished do
+  begin
+    FraSelfRegistration.InformDelayedStart('starting...');
+    if Application.Terminated then
+      exit
+    else
+      TFirebaseHelpers.SleepAndMessageLoop(1);
+  end;
+  FraSelfRegistration.StopDelayedStart;
   lblUserInfo.Text := fUserName + ' logged in';
   fConfig.Database.SubscribeQuery(TStructuredQuery.CreateForCollection(cDocID).
     OrderBy('DateTime', odAscending),
@@ -386,7 +408,7 @@ begin
   finally
     lsvChat.EndUpdate;
   end;
-  lsvChat.Selected := Item;
+  lsvChat.ScrollTo(Item.Index);
   txtUpdate.Text := 'Last message written at ' +
     FormatDateTime('HH:NN:SS.ZZZ', Document.UpdateTime);
 end;
@@ -649,8 +671,7 @@ begin
   end;
 end;
 
-procedure TfmxChatMain.OnStorageDownload(const ObjName: string;
-  Obj: IStorageObject);
+procedure TfmxChatMain.OnStorageDownload(Obj: IStorageObject);
 var
   Profile: TPendingProfile;
   Bmp: TBitmap;
@@ -682,15 +703,8 @@ end;
 
 procedure TfmxChatMain.OnGetStorageError(const ObjectName: TObjectName;
   const ErrMsg: string);
-var
-  Profile: TPendingProfile;
-  UID: string;
 begin
-  UID := TStorageObject.GetObjectNameWithoutPath(ObjectName);
-  Profile := fPendingProfiles.Items[UID];
-  Assert(assigned(Profile), 'Invalid profile');
-  fPendingProfiles.Remove(UID);
-  Profile.Free;
+  // Do not remove the assoziated profile from fPendingProfiles to prevent retry
 end;
 
 { TfmxChatMain.TPendingProfile }
