@@ -40,7 +40,8 @@ uses
   FBFunction in 'FBFunction.pas',
   FirestoreDB in 'FirestoreDB.pas',
   Authentication in 'Authentication.pas',
-  FBHelpers in 'FBHelpers.pas';
+  FBHelpers in 'FBHelpers.pas',
+  Storage in 'Storage.pas';
 
 begin
 {$IFDEF TESTINSIGHT}

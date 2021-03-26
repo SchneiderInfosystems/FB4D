@@ -42,7 +42,6 @@ type
 
 implementation
 
-
 { UT_FBHelpers }
 
 procedure UT_FBHelpers.ConvertGUIDtoFBIDtoGUID;
@@ -77,11 +76,7 @@ begin
     Guid := TGuid.NewGuid;
     FBID := TFirebaseHelpers.ConvertGUIDtoFBID(Guid);
     Assert.AreEqual(Guid, TFirebaseHelpers.ConvertFBIDtoGUID(FBID));
-    Status('Random GUID->FBID: ' + FBID + ' GUID: ' + GUIDToString(Guid));
   end;
-
-  {00EE9BBE-ED84-49B2-8C2B-C2128F0C7717}
-  {00EE9BBE-ED84-49B2-8C2B-C2124F0CB717}
 end;
 
 initialization

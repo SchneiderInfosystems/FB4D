@@ -346,7 +346,7 @@ begin
   Doc.AddOrUpdateField(TJSONObject.SetInteger(cTestF2, cTestInt));
   fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
 
-  while fCallBack < 2 do
+  while fCallBack < 3 do
     Application.ProcessMessages;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDoc.DocumentName(false), DocID, 'DocID');
