@@ -310,11 +310,11 @@ type
     function CheckAndCreateStorageClass: boolean;
     procedure ShowFirestoreObject(Obj: IStorageObject);
     function GetStorageFileName: string;
-    procedure OnGetStorage(const ObjectName: TObjectName; Obj: IStorageObject);
+    procedure OnGetStorage(Obj: IStorageObject);
     procedure OnGetStorageError(const ObjectName, ErrMsg: string);
-    procedure OnDownload(const ObjectName: TObjectName; Obj: IStorageObject);
+    procedure OnDownload(Obj: IStorageObject);
     procedure OnDownloadError(Obj: IStorageObject; const ErrorMsg: string);
-    procedure OnUpload(const ObjectName: TObjectName; Obj: IStorageObject);
+    procedure OnUpload(Obj: IStorageObject);
     procedure OnUploadError(const ObjectName, ErrorMsg: string);
     procedure OnDeleteStorage(const ObjectName: TObjectName);
     procedure OnDeleteStorageError(const ObjectName, ErrorMsg: string);
@@ -776,8 +776,7 @@ begin
   fStorage.Get(GetStorageFileName, OnGetStorage, OnGetStorageError);
 end;
 
-procedure TfmxFirebaseDemo.OnGetStorage(const ObjectName: TObjectName;
-  Obj: IStorageObject);
+procedure TfmxFirebaseDemo.OnGetStorage(Obj: IStorageObject);
 begin
   memStorageResp.Lines.Text := 'Storage object asynchronous retrieven';
   ShowFirestoreObject(Obj);
@@ -832,8 +831,8 @@ begin
   begin
     FreeAndNil(fDownloadStream);
     fDownloadStream := TFileStream.Create(SaveDialog.FileName, fmCreate);
-    fStorageObject.DownloadToStream(SaveDialog.FileName, fDownloadStream,
-      OnDownload, OnDownloadError);
+    fStorageObject.DownloadToStream(fDownloadStream, OnDownload,
+      OnDownloadError);
     memStorageResp.Lines.Add(fStorageObject.ObjectName(true) +
       ' download started');
   end;
@@ -858,8 +857,7 @@ begin
   end;
 end;
 
-procedure TfmxFirebaseDemo.OnDownload(const ObjectName: TObjectName;
-  Obj: IStorageObject);
+procedure TfmxFirebaseDemo.OnDownload(Obj: IStorageObject);
 begin
   memStorageResp.Lines.Add(Obj.ObjectName(true) + ' downloaded to ' +
     SaveDialog.FileName + ' passed');
@@ -946,10 +944,10 @@ begin
   end;
 end;
 
-procedure TfmxFirebaseDemo.OnUpload(const ObjectName: TObjectName;
-  Obj: IStorageObject);
+procedure TfmxFirebaseDemo.OnUpload(Obj: IStorageObject);
 begin
-  memStorageResp.Lines.Text := 'Object asynchronous uploaded: ' + ObjectName;
+  memStorageResp.Lines.Text := 'Object asynchronous uploaded: ' +
+    Obj.ObjectName(true);
   ShowFirestoreObject(Obj);
   FreeAndNil(fUploadStream);
 end;
