@@ -375,7 +375,7 @@ var
   FieldsObj: TJSONObject;
   Ind: integer;
 begin
-  Assert(Assigned(fJSONObj), 'Missing JSON Object for document in AddOrUpdateField');
+  Assert(Assigned(fJSONObj), 'Missing JSON object in AddOrUpdateField');
   if not fJSONObj.TryGetValue('fields', FieldsObj) then
   begin
     FieldsObj := TJSONObject.Create;
@@ -450,7 +450,7 @@ begin
   p := 0;
   for c := 1 to 5 do
   begin
-    p := Pos('/', fDocumentName, p + 1);
+    p := pos('/', fDocumentName, p + 1);
     if p = 0 then
       raise EFirestoreDocument.CreateFmt(rsInvalidDocumentPath, [fDocumentName]);
   end;

@@ -26,7 +26,7 @@ unit FB4D.Helpers;
 interface
 
 uses
-  System.Classes, System.Types, System.SysUtils,
+  System.Classes, System.Types, System.SysUtils, System.StrUtils,
 {$IFNDEF LINUX64}
   System.Sensors,
 {$ENDIF}
@@ -46,82 +46,85 @@ type
     class function ConvertRFC5322ToLocalDateTime(DateTime: string): TDateTime;
     class function ConvertTimeStampToLocalDateTime(Timestamp: Int64): TDateTime;
     class function ConvertToLocalDateTime(DateTimeStampUTC: TDateTime): TDateTime;
-
     // Query parameter helpers
     class function EncodeQueryParams(QueryParams: TQueryParams): string;
     class function EncodeQueryParamsWithToken(QueryParams: TQueryParams;
       const EncodedToken: string): string;
-
     // Request parameter helpers
     class function EncodeResourceParams(Params: TRequestResourceParam): string;
     class function AddParamToResParams(Params: TRequestResourceParam;
       const Param: string): TRequestResourceParam;
-
     // Encode token for URL based token transmission
     class function EncodeToken(const Token: string): string;
-
     // Array of string helpers
     class function ArrStrToCommaStr(Arr: array of string): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
-
     // FBID is based on charset of cBase64: Helpers and converter to GUID
     class function CreateAutoID: string;
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
-
     // File helpers
     class procedure SimpleDownload(const DownloadUrl: string; Stream: TStream;
       OnSuccess: TOnSimpleDownloadSuccess;
       OnError: TOnSimpleDownloadError = nil);
-
     // Miscellaneous functions
     class function IsEMailAdress(const EMail: string): boolean;
-
     // Application helpers
     class procedure Log(msg: string);
+    class procedure LogFmt(msg: string; const Args: array of const);
     class function AppIsTerminated: boolean;
     class procedure SleepAndMessageLoop(SleepInMs: cardinal);
     class function IsMainThread: boolean;
     class function GetConfigAndPlatform: string;
     class function GetPlatform: string;
   private const
-    cBase64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    cBase64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+?';
+    // The last character is not real Base64 because '/' causes troubles in IDs
   end;
 
   TJSONHelpers = class helper for TJSONObject
+    // String
     function GetStringValue: string; overload;
     function GetStringValue(const Name: string): string; overload;
     class function SetStringValue(const Val: string): TJSONObject;
     class function SetString(const VarName, Val: string): TJSONPair;
+    // Integer
     function GetIntegerValue: integer; overload;
     function GetIntegerValue(const Name: string): integer; overload;
     class function SetIntegerValue(Val: integer): TJSONObject;
     class function SetInteger(const VarName: string; Val: integer): TJSONPair;
+    // Boolean
     function GetBooleanValue: Boolean; overload;
     function GetBooleanValue(const Name: string): Boolean; overload;
     class function SetBooleanValue(Val: boolean): TJSONObject;
     class function SetBoolean(const VarName: string; Val: boolean): TJSONPair;
+    // Double
     function GetDoubleValue: double; overload;
     function GetDoubleValue(const Name: string): double; overload;
     class function SetDoubleValue(Val: double): TJSONObject;
     class function SetDouble(const VarName: string; Val: double): TJSONPair;
+    // TimeStamp
     function GetTimeStampValue(const Name: string): TDateTime; overload;
     function GetTimeStampValue: TDateTime; overload;
     class function SetTimeStampValue(Val: TDateTime): TJSONObject;
     class function SetTimeStamp(const VarName: string;
       Val: TDateTime): TJSONPair;
+    // Null
     class function SetNullValue: TJSONObject;
     class function SetNull(const VarName: string): TJSONPair;
     function IsNull: boolean;
+    // Reference
     function GetReference: string; overload;
     function GetReference(const Name: string): string; overload;
     class function SetReferenceValue(const ProjectID, Ref: string): TJSONObject;
     class function SetReference(const Name, ProjectID, Ref: string): TJSONPair;
+    // GeoPoint
     function GetGeoPoint: TLocationCoord2D; overload;
     function GetGeoPoint(const Name: string): TLocationCoord2D; overload;
     class function SetGeoPointValue(Val: TLocationCoord2D): TJSONObject;
     class function SetGeoPoint(const VarName: string;
       Val: TLocationCoord2D): TJSONPair;
+    // Bytes
     class function SetBytesValue(Val: TBytes): TJSONObject;
     class function SetBytes(const VarName: string; Val: TBytes): TJSONPair;
     function GetBytes: TBytes; overload;
@@ -129,11 +132,13 @@ type
     class function SetMapValue(MapVars: array of TJSONPair): TJSONObject;
     class function SetMap(const VarName: string;
       MapVars: array of TJSONPair): TJSONPair;
+    // Map
     function GetMapSize: integer; overload;
     function GetMapSize(const Name: string): integer; overload;
     function GetMapItem(Ind: integer): TJSONPair; overload;
     function GetMapItem(const Name: string): TJSONObject; overload;
     function GetMapItem(const Name: string; Ind: integer): TJSONPair; overload;
+    // Array
     class function SetArray(const VarName: string;
       ArrayVars: array of TJSONValue): TJSONPair;
     function GetArraySize: integer; overload;
@@ -156,7 +161,7 @@ type
   end;
 
 resourcestring
-  rsFBFailureIn = 'Firebase failure in %s: %s';
+  rsFBFailureIn = '%s Firebase failure in %s: %s';
 
 implementation
 
@@ -339,6 +344,11 @@ begin
 {$ENDIF}
 end;
 
+class procedure TFirebaseHelpers.LogFmt(msg: string; const Args: array of const);
+begin
+  Log(Format(msg, args));
+end;
+
 class function TFirebaseHelpers.AddParamToResParams(
   Params: TRequestResourceParam; const Param: string): TRequestResourceParam;
 var
@@ -413,8 +423,8 @@ begin
                   OnError(DownloadUrl, ErrMsg);
                 end)
             end else
-              TFirebaseHelpers.Log(
-                Format(rsFBFailureIn, [DownloadUrl, e.Message]));
+              TFirebaseHelpers.LogFmt(rsFBFailureIn,
+                ['FirebaseHelpers.SimpleDownload', DownloadUrl, e.Message]);
         end;
       finally
         Client.Free;
@@ -517,78 +527,77 @@ class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
    end;
 
 type
-  States = (STATE_BEGIN, STATE_ATOM, STATE_QTEXT, STATE_QCHAR,
-    STATE_QUOTE, STATE_LOCAL_PERIOD, STATE_EXPECTING_SUBDOMAIN,
-    STATE_SUBDOMAIN, STATE_HYPHEN);
+  States = (stBegin, stAtom, stQText, st_QChar, stQuote, stLocalPeriod,
+    stExpectingSubDomain, stSubDomain, stHyphen);
 var
   State: States;
   i, subdomains: integer;
   c: char;
 begin
-  State := STATE_BEGIN;
+  State := stBegin;
   subdomains := 1;
   for i := low(email) to high(email) do
   begin
     c := email[i];
     case State of
-      STATE_BEGIN:
+      stBegin:
         if IsAtomChars(c) then
-          State := STATE_ATOM
+          State := stAtom
         else if c = '"' then
-          State := STATE_QTEXT
+          State := stQText
         else
           exit(false);
-      STATE_ATOM:
+      stAtom:
         if c = '@' then
-          State := STATE_EXPECTING_SUBDOMAIN
+          State := stExpectingSubDomain
         else if c = '.' then
-          State := STATE_LOCAL_PERIOD
+          State := stLocalPeriod
         else if not IsAtomChars(c) then
           exit(false);
-      STATE_QTEXT:
+      stQText:
         if c = '\' then
-          State := STATE_QCHAR
+          State := st_QChar
         else if c = '"' then
-          State := STATE_QUOTE
+          State := stQuote
         else if not IsQuotedStringChars(c) then
           exit(false);
-      STATE_QCHAR:
-        State := STATE_QTEXT;
-      STATE_QUOTE:
+      st_QChar:
+        State := stQText;
+      stQuote:
         if c = '@' then
-          State := STATE_EXPECTING_SUBDOMAIN
+          State := stExpectingSubDomain
         else if c = '.' then
-          State := STATE_LOCAL_PERIOD
+          State := stLocalPeriod
         else
           exit(false);
-      STATE_LOCAL_PERIOD:
+      stLocalPeriod:
         if  IsAtomChars(c) then
-          State := STATE_ATOM
+          State := stAtom
         else if c = '"' then
-          State := STATE_QTEXT
+          State := stQText
         else
           exit(false);
-      STATE_EXPECTING_SUBDOMAIN:
+      stExpectingSubDomain:
         if c.IsLetter then
-          State := STATE_SUBDOMAIN
+          State := stSubDomain
         else
           exit(false);
-      STATE_SUBDOMAIN:
+      stSubDomain:
         if c = '.' then begin
           inc(subdomains);
-          State := STATE_EXPECTING_SUBDOMAIN
+          State := stExpectingSubDomain
         end else if c = '-' then
-          State := STATE_HYPHEN
+          State := stHyphen
         else if not c.IsLetterOrDigit then
           exit((i = high(email)) and (subdomains >= 2));
-      STATE_HYPHEN:
+      stHyphen:
         if c.IsLetterOrDigit then
-          State := STATE_SUBDOMAIN
+          State := stSubDomain
         else if c <> '-' then
           exit(false);
     end;
   end;
-  result := (State = STATE_SUBDOMAIN) and (subdomains >= 2);
+  result := (State = stSubDomain) and (subdomains >= 2);
 end;
 
 class function TFirebaseHelpers.IsMainThread: boolean;
@@ -1021,7 +1030,8 @@ begin
   result := Obj;
 end;
 
-function TJSONHelpers.GetArrayItem(const Name: string; Ind: integer): TJSONObject;
+function TJSONHelpers.GetArrayItem(const Name: string;
+  Ind: integer): TJSONObject;
 var
   Val: TJSONValue;
 begin
@@ -1059,7 +1069,8 @@ end;
 function TQueryParamsHelper.AddOrderBy(const FieldName: string): TQueryParams;
 begin
   if not FieldName.IsEmpty then
-    Add(cGetQueryParamOrderBy, ['"' + FieldName + '"']);
+    Add(cGetQueryParamOrderBy,
+      ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
   result := self;
 end;
 

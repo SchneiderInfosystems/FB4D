@@ -240,7 +240,7 @@ begin
     else
       URL := URL + TFirebaseHelpers.EncodeQueryParams(QueryParams);
     {$IFDEF DEBUG}
-    TFirebasehelpers.Log(' Request: ' +
+    TFirebasehelpers.Log('FirebaseRequest.InternalSendRequestSynchronous ' +
       GetEnumName(TypeInfo(TRESTRequestMethod), ord(Method)) + ': ' + URL);
     {$ENDIF}
     case Method of
@@ -259,10 +259,11 @@ begin
     {$IFDEF DEBUG}
     if not result.StatusOk then
     begin
-      TFirebaseHelpers.Log('Request failed: ' + IntToStr(result.StatusCode) +
-        ' / ' + result.StatusText);
-      TFirebaseHelpers.Log('Content from ' + URL + ': ');
-      TFirebaseHelpers.Log('> ' + result.ContentAsString);
+      TFirebaseHelpers.Log(
+        'FirebaseRequest.InternalSendRequestSynchronous failed: ' +
+        IntToStr(result.StatusCode) + ' / ' + result.StatusText);
+      TFirebaseHelpers.Log('  Content from ' + URL);
+      TFirebaseHelpers.Log('  > ' + result.ContentAsString);
     end;
     {$ENDIF}
   finally
@@ -302,7 +303,7 @@ begin
       TFirebasehelpers.EncodeQueryParams(QueryParams);
   Request.URLAlreadyEncoded := true;
   {$IFDEF DEBUG}
-  TFirebasehelpers.Log(' Request: ' +
+  TFirebasehelpers.Log('FirebaseRequest.InternalSendRequest ' +
     GetEnumName(TypeInfo(TRESTRequestMethod), ord(Request.Method)) + ': ' +
     Request.GetFullRequestURL(true));
   {$ENDIF}
@@ -320,8 +321,9 @@ begin
             if assigned(OnRequestError) then
               OnRequestError(RequestID, e.Message)
             else
-              TFirebaseHelpers.Log(Format('Exception in request %s: %s',
-                [RequestID, e.Message]));
+              TFirebaseHelpers.LogFmt(
+                'Exception in FirebaseRequest.InternalSendRequest %s: %s',
+                [RequestID, e.Message]);
         end;
       finally
         FreeAndNil(Response);
@@ -385,7 +387,7 @@ begin
       TFirebasehelpers.EncodeQueryParams(QueryParams);
   Request.URLAlreadyEncoded := true;
   {$IFDEF DEBUG}
-  TFirebasehelpers.Log(' Request: ' +
+  TFirebasehelpers.Log('FirebaseRequest.InternalSendRequest ' +
     GetEnumName(TypeInfo(TRESTRequestMethod), ord(Request.Method)) + ': ' +
     Request.GetFullRequestURL(true));
   {$ENDIF}
@@ -403,8 +405,9 @@ begin
             if assigned(OnRequestError) then
               OnRequestError(RequestID, e.Message)
             else
-              TFirebaseHelpers.Log(Format('Exception in request %s: %s',
-                [RequestID, e.Message]));
+              TFirebaseHelpers.LogFmt(
+                'Exception in FirebaseRequest.InternalSendRequest %s: %s',
+                [RequestID, e.Message]);
         end;
       finally
         FreeAndNil(Response);
@@ -466,7 +469,7 @@ procedure TFirebaseRequest.RESTRequestAfterExecute(Sender: TCustomRESTRequest);
 begin
   {$IFNDEF VER320} // In DE 10.1 and former this leads to an AV
   {$IFDEF DEBUG}
-  TFirebaseHelpers.Log(' Exe: ' +
+  TFirebaseHelpers.Log('FirebaseRequest.RESTRequestAfterExecute ' +
     GetEnumName(TypeInfo(TRESTRequestMethod), ord(Sender.Method)) + ': ' +
     Sender.GetFullRequestURL(true));
   {$ENDIF}
@@ -476,11 +479,12 @@ end;
 procedure TFirebaseRequest.RESTRequestHTTPProtocolError(
   Sender: TCustomRESTRequest);
 begin
-  TFirebaseHelpers.Log(' Protocol error: ' + Sender.Response.StatusText);
+  TFirebaseHelpers.Log('FirebaseRequest.RESTRequestHTTPProtocolError ' +
+    Sender.Response.StatusText);
   {$IFDEF DEBUG}
-  TFirebaseHelpers.Log('        Details: ' +
+  TFirebaseHelpers.Log('  Details: ' +
     Sender.Response.Content.Replace(#13, '').Replace(#10, '').Replace(' ', ''));
-  TFirebaseHelpers.Log('        Request: ' +
+  TFirebaseHelpers.Log('  Request: ' +
     GetEnumName(TypeInfo(TRESTRequestMethod), ord(Sender.Method)) + ': ' +
     Sender.GetFullRequestURL);
   {$ENDIF}
