@@ -266,9 +266,15 @@ type
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue; // The caller has to free the TJSONValue
     procedure Delete(ResourceParams: TRequestResourceParam;
       OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError;
-      QueryParams: TQueryParams = nil);
+      QueryParams: TQueryParams); overload;
+      deprecated 'Use delete method without QueryParams instead';
+    procedure Delete(ResourceParams: TRequestResourceParam;
+      OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError); overload;
     function DeleteSynchronous(ResourceParams: TRequestResourceParam;
-      QueryParams: TQueryParams = nil): boolean;
+      QueryParams: TQueryParams): boolean; overload;
+      deprecated 'Use delete method without QueryParams instead';
+    function DeleteSynchronous(
+      ResourceParams: TRequestResourceParam): boolean; overload;
     // long time running request
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;

@@ -119,9 +119,13 @@ type
       Data: TJSONValue; QueryParams: TQueryParams = nil): TJSONValue;
     procedure Delete(ResourceParams: TRequestResourceParam;
       OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError;
-      QueryParams: TQueryParams = nil);
+      QueryParams: TQueryParams = nil); overload; { deprecated }
+    procedure Delete(ResourceParams: TRequestResourceParam;
+      OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError); overload;
     function DeleteSynchronous(ResourceParams: TRequestResourceParam;
-      QueryParams: TQueryParams = nil): boolean;
+      QueryParams: TQueryParams = nil): boolean; overload; { deprecated }
+    function DeleteSynchronous(ResourceParams: TRequestResourceParam): boolean;
+      overload;
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
@@ -245,7 +249,8 @@ begin
       if assigned(OnError) then
         OnError(RequestID, e.Message)
       else
-        TFirebaseHelpers.Log(Format(rsFBFailureIn, [RequestID, e.Message]));
+        TFirebaseHelpers.LogFmt(rsFBFailureIn,
+          ['RealTimeDB.OnResponse', RequestID, e.Message]);
     end;
   end;
   Val.Free;
@@ -387,12 +392,35 @@ begin
     raise EFirebaseResponse.Create(Resp.ErrorMsgOrStatusText);
 end;
 
+
+function TRealTimeDB.DeleteSynchronous(
+  ResourceParams: TRequestResourceParam): boolean;
+var
+  Resp: IFirebaseResponse;
+begin
+  Resp := SendRequestSynchronous(ResourceParams, rmDelete, nil, nil);
+  if Resp.StatusOk then
+    result := true
+  else if Resp.StatusNotFound then
+    result := false
+  else
+    raise EFirebaseResponse.Create(Resp.ErrorMsgOrStatusText);
+end;
+
 procedure TRealTimeDB.Delete(ResourceParams: TRequestResourceParam;
   OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError;
   QueryParams: TQueryParams);
 begin
   SendRequest(TFirebaseHelpers.ArrStrToCommaStr(ResourceParams), ResourceParams,
    rmDelete, nil, QueryParams, OnDeleteResponse, OnRequestError,
+   TOnSuccess.CreateRTDBDelete(OnDelete));
+end;
+
+procedure TRealTimeDB.Delete(ResourceParams: TRequestResourceParam;
+  OnDelete: TOnRTDBDelete; OnRequestError: TOnRequestError);
+begin
+  SendRequest(TFirebaseHelpers.ArrStrToCommaStr(ResourceParams), ResourceParams,
+   rmDelete, nil, nil, OnDeleteResponse, OnRequestError,
    TOnSuccess.CreateRTDBDelete(OnDelete));
 end;
 
@@ -412,8 +440,8 @@ begin
   else if assigned(Response.OnError) then
     Response.OnError(RequestID, Response.ErrorMsgOrStatusText)
   else
-    TFirebaseHelpers.Log(Format(rsFBFailureIn,
-      [RequestID, Response.ErrorMsgOrStatusText]));
+    TFirebaseHelpers.LogFmt(rsFBFailureIn,
+      ['RealTimeDB.OnDeleteResponse', RequestID, Response.ErrorMsgOrStatusText]);
 end;
 
 function TRealTimeDB.GetServerVariablesSynchronous(const ServerVarName: string;
@@ -477,7 +505,8 @@ begin
       if assigned(Response.OnError) then
         Response.OnError(Varname, e.Message)
       else
-        TFirebaseHelpers.Log('Exception in OnServerVarResp: ' + e.Message);
+        TFirebaseHelpers.Log('RealTimeDB.OnServerVarResp Exception ' +
+          e.Message);
   end;
 end;
 
@@ -553,7 +582,8 @@ begin
                     OnError(Info, ErrMsg);
                   end)
             end else
-              TFirebaseHelpers.Log(Format(rsEvtStartFailed, [Info, ErrMsg]));
+              TFirebaseHelpers.LogFmt('RealTimeDB.ListenForValueEvents ' +
+                rsEvtStartFailed, [Info, ErrMsg]);
             fStopWaiting := true;
           end;
           // reopen stream
@@ -574,7 +604,8 @@ begin
                   OnError(Info, ErrMsg);
                 end)
           end else
-            TFirebaseHelpers.Log(Format(rsEvtListenerFailed, [Info, e.Message]));
+            TFirebaseHelpers.LogFmt('RealTimeDB.ListenForValueEvents ' +
+              rsEvtListenerFailed, [Info, e.Message]);
       end;
       FreeAndNil(fStream);
       FreeAndNil(fClient);
@@ -704,7 +735,8 @@ begin
               fOnListenError(rsEvtParserFailed, ErrMsg)
             end)
         else
-          TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + ErrMsg);
+          TFirebaseHelpers.Log('RealTimeDB.OnRecData ' + rsEvtParserFailed +
+            ': ' + ErrMsg);
     end;
   end;
 end;
@@ -798,7 +830,8 @@ begin
               fOnListenError(rsEvtParserFailed, ErrMsg)
             end)
       else
-        TFirebaseHelpers.Log(rsEvtParserFailed + ': ' + ErrMsg);
+        TFirebaseHelpers.Log('RealTimeDB.OnRecData ' + rsEvtParserFailed +
+          ': ' + ErrMsg);
     end;
   end;
 end;
@@ -856,14 +889,15 @@ begin
       end;
       if assigned(fFirebase) and assigned(fFirebase.fThread) then
       begin
-        TFirebaseHelpers.Log(
-          'Hard stop of listener thread because of lost connection');
+        TFirebaseHelpers.Log('FirebaseEvent.StopListening Hard stop of ' +
+          'listener thread because of lost connection');
         fFirebase.fThread.Terminate;
       end;
     end;
   except
     on e: exception do
-      TFirebaseHelpers.Log('Exception in StopListening: ' + e.Message);
+      TFirebaseHelpers.Log('FirebaseEvent.StopListening Exception: ' +
+        e.Message);
   end;
 end;
 
