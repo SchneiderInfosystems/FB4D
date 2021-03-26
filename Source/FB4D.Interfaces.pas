@@ -243,6 +243,8 @@ type
   TOnServerTimeStamp = procedure(ServerTime: TDateTime) of object;
   TOnStopListenEvent = TNotifyEvent;
   TOnAuthRevokedEvent = procedure(TokenRenewPassed: boolean) of object;
+  TOnConnectionStateChange = procedure(ListenerConnected: boolean) of object;
+
   IRealTimeDB = interface(IInterface)
     procedure Get(ResourceParams: TRequestResourceParam;
       OnGetValue: TOnRTDBValue; OnRequestError: TOnRequestError;
@@ -439,7 +441,8 @@ type
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     procedure Unsubscribe(TargetID: cardinal);
     procedure StartListener(OnStopListening: TOnStopListenEvent;
-      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil);
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil);
     procedure StopListener;
     // Transaction
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;

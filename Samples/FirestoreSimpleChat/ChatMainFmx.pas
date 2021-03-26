@@ -110,6 +110,7 @@ type
       TimeStamp: TDateTime);
     procedure OnListenerError(const RequestID, ErrMsg: string);
     procedure OnStopListening(Sender: TObject);
+    procedure OnConnectionStateChange(ListenerConnected: boolean);
     function SearchItem(const DocId: string): TListViewItem;
     procedure OnDocWrite(const Info: string; Document: IFirestoreDocument);
     procedure OnDocWriteError(const RequestID, ErrMsg: string);
@@ -312,7 +313,8 @@ begin
   fConfig.Database.SubscribeQuery(TStructuredQuery.CreateForCollection(cDocID).
     OrderBy('DateTime', odAscending),
     OnChangedColDocument, OnDeletedColDocument);
-  fConfig.Database.StartListener(OnStopListening, OnListenerError, OnAuthRevoked);
+  fConfig.Database.StartListener(OnStopListening, OnListenerError,
+    OnAuthRevoked, OnConnectionStateChange);
   btnEditMessage.Visible := false;
   btnDeleteMessage.Visible := false;
   btnPushMessage.Visible := true;
@@ -411,6 +413,14 @@ begin
   lsvChat.ScrollTo(Item.Index);
   txtUpdate.Text := 'Last message written at ' +
     FormatDateTime('HH:NN:SS.ZZZ', Document.UpdateTime);
+end;
+
+procedure TfmxChatMain.OnConnectionStateChange(ListenerConnected: boolean);
+begin
+  if ListenerConnected then
+    txtUpdate.Text := 'Server reconnected at ' + TimeToStr(now)
+  else
+    txtUpdate.Text := 'Server disconnected at ' + TimeToStr(now);
 end;
 
 procedure TfmxChatMain.lsvChatItemClick(const Sender: TObject;

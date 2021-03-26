@@ -109,7 +109,8 @@ type
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     procedure Unsubscribe(TargetID: cardinal);
     procedure StartListener(OnStopListening: TOnStopListenEvent;
-      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil);
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil);
     procedure StopListener;
     // Transaction
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
@@ -718,9 +719,11 @@ begin
 end;
 
 procedure TFirestoreDatabase.StartListener(OnStopListening: TOnStopListenEvent;
-  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent);
+  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+  OnConnectionStateChange: TOnConnectionStateChange);
 begin
-  fListener.RegisterEvents(OnStopListening, OnError, OnAuthRevoked);
+  fListener.RegisterEvents(OnStopListening, OnError, OnAuthRevoked,
+    OnConnectionStateChange);
   fListener.Start;
 end;
 
