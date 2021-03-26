@@ -61,6 +61,7 @@ type
     procedure OnUploadFromStream(const ObjectName: TObjectName;
       Response: IFirebaseResponse);
     procedure ScanCacheFolder;
+    procedure ReduceCacheSize;
     procedure AddToCache(StorageObj: IStorageObject; Stream: TStream);
     function CheckInCache(StorageObj: IStorageObject; Stream: TStream): boolean;
     function DeleteFileFromCache(const FileName: string): boolean;
@@ -96,7 +97,6 @@ type
     function IsCacheScanFinished: boolean;
     procedure ClearCache;
     function CacheUsageInPercent: extended;
-    procedure ReduceCacheSize;
   end;
 
   TStorageObject = class(TInterfacedObject, IStorageObject)
