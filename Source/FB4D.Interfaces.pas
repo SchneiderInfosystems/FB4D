@@ -444,6 +444,7 @@ type
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
       OnConnectionStateChange: TOnConnectionStateChange = nil);
     procedure StopListener;
+    function GetTimeStampOfLastAccess: TDateTime;
     // Transaction
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
       OnRequestError: TOnRequestError);

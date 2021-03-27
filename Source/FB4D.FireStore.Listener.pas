@@ -68,6 +68,7 @@ type
     fOnAuthRevoked: TOnAuthRevokedEvent;
     fOnConnectionStateChange: TOnConnectionStateChange;
     fLastKeepAliveMsg: TDateTime;
+    fLastReceivedMsg: TDateTime;
     fConnected: boolean;
     fRequireTokenRenew: boolean;
     fCloseRequest: boolean;
@@ -106,6 +107,7 @@ type
       OnChangedDoc: TOnChangedDocument;
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     procedure Unsubscribe(TargetID: cardinal);
+    property LastReceivedMsg: TDateTime read fLastReceivedMsg;
   end;
 
 implementation
@@ -622,7 +624,10 @@ begin
     fGSessionID := '';
     fConnected := false;
     if Mode >= NewListener then
+    begin
       fResumeToken := '';
+      fLastReceivedMsg := 0;
+    end;
   end;
 end;
 
@@ -923,6 +928,7 @@ var
   StreamReadFailed: boolean;
 begin
   try
+    fLastReceivedMsg := Now;
     if fStopWaiting then
      Abort := true
     else if assigned(fStream) and
