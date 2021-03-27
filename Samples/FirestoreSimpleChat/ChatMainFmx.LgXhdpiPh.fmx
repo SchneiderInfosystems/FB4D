@@ -17,9 +17,11 @@ inherited fmxChatMain_LgXhdpiPh: TfmxChatMain_LgXhdpiPh
         Size.Width = 450.000000000000000000
         inherited edtKey: TEdit
           Size.Width = 310.000000000000000000
+          Size.Height = 32.000000000000000000
         end
         inherited edtProjectID: TEdit
           Size.Width = 310.000000000000000000
+          Size.Height = 32.000000000000000000
         end
         inherited lblVersionInfo: TLabel
           StyledSettings = [Family, Style, FontColor]
@@ -28,6 +30,7 @@ inherited fmxChatMain_LgXhdpiPh: TfmxChatMain_LgXhdpiPh
         end
         inherited edtBucket: TEdit
           Size.Width = 310.000000000000000000
+          Size.Height = 32.000000000000000000
         end
       end
       inherited FraSelfRegistration: TFraSelfRegistration
@@ -86,22 +89,30 @@ inherited fmxChatMain_LgXhdpiPh: TfmxChatMain_LgXhdpiPh
         Size.Height = 60.000000000000000000
         inherited edtMessage: TEdit
           Size.Width = 256.000000000000000000
+          Size.Height = 32.000000000000000000
         end
         inherited btnPushMessage: TButton
           Position.X = 276.000000000000000000
+          Size.Width = 48.000000000000000000
+          Size.Height = 48.000000000000000000
         end
         inherited btnDeleteMessage: TButton
           Position.X = 392.000000000000000000
+          Size.Width = 48.000000000000000000
+          Size.Height = 48.000000000000000000
         end
         inherited btnEditMessage: TButton
           Position.X = 334.000000000000000000
+          Size.Width = 48.000000000000000000
+          Size.Height = 48.000000000000000000
         end
       end
       inherited layUserInfo: TLayout
-        Size.Width = 450.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Size.Width = 445.000000000000000000
         inherited lblUserInfo: TLabel
           Position.X = 100.000000000000000000
-          Size.Width = 290.000000000000000000
+          Size.Width = 280.000000000000000000
         end
         inherited btnSignOut: TButton
           Margins.Top = 12.000000000000000000
@@ -111,13 +122,17 @@ inherited fmxChatMain_LgXhdpiPh: TfmxChatMain_LgXhdpiPh
           Size.Height = 31.000000000000000000
         end
         inherited txtUpdate: TText
-          Position.X = 170.000000000000000000
+          Position.X = 165.000000000000000000
         end
         inherited txtError: TText
-          Size.Width = 70.000000000000000000
+          Size.Width = 65.000000000000000000
         end
         inherited shpProfile: TCircle
-          Position.X = 400.000000000000000000
+          Position.X = 390.000000000000000000
+        end
+        inherited imgCloudOff: TImage
+          MultiResBitmap.Height = 96
+          MultiResBitmap.Width = 96
         end
       end
     end

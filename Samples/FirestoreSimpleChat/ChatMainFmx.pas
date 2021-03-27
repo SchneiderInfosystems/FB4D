@@ -61,6 +61,7 @@ type
     Text1: TText;
     shpProfile: TCircle;
     ImageList: TImageList;
+    imgCloudOff: TImage;
     procedure FormCreate(Sender: TObject);
     procedure btnSignOutClick(Sender: TObject);
     procedure btnPushMessageClick(Sender: TObject);
@@ -267,6 +268,7 @@ begin
   fUserName := User.DisplayName;
   if assigned(FraSelfRegistration.ProfileImg) then
     shpProfile.Fill.Bitmap.Bitmap.Assign(FraSelfRegistration.ProfileImg);
+  SaveSettings;
   StartChat;
 end;
 
@@ -300,6 +302,7 @@ end;
 
 procedure TfmxChatMain.StartChat;
 begin
+  GetStorage;
   while not fConfig.Storage.IsCacheScanFinished do
   begin
     FraSelfRegistration.InformDelayedStart('starting...');
@@ -418,9 +421,16 @@ end;
 procedure TfmxChatMain.OnConnectionStateChange(ListenerConnected: boolean);
 begin
   if ListenerConnected then
-    txtUpdate.Text := 'Server reconnected at ' + TimeToStr(now)
-  else
-    txtUpdate.Text := 'Server disconnected at ' + TimeToStr(now);
+  begin
+    txtUpdate.Text := 'Server reconnected at ' + TimeToStr(now);
+    imgCloudOff.Visible := false;
+    shpProfile.Visible := true;
+  end else begin
+    txtUpdate.Text := 'Server disconnected at ' +
+      TimeToStr(fConfig.Database.GetTimeStampOfLastAccess);
+    imgCloudOff.Visible := true;
+    shpProfile.Visible := false;
+  end;
 end;
 
 procedure TfmxChatMain.lsvChatItemClick(const Sender: TObject;
