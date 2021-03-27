@@ -144,6 +144,9 @@ implementation
 uses
   System.NetConsts, System.NetEncoding, System.StrUtils, System.IOUtils,
   System.Generics.Defaults, System.Hash,
+{$IFDEF POSIX}
+  Posix.Unistd,
+{$ENDIF}
   IdGlobalProtocols,
   FB4D.Helpers;
 
