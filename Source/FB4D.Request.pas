@@ -134,7 +134,7 @@ uses
 
 resourcestring
   rsTokenRefreshFailed = 'Authorisation token refresh failed';
-  rsConnectionToServerBroken = 'Connection to internet server broken';
+  rsConnectionToServerBroken = 'Connection to server broken';
 
 { TResendRequest }
 
@@ -337,14 +337,18 @@ begin
       try
         if Assigned(Obj) and (Obj is Exception) and assigned(OnRequestError) then
         begin
-          if Pos('(12030)', Exception(Obj).Message) > 1 then
+          {$IFDEF WINDOWS}
+          if (Pos('(12030)', Exception(Obj).Message) > 1) or
+             (Pos('(12007)', Exception(Obj).Message) > 1) then
             // Misleading error message from WinAPI
             // 12030: ERROR_INTERNET_CONNECTION_ABORTED
             // "The connection with the server has been terminated."
             // German "Die Serververbindung wurde aufgrund eines Fehlers beendet."
+            // 12007: ERROR_INTERNET_NAME_NOT_RESOLVED
             OnRequestError(RequestID, rsConnectionToServerBroken)
           else
-            OnRequestError(RequestID, Exception(Obj).Message);
+          {$ENDIF}
+          OnRequestError(RequestID, Exception(Obj).Message);
         end;
       finally
         FreeAndNil(Response);
