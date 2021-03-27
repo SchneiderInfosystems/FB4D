@@ -565,7 +565,7 @@ end;
 
 procedure TfmxChatMain.OnDocDeleteError(const RequestID, ErrMsg: string);
 begin
-  txtUpdate.Text := 'Failre while deleted message ' + ErrMsg;
+  txtError.Text := 'Failure while deleted message ' + ErrMsg;
 end;
 
 procedure TfmxChatMain.OnStopListening(Sender: TObject);
