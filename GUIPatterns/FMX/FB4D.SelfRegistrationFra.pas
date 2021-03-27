@@ -98,6 +98,7 @@ type
     procedure OnProfileImgError(const RequestID, ErrMsg: string);
     procedure StartDownloadProfileImg(PhotoURL: string);
     procedure OnProfileDownload(const DownloadURL: string);
+    function GetProfileImg: TBitmap;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -118,7 +119,7 @@ type
     procedure InformDelayedStart(const Msg: string);
     procedure StopDelayedStart;
     function GetEMail: string;
-    property ProfileImg: TBitmap read fProfileImg;
+    property ProfileImg: TBitmap read GetProfileImg;
     property ProfileURL: string read fProfileURL;
   end;
 
@@ -475,6 +476,14 @@ end;
 function TFraSelfRegistration.GetEMail: string;
 begin
   result := trim(edtEmail.Text);
+end;
+
+function TFraSelfRegistration.GetProfileImg: TBitmap;
+begin
+  if assigned(fProfileImg) then
+    result := fProfileImg
+  else
+    result := fDefaultProfileImg;
 end;
 
 procedure TFraSelfRegistration.OnVerificationMailSent(const RequestID: string;
