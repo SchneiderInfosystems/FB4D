@@ -62,6 +62,8 @@ type
     shpProfile: TCircle;
     ImageList: TImageList;
     imgCloudOff: TImage;
+    layVirtualKeyboardSpace: TLayout;
+    rctBack: TRectangle;
     procedure FormCreate(Sender: TObject);
     procedure btnSignOutClick(Sender: TObject);
     procedure btnPushMessageClick(Sender: TObject);
@@ -75,6 +77,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure lsvChatUpdateObjects(const Sender: TObject;
       const AItem: TListViewItem);
+    procedure FormVirtualKeyboard(Sender: TObject;
+      KeyboardVisible: Boolean; const Bounds: TRect);
   private type
     TPendingProfile = class
       Items: TList<TListViewItem>;
@@ -313,6 +317,7 @@ begin
   end;
   FraSelfRegistration.StopDelayedStart;
   lblUserInfo.Text := fUserName + ' logged in';
+  edtMessage.Text := '';
   fConfig.Database.SubscribeQuery(TStructuredQuery.CreateForCollection(cDocID).
     OrderBy('DateTime', odAscending),
     OnChangedColDocument, OnDeletedColDocument);
@@ -725,6 +730,18 @@ procedure TfmxChatMain.OnGetStorageError(const ObjectName: TObjectName;
   const ErrMsg: string);
 begin
   // Do not remove the assoziated profile from fPendingProfiles to prevent retry
+end;
+
+procedure TfmxChatMain.FormVirtualKeyboard(Sender: TObject;
+  KeyboardVisible: Boolean; const Bounds: TRect);
+begin
+  {$IFDEF ANDROID}
+  // Simple workaround for problem with covered controls from virtual keyboard
+  layVirtualKeyboardSpace.Height := Bounds.Height;
+  layVirtualKeyboardSpace.Visible := KeyboardVisible;
+  if TabControl.ActiveTab = tabChat then
+    lsvChat.ScrollTo(lsvChat.ItemCount - 1);
+  {$ENDIF}
 end;
 
 { TfmxChatMain.TPendingProfile }

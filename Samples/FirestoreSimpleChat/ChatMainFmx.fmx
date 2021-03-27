@@ -9,6 +9,8 @@ object fmxChatMain: TfmxChatMain
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnVirtualKeyboardShown = FormVirtualKeyboard
+  OnVirtualKeyboardHidden = FormVirtualKeyboard
   DesignerMasterStyle = 0
   object TabControl: TTabControl
     Align = Client
@@ -536,8 +538,7 @@ object fmxChatMain: TfmxChatMain
                 81A80B41651BBDDABF3020D342283B7F44FC10CACE8F800BA1ECFC88E8825B76
                 7EA15028140A8542A15068C8DCDC3FD757C2660D7C91630000000049454E44AE
                 426082}
-              FileName = 
-                'FirestoreSimpleChat\CloudOff.png'
+              FileName = 'FirestoreSimpleChat\CloudOff.png'
             end>
           Align = MostRight
           Margins.Right = 5.000000000000000000
@@ -548,6 +549,22 @@ object fmxChatMain: TfmxChatMain
           Visible = False
         end
       end
+    end
+  end
+  object layVirtualKeyboardSpace: TLayout
+    Align = Bottom
+    Position.Y = 515.000000000000000000
+    Size.Width = 640.000000000000000000
+    Size.Height = 50.000000000000000000
+    Size.PlatformDefault = False
+    Visible = False
+    TabOrder = 5
+    object rctBack: TRectangle
+      Align = Client
+      Fill.Color = claBlack
+      Size.Width = 640.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
     end
   end
   object ImageList: TImageList
