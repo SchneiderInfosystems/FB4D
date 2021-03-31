@@ -42,7 +42,7 @@ type
     fProjectID: string;
     fDatabaseID: string;
     fAuth: IFirebaseAuthentication;
-    fListener: TListenerThread;
+    fListener: TFSListenerThread;
     fLastReceivedMsg: TDateTime;
     function BaseURI: string;
     procedure OnQueryResponse(const RequestID: string;
@@ -220,7 +220,7 @@ begin
   fProjectID := ProjectID;
   fAuth := Auth;
   fDatabaseID := DatabaseID;
-  fListener := TListenerThread.Create(ProjectID, DatabaseID, Auth);
+  fListener := TFSListenerThread.Create(ProjectID, DatabaseID, Auth);
   fLastReceivedMsg := 0;
 end;
 
@@ -749,7 +749,7 @@ procedure TFirestoreDatabase.StopListener;
 begin
   fListener.StopListener;
   // Recreate thread because a thread cannot be restarted
-  fListener := TListenerThread.Create(fProjectID, fDatabaseID, fAuth);
+  fListener := TFSListenerThread.Create(fProjectID, fDatabaseID, fAuth);
 end;
 
 function TFirestoreDatabase.GetTimeStampOfLastAccess: TDateTime;

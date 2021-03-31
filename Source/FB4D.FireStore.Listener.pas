@@ -44,9 +44,10 @@ type
     QueryJSON: string;
   end;
 
-  TListenerThread = class(TThread)
+  TFSListenerThread = class(TThread)
   private const
-    cWaitTimeBeforeReconnect = 5000; // 5 sec
+    cWaitTimeBeforeReconnect = 2000; // 2 sec
+    cTimeoutConnectionLost = 61000; // 1 minute 1sec
     cDefTimeOutInMS = 500;
   private type
     TInitMode = (Refetch, NewSIDRequest, NewListener);
@@ -138,10 +139,11 @@ resourcestring
   rsInterpreteFailed = 'Exception in event interpreter: ';
   rsUnknownStatus = 'Unknown status msg %d: %s';
   rsUnexpectedExcept = 'Unexpected exception: ';
+  rsUnexpectedThreadEnd = 'Listener unexpected stopped';
 
 { TListenerThread }
 
-constructor TListenerThread.Create(const ProjectID, DatabaseID: string;
+constructor TFSListenerThread.Create(const ProjectID, DatabaseID: string;
   Auth: IFirebaseAuthentication);
 var
   EventName: string;
@@ -152,7 +154,7 @@ begin
   fDatabase := 'projects/' + ProjectID + '/databases/' + DatabaseID;
   fTargets := TList<TTarget>.Create;
   {$IFDEF WINDOWS}
-  EventName := 'FB4DListenerGetFini';
+  EventName := 'FB4DFSListenerGetFini';
   {$ELSE}
   EventName := '';
   {$ENDIF}
@@ -160,18 +162,18 @@ begin
   OnTerminate := OnEndThread;
   FreeOnTerminate := true;
   {$IFNDEF LINUX64}
-  NameThreadForDebugging('FB4D.Firestore.ListenerThread', ThreadID);
+  NameThreadForDebugging('FB4D.FSListenerThread', ThreadID);
   {$ENDIF}
 end;
 
-destructor TListenerThread.Destroy;
+destructor TFSListenerThread.Destroy;
 begin
   FreeAndNil(fGetFinishedEvent);
   FreeAndNil(fTargets);
   inherited;
 end;
 
-function TListenerThread.SubscribeDocument(
+function TFSListenerThread.SubscribeDocument(
   DocumentPath: TRequestResourceParam; OnChangedDoc: TOnChangedDocument;
   OnDeletedDoc: TOnDeletedDocument): cardinal;
 var
@@ -190,7 +192,7 @@ begin
   result := Target.TargetID;
 end;
 
-function TListenerThread.SubscribeQuery(Query: IStructuredQuery;
+function TFSListenerThread.SubscribeQuery(Query: IStructuredQuery;
   OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument): cardinal;
 var
   Target: TTarget;
@@ -211,7 +213,7 @@ begin
   result := Target.TargetID;
 end;
 
-procedure TListenerThread.Unsubscribe(TargetID: cardinal);
+procedure TFSListenerThread.Unsubscribe(TargetID: cardinal);
 var
   c: integer;
 begin
@@ -223,7 +225,7 @@ begin
     fTargets.Delete(c);
 end;
 
-function TListenerThread.GetTargetIndById(TargetID: cardinal): integer;
+function TFSListenerThread.GetTargetIndById(TargetID: cardinal): integer;
 var
   c: integer;
 begin
@@ -233,7 +235,7 @@ begin
   result := -1;
 end;
 
-function TListenerThread.GetRequestData: string;
+function TFSListenerThread.GetRequestData: string;
 const
   // Count=1
   // ofs=0
@@ -276,7 +278,7 @@ begin
           JSON := Format(cQueryTemplate,
             [fDatabase, Target.QueryJSON, Target.TargetID, JSON]);
           {$IFDEF ParserLogDetails}
-          TFirebaseHelpers.Log('ListenerThread.GetRequestData Query: ' + JSON);
+          TFirebaseHelpers.Log('FSListenerThread.GetRequestData Query: ' + JSON);
           {$ENDIF}
         end;
     end;
@@ -285,13 +287,13 @@ begin
   end;
 end;
 
-procedure TListenerThread.Interprete(const Telegram: string);
+procedure TFSListenerThread.Interprete(const Telegram: string);
 
   procedure HandleTargetChanged(ChangedObj: TJsonObject);
   begin
     ChangedObj.TryGetValue('resumeToken', fResumeToken);
     {$IFDEF ParserLogDetails}
-    TFirebaseHelpers.Log('ListenerThread.Interprete Token: ' + fResumeToken);
+    TFirebaseHelpers.Log('FSListenerThread.Interprete Token: ' + fResumeToken);
     {$ENDIF}
   end;
 
@@ -376,7 +378,7 @@ var
 begin
   try
     {$IFDEF ParserLog}
-    TFirebaseHelpers.LogFmt('ListenerThread.Interprete Telegram[%d] %s',
+    TFirebaseHelpers.LogFmt('FSListenerThread.Interprete Telegram[%d] %s',
        [fLastTelegramNo, Telegram]);
     {$ENDIF}
     if Telegram = cKeepAlive then
@@ -420,12 +422,12 @@ begin
   end;
 end;
 
-function TListenerThread.IsRunning: boolean;
+function TFSListenerThread.IsRunning: boolean;
 begin
   result := Started and not Finished;
 end;
 
-function TListenerThread.SearchNextMsg: string;
+function TFSListenerThread.SearchNextMsg: string;
 
   function GetNextLine(const Line: string; out NextResp: string): string;
   const
@@ -452,13 +454,14 @@ begin
     fPartialResp := copy(NextResp, fMsgSize + 1);
     {$IFDEF ParserLog}
     if not fPartialResp.IsEmpty then
-      TFirebaseHelpers.Log('Rest line after SearchNextMsg: ' + fPartialResp);
+      TFirebaseHelpers.Log('FSListenerThread.Rest line after SearchNextMsg: ' +
+        fPartialResp);
     {$ENDIF}
   end else
     result := '';
 end;
 
-procedure TListenerThread.Parser;
+procedure TFSListenerThread.Parser;
 
   procedure ParseNextMsg(const msg: string);
 
@@ -552,7 +555,7 @@ procedure TListenerThread.Parser;
     Line, Telegram: string;
   begin
     {$IFDEF ParserLogDetails}
-    TFirebaseHelpers.Log('ListenerThread.Parser: ' + msg);
+    TFirebaseHelpers.Log('FSListenerThread.Parser: ' + msg);
     {$ENDIF}
     if not(msg.StartsWith('[') and msg.EndsWith(']')) then
       raise EFirestoreListener.Create('Invalid packet received: ' + msg);
@@ -566,12 +569,13 @@ procedure TListenerThread.Parser;
       end else begin
         Telegram := FindNextTelegram(Line);
         {$IFDEF ParserLog}
-        TFirebaseHelpers.Log('ListenerThread.Parser Ignore obsolete telegram ' +
-          MsgNo.ToString + ': ' + Telegram);
+        TFirebaseHelpers.Log('FSListenerThread.Parser Ignore obsolete ' +
+          'telegram ' + MsgNo.ToString + ': ' + Telegram);
         {$ENDIF}
       end;
       if not Line.EndsWith(']]') then
-        raise EFirestoreListener.Create('Invalid telegram end received: ' + Line);
+        raise EFirestoreListener.Create('Invalid telegram end received: ' +
+          Line);
       if (Line.length > 4) and (Line[3] = ',') then
         Line := Copy(Line, 4)
       else
@@ -596,7 +600,7 @@ begin
   end;
 end;
 
-procedure TListenerThread.ReportErrorInThread(const ErrMsg: string);
+procedure TFSListenerThread.ReportErrorInThread(const ErrMsg: string);
 begin
   if assigned(fOnListenError) and not TFirebaseHelpers.AppIsTerminated then
     TThread.Queue(nil,
@@ -605,10 +609,10 @@ begin
         fOnListenError(fRequestID, ErrMsg);
       end)
   else
-    TFirebaseHelpers.Log('ListenerThread.ReportErrorInThread ' + ErrMsg);
+    TFirebaseHelpers.Log('FSListenerThread.ReportErrorInThread ' + ErrMsg);
 end;
 
-procedure TListenerThread.InitListen(Mode: TInitMode);
+procedure TFSListenerThread.InitListen(Mode: TInitMode);
 begin
   fReadPos := 0;
   fLastKeepAliveMsg := 0;
@@ -631,7 +635,7 @@ begin
   end;
 end;
 
-function TListenerThread.RequestSIDInThread: boolean;
+function TFSListenerThread.RequestSIDInThread: boolean;
 
   function FetchSIDFromResponse(Response: IFirebaseResponse): boolean;
   // 51
@@ -654,15 +658,17 @@ function TListenerThread.RequestSIDInThread: boolean;
      Resp.Length - cBeginPattern.Length - cEndPattern.Length);
     RespElement := SplitString(Resp, ',');
     if length(RespElement) < 2 then
-      raise EFirestoreListener.Create('Invalid SID response array size: ' + Resp);
+      raise EFirestoreListener.Create('Invalid SID response array size: ' +
+        Resp);
     fSID := RespElement[1];
     if (fSID.Length < 24) or
-      not(fSID.StartsWith('"') and fSID.EndsWith('"')) then
-      raise EFirestoreListener.Create('Invalid SID ' + fSID + ' response : ' + Resp);
+       not(fSID.StartsWith('"') and fSID.EndsWith('"')) then
+      raise EFirestoreListener.Create('Invalid SID ' + fSID + ' response : ' +
+        Resp);
     fSID := copy(fSID, 2, fSID.Length - 2);
     fGSessionID := Response.HeaderValue('x-http-session-id');
     {$IFDEF ParserLog}
-    TFirebaseHelpers.Log('ListenerThread.RequestSIDInThread ' + fSID + ', ' +
+    TFirebaseHelpers.Log('FSListenerThread.RequestSIDInThread ' + fSID + ', ' +
       fGSessionID);
     {$ENDIF}
     result := true;
@@ -706,23 +712,26 @@ begin
   end;
 end;
 
-procedure TListenerThread.Execute;
+procedure TFSListenerThread.Execute;
 var
   URL: string;
   QueryParams: TQueryParams;
   WasTokenRefreshed: boolean;
+  WaitRes: TWaitResult;
+  LastWait: TDateTime;
 begin
   InitListen(NewListener);
   QueryParams := TQueryParams.Create;
   try
-    while not TThread.CurrentThread.CheckTerminated and not fStopWaiting do
+    while not CheckTerminated and not fStopWaiting do
     begin
       if assigned(fAuth) then
         WasTokenRefreshed :=
           fAuth.GetTokenRefreshCount > fLastTokenRefreshCount
       else
         WasTokenRefreshed := false;
-      if fGSessionID.IsEmpty or WasTokenRefreshed or fCloseRequest then
+      if fSID.IsEmpty or fGSessionID.IsEmpty or WasTokenRefreshed or
+         fCloseRequest then
       begin
         if not RequestSIDInThread then
           fCloseRequest := true // Probably not connected with server
@@ -738,100 +747,123 @@ begin
         end;
       end else
         InitListen;
-      fStream := TMemoryStream.Create;
-      fClient := THTTPClient.Create;
-      try
-        fClient.HandleRedirects := true;
-        fClient.Accept := '*/*';
-        fClient.OnReceiveData := OnRecData;
-        QueryParams.Clear;
-        QueryParams.Add('database', [fDatabase]);
-        QueryParams.Add('gsessionid', [fGSessionID]);
-        QueryParams.Add('VER', [cVER]);
-        QueryParams.Add('RID', ['rpc']);
-        QueryParams.Add('SID', [fSID]);
-        QueryParams.Add('AID', [fLastTelegramNo.ToString]);
-        QueryParams.Add('TYPE', ['xmlhttp']);
-        URL := cBaseURL +
-          TFirebaseHelpers.EncodeResourceParams(cResourceParams) +
-          TFirebaseHelpers.EncodeQueryParams(QueryParams);
-        {$IFDEF ParserLog}
-        TFirebaseHelpers.Log('ListenerThread Get: [' +
-          fLastTelegramNo.ToString + '] ' + URL);
-        {$ENDIF}
-        if not fCloseRequest then
-        begin
-          fAsyncResult := fClient.BeginGet(OnEndListenerGet, URL, fStream);
-          fGetFinishedEvent.WaitFor;
-        end;
-        if fCloseRequest and not (fStopWaiting or fRequireTokenRenew) then
-        begin
-          if assigned(fOnConnectionStateChange) and fConnected then
-            TThread.Queue(nil,
-              procedure
-              begin
-                fOnConnectionStateChange(false);
-              end);
-          fConnected := false;
-          {$IFDEF ParserLog}
-          TFirebaseHelpers.Log('ListenerThread wait before reconnect');
-          {$ENDIF}
-          Sleep(cWaitTimeBeforeReconnect);
-        end
-        else if not fConnected then
-        begin
-          fConnected := true;
-          if assigned(fOnConnectionStateChange) then
-            TThread.Queue(nil,
-              procedure
-              begin
-                fOnConnectionStateChange(true);
-              end);
-        end;
-      except
-        on e: exception do
-        begin
-          ReportErrorInThread(Format(rsEvtListenerFailed, ['InnerException=' +
-            e.Message]));
-          // retry
-        end;
-      end;
-      if fRequireTokenRenew then
+      if fSID.IsEmpty or fGSessionID.IsEmpty then
       begin
-        if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
-        begin
+        {$IFDEF ParserLog}
+        TFirebaseHelpers.Log('FSListenerThread delay before reconnect');
+        {$ENDIF}
+        Sleep(cWaitTimeBeforeReconnect);
+      end else begin
+        fStream := TMemoryStream.Create;
+        fClient := THTTPClient.Create;
+        try
+          fClient.HandleRedirects := true;
+          fClient.Accept := '*/*';
+          fClient.OnReceiveData := OnRecData;
+          QueryParams.Clear;
+          QueryParams.Add('database', [fDatabase]);
+          QueryParams.Add('gsessionid', [fGSessionID]);
+          QueryParams.Add('VER', [cVER]);
+          QueryParams.Add('RID', ['rpc']);
+          QueryParams.Add('SID', [fSID]);
+          QueryParams.Add('AID', [fLastTelegramNo.ToString]);
+          QueryParams.Add('TYPE', ['xmlhttp']);
+          URL := cBaseURL +
+            TFirebaseHelpers.EncodeResourceParams(cResourceParams) +
+            TFirebaseHelpers.EncodeQueryParams(QueryParams);
           {$IFDEF ParserLog}
-          TFirebaseHelpers.Log('ListenerThread RequireTokenRenew: sucess at ' +
-            TimeToStr(now));
+          TFirebaseHelpers.Log('FSListenerThread Get: [' +
+            fLastTelegramNo.ToString + '] ' + URL);
           {$ENDIF}
-          fRequireTokenRenew := false;
-        end else begin
-          {$IFDEF ParserLog}
-          TFirebaseHelpers.Log('ListenerThread  RequireTokenRenew: failed at ' +
-            TimeToStr(now));
-          {$ENDIF}
-        end;
-        if assigned(fOnAuthRevoked) and
-           not TFirebaseHelpers.AppIsTerminated then
-          TThread.Queue(nil,
-            procedure
+          if not fCloseRequest then
+          begin
+            fAsyncResult := fClient.BeginGet(OnEndListenerGet, URL, fStream);
+            repeat
+              LastWait := now;
+              WaitRes := fGetFinishedEvent.WaitFor(cTimeoutConnectionLost);
+              if (WaitRes = wrTimeout) and (fLastReceivedMsg < LastWait) then
+              begin
+                fCloseRequest := true;
+                fAsyncResult.Cancel;
+                {$IFDEF ParserLog}
+                TFirebaseHelpers.Log('FSListenerThread timeout: ' +
+                  TimeToStr(now - fLastReceivedMsg));
+                {$ENDIF}
+              end;
+            until (WaitRes = wrSignaled) or fCloseRequest or CheckTerminated;
+          end;
+          if fCloseRequest and not (fStopWaiting or fRequireTokenRenew) then
+          begin
+            if assigned(fOnConnectionStateChange) and fConnected then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  fOnConnectionStateChange(false);
+                end);
+            fConnected := false;
+            if fLastReceivedMsg < now - cTimeoutConnectionLost then
             begin
-              fOnAuthRevoked(not fRequireTokenRenew);
-            end);
+              {$IFDEF ParserLog}
+              TFirebaseHelpers.Log('FSListenerThread wait before reconnect');
+              {$ENDIF}
+              Sleep(cWaitTimeBeforeReconnect);
+            end;
+          end
+          else if not fConnected then
+          begin
+            fConnected := true;
+            if assigned(fOnConnectionStateChange) then
+              TThread.Queue(nil,
+                procedure
+                begin
+                  fOnConnectionStateChange(true);
+                end);
+          end;
+        except
+          on e: exception do
+          begin
+            ReportErrorInThread(Format(rsEvtListenerFailed, ['InnerException=' +
+              e.Message]));
+            // retry
+          end;
+        end;
+        if fRequireTokenRenew then
+        begin
+          if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
+          begin
+            {$IFDEF ParserLog}
+            TFirebaseHelpers.Log(
+              'FSListenerThread RequireTokenRenew: sucess at ' + TimeToStr(now));
+            {$ENDIF}
+            fRequireTokenRenew := false;
+          end else begin
+            {$IFDEF ParserLog}
+            TFirebaseHelpers.Log(
+              'FSListenerThread RequireTokenRenew: failed at ' + TimeToStr(now));
+            {$ENDIF}
+          end;
+          if assigned(fOnAuthRevoked) and
+             not TFirebaseHelpers.AppIsTerminated then
+            TThread.Queue(nil,
+              procedure
+              begin
+                fOnAuthRevoked(not fRequireTokenRenew);
+              end);
+        end;
+        FreeAndNil(fClient);
       end;
-      FreeAndNil(fClient);
     end;
   except
     on e: exception do
       ReportErrorInThread(Format(rsEvtListenerFailed, [e.Message]));
   end;
   {$IFDEF ParserLog}
-  TFirebaseHelpers.Log('ListenerThread exit thread');
+  TFirebaseHelpers.Log('FSListenerThread exit thread');
   {$ENDIF}
   FreeAndNil(QueryParams);
 end;
 
-procedure TListenerThread.RegisterEvents(OnStopListening: TOnStopListenEvent;
+procedure TFSListenerThread.RegisterEvents(OnStopListening: TOnStopListenEvent;
   OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
   OnConnectionStateChange: TOnConnectionStateChange);
 begin
@@ -839,20 +871,20 @@ begin
     raise EFirestoreListener.Create(
       'RegisterEvents must not be called for started Listener');
   InitListen(NewListener);
-  fRequestID := 'Listener for ' + fTargets.Count.ToString + ' target(s)';
+  fRequestID := 'FSListener for ' + fTargets.Count.ToString + ' target(s)';
   fOnStopListening := OnStopListening;
   fOnListenError := OnError;
   fOnAuthRevoked := OnAuthRevoked;
   fOnConnectionStateChange := OnConnectionStateChange;
 end;
 
-procedure TListenerThread.OnEndListenerGet(const ASyncResult: IAsyncResult);
+procedure TFSListenerThread.OnEndListenerGet(const ASyncResult: IAsyncResult);
 var
   Resp: IHTTPResponse;
 begin
   try
     {$IFDEF ParserLog}
-    TFirebaseHelpers.Log('ListenerThread.OnEndListenerGet');
+    TFirebaseHelpers.Log('FSListenerThread.OnEndListenerGet');
     {$ENDIF}
     if not ASyncResult.GetIsCancelled then
     begin
@@ -864,7 +896,7 @@ begin
           ReportErrorInThread(Resp.StatusText);
           fCloseRequest := true;
           {$IFDEF ParserLogDetails}
-          TFirebaseHelpers.Log('ListenerThread.OnEndListenerGet Response: ' +
+          TFirebaseHelpers.Log('FSListenerThread.OnEndListenerGet Response: ' +
             Resp.ContentAsString);
           {$ENDIF}
         end;
@@ -875,29 +907,31 @@ begin
     FreeAndNil(fStream);
     fGetFinishedEvent.SetEvent;
   except
-    on e: ENetHTTPResponseException do
+    on e: ENetException do
     begin
       fCloseRequest := true;
       {$IFDEF ParserLogDetails}
       TFirebaseHelpers.Log(
-        'ListenerThread.OnEndListenerGet Disconnected by Server');
+        'FSListenerThread.OnEndListenerGet Disconnected by Server');
       {$ENDIF}
       FreeAndNil(fStream);
       fGetFinishedEvent.SetEvent;
     end;
     on e: exception do
-      TFirebaseHelpers.Log('ListenerThread.OnEndListenerGet Exception ' +
+      TFirebaseHelpers.Log('FSListenerThread.OnEndListenerGet Exception ' +
         e.Message);
   end;
 end;
 
-procedure TListenerThread.OnEndThread(Sender: TObject);
+procedure TFSListenerThread.OnEndThread(Sender: TObject);
 begin
   if assigned(fOnStopListening) and not TFirebaseHelpers.AppIsTerminated then
     fOnStopListening(Sender);
+  if not fStopWaiting and assigned(fOnListenError) then
+    fOnListenError(fRequestID, rsUnexpectedThreadEnd);
 end;
 
-procedure TListenerThread.StopListener(TimeOutInMS: integer);
+procedure TFSListenerThread.StopListener(TimeOutInMS: integer);
 var
   Timeout: integer;
 begin
@@ -919,7 +953,7 @@ begin
   end;
 end;
 
-procedure TListenerThread.OnRecData(const Sender: TObject; ContentLength,
+procedure TFSListenerThread.OnRecData(const Sender: TObject; ContentLength,
   ReadCount: Int64; var Abort: Boolean);
 var
   ss: TStringStream;
@@ -985,7 +1019,7 @@ begin
               fOnListenError(fRequestID, rsEvtParserFailed + ErrMsg)
             end)
         else
-          TFirebaseHelpers.Log('ListenerThread.OnRecData ' + ErrMsg);
+          TFirebaseHelpers.Log('FSListenerThread.OnRecData ' + ErrMsg);
     end;
   end;
 end;
