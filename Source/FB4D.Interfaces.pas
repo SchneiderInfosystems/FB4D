@@ -102,7 +102,7 @@ type
     object;
 
   TOnSuccess = record
-    type TOnSucccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
+    type TOnSuccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
       oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
       oscRTDBDelete, oscRTDBServerVariable, oscDocument, oscDocuments,
       oscBeginTransaction, oscStorage, oscStorageDeprecated, oscStorageUpload,
@@ -130,7 +130,7 @@ type
     constructor CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
     constructor CreateFunctionSuccess(OnFunctionSuccessResp: TOnFunctionSuccess);
     {$IFNDEF AUTOREFCOUNT}
-    case OnSuccessCase: TOnSucccessCase of
+    case OnSuccessCase: TOnSuccessCase of
       oscFB: (OnResponse: TOnFirebaseResp);
       oscUser: (OnUserResponse: TOnUserResponse);
       oscFetchProvider: (OnFetchProviders: TOnFetchProviders);
@@ -156,7 +156,7 @@ type
       oscFunctionSuccess: (OnFunctionSuccess: TOnFunctionSuccess);
     {$ELSE}
     var
-      OnSucccessCase: TOnSucccessCase;
+      OnSuccessCase: TOnSuccessCase;
       OnResponse: TOnFirebaseResp;
       OnUserResponse: TOnUserResponse;
       OnFetchProviders: TOnFetchProviders;
@@ -244,6 +244,7 @@ type
   TOnStopListenEvent = TNotifyEvent;
   TOnAuthRevokedEvent = procedure(TokenRenewPassed: boolean) of object;
   TOnConnectionStateChange = procedure(ListenerConnected: boolean) of object;
+  ERTDBListener = class(Exception);
 
   IRealTimeDB = interface(IInterface)
     procedure Get(ResourceParams: TRequestResourceParam;
