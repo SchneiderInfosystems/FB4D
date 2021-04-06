@@ -555,7 +555,7 @@ begin
     FileStream := TFileStream.Create(FileName, fmCreate);
     try
       Stream.Position := 0;
-      FileStream.CopyFrom(Stream);
+      FileStream.CopyFrom(Stream, Stream.Size);
       FSize := Stream.Size;
     finally
       FileStream.Free;
@@ -601,7 +601,7 @@ begin
             FileStream := TFileStream.Create(FileName,
               fmShareDenyNone or fmOpenRead);
             try
-              Stream.CopyFrom(FileStream);
+              Stream.CopyFrom(FileStream, Stream.Size);
             finally
               FileStream.Free;
             end;
