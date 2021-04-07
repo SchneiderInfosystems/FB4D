@@ -30,21 +30,20 @@ uses
   System.NetConsts, System.Net.HttpClient, System.Net.URLClient,
   System.NetEncoding, System.Generics.Collections,
   REST.Types,
-  FB4D.Interfaces;
+  FB4D.Interfaces, FB4D.RealTimeDB.Listener;
 
 type
-  TRealTimeDB = class;
   TFirebaseEvent = class(TInterfacedObject, IFirebaseEvent)
   private
-    fFirebase: TRealTimeDB;
-    fResourceParams: TRequestResourceParam;
-    fIsStopped: boolean;
-    constructor Create(Firebase: TRealTimeDB;
-      ResourceParams: TRequestResourceParam);
+    fListener: TRTDBListenerThread;
+    constructor Create(Listener: TRTDBListenerThread);
   public
-    procedure StopListening(const NodeName: string = '';
-      MaxTimeOutInMS: cardinal = 500);
+    destructor Destroy; override;
+    procedure StopListening(MaxTimeOutInMS: cardinal = 500); overload;
+    procedure StopListening(const NodeName: string;
+      MaxTimeOutInMS: cardinal = 500); overload; { deprecated }
     function GetResourceParams: TRequestResourceParam;
+    function GetLastReceivedMsg: TDateTime;
     function IsStopped: boolean;
   end;
 
@@ -52,18 +51,6 @@ type
   private
     fBaseURL: string;
     fAuth: IFirebaseAuthentication;
-    // For ListenForValueEvents
-    fThread: TThread;
-    fClient: THTTPClient;
-    fStream: TMemoryStream;
-    fReadPos: Int64;
-    fOnListenError: TOnRequestError;
-    fOnListenEvent: TOnReceiveEvent;
-    fDoNotSynchronizeEvents: boolean;
-    fLastKeepAliveMsg: TDateTime;
-    fRequireTokenRenew: boolean;
-    fStopWaiting: boolean;
-    fListenPartialResp: string;
     const
       cJSONExt = '.json';
     function AddJSONExtToRequest(ResourceParams: TRequestResourceParam):
@@ -91,9 +78,6 @@ type
       Response: IFirebaseResponse);
     procedure OnServerVarResp(const VarName: string;
       Response: IFirebaseResponse);
-    procedure OnRecData(const Sender: TObject; ContentLength,
-      ReadCount: Int64; var Abort: Boolean);
-    procedure InitListen;
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication); deprecated;
     constructor CreateByURL(const FirebaseURL: string; Auth: IFirebaseAuthentication);
@@ -129,8 +113,8 @@ type
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
       DoNotSynchronizeEvents: boolean = false): IFirebaseEvent;
-    function GetLastKeepAliveTimeStamp: TDateTime;
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
       OnServerVariable: TOnRTDBServerVariable = nil;
@@ -148,9 +132,9 @@ uses
   FB4D.Helpers, FB4D.Request;
 
 resourcestring
-  rsEvtListenerFailed = 'Event listener for %s failed: %s';
-  rsEvtStartFailed = 'Event listener start for %s failed: %s';
-  rsEvtParserFailed = 'Exception in event parser';
+rsEvtListenerFailed = 'Event listener for %s failed: %s';
+rsEvtStartFailed = 'Event listener start for %s failed: %s';
+rsEvtParserFailed = 'Exception in event parser';
 
 { TFirebase }
 
@@ -161,7 +145,6 @@ begin
   Assert(assigned(Auth), 'Authentication not initalized');
   fBaseURL := Format(GOOGLE_FIREBASE, [ProjectID]);
   fAuth := Auth;
-  InitListen;
 end;
 
 constructor TRealTimeDB.CreateByURL(const FirebaseURL: string;
@@ -170,7 +153,6 @@ begin
   Assert(assigned(Auth), 'Authentication not initalized');
   fBaseURL := FirebaseURL;
   fAuth := Auth;
-  InitListen;
 end;
 
 function TRealTimeDB.AddJSONExtToRequest(
@@ -510,395 +492,66 @@ begin
   end;
 end;
 
-procedure TRealTimeDB.InitListen;
-begin
-  fThread := nil;
-  fClient := nil;
-  fStream := nil;
-  fReadPos := 0;
-  fLastKeepAliveMsg := 0;
-  fRequireTokenRenew := false;
-  fStopWaiting := false;
-end;
-
 function TRealTimeDB.ListenForValueEvents(ResourceParams: TRequestResourceParam;
   ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
   OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+  OnConnectionStateChange: TOnConnectionStateChange;
   DoNotSynchronizeEvents: boolean): IFirebaseEvent;
 var
-  URL: string;
-  Info, ErrMsg: string;
+  FirebaseEvent: TFirebaseEvent;
 begin
-  InitListen;
-  URL := fBaseURL + TFirebaseHelpers.EncodeResourceParams(ResourceParams) +
-    cJSONExt;
-  Info :=  TFirebaseHelpers.ArrStrToCommaStr(ResourceParams);
-  fOnListenEvent := ListenEvent;
-  fOnListenError := OnError;
-  fDoNotSynchronizeEvents := DoNotSynchronizeEvents;
-  fListenPartialResp := '';
-  fClient := THTTPClient.Create;
-  fClient.HandleRedirects := true;
-  fClient.Accept := 'text/event-stream';
-  fClient.OnReceiveData := OnRecData;
-  fThread := TThread.CreateAnonymousThread(
-    procedure
-    var
-      Resp: IHTTPResponse;
-    begin
-      fStream := TMemoryStream.Create;
-      try
-        while not TThread.CurrentThread.CheckTerminated and not fStopWaiting do
-        begin
-          fReadPos := 0;
-          if fRequireTokenRenew then
-          begin
-            if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
-              fRequireTokenRenew := false;
-            if assigned(OnAuthRevoked) and
-               not TFirebaseHelpers.AppIsTerminated then
-              if DoNotSynchronizeEvents then
-                OnAuthRevoked(not fRequireTokenRenew)
-              else
-                TThread.Queue(nil,
-                  procedure
-                  begin
-                    OnAuthRevoked(not fRequireTokenRenew);
-                  end);
-          end;
-          Resp := fClient.Get(URL + TFirebaseHelpers.EncodeToken(fAuth.Token),
-            fStream);
-          if (Resp.StatusCode < 200) or (Resp.StatusCode >= 300) then
-          begin
-            ErrMsg := Resp.StatusText;
-            if assigned(OnError) then
-            begin
-              if DoNotSynchronizeEvents then
-                OnError(Info, ErrMsg)
-              else
-                TThread.Queue(nil,
-                  procedure
-                  begin
-                    OnError(Info, ErrMsg);
-                  end)
-            end else
-              TFirebaseHelpers.LogFmt('RealTimeDB.ListenForValueEvents ' +
-                rsEvtStartFailed, [Info, ErrMsg]);
-            fStopWaiting := true;
-          end;
-          // reopen stream
-          fStream.Free;
-          fStream := TMemoryStream.Create;
-        end;
-      except
-        on e: exception do
-          if assigned(OnError) then
-          begin
-            ErrMsg := e.Message;
-            if DoNotSynchronizeEvents then
-              OnError(Info, ErrMsg)
-            else
-              TThread.Queue(nil,
-                procedure
-                begin
-                  OnError(Info, ErrMsg);
-                end)
-          end else
-            TFirebaseHelpers.LogFmt('RealTimeDB.ListenForValueEvents ' +
-              rsEvtListenerFailed, [Info, e.Message]);
-      end;
-      FreeAndNil(fStream);
-      FreeAndNil(fClient);
-      fThread := nil;
-    end);
-  fThread.OnTerminate := OnStopListening;
-  {$IFNDEF LINUX64}
-  fThread.NameThreadForDebugging('FB4D.RTDB.ListenEvent', fThread.ThreadID);
-  {$ENDIF}
-  fThread.FreeOnTerminate := true;
-  fThread.Start;
-  result := TFirebaseEvent.Create(Self, ResourceParams);
-end;
-
-procedure TRealTimeDB.OnRecData(const Sender: TObject; ContentLength: Int64;
-  ReadCount: Int64; var Abort: Boolean);
-
-  function GetParams(Request: IURLRequest): TRequestResourceParam;
-  var
-    Path: string;
-  begin
-    Path := Request.URL.Path;
-    if Path.StartsWith('/') then
-      Path := Path.SubString(1);
-    if Path.EndsWith(cJSONExt) then
-      Path := Path.Remove(Path.Length - cJSONExt.Length);
-    result := SplitString(Path, '/');
-  end;
-
-const
-  cEvent = 'event: ';
-  cData = 'data: ';
-  cKeepAlive = 'keep-alive';
-  cRevokeToken = 'auth_revoked';
-{$IFDEF POSIX}
-var
-  Params: TRequestResourceParam;
-  ErrMsg: string;
-begin
-  try
-    if assigned(fStream) then
-    begin
-      if fStopWaiting then
-        Abort := true
-      else begin
-        Abort := false;
-        Params := GetParams(Sender as TURLRequest);
-        // fDoNotSynchronizeEvents has no effect on Delphi 10.3 and below on
-        // Posix systems
-        TThread.Queue(nil,
-          procedure
-          var
-            ss: TStringStream;
-            Lines: TArray<string>;
-            EventName: string;
-            DataUTF8: RawByteString;
-            JSONObj: TJSONObject;
-          begin
-            sleep(1); // is required because of RSP-28205
-            ss := TStringStream.Create;
-            try
-              Assert(fReadPos >= 0, 'Invalid stream read position');
-              Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count');
-              fStream.Position := fReadPos;
-              if ReadCount - fReadPos > 0 then
-              begin
-                // On Mac OS a 'Stream read error' will be thrown inside
-                // TStream.ReadBuffer if this code is in the main thread
-                ss.CopyFrom(fStream, ReadCount - fReadPos);
-                fListenPartialResp := fListenPartialResp + ss.DataString;
-              end;
-              Lines := fListenPartialResp.Split([#10]);
-            finally
-              ss.Free;
-            end;
-            fReadPos := ReadCount;
-            if (length(Lines) >= 2) and (Lines[0].StartsWith(cEvent)) then
-            begin
-              EventName := Lines[0].Substring(length(cEvent));
-              if Lines[1].StartsWith(cData) then
-                DataUTF8 := RawByteString(Lines[1].Substring(length(cData)))
-              else begin
-                // resynch
-                DataUTF8 := '';
-                fListenPartialResp := '';
-              end;
-              if EventName = cKeepAlive then
-              begin
-                fLastKeepAliveMsg := now;
-                fListenPartialResp := '';
-              end
-              else if EventName = cRevokeToken then
-              begin
-                fRequireTokenRenew := true;
-                fListenPartialResp := '';
-                fStopWaiting := true;
-              end else if length(DataUTF8) > 0 then
-              begin
-                JSONObj := TJSONObject.ParseJSONValue(UTF8ToString(DataUTF8)) as
-                  TJSONObject;
-                if assigned(JSONObj) then
-                try
-                  fListenPartialResp := '';
-                  if assigned(fOnListenEvent) and
-                     not TFirebaseHelpers.AppIsTerminated then
-                    fOnListenEvent(EventName, Params, JSONObj);
-                finally
-                  JSONObj.Free;
-                end;
-              end;
-            end;
-          end);
-      end;
-    end else
-      Abort := true;
-  except
-    on e: Exception do
-    begin
-      ErrMsg := e.Message;
-      if assigned(fOnListenError) and not TFirebaseHelpers.AppIsTerminated then
-        if fDoNotSynchronizeEvents then
-          fOnListenError(rsEvtParserFailed, ErrMsg)
-        else
-          TThread.Queue(nil,
-            procedure
-            begin
-              fOnListenError(rsEvtParserFailed, ErrMsg)
-            end)
-        else
-          TFirebaseHelpers.Log('RealTimeDB.OnRecData ' + rsEvtParserFailed +
-            ': ' + ErrMsg);
-    end;
-  end;
-end;
-{$ELSE}
-var
-  ss: TStringStream;
-  Lines: TArray<string>;
-  EventName, ErrMsg: string;
-  DataUTF8: RawByteString;
-  Params: TRequestResourceParam;
-  JSONObj: TJSONObject;
-begin
-  try
-    if assigned(fStream) then
-    begin
-      if fStopWaiting then
-        Abort := true
-      else begin
-        Abort := false;
-        Params := GetParams(Sender as TURLRequest);
-        ss := TStringStream.Create;
-        try
-          Assert(fReadPos >= 0, 'Invalid stream read position');
-          Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count: ' +
-            ReadCount.ToString + ' - ' + fReadPos.ToString);
-          fStream.Position := fReadPos;
-          ss.CopyFrom(fStream, ReadCount - fReadPos);
-          fListenPartialResp := fListenPartialResp + ss.DataString;
-          Lines := fListenPartialResp.Split([#10]);
-        finally
-          ss.Free;
-        end;
-        fReadPos := ReadCount;
-        if (length(Lines) >= 2) and (Lines[0].StartsWith(cEvent)) then
-        begin
-          EventName := Lines[0].Substring(length(cEvent));
-          if Lines[1].StartsWith(cData) then
-            DataUTF8 := RawByteString(Lines[1].Substring(length(cData)))
-          else begin
-            // resynch
-            DataUTF8 := '';
-            fListenPartialResp := '';
-          end;
-          if EventName = cKeepAlive then
-          begin
-            fLastKeepAliveMsg := now;
-            fListenPartialResp := '';
-          end
-          else if EventName = cRevokeToken then
-          begin
-            fRequireTokenRenew := true;
-            fListenPartialResp := '';
-            Abort := true;
-          end else if length(DataUTF8) > 0 then
-          begin
-            JSONObj := TJSONObject.ParseJSONValue(UTF8ToString(DataUTF8)) as
-              TJSONObject;
-            if assigned(JSONObj) then
-            begin
-              fListenPartialResp := '';
-              if assigned(fOnListenEvent) and
-                 not TFirebaseHelpers.AppIsTerminated then
-                if fDoNotSynchronizeEvents then
-                begin
-                  fOnListenEvent(EventName, Params, JSONObj);
-                  JSONObj.Free;
-                end else
-                  TThread.Queue(nil,
-                    procedure
-                    begin
-                      fOnListenEvent(EventName, Params, JSONObj);
-                      JSONObj.Free;
-                    end);
-            end;
-          end;
-        end;
-      end;
-    end else
-      Abort := true;
-  except
-    on e: Exception do
-    begin
-      ErrMsg := e.Message;
-      if assigned(fOnListenError) and not TFirebaseHelpers.AppIsTerminated then
-        if fDoNotSynchronizeEvents then
-          fOnListenError(rsEvtParserFailed, ErrMsg)
-        else
-          TThread.Queue(nil,
-            procedure
-            begin
-              fOnListenError(rsEvtParserFailed, ErrMsg)
-            end)
-      else
-        TFirebaseHelpers.Log('RealTimeDB.OnRecData ' + rsEvtParserFailed +
-          ': ' + ErrMsg);
-    end;
-  end;
-end;
-{$ENDIF}
-
-function TRealTimeDB.GetLastKeepAliveTimeStamp: TDateTime;
-begin
-  result := fLastKeepAliveMsg;
+  FirebaseEvent := TFirebaseEvent.Create(
+    TRTDBListenerThread.Create(fBaseURL, fAuth));
+  FirebaseEvent.fListener.RegisterEvents(ResourceParams, ListenEvent,
+    OnStopListening, OnError, OnAuthRevoked, OnConnectionStateChange,
+    DoNotSynchronizeEvents);
+  FirebaseEvent.fListener.Start;
+  result := FirebaseEvent;
 end;
 
 { TFirebaseEvent }
 
-constructor TFirebaseEvent.Create(Firebase: TRealTimeDB;
-  ResourceParams: TRequestResourceParam);
+constructor TFirebaseEvent.Create(Listener: TRTDBListenerThread);
 begin
-  fFirebase := Firebase;
-  fResourceParams := ResourceParams;
-  fIsStopped := false;
+  fListener := Listener;
+end;
+
+destructor TFirebaseEvent.Destroy;
+begin
+  if fListener.IsRunning then
+    StopListening;
+  fListener.Free;
+  inherited;
+end;
+
+function TFirebaseEvent.GetLastReceivedMsg: TDateTime;
+begin
+  Assert(assigned(fListener), 'No Listener');
+  result := fListener.LastReceivedMsg;
 end;
 
 function TFirebaseEvent.GetResourceParams: TRequestResourceParam;
 begin
-  result := fResourceParams;
+  Assert(assigned(fListener), 'No Listener');
+  result := fListener.ResParams;
 end;
 
 function TFirebaseEvent.IsStopped: boolean;
 begin
-  result := fIsStopped;
+  Assert(assigned(fListener), 'No Listener');
+  result := fListener.StopWaiting;
+end;
+
+procedure TFirebaseEvent.StopListening(MaxTimeOutInMS: cardinal);
+begin
+  if assigned(fListener) then
+    fListener.StopListener(MaxTimeOutInMS);
 end;
 
 procedure TFirebaseEvent.StopListening(const NodeName: string;
   MaxTimeOutInMS: cardinal);
-var
-  Timeout: cardinal;
 begin
-  fIsStopped := true;
-  try
-    if assigned(fFirebase.fThread) then
-    begin
-      fFirebase.fStopWaiting := true;
-      // Workaround because of bug/Change request:
-      // https://quality.embarcadero.com/browse/RSP-20827
-      // Use side effect of GetServerTime
-      if NodeName.IsEmpty then
-        fFirebase.GetServerVariables(cServerVariableTimeStamp, fResourceParams)
-      else
-        fFirebase.GetServerVariables(cServerVariableTimeStamp,
-          TFirebaseHelpers.AddParamToResParams(fResourceParams, NodeName));
-      Timeout := MaxTimeOutInMS;
-      while assigned(fFirebase) and assigned(fFirebase.fThread) and
-        (Timeout > 0) do
-      begin
-        TFirebaseHelpers.SleepAndMessageLoop(1);
-        dec(Timeout);
-      end;
-      if assigned(fFirebase) and assigned(fFirebase.fThread) then
-      begin
-        TFirebaseHelpers.Log('FirebaseEvent.StopListening Hard stop of ' +
-          'listener thread because of lost connection');
-        fFirebase.fThread.Terminate;
-      end;
-    end;
-  except
-    on e: exception do
-      TFirebaseHelpers.Log('FirebaseEvent.StopListening Exception: ' +
-        e.Message);
-  end;
+  StopListening(MaxTimeOutInMS);
 end;
 
 end.

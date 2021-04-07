@@ -111,7 +111,8 @@ type
     procedure Unsubscribe(TargetID: cardinal);
     procedure StartListener(OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
-      OnConnectionStateChange: TOnConnectionStateChange = nil);
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
+      DoNotSynchronizeEvents: boolean = false);
     procedure StopListener;
     function GetTimeStampOfLastAccess: TDateTime;
     // Transaction
@@ -738,10 +739,11 @@ end;
 
 procedure TFirestoreDatabase.StartListener(OnStopListening: TOnStopListenEvent;
   OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
-  OnConnectionStateChange: TOnConnectionStateChange);
+  OnConnectionStateChange: TOnConnectionStateChange;
+  DoNotSynchronizeEvents: boolean);
 begin
   fListener.RegisterEvents(OnStopListening, OnError, OnAuthRevoked,
-    OnConnectionStateChange);
+    OnConnectionStateChange, DoNotSynchronizeEvents);
   fListener.Start;
 end;
 

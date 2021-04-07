@@ -232,9 +232,11 @@ type
   end;
 
   IFirebaseEvent = interface(IInterface)
-    procedure StopListening(const NodeName: string = '';
-      MaxTimeOutInMS: cardinal = 500);
+    procedure StopListening(MaxTimeOutInMS: cardinal = 500); overload;
+    procedure StopListening(const NodeName: string;
+      MaxTimeOutInMS: cardinal = 500); overload; deprecated;
     function GetResourceParams: TRequestResourceParam;
+    function GetLastReceivedMsg: TDateTime;
     function IsStopped: boolean;
   end;
 
@@ -282,8 +284,8 @@ type
     function ListenForValueEvents(ResourceParams: TRequestResourceParam;
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
       DoNotSynchronizeEvents: boolean = false): IFirebaseEvent;
-    function GetLastKeepAliveTimeStamp: TDateTime;
     // To retrieve server variables like timestamp and future variables
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
