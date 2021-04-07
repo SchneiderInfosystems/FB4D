@@ -43,7 +43,8 @@ uses
   FB4D.Storage in '..\..\Source\FB4D.Storage.pas',
   FB4D.RealTimeDB in '..\..\Source\FB4D.RealTimeDB.pas',
   FB4D.FireStore.Listener in '..\..\Source\FB4D.FireStore.Listener.pas',
-  FB4D.Configuration in '..\..\Source\FB4D.Configuration.pas';
+  FB4D.Configuration in '..\..\Source\FB4D.Configuration.pas',
+  FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas';
 
 {$R *.res}
 

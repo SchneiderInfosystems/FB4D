@@ -311,6 +311,7 @@
         <DCCReference Include="..\..\Source\FB4D.RealTimeDB.pas"/>
         <DCCReference Include="..\..\Source\FB4D.FireStore.Listener.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Configuration.pas"/>
+        <DCCReference Include="..\..\Source\FB4D.RealTimeDB.Listener.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
