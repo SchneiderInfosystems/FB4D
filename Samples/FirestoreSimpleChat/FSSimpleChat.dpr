@@ -37,6 +37,7 @@ uses
   FB4D.Request in '..\..\Source\FB4D.Request.pas',
   FB4D.Response in '..\..\Source\FB4D.Response.pas',
   FB4D.RealTimeDB in '..\..\Source\FB4D.RealTimeDB.pas',
+  FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas',
   FB4D.Storage in '..\..\Source\FB4D.Storage.pas',
   FB4D.Functions in '..\..\Source\FB4D.Functions.pas',
   FB4D.SelfRegistrationFra in '..\..\GUIPatterns\FMX\FB4D.SelfRegistrationFra.pas' {FraSelfRegistration: TFrame};

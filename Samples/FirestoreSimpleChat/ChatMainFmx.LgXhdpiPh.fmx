@@ -5,6 +5,7 @@ inherited fmxChatMain_LgXhdpiPh: TfmxChatMain_LgXhdpiPh
   inherited TabControl: TTabControl
     Size.Width = 450.000000000000000000
     Size.Height = 695.000000000000000000
+    TabHeight = 49.000000000000000000
     Sizes = (
       450s
       695s
@@ -106,13 +107,21 @@ inherited fmxChatMain_LgXhdpiPh: TfmxChatMain_LgXhdpiPh
           Size.Width = 48.000000000000000000
           Size.Height = 48.000000000000000000
         end
+        inherited tmrTesting: TTimer
+          OnTimer = nil
+        end
+        inherited chbTesting: TCheckBox
+          OnChange = nil
+        end
       end
       inherited layUserInfo: TLayout
         Margins.Right = 5.000000000000000000
         Size.Width = 445.000000000000000000
         inherited lblUserInfo: TLabel
+          Margins.Right = 5.000000000000000000
           Position.X = 100.000000000000000000
-          Size.Width = 280.000000000000000000
+          Size.Width = 285.000000000000000000
+          Size.Height = 25.000000000000000000
         end
         inherited btnSignOut: TButton
           Margins.Top = 12.000000000000000000
@@ -120,6 +129,11 @@ inherited fmxChatMain_LgXhdpiPh: TfmxChatMain_LgXhdpiPh
           Position.Y = 12.000000000000000000
           Size.Width = 80.000000000000000000
           Size.Height = 31.000000000000000000
+          inherited txtWatchdog: TText
+            Position.Y = 32.000000000000000000
+            Size.Width = 81.000000000000000000
+            Size.Height = 9.000000000000000000
+          end
         end
         inherited txtUpdate: TText
           Position.X = 165.000000000000000000

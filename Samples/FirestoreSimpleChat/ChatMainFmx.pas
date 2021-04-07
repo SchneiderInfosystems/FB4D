@@ -64,6 +64,10 @@ type
     imgCloudOff: TImage;
     layVirtualKeyboardSpace: TLayout;
     rctBack: TRectangle;
+    tmrWatchdog: TTimer;
+    txtWatchdog: TText;
+    tmrTesting: TTimer;
+    chbTesting: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure btnSignOutClick(Sender: TObject);
     procedure btnPushMessageClick(Sender: TObject);
@@ -79,6 +83,9 @@ type
       const AItem: TListViewItem);
     procedure FormVirtualKeyboard(Sender: TObject;
       KeyboardVisible: Boolean; const Bounds: TRect);
+    procedure tmrWatchdogTimer(Sender: TObject);
+    procedure chbTestingChange(Sender: TObject);
+    procedure tmrTestingTimer(Sender: TObject);
   private type
     TPendingProfile = class
       Items: TList<TListViewItem>;
@@ -95,6 +102,7 @@ type
     fMyImgIndex: integer;
     fEditDocID: string;
     fPendingProfiles: TDictionary<string {UID}, TPendingProfile>;
+    fStressTestCounter: cardinal;
     function GetAuth: IFirebaseAuthentication;
     function GetStorage: IFirebaseStorage;
     function GetSettingFilename: string;
@@ -159,7 +167,7 @@ var
   LastEMail: string;
   LastToken: string;
 begin
-  Caption := Caption + ' - ' + TFirebaseHelpers.GetPlatform +
+  Caption := Caption + ' - ' + TFirebaseHelpers.GetConfigAndPlatform +
     ' [' + TFirebaseConfiguration.GetLibVersionInfo + ']';
   IniFile := TIniFile.Create(GetSettingFilename);
   try
@@ -328,6 +336,10 @@ begin
   btnPushMessage.Visible := true;
   fEditDocID := '';
   fMyImgIndex := AddProfileImgToImageList(fUID, FraSelfRegistration.ProfileImg);
+  {$IFDEF DEBUG}
+  tmrWatchdog.Enabled := true;
+  chbTesting.Visible := true;
+  {$ENDIF}
   WipeToTab(tabChat);
 end;
 
@@ -544,6 +556,9 @@ begin
     btnEditMessage.Enabled := true;
     btnDeleteMessage.Enabled := true;
   end;
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('DocWriteError ' + txtError.Text);
+  {$ENDIF}
 end;
 
 procedure TfmxChatMain.OnDocWrite(const Info: string;
@@ -571,11 +586,17 @@ end;
 procedure TfmxChatMain.OnDocDeleteError(const RequestID, ErrMsg: string);
 begin
   txtError.Text := 'Failure while deleted message ' + ErrMsg;
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('DocDeleteError ' + txtError.Text);
+  {$ENDIF}
 end;
 
 procedure TfmxChatMain.OnStopListening(Sender: TObject);
 begin
   txtUpdate.Text := 'Chat listener stopped';
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('UNEXPECTED StopListener');
+  {$ENDIF}
 end;
 
 procedure TfmxChatMain.OnAuthRevoked(TokenRenewPassed: boolean);
@@ -589,6 +610,9 @@ end;
 procedure TfmxChatMain.OnListenerError(const RequestID, ErrMsg: string);
 begin
   txtError.Text := 'Error in listener: ' + ErrMsg;
+  {$IFDEF DEBUG}
+  TFirebaseHelpers.Log('ListenerError ' + txtError.Text);
+  {$ENDIF}
 end;
 
 procedure TfmxChatMain.lsvChatUpdateObjects(const Sender: TObject;
@@ -743,6 +767,52 @@ begin
     lsvChat.ScrollTo(lsvChat.ItemCount - 1);
   {$ENDIF}
 end;
+
+{$REGION 'DEBUG Version Only'}
+procedure TfmxChatMain.tmrWatchdogTimer(Sender: TObject);
+begin
+  txtWatchdog.Text := TimeToStr(fConfig.Database.GetTimeStampOfLastAccess) +
+    ': ' + lsvChat.ItemCount.ToString + ' docs';
+end;
+
+procedure TfmxChatMain.chbTestingChange(Sender: TObject);
+begin
+  fStressTestCounter := 0;
+  tmrTesting.Enabled := chbTesting.IsChecked;
+end;
+
+procedure TfmxChatMain.tmrTestingTimer(Sender: TObject);
+var
+  c: integer;
+  Item: TListViewItem;
+begin
+  inc(fStressTestCounter);
+  edtMessage.Text := 'Stress Test at ' + DateTimeToStr(now) + ': ' +
+    fStressTestCounter.ToString + ' sent messages from ' +
+    TFirebaseHelpers.GetConfigAndPlatform;
+  btnPushMessageClick(Sender);
+  if lsvChat.ItemCount > 10 then
+  begin
+    c := 0;
+    while c < lsvChat.ItemCount do
+    begin
+      Item := lsvChat.Items[c];
+      if Item.Purpose = TListItemPurpose.None then
+        if Item.Tag = ord(myMsg) then
+        begin
+          if Item.Text.StartsWith('Stress Test at ') then
+          begin
+            fEditDocID := copy(Item.TagString,
+              Item.TagString.LastDelimiter('/') + 2);
+            btnDeleteMessageClick(Sender);
+            exit;
+          end;
+        end;
+      inc(c);
+    end;
+  end;
+end;
+{$ENDREGION}
 
 { TfmxChatMain.TPendingProfile }
 

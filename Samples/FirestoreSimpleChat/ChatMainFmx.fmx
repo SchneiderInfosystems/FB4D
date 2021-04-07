@@ -294,6 +294,25 @@ object fmxChatMain: TfmxChatMain
           TabOrder = 1
           OnClick = btnEditMessageClick
         end
+        object tmrTesting: TTimer
+          Enabled = False
+          Interval = 2000
+          OnTimer = tmrTestingTimer
+          Left = 596
+          Top = 472
+        end
+        object chbTesting: TCheckBox
+          Align = MostRight
+          Position.X = 576.000000000000000000
+          Size.Width = 64.000000000000000000
+          Size.Height = 48.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 11
+          Text = 'Stress Test'
+          TextSettings.WordWrap = True
+          Visible = False
+          OnChange = chbTestingChange
+        end
       end
       object layUserInfo: TLayout
         Align = Top
@@ -327,6 +346,14 @@ object fmxChatMain: TfmxChatMain
           TabOrder = 0
           Text = 'Sign Out'
           OnClick = btnSignOutClick
+          object txtWatchdog: TText
+            Position.X = -8.000000000000000000
+            Position.Y = 24.000000000000000000
+            Size.Width = 97.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.Font.Size = 9.000000000000000000
+          end
         end
         object txtUpdate: TText
           Anchors = [akTop, akRight]
@@ -566,6 +593,13 @@ object fmxChatMain: TfmxChatMain
       Size.Height = 50.000000000000000000
       Size.PlatformDefault = False
     end
+  end
+  object tmrWatchdog: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = tmrWatchdogTimer
+    Left = 23
+    Top = 202
   end
   object ImageList: TImageList
     Source = <
