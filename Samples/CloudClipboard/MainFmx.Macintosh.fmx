@@ -62,6 +62,12 @@ inherited fmxMain_Macintosh: TfmxMain_Macintosh
         Position.X = 560.000000000000000000
         Size.Width = 112.000000000000000000
       end
+      inherited layUserInfo: TLayout
+        inherited imgCloudOff: TImage
+          MultiResBitmap.Height = 96
+          MultiResBitmap.Width = 96
+        end
+      end
     end
   end
 end

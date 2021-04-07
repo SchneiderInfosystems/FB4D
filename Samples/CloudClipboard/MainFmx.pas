@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -68,6 +68,7 @@ type
     btnSignOut: TButton;
     lblUserInfo: TLabel;
     btnClearSettings: TButton;
+    imgCloudOff: TImage;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSettingsClick(Sender: TObject);
@@ -97,6 +98,7 @@ type
       JSONObj: TJSONObject);
     procedure OnRecDataError(const Info, ErrMsg: string);
     procedure OnRecDataStop(Sender: TObject);
+    procedure OnConnectionStateChange(ListenerConnected: boolean);
     procedure StartListener;
     procedure StopListener;
     procedure SaveSettings;
@@ -185,7 +187,8 @@ begin
     TabControl.ActiveTab := tabSignIn;
   FraSelfRegistration.InitializeAuthOnDemand(OnGetAuth, OnUserLogin, LastToken,
     LastEMail);
-  Caption := Caption + ' [' + TFirebaseHelpers.GetConfigAndPlatform + ']';
+  Caption := Caption + ' - ' + TFirebaseHelpers.GetConfigAndPlatform +
+    ' [' + TFirebaseConfiguration.GetLibVersionInfo + ']';
 {$IFDEF DEBUG}
   chbTesting.Visible := true;
 {$ELSE}
@@ -253,6 +256,11 @@ begin
   end;
 end;
 
+procedure TfmxMain.OnConnectionStateChange(ListenerConnected: boolean);
+begin
+  imgCloudOff.Visible := not ListenerConnected;
+end;
+
 function TfmxMain.OnGetAuth: IFirebaseAuthentication;
 begin
   if not assigned(fConfig) then
@@ -272,6 +280,7 @@ end;
 
 procedure TfmxMain.btnSignOutClick(Sender: TObject);
 begin
+  StopListener;
   fConfig.Auth.SignOut;
   fUID := '';
   WipeToTab(tabSignIn);
@@ -322,7 +331,7 @@ end;
 procedure TfmxMain.StartListener;
 begin
   fFirebaseEvent := fConfig.RealTimeDB.ListenForValueEvents(['cb', fUID],
-    OnRecData, OnRecDataStop, OnRecDataError);
+    OnRecData, OnRecDataStop, OnRecDataError, nil, OnConnectionStateChange);
   btnReconnect.Visible := false;
   btnSendToCloud.Visible := true;
   fReceivedUpdates := 0;
@@ -332,7 +341,7 @@ end;
 procedure TfmxMain.StopListener;
 begin
   if assigned(fConfig) and assigned(fFirebaseEvent) then
-    fFirebaseEvent.StopListening('stopEvent');
+    fFirebaseEvent.StopListening;
 end;
 
 procedure TfmxMain.btnSendToCloudClick(Sender: TObject);

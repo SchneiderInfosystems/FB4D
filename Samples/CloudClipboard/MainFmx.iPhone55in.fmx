@@ -18,16 +18,16 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
       inherited edtKey: TEdit
-        Size.Width = 82.000000000000000000
+        Size.Width = 0.000000000000000000
         Size.Height = 30.000000000000000000
       end
       inherited edtProjectID: TEdit
-        Size.Width = 82.000000000000000000
+        Size.Width = 0.000000000000000000
         Size.Height = 30.000000000000000000
       end
       inherited btnEnteredProjSettings: TButton
-        Position.X = 54.000000000000000000
-        Position.Y = 380.000000000000000000
+        Position.X = -518.000000000000000000
+        Position.Y = 852.000000000000000000
         Size.Width = 44.000000000000000000
         Size.Height = 44.000000000000000000
       end
@@ -55,6 +55,9 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
           inherited txtPassword: TText
             Position.Y = -32.000000000000000000
           end
+        end
+        inherited edtDisplayName: TEdit
+          Size.Height = 30.000000000000000000
         end
       end
       inherited layToolbar: TLayout
@@ -115,7 +118,7 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
       inherited aniRTDB: TAniIndicator
         Anchors = [akLeft, akBottom]
         Position.X = 16.000000000000000000
-        Position.Y = 2300.000000000000000000
+        Position.Y = 2772.000000000000000000
       end
       inherited btnFromClipBoard: TButton
         Align = Bottom
@@ -167,8 +170,8 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -2292.000000000000000000
-        Position.Y = 2784.000000000000000000
+        Position.X = -2864.000000000000000000
+        Position.Y = 3256.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
         Align = Bottom
@@ -180,6 +183,10 @@ inherited fmxMain_iPhone55in: TfmxMain_iPhone55in
         Size.Width = 414.000000000000000000
         inherited lblUserInfo: TLabel
           Size.Width = 301.000000000000000000
+        end
+        inherited imgCloudOff: TImage
+          MultiResBitmap.Height = 96
+          MultiResBitmap.Width = 96
         end
       end
     end
