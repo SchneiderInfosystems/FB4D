@@ -445,7 +445,8 @@ type
     procedure Unsubscribe(TargetID: cardinal);
     procedure StartListener(OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
-      OnConnectionStateChange: TOnConnectionStateChange = nil);
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
+      DoNotSynchronizeEvents: boolean = false);
     procedure StopListener;
     function GetTimeStampOfLastAccess: TDateTime;
     // Transaction
