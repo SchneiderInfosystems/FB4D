@@ -60,6 +60,7 @@ type
     class function ArrStrToCommaStr(Arr: array of string): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
     // FBID is based on charset of cBase64: Helpers and converter to GUID
+    // PUSHID is based on charset of cPushID64: Supports chronological sorting
     type TIDKind = (FBID {random 22 Chars},
                     PUSHID {timestamp and random: total 20 Chars});
     class function CreateAutoID(IDKind: TIDKind = FBID): string;
@@ -87,7 +88,7 @@ type
     cBase64 =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
     // The last char '-' is not real Base64 because '/' causes troubles in IDs
-    cFirebaseID64 =
+    cPushID64 =
       '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
     // This notification is used in the Realtime DB for Post and Push operation
   end;
@@ -537,11 +538,11 @@ begin
   result := '';
   for c := 1 to 8 do
   begin
-    result := cFirebaseID64[(tsi mod 64) + low(cFirebaseID64)] + result;
+    result := cPushID64[(tsi mod 64) + low(cPushID64)] + result;
     tsi := tsi shr 6;
   end;
   for c := 0 to 11 do
-    result := result + cFirebaseID64[Random[c] and $3F + low(cFirebaseID64)];
+    result := result + cPushID64[Random[c] and $3F + low(cPushID64)];
 end;
 
 class function TFirebaseHelpers.DecodeTimeStampFromPUSHID(
@@ -553,7 +554,7 @@ begin
   Assert(length(PUSHID) = 20, 'Invalid PUSHID length');
   tsi := 0;
   for c := low(PUSHID) to low(PUSHID) + 8 do
-    tsi := tsi shl 6 + pos(PUSHID[c], cFirebaseID64) - low(cFirebaseID64);
+    tsi := tsi shl 6 + pos(PUSHID[c], cPushID64) - low(cPushID64);
   result := TTimeZone.Local.ToLocalTime(UnixToDateTime(tsi div 1000));
 end;
 
