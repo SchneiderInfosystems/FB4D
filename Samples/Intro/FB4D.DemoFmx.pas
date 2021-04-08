@@ -1841,15 +1841,18 @@ end;
 
 procedure TfmxFirebaseDemo.btnPostRTSynchClick(Sender: TObject);
 var
-  Data: TJSONObject;
+  Data: TJSONValue;
   Val: TJSONValue;
 begin
   if not CheckAndCreateRealTimeDBClass(memRTDB) then
     exit;
-  Data := TJSONObject.Create;
   Val := nil;
+  if edtPostKeyName.Text.IsEmpty then
+    Data := TJSONString.Create(edtPostKeyValue.Text)
+  else
+    Data := TJSONObject.Create(TJSONPair.Create(
+      edtPostKeyName.Text, edtPostKeyValue.Text));
   try
-    Data.AddPair(edtPostKeyName.Text, edtPostKeyValue.Text);
     memRTDB.Lines.Clear;
     try
       Val := fRealTimeDB.PostSynchronous(GetRTDBPath, Data);
@@ -1867,13 +1870,16 @@ end;
 
 procedure TfmxFirebaseDemo.btnPostRTAsynchClick(Sender: TObject);
 var
-  Data: TJSONObject;
+  Data: TJSONValue;
 begin
   if not CheckAndCreateRealTimeDBClass(memRTDB) then
     exit;
-  Data := TJSONObject.Create;
+  if edtPostKeyName.Text.IsEmpty then
+    Data := TJSONString.Create(edtPostKeyValue.Text)
+  else
+    Data := TJSONObject.Create(TJSONPair.Create(
+      edtPostKeyName.Text, edtPostKeyValue.Text));
   try
-    Data.AddPair(edtPostKeyName.Text, edtPostKeyValue.Text);
     fRealTimeDB.Post(GetRTDBPath, Data, OnPostResp, OnPostError);
   finally
     Data.Free;

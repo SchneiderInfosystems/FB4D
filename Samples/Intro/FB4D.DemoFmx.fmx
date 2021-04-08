@@ -481,7 +481,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
-          IsSelected = False
+          IsSelected = True
           Size.Width = 39.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
@@ -881,7 +881,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Width = 193.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
-            TextPrompt = 'Key name'
+            TextPrompt = 'Key name or empty for single value'
             object Label23: TLabel
               Position.X = -48.000000000000000000
               Position.Y = 2.000000000000000000
