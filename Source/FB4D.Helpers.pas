@@ -60,9 +60,15 @@ type
     class function ArrStrToCommaStr(Arr: array of string): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
     // FBID is based on charset of cBase64: Helpers and converter to GUID
-    class function CreateAutoID: string;
+    type TIDKind = (FBID {random 22 Chars},
+                    PUSHID {timestamp and random: total 20 Chars});
+    class function CreateAutoID(IDKind: TIDKind = FBID): string;
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
+    class function ConvertTimeStampAndRandomPatternToPUSHID(timestamp: TDateTime;
+      Random: TBytes): string;
+    class function DecodeTimeStampFromPUSHID(const PUSHID: string): TDateTime;
+
     // File helpers
     class procedure SimpleDownload(const DownloadUrl: string; Stream: TStream;
       OnSuccess: TOnSimpleDownloadSuccess;
@@ -78,8 +84,12 @@ type
     class function GetConfigAndPlatform: string;
     class function GetPlatform: string;
   private const
-    cBase64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+?';
-    // The last character is not real Base64 because '/' causes troubles in IDs
+    cBase64 =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
+    // The last char '-' is not real Base64 because '/' causes troubles in IDs
+    cFirebaseID64 =
+      '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+    // This notification is used in the Realtime DB for Post and Push operation
   end;
 
   TJSONHelpers = class helper for TJSONObject
@@ -178,7 +188,7 @@ uses
   FMX.Forms,
 {$ENDIF}
   System.DateUtils, System.NetEncoding, System.JSONConsts, System.Math,
-  System.Net.HttpClient,
+  System.Net.HttpClient, System.Hash,
   IdGlobalProtocols;
 
 resourcestring
@@ -432,10 +442,16 @@ begin
     end).Start;
 end;
 
-class function TFirebaseHelpers.CreateAutoID: string;
+class function TFirebaseHelpers.CreateAutoID(IDKind: TIDKind = FBID): string;
 begin
   // use OS to generate a random number
-  result := ConvertGUIDtoFBID(TGuid.NewGuid);
+  case IDKind of
+    FBID:
+      result := ConvertGUIDtoFBID(TGuid.NewGuid);
+    PUSHID:
+      result := ConvertTimeStampAndRandomPatternToPUSHID(now,
+        THashMD5.GetHashBytes(GuidToString(TGUID.NewGuid)));
+  end;
 end;
 
 class function TFirebaseHelpers.ConvertGUIDtoFBID(Guid: TGuid): string;
@@ -508,6 +524,37 @@ begin
   result.D4[5] := Base64[17] + (Base64[21] and $0C) shl 4;
   result.D4[6] := Base64[18] + (Base64[21] and $30) shl 2;
   result.D4[7] := Base64[19] + (Base64[22] and $03) shl 6;
+end;
+
+class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToPUSHID(
+  timestamp: TDateTime; Random: TBytes): string;
+var
+  tsi: int64;
+  c: integer;
+begin
+  Assert(length(Random) >= 12, 'Too short random pattern');
+  tsi := System.DateUtils.DateTimeToUnix(timestamp, false) * 1000;
+  result := '';
+  for c := 1 to 8 do
+  begin
+    result := cFirebaseID64[(tsi mod 64) + low(cFirebaseID64)] + result;
+    tsi := tsi shr 6;
+  end;
+  for c := 0 to 11 do
+    result := result + cFirebaseID64[Random[c] and $3F + low(cFirebaseID64)];
+end;
+
+class function TFirebaseHelpers.DecodeTimeStampFromPUSHID(
+  const PUSHID: string): TDateTime;
+var
+  tsi: int64;
+  c: integer;
+begin
+  Assert(length(PUSHID) = 20, 'Invalid PUSHID length');
+  tsi := 0;
+  for c := low(PUSHID) to low(PUSHID) + 8 do
+    tsi := tsi shl 6 + pos(PUSHID[c], cFirebaseID64) - low(cFirebaseID64);
+  result := TTimeZone.Local.ToLocalTime(UnixToDateTime(tsi div 1000));
 end;
 
 class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
