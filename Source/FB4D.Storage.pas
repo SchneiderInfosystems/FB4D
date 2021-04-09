@@ -220,19 +220,23 @@ end;
 procedure TFirebaseStorage.OnGetResponse(const ObjectName: TObjectName;
   Response: IFirebaseResponse);
 var
-  StorageObj: IStorageObject;
+  StorageObj: TStorageObject;
 begin
   try
     Response.CheckForJSONObj;
-    StorageObJ := TStorageObject.Create(self, Response);
+    StorageObj := TStorageObject.Create(self, Response);
     fStorageObjs.TryAdd(ObjectName, StorageObJ);
-    if assigned(Response.OnSuccess.OnStorage) then
-      Response.OnSuccess.OnStorage(StorageObj)
-    else if assigned(Response.OnSuccess.OnStorageDeprecated) then
-      Response.OnSuccess.OnStorageDeprecated(ObjectName, StorageObj)
-    else
-      TFirebaseHelpers.Log('FirebaseStorage.OnGetResponse ' +
-        Response.ContentAsString);
+    case Response.OnSuccess.OnSuccessCase of
+      oscStorage:
+        if assigned(Response.OnSuccess.OnStorage) then
+         Response.OnSuccess.OnStorage(StorageObj);
+      oscStorageDeprecated:
+        if assigned(Response.OnSuccess.OnStorageDeprecated) then
+          Response.OnSuccess.OnStorageDeprecated(ObjectName, StorageObj);
+      else
+        TFirebaseHelpers.Log('FirebaseStorage.OnGetResponse ' +
+          Response.ContentAsString);
+    end;
   except
     on e: Exception do
     begin
