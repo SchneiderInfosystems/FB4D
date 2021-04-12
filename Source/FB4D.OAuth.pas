@@ -115,7 +115,7 @@ var
 begin
   jws := fContext.GetJOSEObject<TJWS>;
   PublicKey := GetPublicKey(GetHeader.JSON.GetValue('kid').Value);
-  jws.SetKey(PublicKey);
+  jws.SetKeyFromCert(PublicKey);
   result := jws.VerifySignature;
 end;
 
