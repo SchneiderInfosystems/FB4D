@@ -46,7 +46,7 @@ type
     fAuth: IFirebaseAuthentication;
     fStorageObjs: TDictionary<TObjectName, IStorageObject>;
     fCacheFolder: string;
-    fMaxCacheSpaceInBytes: longint;
+    fMaxCacheSpaceInBytes: Int64;
     fCacheSpaceInBytes: longint;
     fCacheContent: TList<TCacheFile>;
     fScanSync: TCriticalSection;
@@ -92,7 +92,7 @@ type
 
     // Long-term storage (beyond the runtime of the app) of loaded storage files
     procedure SetupCacheFolder(const FolderName: string;
-      MaxCacheSpaceInBytes: longint = cDefaultCacheSpaceInBytes);
+      MaxCacheSpaceInBytes: Int64 = cDefaultCacheSpaceInBytes);
     function IsCacheInUse: boolean;
     function IsCacheScanFinished: boolean;
     procedure ClearCache;
@@ -464,7 +464,7 @@ end;
 
 {$REGION 'Cache Handling'}
 procedure TFirebaseStorage.SetupCacheFolder(const FolderName: string;
-  MaxCacheSpaceInBytes: longint);
+  MaxCacheSpaceInBytes: Int64);
 begin
   fCacheFolder := IncludeTrailingPathDelimiter(FolderName);
   fMaxCacheSpaceInBytes := MaxCacheSpaceInBytes;

@@ -690,7 +690,7 @@ type
 
     // Long-term storage (beyond the runtime of the app) of loaded storage files
     procedure SetupCacheFolder(const FolderName: string;
-      MaxCacheSpaceInBytes: longint = cDefaultCacheSpaceInBytes);
+      MaxCacheSpaceInBytes: Int64 = cDefaultCacheSpaceInBytes);
     function IsCacheInUse: boolean;
     function IsCacheScanFinished: boolean;
     procedure ClearCache;
