@@ -38,16 +38,16 @@ type
       FileName: string;
       MD5Hash: string;
       LastUpdate: TDateTime;
-      FileSize: longint;
-      constructor AddToCache(const aFileName: string; FSize: longint = 0);
+      FileSize: Int64;
+      constructor AddToCache(const aFileName: string; FSize: Int64 = 0);
     end;
   private
     fBucket: string;
     fAuth: IFirebaseAuthentication;
     fStorageObjs: TDictionary<TObjectName, IStorageObject>;
     fCacheFolder: string;
-    fMaxCacheSpaceInBytes: longint;
-    fCacheSpaceInBytes: longint;
+    fMaxCacheSpaceInBytes: Int64;
+    fCacheSpaceInBytes: Int64;
     fCacheContent: TList<TCacheFile>;
     fScanSync: TCriticalSection;
     fScanFinished: boolean;
@@ -92,7 +92,7 @@ type
 
     // Long-term storage (beyond the runtime of the app) of loaded storage files
     procedure SetupCacheFolder(const FolderName: string;
-      MaxCacheSpaceInBytes: longint = cDefaultCacheSpaceInBytes);
+      MaxCacheSpaceInBytes: Int64 = cDefaultCacheSpaceInBytes);
     function IsCacheInUse: boolean;
     function IsCacheScanFinished: boolean;
     procedure ClearCache;
@@ -464,7 +464,7 @@ end;
 
 {$REGION 'Cache Handling'}
 procedure TFirebaseStorage.SetupCacheFolder(const FolderName: string;
-  MaxCacheSpaceInBytes: longint);
+  MaxCacheSpaceInBytes: Int64);
 begin
   fCacheFolder := IncludeTrailingPathDelimiter(FolderName);
   fMaxCacheSpaceInBytes := MaxCacheSpaceInBytes;
@@ -551,7 +551,7 @@ var
   FileName: string;
   CacheFile: TCacheFile;
   FileStream: TFileStream;
-  FSize: longint;
+  FSize: Int64;
 begin
   if IsCacheInUse then
   begin
