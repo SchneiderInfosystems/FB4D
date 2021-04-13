@@ -973,7 +973,7 @@ end;
 { TFirebaseStorage.TCacheFile }
 
 constructor TFirebaseStorage.TCacheFile.AddToCache(const aFileName: string;
-  FSize: longint);
+  FSize: Int64);
 begin
   FileName := aFileName;
   MD5Hash := TNetEncoding.Base64.EncodeBytesToString(
