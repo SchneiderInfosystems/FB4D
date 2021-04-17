@@ -100,6 +100,7 @@ const
 // Alternative way by entering
 //  ApiKey = '<Your Firebase ApiKey listed in the Firebase Console>';
 //  ProjectID = '<Your Project ID listed in the Firebase Console>';
+//  FirebaseURL = '<The URL of your RealTime DB from the Firebase Console>';
 {$IFDEF MSWINDOWS}
   GoogleServiceJSON = '..\..\..\google-services.json';
 {$ENDIF}
@@ -111,7 +112,7 @@ procedure TfmxMain.FormCreate(Sender: TObject);
 begin
   fConfig := TFirebaseConfiguration.Create(GoogleServiceJSON);
   // Alternative with constants for ApiKey and ProjectID
-  // fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID);
+//  fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID, '', FirebaseURL);
   fUID := '';
 end;
 

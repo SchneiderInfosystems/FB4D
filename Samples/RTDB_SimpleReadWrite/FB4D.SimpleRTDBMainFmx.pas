@@ -71,12 +71,13 @@ const
 // Alternative way by entering
 //  ApiKey = '<Your Firebase ApiKey listed in the Firebase Console>';
 //  ProjectID = '<Your Porject ID listed in the Firebase Console>';
+//  FirebaseURL = '<The URL of your RealTime DB from the Firebase Console>';
   DBPath: TRequestResourceParam = ['Message'];
 
 procedure TFmxSimpleReadWrite.FormCreate(Sender: TObject);
 begin
   fConfig := TFirebaseConfiguration.Create(GoogleServiceJSON);
-//  fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID);
+//  fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID, '', FirebaseURL);
   fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, OnDBStop, DBError, nil);
   lblStatus.Text := 'Firebase RT DB connected';
   btnWrite.Enabled := false;
