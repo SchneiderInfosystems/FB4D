@@ -771,109 +771,114 @@ begin
         fStream := TMemoryStream.Create;
         fClient := THTTPClient.Create;
         try
-          fClient.HandleRedirects := true;
-          fClient.Accept := '*/*';
-          fClient.OnReceiveData := OnRecData;
-          QueryParams.Clear;
-          QueryParams.Add('database', [fDatabase]);
-          QueryParams.Add('gsessionid', [fGSessionID]);
-          QueryParams.Add('VER', [cVER]);
-          QueryParams.Add('RID', ['rpc']);
-          QueryParams.Add('SID', [fSID]);
-          QueryParams.Add('AID', [fLastTelegramNo.ToString]);
-          QueryParams.Add('TYPE', ['xmlhttp']);
-          URL := cBaseURL +
-            TFirebaseHelpers.EncodeResourceParams(cResourceParams) +
-            TFirebaseHelpers.EncodeQueryParams(QueryParams);
-          {$IFDEF ParserLog}
-          TFirebaseHelpers.Log('FSListenerThread Get: [' +
-            fLastTelegramNo.ToString + '] ' + URL);
-          {$ENDIF}
-          if not fCloseRequest then
-          begin
-            fAsyncResult := fClient.BeginGet(OnEndListenerGet, URL, fStream);
-            repeat
-              LastWait := now;
-              WaitRes := fGetFinishedEvent.WaitFor(cTimeoutConnectionLost);
-              if (WaitRes = wrTimeout) and (fLastReceivedMsg < LastWait) then
+          try
+            fClient.HandleRedirects := true;
+            fClient.Accept := '*/*';
+            fClient.OnReceiveData := OnRecData;
+            QueryParams.Clear;
+            QueryParams.Add('database', [fDatabase]);
+            QueryParams.Add('gsessionid', [fGSessionID]);
+            QueryParams.Add('VER', [cVER]);
+            QueryParams.Add('RID', ['rpc']);
+            QueryParams.Add('SID', [fSID]);
+            QueryParams.Add('AID', [fLastTelegramNo.ToString]);
+            QueryParams.Add('TYPE', ['xmlhttp']);
+            URL := cBaseURL +
+              TFirebaseHelpers.EncodeResourceParams(cResourceParams) +
+              TFirebaseHelpers.EncodeQueryParams(QueryParams);
+            {$IFDEF ParserLog}
+            TFirebaseHelpers.Log('FSListenerThread Get: [' +
+              fLastTelegramNo.ToString + '] ' + URL);
+            {$ENDIF}
+            if not fCloseRequest then
+            begin
+              fAsyncResult := fClient.BeginGet(OnEndListenerGet, URL, fStream);
+              repeat
+                LastWait := now;
+                WaitRes := fGetFinishedEvent.WaitFor(cTimeoutConnectionLost);
+                if (WaitRes = wrTimeout) and (fLastReceivedMsg < LastWait) then
+                begin
+                  fCloseRequest := true;
+                  fAsyncResult.Cancel;
+                  {$IFDEF ParserLog}
+                  TFirebaseHelpers.Log('FSListenerThread timeout: ' +
+                    TimeToStr(now - fLastReceivedMsg));
+                  {$ENDIF}
+                end;
+              until (WaitRes = wrSignaled) or fCloseRequest or CheckTerminated;
+            end;
+            if fCloseRequest and not (fStopWaiting or fRequireTokenRenew) then
+            begin
+              if assigned(fOnConnectionStateChange) and fConnected then
+                if fDoNotSynchronizeEvents then
+                  fOnConnectionStateChange(false)
+                else
+                  TThread.Queue(nil,
+                    procedure
+                    begin
+                      fOnConnectionStateChange(false);
+                    end);
+              fConnected := false;
+              if fLastReceivedMsg < now - cTimeoutConnectionLost then
               begin
-                fCloseRequest := true;
-                fAsyncResult.Cancel;
                 {$IFDEF ParserLog}
-                TFirebaseHelpers.Log('FSListenerThread timeout: ' +
-                  TimeToStr(now - fLastReceivedMsg));
+                TFirebaseHelpers.Log('FSListenerThread wait before reconnect');
                 {$ENDIF}
+                Sleep(cWaitTimeBeforeReconnect);
               end;
-            until (WaitRes = wrSignaled) or fCloseRequest or CheckTerminated;
+            end
+            else if not fConnected then
+            begin
+              fConnected := true;
+              if assigned(fOnConnectionStateChange) then
+                if fDoNotSynchronizeEvents then
+                  fOnConnectionStateChange(true)
+                else
+                  TThread.Queue(nil,
+                    procedure
+                    begin
+                      fOnConnectionStateChange(true);
+                    end);
+            end;
+          except
+            on e: exception do
+            begin
+              ReportErrorInThread(Format(rsEvtListenerFailed,
+                ['InnerException=' + e.Message]));
+              // retry
+            end;
           end;
-          if fCloseRequest and not (fStopWaiting or fRequireTokenRenew) then
+          if fRequireTokenRenew then
           begin
-            if assigned(fOnConnectionStateChange) and fConnected then
-              if fDoNotSynchronizeEvents then
-                fOnConnectionStateChange(false)
-              else
-                TThread.Queue(nil,
-                  procedure
-                  begin
-                    fOnConnectionStateChange(false);
-                  end);
-            fConnected := false;
-            if fLastReceivedMsg < now - cTimeoutConnectionLost then
+            if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
             begin
               {$IFDEF ParserLog}
-              TFirebaseHelpers.Log('FSListenerThread wait before reconnect');
+              TFirebaseHelpers.Log(
+                'FSListenerThread RequireTokenRenew: sucess at ' +
+                TimeToStr(now));
               {$ENDIF}
-              Sleep(cWaitTimeBeforeReconnect);
+              fRequireTokenRenew := false;
+            end else begin
+              {$IFDEF ParserLog}
+              TFirebaseHelpers.Log(
+                'FSListenerThread RequireTokenRenew: failed at ' +
+                TimeToStr(now));
+              {$ENDIF}
             end;
-          end
-          else if not fConnected then
-          begin
-            fConnected := true;
-            if assigned(fOnConnectionStateChange) then
+            if assigned(fOnAuthRevoked) and
+               not TFirebaseHelpers.AppIsTerminated then
               if fDoNotSynchronizeEvents then
-                fOnConnectionStateChange(true)
+                fOnAuthRevoked(not fRequireTokenRenew)
               else
                 TThread.Queue(nil,
                   procedure
                   begin
-                    fOnConnectionStateChange(true);
+                    fOnAuthRevoked(not fRequireTokenRenew);
                   end);
           end;
-        except
-          on e: exception do
-          begin
-            ReportErrorInThread(Format(rsEvtListenerFailed, ['InnerException=' +
-              e.Message]));
-            // retry
-          end;
+        finally
+          FreeAndNil(fClient);
         end;
-        if fRequireTokenRenew then
-        begin
-          if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
-          begin
-            {$IFDEF ParserLog}
-            TFirebaseHelpers.Log(
-              'FSListenerThread RequireTokenRenew: sucess at ' + TimeToStr(now));
-            {$ENDIF}
-            fRequireTokenRenew := false;
-          end else begin
-            {$IFDEF ParserLog}
-            TFirebaseHelpers.Log(
-              'FSListenerThread RequireTokenRenew: failed at ' + TimeToStr(now));
-            {$ENDIF}
-          end;
-          if assigned(fOnAuthRevoked) and
-             not TFirebaseHelpers.AppIsTerminated then
-            if fDoNotSynchronizeEvents then
-              fOnAuthRevoked(not fRequireTokenRenew)
-            else
-              TThread.Queue(nil,
-                procedure
-                begin
-                  fOnAuthRevoked(not fRequireTokenRenew);
-                end);
-        end;
-        FreeAndNil(fClient);
       end;
     end;
   except
