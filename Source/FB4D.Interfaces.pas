@@ -441,7 +441,8 @@ type
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     function SubscribeQuery(Query: IStructuredQuery;
       OnChangedDoc: TOnChangedDocument;
-      OnDeletedDoc: TOnDeletedDocument): cardinal;
+      OnDeletedDoc: TOnDeletedDocument;
+      DocPath: TRequestResourceParam = []): cardinal;
     procedure Unsubscribe(TargetID: cardinal);
     procedure StartListener(OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;

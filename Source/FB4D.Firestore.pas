@@ -107,7 +107,8 @@ type
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     function SubscribeQuery(Query: IStructuredQuery;
       OnChangedDoc: TOnChangedDocument;
-      OnDeletedDoc: TOnDeletedDocument): cardinal;
+      OnDeletedDoc: TOnDeletedDocument;
+      DocPath: TRequestResourceParam = []): cardinal;
     procedure Unsubscribe(TargetID: cardinal);
     procedure StartListener(OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
@@ -727,9 +728,10 @@ begin
 end;
 
 function TFirestoreDatabase.SubscribeQuery(Query: IStructuredQuery;
-  OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument): cardinal;
+  OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument;
+  DocPath: TRequestResourceParam): cardinal;
 begin
-  result := fListener.SubscribeQuery(Query, OnChangedDoc, OnDeletedDoc);
+  result := fListener.SubscribeQuery(Query, DocPath, OnChangedDoc, OnDeletedDoc);
 end;
 
 procedure TFirestoreDatabase.Unsubscribe(TargetID: cardinal);

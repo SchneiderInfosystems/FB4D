@@ -107,7 +107,7 @@ type
       OnChangedDoc: TOnChangedDocument;
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     function SubscribeQuery(Query: IStructuredQuery;
-      OnChangedDoc: TOnChangedDocument;
+      DocumentPath: TRequestResourceParam; OnChangedDoc: TOnChangedDocument;
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     procedure Unsubscribe(TargetID: cardinal);
     property LastReceivedMsg: TDateTime read fLastReceivedMsg;
@@ -195,7 +195,8 @@ begin
 end;
 
 function TFSListenerThread.SubscribeQuery(Query: IStructuredQuery;
-  OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument): cardinal;
+  DocumentPath: TRequestResourceParam; OnChangedDoc: TOnChangedDocument;
+  OnDeletedDoc: TOnDeletedDocument): cardinal;
 var
   Target: TTarget;
   JSONobj: TJSONObject;
@@ -206,7 +207,8 @@ begin
   Target.TargetID := (fTargets.Count + 1) * 2;
   Target.TargetKind := TTargetKind.tkQuery;
   JSONobj := Query.AsJSON;
-  JSONobj.AddPair('parent', fDatabase + '/documents');
+  JSONobj.AddPair('parent', fDatabase + '/documents' +
+    TFirebaseHelpers.EncodeResourceParams(DocumentPath));
   Target.QueryJSON := JSONobj.ToJSON;
   Target.DocumentPath := '';
   Target.OnChangedDoc := OnChangedDoc;
