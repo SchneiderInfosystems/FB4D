@@ -1045,9 +1045,14 @@ begin
 end;
 
 function TJSONHelpers.GetArraySize: integer;
+var
+  Val : TJSONValue;
 begin
-  result := GetValue<TJSONObject>('arrayValue').
-    GetValue<TJSONArray>('values').Count;
+  Val := GetValue<TJSONObject>('arrayValue').FindValue('values');
+  if assigned(Val) then
+    result := TJSONArray(Val).Count
+  else
+    result := 0;
 end;
 
 function TJSONHelpers.GetArraySize(const Name: string): integer;
