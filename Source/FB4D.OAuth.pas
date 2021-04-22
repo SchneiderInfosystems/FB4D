@@ -56,10 +56,10 @@ uses
 constructor TTokenJWT.Create(const OAuthToken: string);
 var
   CompactToken: TJOSEBytes;
-
 begin
   CompactToken.AsString := OAuthToken;
   fContext := TJOSEContext.Create(CompactToken, TJWTClaims);
+  CompactToken.Clear;
 end;
 
 destructor TTokenJWT.Destroy;
