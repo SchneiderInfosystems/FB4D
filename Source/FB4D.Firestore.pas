@@ -228,8 +228,11 @@ end;
 
 destructor TFirestoreDatabase.Destroy;
 begin
- if fListener.IsRunning then
-    fListener.StopListener;
+  if fListener.IsRunning then
+    fListener.StopListener
+  else
+    fListener.StopNotStarted;
+  fListener.Free;
   inherited;
 end;
 
@@ -752,6 +755,7 @@ end;
 procedure TFirestoreDatabase.StopListener;
 begin
   fListener.StopListener;
+  fListener.Free;
   // Recreate thread because a thread cannot be restarted
   fListener := TFSListenerThread.Create(fProjectID, fDatabaseID, fAuth);
 end;

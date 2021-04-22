@@ -102,6 +102,7 @@ type
       OnConnectionStateChange: TOnConnectionStateChange;
       DoNotSynchronizeEvents: boolean);
     procedure StopListener(TimeOutInMS: integer = cDefTimeOutInMS);
+    procedure StopNotStarted;
     function IsRunning: boolean;
     function SubscribeDocument(DocumentPath: TRequestResourceParam;
       OnChangedDoc: TOnChangedDocument;
@@ -162,7 +163,7 @@ begin
   {$ENDIF}
   fGetFinishedEvent := TEvent.Create(nil, false, false, EventName);
   OnTerminate := OnEndThread;
-  FreeOnTerminate := true;
+  FreeOnTerminate := false;
   {$IFNDEF LINUX64}
   NameThreadForDebugging('FB4D.FSListenerThread', ThreadID);
   {$ENDIF}
@@ -733,6 +734,8 @@ var
   WaitRes: TWaitResult;
   LastWait: TDateTime;
 begin
+  if fStopWaiting then
+    exit; // for StopNotStarted
   InitListen(NewListener);
   QueryParams := TQueryParams.Create;
   try
@@ -936,14 +939,19 @@ begin
       finally
         Resp := nil;
       end;
+    end else begin
+      {$IFDEF ParserLog}
+      TFirebaseHelpers.Log('FSListenerThread.OnEndListenerGet: canceled');
+      {$ENDIF}
     end;
     FreeAndNil(fStream);
-    fGetFinishedEvent.SetEvent;
+    if assigned(fGetFinishedEvent) then
+      fGetFinishedEvent.SetEvent
   except
     on e: ENetException do
     begin
       fCloseRequest := true;
-      {$IFDEF ParserLogDetails}
+      {$IFDEF ParserLog}
       TFirebaseHelpers.Log(
         'FSListenerThread.OnEndListenerGet Disconnected by Server:' +
         e.Message);
@@ -977,6 +985,9 @@ var
 begin
   if not fStopWaiting then
   begin
+    {$IFDEF ParserLog}
+    TFirebaseHelpers.Log('FSListenerThread.StopListener stop');
+    {$ENDIF}
     fStopWaiting := true;
     if not assigned(fClient) then
       raise EFirestoreListener.Create('Missing Client in StopListener')
@@ -988,8 +999,41 @@ begin
   Timeout := TimeOutInMS;
   while not Finished and (Timeout > 0) do
   begin
+    if Timeout < TimeOutInMS div 2 then
+    begin
+      {$IFDEF ParserLog}
+      TFirebaseHelpers.Log('FSListenerThread.StopListener emergency stop');
+      {$ENDIF}
+      if assigned(fAsyncResult) then
+        fAsyncResult.Cancel;
+      if assigned(fGetFinishedEvent) then
+        fGetFinishedEvent.SetEvent;
+    end;
     TFirebaseHelpers.SleepAndMessageLoop(5);
     dec(Timeout, 5);
+  end;
+  if not Finished then
+  begin
+    {$IFDEF ParserLog}
+    TFirebaseHelpers.Log('FSListenerThread.StopListener not stopped!');
+    {$ENDIF}
+  end;
+end;
+
+procedure TFSListenerThread.StopNotStarted;
+begin
+  fStopWaiting := true;
+  if not Suspended then
+  begin
+    {$IFDEF ParserLog}
+    TFirebaseHelpers.Log('FSListenerThread.StopNotStarted');
+    {$ENDIF}
+    if assigned(fAsyncResult) then
+      fAsyncResult.Cancel;
+    if assigned(fGetFinishedEvent) then
+      fGetFinishedEvent.SetEvent;
+    Start;
+    WaitFor;
   end;
 end;
 
