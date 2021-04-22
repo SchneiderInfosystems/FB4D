@@ -388,7 +388,7 @@ begin
     SetLength(fFields, Ind + 1);
     fFields[Ind].Name := FieldName;
   end else
-    FieldsObj.RemovePair(FieldName);
+    FieldsObj.RemovePair(FieldName).free;
   FieldsObj.AddPair(FieldName, Val);
   fFields[Ind].Obj := Val.Clone as TJSONObject;
   result := self;
@@ -414,7 +414,7 @@ begin
     SetLength(fFields, Ind + 1);
     fFields[Ind].Name := FieldName;
   end else
-    FieldsObj.RemovePair(FieldName);
+    FieldsObj.RemovePair(FieldName).free;
   FieldsObj.AddPair(Field);
   fFields[Ind].Obj := Field.JsonValue as TJSONObject;
   result := self;
