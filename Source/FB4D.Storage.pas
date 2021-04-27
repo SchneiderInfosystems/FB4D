@@ -50,7 +50,8 @@ type
     fCacheSpaceInBytes: Int64;
     fCacheContent: TList<TCacheFile>;
     fScanSync: TCriticalSection;
-    fScanFinished: boolean;
+    fScanFinished: TDateTime;
+    fLastUpdateRemovedFromCache: TDateTime;
     function BaseURL: string;
     procedure OnGetResponse(const ObjectName: TObjectName;
       Response: IFirebaseResponse);
@@ -97,6 +98,7 @@ type
     function IsCacheScanFinished: boolean;
     procedure ClearCache;
     function CacheUsageInPercent: extended;
+    function IsCacheOverflowed: boolean;
   end;
 
   TStorageObject = class(TInterfacedObject, IStorageObject)
@@ -493,7 +495,7 @@ end;
 procedure TFirebaseStorage.ScanCacheFolder;
 begin
   fScanSync.Acquire;
-  fScanFinished := false;
+  fScanFinished := 0;
   fCacheSpaceInBytes := 0;
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log('FirebaseStorage.ScanCacheFolder start ' + fCacheFolder);
@@ -525,7 +527,7 @@ begin
           'FirebaseStorage.ScanCacheFolder finished, cache size %dB (%4.2f%%)',
           [fCacheSpaceInBytes, CacheUsageInPercent]);
         {$ENDIF}
-        fScanFinished := true;
+        fScanFinished := now;
         fScanSync.Release;
       except
         on e: exception do
@@ -537,12 +539,17 @@ end;
 
 function TFirebaseStorage.IsCacheScanFinished: boolean;
 begin
-  result := fScanFinished;
+  result := fScanFinished > 0;
 end;
 
 function TFirebaseStorage.IsCacheInUse: boolean;
 begin
   result := not fCacheFolder.IsEmpty and (fMaxCacheSpaceInBytes > 0);
+end;
+
+function TFirebaseStorage.IsCacheOverflowed: boolean;
+begin
+  result := fLastUpdateRemovedFromCache > fScanFinished;
 end;
 
 procedure TFirebaseStorage.AddToCache(StorageObj: IStorageObject;
@@ -678,8 +685,10 @@ begin
       if TFirebaseHelpers.AppIsTerminated and
          not DeleteFileFromCache(CacheFile.FileName) then
         exit
-      else
+      else begin
         inc(Count);
+        fLastUpdateRemovedFromCache := CacheFile.LastUpdate;
+      end;
       Usage := CacheUsageInPercent;
     until (Usage < cMaxUsageAfterClean) or (Count >= fCacheContent.Count);
   finally
@@ -750,20 +759,24 @@ var
   Client: THTTPClient;
   Response: IHTTPResponse;
 begin
-  Client := THTTPClient.Create;
-  try
-    Response := Client.Get(DownloadUrl, Stream);
-    if Response.StatusCode <> 200 then
-    begin
-      {$IFDEF DEBUG}
-      TFirebaseHelpers.Log('StorageObject.DownloadToStreamSynchronous ' +
-        Response.ContentAsString);
-      {$ENDIF}
-      raise EStorageObject.CreateFmt('Download failed: %s',
-        [Response.StatusText]);
+  if not fFirebaseStorage.CheckInCache(self, Stream) then
+  begin
+    Client := THTTPClient.Create;
+    try
+      Response := Client.Get(DownloadUrl, Stream);
+      if Response.StatusCode = 200 then
+        fFirebaseStorage.AddToCache(self, Stream)
+      else begin
+        {$IFDEF DEBUG}
+        TFirebaseHelpers.Log('StorageObject.DownloadToStreamSynchronous ' +
+          Response.ContentAsString);
+        {$ENDIF}
+        raise EStorageObject.CreateFmt('Download failed: %s',
+          [Response.StatusText]);
+      end;
+    finally
+      Client.Free;
     end;
-  finally
-    Client.Free;
   end;
 end;
 

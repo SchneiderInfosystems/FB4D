@@ -696,6 +696,7 @@ type
     function IsCacheScanFinished: boolean;
     procedure ClearCache;
     function CacheUsageInPercent: extended;
+    function IsCacheOverflowed: boolean;
   end;
 
   /// <summary>
