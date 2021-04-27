@@ -165,7 +165,7 @@ function TFirebaseConfiguration.Database: IFirestoreDatabase;
 begin
   Assert(not fProjectID.IsEmpty, 'ProjectID is required for Firestore');
   if not assigned(fDatabase) then
-    fDatabase := TFirestoreDatabase.Create(fProjectID, fAuth);
+    fDatabase := TFirestoreDatabase.Create(fProjectID, Auth);
   result := fDatabase;
 end;
 
@@ -173,7 +173,7 @@ function TFirebaseConfiguration.Storage: IFirebaseStorage;
 begin
   Assert(not fBucket.IsEmpty, 'Bucket is required for Storage');
   if not assigned(fStorage) then
-    fStorage := TFirebaseStorage.Create(fBucket, fAuth);
+    fStorage := TFirebaseStorage.Create(fBucket, Auth);
   result := fStorage;
 end;
 
@@ -181,7 +181,7 @@ function TFirebaseConfiguration.Functions: IFirebaseFunctions;
 begin
   Assert(not fProjectID.IsEmpty, 'ProjectID is required for Functions');
   if not assigned(fFunctions) then
-    fFunctions := TFirebaseFunctions.Create(fProjectID, fAuth);
+    fFunctions := TFirebaseFunctions.Create(fProjectID, Auth);
   result := fFunctions;
 end;
 
