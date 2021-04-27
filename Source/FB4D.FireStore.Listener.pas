@@ -918,7 +918,13 @@ var
   Resp: IHTTPResponse;
 begin
   try
-    if not ASyncResult.GetIsCancelled then
+    if not assigned(fClient) then
+    begin
+      {$IFDEF ParserLog}
+      TFirebaseHelpers.Log('FSListenerThread.OnEndListenerGet: aborted HTTP');
+      {$ENDIF}
+    end
+    else if not ASyncResult.GetIsCancelled then
     begin
       try
         Resp := fClient.EndAsyncHTTP(ASyncResult);
