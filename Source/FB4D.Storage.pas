@@ -494,9 +494,6 @@ end;
 
 procedure TFirebaseStorage.ScanCacheFolder;
 begin
-  fScanSync.Acquire;
-  fScanFinished := 0;
-  fCacheSpaceInBytes := 0;
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log('FirebaseStorage.ScanCacheFolder start ' + fCacheFolder);
   {$ENDIF}
@@ -509,7 +506,10 @@ begin
       {$IFNDEF LINUX64}
       TThread.NameThreadForDebugging('StorageObject.ScanCacheFolder');
       {$ENDIF}
+      fScanSync.Acquire;
       try
+        fScanFinished := 0;
+        fCacheSpaceInBytes := 0;
         for FileName in TDirectory.GetFiles(fCacheFolder) do
         begin
           CacheFile := TCacheFile.AddToCache(FileName);
