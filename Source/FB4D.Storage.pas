@@ -468,6 +468,8 @@ end;
 procedure TFirebaseStorage.SetupCacheFolder(const FolderName: string;
   MaxCacheSpaceInBytes: Int64);
 begin
+  Assert(MaxCacheSpaceInBytes > 0, 'Invalid max cache space');
+  Assert(not FolderName.IsEmpty, 'Empty cache folder not allowed');
   fCacheFolder := IncludeTrailingPathDelimiter(FolderName);
   fMaxCacheSpaceInBytes := MaxCacheSpaceInBytes;
   if not TDirectory.Exists(fCacheFolder) then
@@ -665,7 +667,9 @@ const
 var
   CacheFile: TCacheFile;
   Usage: extended;
+  {$IFDEF DEBUG}
   Count: integer;
+  {$ENDIF}
 begin
   fScanSync.Acquire;
   try
@@ -679,18 +683,22 @@ begin
         else
           result := 1;
       end));
+    {$IFDEF DEBUG}
     Count := 0;
+    {$ENDIF}
     repeat
-      CacheFile := fCacheContent.Items[Count];
-      if TFirebaseHelpers.AppIsTerminated and
+      CacheFile := fCacheContent.Items[0];
+      fLastUpdateRemovedFromCache := CacheFile.LastUpdate;
+      if TFirebaseHelpers.AppIsTerminated or
          not DeleteFileFromCache(CacheFile.FileName) then
         exit
       else begin
+        {$IFDEF DEBUG}
         inc(Count);
-        fLastUpdateRemovedFromCache := CacheFile.LastUpdate;
+        {$ENDIF}
       end;
       Usage := CacheUsageInPercent;
-    until (Usage < cMaxUsageAfterClean) or (Count >= fCacheContent.Count);
+    until (Usage < cMaxUsageAfterClean) or (fCacheContent.Count = 0);
   finally
     fScanSync.Release;
   end;
@@ -991,7 +999,7 @@ begin
   FileName := aFileName;
   MD5Hash := TNetEncoding.Base64.EncodeBytesToString(
     THashMD5.GetHashBytesFromFile(FileName));
-  LastUpdate := TFile.GetLastWriteTimeUtc(FileName);
+  LastUpdate := TFile.GetLastWriteTime(FileName);
   if FSize > 0 then
     FileSize := FSize
   else
