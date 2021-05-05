@@ -857,13 +857,14 @@ begin
           on e: exception do
             begin
               ErrMsg := e.Message;
-              if assigned(OnError) then
+              if assigned(OnError) and not TFirebaseHelpers.AppIsTerminated then
                 TThread.Queue(nil,
                   procedure
                   begin
                     OnError(self, ErrMsg);
                   end)
-              else if assigned(OnAlternativeError) then
+              else if assigned(OnAlternativeError) and
+                not TFirebaseHelpers.AppIsTerminated then
                 TThread.Queue(nil,
                   procedure
                   begin
