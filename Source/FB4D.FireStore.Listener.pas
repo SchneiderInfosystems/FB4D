@@ -1059,11 +1059,10 @@ begin
       ((fMsgSize = -1) or
        (fPartialResp.Length + ReadCount - fReadPos >= fMsgSize)) then
     begin
+      if (fReadPos < 0) or (ReadCount - fReadPos < 0) then
+        exit;
       ss := TStringStream.Create('', TEncoding.UTF8);
       try
-        Assert(fReadPos >= 0, 'Invalid stream read position');
-        Assert(ReadCount - fReadPos >= 0, 'Invalid stream read count: ' +
-          ReadCount.ToString + ' - ' + fReadPos.ToString);
         Retry := 2;
         StreamReadFailed := false;
         repeat
@@ -1091,11 +1090,11 @@ begin
             else
               raise;
         end;
+        if not fPartialResp.IsEmpty then
+          Parser;
       finally
         ss.Free;
       end;
-      if not fPartialResp.IsEmpty then
-        Parser;
     end;
   except
     on e: Exception do
