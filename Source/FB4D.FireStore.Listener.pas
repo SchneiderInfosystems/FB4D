@@ -1050,17 +1050,16 @@ var
   ErrMsg: string;
   Retry: integer;
   StreamReadFailed: boolean;
+  len: Int64;
 begin
   try
     fLastReceivedMsg := Now;
+    len := ReadCount - fReadPos;
     if fStopWaiting then
-     Abort := true
-    else if assigned(fStream) and
-      ((fMsgSize = -1) or
-       (fPartialResp.Length + ReadCount - fReadPos >= fMsgSize)) then
+      Abort := true
+    else if assigned(fStream) and ((fReadPos >= 0) and (len >= 0)) and
+      ((fMsgSize = -1) or (fPartialResp.Length + len >= fMsgSize)) then
     begin
-      if (fReadPos < 0) or (ReadCount - fReadPos < 0) then
-        exit;
       ss := TStringStream.Create('', TEncoding.UTF8);
       try
         Retry := 2;
@@ -1068,7 +1067,7 @@ begin
         repeat
           fStream.Position := fReadPos;
           try
-            ss.CopyFrom(fStream, ReadCount - fReadPos);
+            ss.CopyFrom(fStream, len);
             StreamReadFailed := false;
           except
             on e: EReadError do
