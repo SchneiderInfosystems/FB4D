@@ -881,7 +881,7 @@ begin
                     fOnAuthRevoked(not fRequireTokenRenew);
                   end);
           end;
-Yozu        finally
+        finally
           FreeAndNil(fClient);
         end;
       end;
@@ -917,6 +917,8 @@ procedure TFSListenerThread.OnEndListenerGet(const ASyncResult: IAsyncResult);
 var
   Resp: IHTTPResponse;
 begin
+  if TFirebaseHelpers.AppIsTerminated then
+    exit;
   try
     if not assigned(fClient) then
     begin
@@ -1052,6 +1054,8 @@ var
   StreamReadFailed: boolean;
   len: Int64;
 begin
+  if TFirebaseHelpers.AppIsTerminated then
+    exit;
   try
     fLastReceivedMsg := Now;
     len := ReadCount - fReadPos;
