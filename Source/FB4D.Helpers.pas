@@ -178,10 +178,10 @@ implementation
 
 uses
   System.Character,
-{$IF Declared(VCL)}
+{$IF Defined(VCL)}
   WinAPI.Windows,
   VCL.Forms,
-{$ELSEIF Declared(FMX)}
+{$ELSEIF Defined(FMX)}
   FMX.Types,
   FMX.Forms,
 {$ELSE}
@@ -341,14 +341,14 @@ class procedure TFirebaseHelpers.Log(msg: string);
 begin
   if AppIsTerminated then
     exit;
-{$IF Declared(FMX)}
+{$IF Defined(FMX)}
   {$IFDEF LINUX}
   writeln(msg);  // Workaround for RSP-32303
   {$ELSE}
   FMX.Types.Log.d(msg, []);
   // there is a bug in DE 10.2 when the wrong method is calling?
   {$ENDIF}
-{$ELSEIF Declared(VCL)}
+{$ELSEIF Defined(VCL)}
   OutputDebugString(PChar(msg));
 {$ELSE}
   writeln(msg);
@@ -373,7 +373,7 @@ end;
 
 class function TFirebaseHelpers.AppIsTerminated: boolean;
 begin
-{$IF Declared(VCL) OR Declared(FMX)}
+{$IF Defined(VCL) OR Defined(FMX)}
   result := Application.Terminated;
 {$ELSE}
   result := false;
@@ -382,7 +382,7 @@ end;
 
 class procedure TFirebaseHelpers.SleepAndMessageLoop(SleepInMs: cardinal);
 begin
-{$IF Declared(VCL) OR Declared(FMX)}
+{$IF Defined(VCL) OR Defined(FMX)}
   Application.ProcessMessages;
 {$ENDIF}
   Sleep(SleepInMs);
