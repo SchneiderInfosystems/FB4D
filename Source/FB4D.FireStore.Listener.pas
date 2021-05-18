@@ -881,7 +881,7 @@ begin
                     fOnAuthRevoked(not fRequireTokenRenew);
                   end);
           end;
-        finally
+Yozu        finally
           FreeAndNil(fClient);
         end;
       end;
