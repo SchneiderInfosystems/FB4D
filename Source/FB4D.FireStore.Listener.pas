@@ -156,7 +156,7 @@ begin
   fAuth := Auth;
   fDatabase := 'projects/' + ProjectID + '/databases/' + DatabaseID;
   fTargets := TList<TTarget>.Create;
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   EventName := 'FB4DFSListenerGetFini';
   {$ELSE}
   EventName := '';

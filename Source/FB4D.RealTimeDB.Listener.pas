@@ -103,7 +103,7 @@ begin
   inherited Create(true);
   fBaseURL := FirebaseURL;
   fAuth := Auth;
-  {$IFDEF WINDOWS}
+  {$IFDEF MSWINDOWS}
   EventName := 'RTDBListenerGetFini';
   {$ELSE}
   EventName := '';

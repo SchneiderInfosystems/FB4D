@@ -337,7 +337,7 @@ begin
       try
         if Assigned(Obj) and (Obj is Exception) and assigned(OnRequestError) then
         begin
-          {$IFDEF WINDOWS}
+          {$IFDEF MSWINDOWS}
           if (Pos('(12030)', Exception(Obj).Message) > 1) or
              (Pos('(12007)', Exception(Obj).Message) > 1) then
             // Misleading error message from WinAPI
