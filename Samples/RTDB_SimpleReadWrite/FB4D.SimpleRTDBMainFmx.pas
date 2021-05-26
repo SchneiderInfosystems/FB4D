@@ -42,6 +42,7 @@ type
     procedure edtDBMessageChangeTracking(Sender: TObject);
   private
     fConfig: IFirebaseConfiguration;
+    fEvent: IFirebaseEvent;
     procedure DBEvent(const Event: string; Params: TRequestResourceParam;
       JSONObj: TJSONObject);
     procedure DBError(const RequestID, ErrMsg: string);
@@ -78,7 +79,8 @@ procedure TFmxSimpleReadWrite.FormCreate(Sender: TObject);
 begin
   fConfig := TFirebaseConfiguration.Create(GoogleServiceJSON);
 //  fConfig := TFirebaseConfiguration.Create(ApiKey, ProjectID, '', FirebaseURL);
-  fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, OnDBStop, DBError, nil);
+  fEvent := fConfig.RealTimeDB.ListenForValueEvents(DBPath, DBEvent, OnDBStop,
+    DBError, nil);
   lblStatus.Text := 'Firebase RT DB connected';
   btnWrite.Enabled := false;
 end;
@@ -90,10 +92,14 @@ end;
 
 procedure TFmxSimpleReadWrite.DBEvent(const Event: string;
   Params: TRequestResourceParam; JSONObj: TJSONObject);
+var
+  data: string;
 begin
   if Event = cEventPut then
   begin
-    edtDBMessage.Text := JSONObj.GetValue<string>(cData);
+    if not JSONObj.TryGetValue<string>(cData, data) then
+      data := '';
+    edtDBMessage.Text := data;
     btnWrite.Enabled := false;
     lblStatus.Text := 'Last read: ' + DateTimeToStr(now);
   end;

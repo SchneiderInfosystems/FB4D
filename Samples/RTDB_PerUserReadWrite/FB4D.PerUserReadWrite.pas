@@ -52,6 +52,7 @@ type
     procedure btnWriteClick(Sender: TObject);
   private
     fConfig: IFirebaseConfiguration;
+    fEvent: IFirebaseEvent;
     fUID: string;
     function GetSettingFilename: string;
     function LoadLastToken: string;
@@ -207,7 +208,7 @@ end;
 procedure TfmxMain.StartListening;
 begin
   WipeToTab(tabRTDBAccess);
-  fConfig.RealTimeDB.ListenForValueEvents(DBPath, OnDBEvent, OnDBStop,
+  fEvent := fConfig.RealTimeDB.ListenForValueEvents(DBPath, OnDBEvent, OnDBStop,
     OnDBError, nil);
   lblStatus.Text := 'Firebase RT DB connected';
 end;
