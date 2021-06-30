@@ -34,11 +34,12 @@ uses
   FB4D.Interfaces;
 
 type
-  TOnSimpleDownloadError = procedure(const DownloadURL, ErrMsg: string) of
-    object;
+  TOnSimpleDownloadError = procedure(const DownloadURL, ErrMsg: string) of object;
   TOnSimpleDownloadSuccess = procedure(const DownloadURL: string) of object;
+  TOnLog = procedure(const Text: string) of object;
 
   TFirebaseHelpers = class
+    class var OnLog: TOnLog;
     // Time conversion functions
     class function CodeRFC3339DateTime(DateTimeStamp: TDateTime): string;
     class function ConvertTimeStampToUTCDateTime(TimeStamp: Int64): TDateTime;
@@ -353,6 +354,8 @@ begin
 {$ELSE}
   writeln(msg);
 {$ENDIF}
+  if Assigned(OnLog) then
+    OnLog(msg);
 end;
 
 class procedure TFirebaseHelpers.LogFmt(msg: string; const Args: array of const);
