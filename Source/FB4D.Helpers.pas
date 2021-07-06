@@ -352,6 +352,8 @@ begin
   {$ENDIF}
 {$ELSEIF Defined(VCL)}
   OutputDebugString(PChar(msg));
+{$ELSEIF MSWINDOWS}
+  OutputDebugString(PChar(msg));
 {$ELSE}
   writeln(msg);
 {$ENDIF}
