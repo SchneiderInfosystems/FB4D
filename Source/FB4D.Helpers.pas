@@ -34,7 +34,8 @@ uses
   FB4D.Interfaces;
 
 type
-  TOnSimpleDownloadError = procedure(const DownloadURL, ErrMsg: string) of object;
+  TOnSimpleDownloadError = procedure(const DownloadURL, ErrMsg: string) of
+    object;
   TOnSimpleDownloadSuccess = procedure(const DownloadURL: string) of object;
   TOnLog = procedure(const Text: string) of object;
 
