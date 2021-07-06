@@ -39,7 +39,8 @@ type
     function BaseURL: string;
     procedure OnResp(const RequestID: string; Response: IFirebaseResponse);
   public
-    constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication);
+    constructor Create(const ProjectID: string;
+      Auth: IFirebaseAuthentication = nil);
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
       Params: TJSONObject = nil);
