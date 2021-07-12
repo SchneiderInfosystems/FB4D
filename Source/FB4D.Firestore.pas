@@ -20,22 +20,17 @@
 {  limitations under the License.                                              }
 {                                                                              }
 {******************************************************************************}
-
 unit FB4D.Firestore;
-
 interface
-
 uses
   System.Classes, System.Types, System.JSON, System.SysUtils,
   System.Net.HttpClient, System.Net.URLClient,
-  System.Generics.Collections,
+  System.Generics.Collections, System.SyncObjs,
   REST.Types,
   FB4D.Interfaces, FB4D.Response, FB4D.Request, FB4D.Document,
   FB4D.FireStore.Listener;
-
 const
   DefaultDatabaseID = '(default)';
-
 type
   TFirestoreDatabase = class(TInterfacedObject, IFirestoreDatabase)
   private
@@ -44,6 +39,7 @@ type
     fAuth: IFirebaseAuthentication;
     fListener: TFSListenerThread;
     fLastReceivedMsg: TDateTime;
+    fCSForLastReceivedMsg: TCriticalSection;
     function BaseURI: string;
     procedure OnQueryResponse(const RequestID: string;
       Response: IFirebaseResponse);
@@ -59,6 +55,7 @@ type
       Response: IFirebaseResponse);
     procedure BeginReadOnlyTransactionResp(const RequestID: string;
       Response: IFirebaseResponse);
+    procedure SetLastReceivedMsg(const Value: TDateTime);
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
       const DatabaseID: string = DefaultDatabaseID);
@@ -123,7 +120,6 @@ type
     property ProjectID: string read fProjectID;
     property DatabaseID: string read fDatabaseID;
   end;
-
   TStructuredQuery = class(TInterfacedObject, IStructuredQuery)
   private
     fColSelector, fQuery: TJSONObject;
@@ -157,7 +153,6 @@ type
     function AsJSON: TJSONObject;
     function GetInfo: string;
   end;
-
   TQueryFilter = class(TInterfacedObject, IQueryFilter)
   private
     fInfo: string;
@@ -179,12 +174,9 @@ type
     function AsJSON: TJSONObject;
     function GetInfo: string;
   end;
-
 implementation
-
 uses
   FB4D.Helpers;
-
 const
   GOOGLE_FIRESTORE_API_URL =
     'https://firestore.googleapis.com/v1beta1/projects/%0:s/databases/%1:s/' +
@@ -200,7 +192,6 @@ const
     'OPERATOR_UNSPECIFIED', 'AND');
   ORDER_DIRECTION: array [TOrderDirection] of string = ('DIRECTION_UNSPECIFIED',
     'ASCENDING', 'DESCENDING');
-
 resourcestring
   rsRunQuery = 'Run query for ';
   rsGetDocument = 'Get document for ';
@@ -211,9 +202,7 @@ resourcestring
   rsBeginTrans = 'Begin transaction';
   rsCommitTrans = 'Commit transaction';
   rsRollBackTrans = 'Roll back transaction';
-
 { TFirestoreDatabase }
-
 constructor TFirestoreDatabase.Create(const ProjectID: string;
   Auth: IFirebaseAuthentication; const DatabaseID: string);
 begin
@@ -223,9 +212,9 @@ begin
   fAuth := Auth;
   fDatabaseID := DatabaseID;
   fListener := TFSListenerThread.Create(ProjectID, DatabaseID, Auth);
-  fLastReceivedMsg := 0;
+  fCSForLastReceivedMsg := TCriticalSection.Create;
+  SetLastReceivedMsg(0);
 end;
-
 destructor TFirestoreDatabase.Destroy;
 begin
   if fListener.IsRunning then
@@ -233,14 +222,13 @@ begin
   else
     fListener.StopNotStarted;
   fListener.Free;
+  fCSForLastReceivedMsg.Free;
   inherited;
 end;
-
 function TFirestoreDatabase.BaseURI: string;
 begin
   result := Format(GOOGLE_FIRESTORE_API_URL, [fProjectID, fDatabaseID]);
 end;
-
 procedure TFirestoreDatabase.RunQuery(StructuredQuery: IStructuredQuery;
   OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
   QueryParams: TQueryParams = nil);
@@ -255,14 +243,13 @@ begin
     OnQueryResponse, OnRequestError,
     TOnSuccess.CreateFirestoreDocs(OnDocuments));
 end;
-
 procedure TFirestoreDatabase.OnQueryResponse(const RequestID: string;
   Response: IFirebaseResponse);
 var
   Documents: IFirestoreDocuments;
 begin
   try
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     Response.CheckForJSONArr;
     Documents := TFirestoreDocuments.CreateFromJSONArr(Response);
     if assigned(Response.OnSuccess.OnDocuments) then
@@ -278,7 +265,6 @@ begin
     end;
   end;
 end;
-
 function TFirestoreDatabase.RunQuerySynchronous(
   StructuredQuery: IStructuredQuery;
   QueryParams: TQueryParams = nil): IFirestoreDocuments;
@@ -292,10 +278,9 @@ begin
   Query := StructuredQuery.AsJSON;
   Response := Request.SendRequestSynchronous([''], rmPost, Query, QueryParams);
   Response.CheckForJSONArr;
-  fLastReceivedMsg := now;
+  SetLastReceivedMsg(now);
   result := TFirestoreDocuments.CreateFromJSONArr(Response);
 end;
-
 procedure TFirestoreDatabase.RunQuery(DocumentPath: TRequestResourceParam;
   StructuredQuery: IStructuredQuery; OnDocuments: TOnDocuments;
   OnRequestError: TOnRequestError; QueryParams: TQueryParams = nil);
@@ -311,7 +296,6 @@ begin
     OnQueryResponse, OnRequestError,
     TOnSuccess.CreateFirestoreDocs(OnDocuments));
 end;
-
 function TFirestoreDatabase.RunQuerySynchronous(
   DocumentPath: TRequestResourceParam; StructuredQuery: IStructuredQuery;
   QueryParams: TQueryParams = nil): IFirestoreDocuments;
@@ -327,10 +311,9 @@ begin
   Query := StructuredQuery.AsJSON;
   Response := Request.SendRequestSynchronous([''], rmPost, Query, QueryParams);
   Response.CheckForJSONArr;
-  fLastReceivedMsg := now;
+  SetLastReceivedMsg(now);
   result := TFirestoreDocuments.CreateFromJSONArr(Response);
 end;
-
 procedure TFirestoreDatabase.Get(Params: TRequestResourceParam;
   QueryParams: TQueryParams; OnDocuments: TOnDocuments;
   OnRequestError: TOnRequestError);
@@ -342,14 +325,13 @@ begin
   Request.SendRequest(Params, rmGet, nil, QueryParams, tmBearer,
     OnGetResponse, OnRequestError, TOnSuccess.CreateFirestoreDocs(OnDocuments));
 end;
-
 procedure TFirestoreDatabase.OnGetResponse(const RequestID: string;
   Response: IFirebaseResponse);
 var
   Documents: IFirestoreDocuments;
 begin
   try
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     if not Response.StatusNotFound then
     begin
       Response.CheckForJSONObj;
@@ -369,7 +351,6 @@ begin
     end;
   end;
 end;
-
 function TFirestoreDatabase.GetSynchronous(Params: TRequestResourceParam;
   QueryParams: TQueryParams = nil): IFirestoreDocuments;
 var
@@ -379,7 +360,7 @@ begin
   result := nil;
   Request := TFirebaseRequest.Create(BaseURI, '', fAuth);
   Response := Request.SendRequestSynchronous(Params, rmGet, nil, QueryParams);
-  fLastReceivedMsg := now;
+  SetLastReceivedMsg(now);
   if not Response.StatusNotFound then
   begin
     Response.CheckForJSONObj;
@@ -387,7 +368,6 @@ begin
   end else
     result := nil;
 end;
-
 procedure TFirestoreDatabase.CreateDocument(DocumentPath: TRequestResourceParam;
   QueryParams: TQueryParams; OnDocument: TOnDocument;
   OnRequestError: TOnRequestError);
@@ -399,14 +379,13 @@ begin
   Request.SendRequest(DocumentPath, rmPost, nil, QueryParams, tmBearer,
     OnCreateResponse, OnRequestError, TOnSuccess.CreateFirestoreDoc(OnDocument));
 end;
-
 procedure TFirestoreDatabase.OnCreateResponse(const RequestID: string;
   Response: IFirebaseResponse);
 var
   Document: IFirestoreDocument;
 begin
   try
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     if not Response.StatusNotFound then
     begin
       Response.CheckForJSONObj;
@@ -426,7 +405,6 @@ begin
     end;
   end;
 end;
-
 function TFirestoreDatabase.CreateDocumentSynchronous(
   DocumentPath: TRequestResourceParam;
   QueryParams: TQueryParams): IFirestoreDocument;
@@ -438,7 +416,7 @@ begin
   Request := TFirebaseRequest.Create(BaseURI, '', fAuth);
   Response := Request.SendRequestSynchronous(DocumentPath, rmPost, nil,
     QueryParams);
-  fLastReceivedMsg := now;
+  SetLastReceivedMsg(now);
   if not Response.StatusNotFound then
   begin
     Response.CheckForJSONObj;
@@ -446,7 +424,6 @@ begin
   end else
     raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
 end;
-
 procedure TFirestoreDatabase.InsertOrUpdateDocument(
   DocumentPath: TRequestResourceParam; Document: IFirestoreDocument;
   QueryParams: TQueryParams; OnDocument: TOnDocument;
@@ -464,14 +441,13 @@ begin
     tmBearer, OnInsertOrUpdateResponse, OnRequestError,
     TOnSuccess.CreateFirestoreDoc(OnDocument));
 end;
-
 procedure TFirestoreDatabase.OnInsertOrUpdateResponse(const RequestID: string;
   Response: IFirebaseResponse);
 var
   Document: IFirestoreDocument;
 begin
   try
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     if not Response.StatusNotFound then
     begin
       Response.CheckForJSONObj;
@@ -492,7 +468,6 @@ begin
     end;
   end;
 end;
-
 function TFirestoreDatabase.InsertOrUpdateDocumentSynchronous(
   DocumentPath:TRequestResourceParam; Document: IFirestoreDocument;
   QueryParams: TQueryParams = nil): IFirestoreDocument;
@@ -508,7 +483,7 @@ begin
 {$ENDIF}
   Response := Request.SendRequestSynchronous(DocumentPath, rmPatch,
     Document.AsJSON, QueryParams);
-  fLastReceivedMsg := now;
+  SetLastReceivedMsg(now);
   if not Response.StatusNotFound then
   begin
     Response.CheckForJSONObj;
@@ -516,7 +491,6 @@ begin
   end else
     raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
 end;
-
 procedure TFirestoreDatabase.PatchDocument(DocumentPath: TRequestResourceParam;
   DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
   OnDocument: TOnDocument; OnRequestError: TOnRequestError;
@@ -544,14 +518,13 @@ begin
     QueryParams.Free;
   end;
 end;
-
 procedure TFirestoreDatabase.OnPatchResponse(const RequestID: string;
   Response: IFirebaseResponse);
 var
   Document: IFirestoreDocument;
 begin
   try
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     if not Response.StatusNotFound then
     begin
       Response.CheckForJSONObj;
@@ -571,7 +544,6 @@ begin
     end;
   end;
 end;
-
 function TFirestoreDatabase.PatchDocumentSynchronous(
   DocumentPath: TRequestResourceParam; DocumentPart: IFirestoreDocument;
   UpdateMask, Mask: TStringDynArray): IFirestoreDocument;
@@ -597,7 +569,7 @@ begin
   finally
     QueryParams.Free;
   end;
-  fLastReceivedMsg := now;
+  SetLastReceivedMsg(now);
   if not Response.StatusNotFound then
   begin
     Response.CheckForJSONObj;
@@ -605,7 +577,6 @@ begin
   end else
     raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
 end;
-
 procedure TFirestoreDatabase.Delete(Params: TRequestResourceParam;
   QueryParams: TQueryParams; OnDeleteResp: TOnFirebaseResp;
   OnRequestError: TOnRequestError);
@@ -617,12 +588,11 @@ begin
   Request.SendRequest(Params, rmDELETE, nil, QueryParams, tmBearer,
     OnDeleteResponse, OnRequestError, TOnSuccess.Create(OnDeleteResp));
 end;
-
 procedure TFirestoreDatabase.OnDeleteResponse(const RequestID: string;
   Response: IFirebaseResponse);
 begin
   try
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     Response.CheckForJSONObj;
     if assigned(Response.OnSuccess.OnResponse) then
       Response.OnSuccess.OnResponse(RequestID, Response);
@@ -637,17 +607,15 @@ begin
     end;
   end;
 end;
-
 function TFirestoreDatabase.DeleteSynchronous(Params: TRequestResourceParam;
   QueryParams: TQueryParams = nil): IFirebaseResponse;
 var
   Request: IFirebaseRequest;
 begin
   Request := TFirebaseRequest.Create(BaseURI, rsDeleteDoc, fAuth);
-  fLastReceivedMsg := now;
+  SetLastReceivedMsg(now);
   result := Request.SendRequestSynchronous(Params, rmDELETE, nil, QueryParams);
 end;
-
 procedure TFirestoreDatabase.BeginReadOnlyTransaction(
   OnBeginTransaction: TOnBeginTransaction; OnRequestError: TOnRequestError);
 var
@@ -663,14 +631,13 @@ begin
     BeginReadOnlyTransactionResp, OnRequestError,
     TOnSuccess.CreateFirestoreTransaction(OnBeginTransaction));
 end;
-
 procedure TFirestoreDatabase.BeginReadOnlyTransactionResp(
   const RequestID: string; Response: IFirebaseResponse);
 var
   Res: TJSONObject;
 begin
   try
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     Response.CheckForJSONObj;
     Res := Response.GetContentAsJSONObj;
     try
@@ -692,7 +659,6 @@ begin
     end;
   end;
 end;
-
 function TFirestoreDatabase.BeginReadOnlyTransactionSynchronous: TTransaction;
 var
   Request: IFirebaseRequest;
@@ -707,7 +673,7 @@ begin
     TJSONPair.Create('readOnly', TJSONObject.Create))));
   try
     Response := Request.SendRequestSynchronous(nil, rmPOST, Data, nil);
-    fLastReceivedMsg := now;
+    SetLastReceivedMsg(now);
     if Response.StatusOk then
     begin
       Res := Response.GetContentAsJSONObj;
@@ -722,24 +688,30 @@ begin
     Data.Free;
   end;
 end;
-
 {$REGION 'Listener subscription'}
 function TFirestoreDatabase.SubscribeDocument(DocPath: TRequestResourceParam;
   OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument): cardinal;
 begin
   result := fListener.SubscribeDocument(DocPath, OnChangedDoc, OnDeletedDoc);
 end;
-
 function TFirestoreDatabase.SubscribeQuery(Query: IStructuredQuery;
   OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument;
   DocPath: TRequestResourceParam): cardinal;
 begin
   result := fListener.SubscribeQuery(Query, DocPath, OnChangedDoc, OnDeletedDoc);
 end;
-
 procedure TFirestoreDatabase.Unsubscribe(TargetID: cardinal);
 begin
   fListener.Unsubscribe(TargetID);
+end;
+procedure TFirestoreDatabase.SetLastReceivedMsg(const Value: TDateTime);
+begin
+  fCSForLastReceivedMsg.Acquire;
+  try
+    fLastReceivedMsg := Value;
+  finally
+    fCSForLastReceivedMsg.Release;
+  end;
 end;
 
 procedure TFirestoreDatabase.StartListener(OnStopListening: TOnStopListenEvent;
@@ -751,7 +723,6 @@ begin
     OnConnectionStateChange, DoNotSynchronizeEvents);
   fListener.Start;
 end;
-
 procedure TFirestoreDatabase.StopListener;
 begin
   fListener.StopListener;
@@ -759,38 +730,38 @@ begin
   // Recreate thread because a thread cannot be restarted
   fListener := TFSListenerThread.Create(fProjectID, fDatabaseID, fAuth);
 end;
-
 function TFirestoreDatabase.GetTimeStampOfLastAccess: TDateTime;
 begin
-  if fLastReceivedMsg > fListener.LastReceivedMsg then
-    result := fLastReceivedMsg
+  if fLastReceivedMsg > fListener.LastReceivedMsg then begin
+    fCSForLastReceivedMsg.Acquire;
+    try
+      result := fLastReceivedMsg
+    finally
+      fCSForLastReceivedMsg.Release;
+    end;
+  end
   else
     result := fListener.LastReceivedMsg;
 end;
 {$ENDREGION}
-
 { TStructuredQuery }
-
 constructor TStructuredQuery.Create;
 begin
   fLimit := -1;
   fOffset := -1;
 end;
-
 class function TStructuredQuery.CreateForCollection(const CollectionId: string;
   IncludesDescendants: boolean): IStructuredQuery;
 begin
   result := TStructuredQuery.Create;
   result.Collection(CollectionId, IncludesDescendants);
 end;
-
 class function TStructuredQuery.CreateForSelect(
   FieldRefs: TRequestResourceParam): IStructuredQuery;
 begin
   result := TStructuredQuery.Create;
   result.Select(FieldRefs);
 end;
-
 destructor TStructuredQuery.Destroy;
 begin
   fColSelector.Free;
@@ -802,7 +773,6 @@ begin
   fQuery.Free;
   inherited;
 end;
-
 function TStructuredQuery.Collection(const CollectionId: string;
   IncludesDescendants: boolean): IStructuredQuery;
 begin
@@ -812,7 +782,6 @@ begin
   result := self;
   fInfo := CollectionId;
 end;
-
 function TStructuredQuery.AsJSON: TJSONObject;
 var
   StructQuery: TJSONObject;
@@ -859,7 +828,6 @@ begin
 {$ENDIF}
   result := fQuery;
 end;
-
 function TStructuredQuery.Select(
   FieldRefs: TRequestResourceParam): IStructuredQuery;
 var
@@ -873,7 +841,6 @@ begin
       TJSONPair.Create('fieldPath', FieldRef)));
   fSelect := TJSONObject.Create(TJSONPair.Create('fields', ObjProjection));
 end;
-
 function TStructuredQuery.OrderBy(const FieldRef: string;
   Direction: TOrderDirection): IStructuredQuery;
 const
@@ -891,7 +858,6 @@ begin
   result := self;
   fInfo := fInfo + '[OrderBy:' + FieldRef + ' ' + cDirStr[Direction] + ']';
 end;
-
 function TStructuredQuery.QueryForFieldFilter(
   Filter: IQueryFilter): IStructuredQuery;
 begin
@@ -901,7 +867,6 @@ begin
   result := self;
   fInfo := fInfo + '{' + Filter.GetInfo + '}';
 end;
-
 function TStructuredQuery.QueryForCompositeFilter(
   CompostiteOperation: TCompostiteOperation;
   Filters: array of IQueryFilter): IStructuredQuery;
@@ -931,7 +896,6 @@ begin
   fFilter.AddPair('compositeFilter', FilterVal);
   result := self;
 end;
-
 function TStructuredQuery.GetCursorArr(Cursor: IFirestoreDocument): TJSONArray;
 var
   c: integer;
@@ -940,7 +904,6 @@ begin
   for c := 0 to Cursor.CountFields - 1 do
     result.AddElement(Cursor.FieldValue(c).Clone as TJSONValue);
 end;
-
 function TStructuredQuery.StartAt(Cursor: IFirestoreDocument;
   Before: boolean): IStructuredQuery;
 begin
@@ -951,7 +914,6 @@ begin
   fInfo := fInfo + ' startAt';
   result := self;
 end;
-
 function TStructuredQuery.EndAt(Cursor: IFirestoreDocument;
   Before: boolean): IStructuredQuery;
 begin
@@ -962,28 +924,23 @@ begin
   fInfo := fInfo + ' endAt';
   result := self;
 end;
-
 function TStructuredQuery.Limit(limit: integer): IStructuredQuery;
 begin
   fLimit := limit;
   fInfo := fInfo + ' limit: ' + limit.ToString;
   result := self;
 end;
-
 function TStructuredQuery.Offset(offset: integer): IStructuredQuery;
 begin
   fOffset := offset;
   fInfo := fInfo + ' offset: ' + offset.ToString;
   result := self;
 end;
-
 function TStructuredQuery.GetInfo: string;
 begin
   result := fInfo;
 end;
-
 { TQueryFilter }
-
 class function TQueryFilter.IntegerFieldFilter(const WhereFieldPath: string;
   WhereOperator: TWhereOperator; WhereValue: integer): IQueryFilter;
 begin
@@ -995,7 +952,6 @@ begin
   result.AddPair('value',
     TJSONObject.Create(TJSONPair.Create('integerValue', WhereValue.ToString)));
 end;
-
 class function TQueryFilter.DoubleFieldFilter(const WhereFieldPath: string;
   WhereOperator: TWhereOperator; WhereValue: double): IQueryFilter;
 begin
@@ -1007,7 +963,6 @@ begin
   result.AddPair('value',
     TJSONObject.Create(TJSONPair.Create('doubleValue', WhereValue.ToString)));
 end;
-
 class function TQueryFilter.BooleanFieldFilter(const WhereFieldPath: string;
   WhereOperator: TWhereOperator; WhereValue: boolean): IQueryFilter;
 begin
@@ -1020,7 +975,6 @@ begin
     TJSONObject.Create(TJSONPair.Create('booleanValue',
       TJSONBool.Create(WhereValue))));
 end;
-
 class function TQueryFilter.StringFieldFilter(const WhereFieldPath: string;
   WhereOperator: TWhereOperator; const WhereValue: string): IQueryFilter;
 begin
@@ -1031,7 +985,6 @@ begin
   result.AddPair('value',
     TJSONObject.Create(TJSONPair.Create('stringValue', WhereValue)));
 end;
-
 class function TQueryFilter.TimestampFieldFilter(const WhereFieldPath: string;
   WhereOperator: TWhereOperator; WhereValue: TDateTime): IQueryFilter;
 const
@@ -1046,7 +999,6 @@ begin
     TJSONObject.Create(TJSONPair.Create('timestampValue',
     TFirebaseHelpers.CodeRFC3339DateTime(WhereValue))));
 end;
-
 constructor TQueryFilter.Create(const Where, Value: string; Op: TWhereOperator);
 const
   cWhereOperationStr: array [TWhereOperator] of string =
@@ -1057,25 +1009,20 @@ begin
   fFilter := TJSONObject.Create;
   fInfo := Where + cWhereOperationStr[Op] + Value;
 end;
-
 procedure TQueryFilter.AddPair(const Str: string; Val: TJSONValue);
 begin
   fFilter.AddPair(Str, Val);
 end;
-
 procedure TQueryFilter.AddPair(const Str, Val: string);
 begin
   fFilter.AddPair(Str, Val);
 end;
-
 function TQueryFilter.AsJSON: TJSONObject;
 begin
   result := fFilter;
 end;
-
 function TQueryFilter.GetInfo: string;
 begin
   result := fInfo;
 end;
-
 end.

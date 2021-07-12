@@ -20,11 +20,8 @@
 {  limitations under the License.                                              }
 {                                                                              }
 {******************************************************************************}
-
 unit FB4D.Request;
-
 interface
-
 uses
   System.Classes, System.JSON, System.SysUtils,
   System.Net.URLClient, System.Net.HttpClient,
@@ -32,10 +29,8 @@ uses
   REST.Client, REST.Types,
   IPPeerClient,
   FB4D.Interfaces, FB4D.Response;
-
 type
   TResendRequest = class;
-
   TFirebaseRequest = class(TInterfacedObject, IFirebaseRequest)
   private
     class var fResendRequest: TResendRequest;
@@ -84,7 +79,6 @@ type
       QueryParams: TQueryParams = nil;
       TokenMode: TTokenMode = tmBearer): IFirebaseResponse; overload;
   end;
-
   TResendRequest = class
   strict private
     fBaseURI: string;
@@ -125,19 +119,14 @@ type
     property OnSuccess: TOnSuccess read fOnSuccess;
     property OnRequestError: TOnRequestError read fOnRequestError;
   end;
-
 implementation
-
 uses
   System.NetConsts, System.NetEncoding, System.StrUtils, System.TypInfo,
   FB4D.Helpers;
-
 resourcestring
   rsTokenRefreshFailed = 'Authorisation token refresh failed';
   rsConnectionToServerBroken = 'Connection to server broken';
-
 { TResendRequest }
-
 constructor TResendRequest.Create(Req: TFirebaseRequest;
   ResParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TJSONValue; QueryParams: TQueryParams; TokenMode: TTokenMode;
@@ -167,7 +156,6 @@ begin
   fOnRequestError := OnRequestError;
   fOnSuccess := OnSuccess;
 end;
-
 constructor TResendRequest.Create(Req: TFirebaseRequest;
   ResParams: TRequestResourceParam; Method: TRESTRequestMethod; Data: TStream;
   ContentType: TRESTContentType; QueryParams: TQueryParams;
@@ -197,7 +185,6 @@ begin
   fOnRequestError := OnRequestError;
   fOnSuccess := OnSuccess;
 end;
-
 destructor TResendRequest.Destroy;
 begin
   if assigned(fData) then
@@ -206,9 +193,7 @@ begin
     fQueryParams.Free;
   inherited;
 end;
-
 { TFirestoreRequest }
-
 constructor TFirebaseRequest.Create(const BaseURI, RequestID: string;
   Auth: IFirebaseAuthentication);
 begin
@@ -217,7 +202,6 @@ begin
   fRequestID := RequestID;
   fAuth := Auth;
 end;
-
 function TFirebaseRequest.InternalSendRequestSynchronous(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TStream; ContentType: TRESTContentType;
@@ -242,6 +226,9 @@ begin
     {$IFDEF DEBUG}
     TFirebasehelpers.Log('FirebaseRequest.InternalSendRequestSynchronous ' +
       GetEnumName(TypeInfo(TRESTRequestMethod), ord(Method)) + ': ' + URL);
+    if (Data<>nil) and (Data is TStringStream) then
+      TFirebasehelpers.Log('FirebaseRequest.InternalSendRequestSynchronous data: ' +
+        TStringStream(Data).DataString);
     {$ENDIF}
     case Method of
       rmPut:
@@ -270,7 +257,6 @@ begin
     Client.Free;
   end;
 end;
-
 procedure TFirebaseRequest.InternalSendRequest(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TJSONValue; QueryParams: TQueryParams; TokenMode: TTokenMode;
@@ -358,7 +344,6 @@ begin
     end
   );
 end;
-
 procedure TFirebaseRequest.InternalSendRequest(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TStream; ContentType: TRESTContentType; QueryParams:TQueryParams;
@@ -433,7 +418,6 @@ begin
     end
   );
 end;
-
 function TFirebaseRequest.SendRequestSynchronous(
   ResourceParams: TRequestResourceParam;
   Method: TRESTRequestMethod; Data: TJSONValue;
@@ -453,7 +437,6 @@ begin
       SourceStr.Free;
   end;
 end;
-
 function TFirebaseRequest.SendRequestSynchronous(
   ResourceParams: TRequestResourceParam; Method: TRESTRequestMethod;
   Data: TStream; ContentType: TRESTContentType;
@@ -463,12 +446,14 @@ begin
   result := InternalSendRequestSynchronous(ResourceParams, Method, Data,
     ContentType, QueryParams, TokenMode);
   if (TokenMode > tmNoToken) and result.StatusIsUnauthorized then
-      if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
+    if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then begin
+      if Data<>nil then
+        Data.Position := 0;
       // Repeat once with fresh token
       result := InternalSendRequestSynchronous(ResourceParams, Method, Data,
         ContentType, QueryParams, TokenMode);
+    end;
 end;
-
 procedure TFirebaseRequest.RESTRequestAfterExecute(Sender: TCustomRESTRequest);
 begin
   {$IFNDEF VER320} // In DE 10.1 and former this leads to an AV
@@ -479,7 +464,6 @@ begin
   {$ENDIF}
   {$ENDIF}
 end;
-
 procedure TFirebaseRequest.RESTRequestHTTPProtocolError(
   Sender: TCustomRESTRequest);
 begin
@@ -493,7 +477,6 @@ begin
     Sender.GetFullRequestURL);
   {$ENDIF}
 end;
-
 procedure TFirebaseRequest.SendRequest(ResourceParams: TRequestResourceParam;
   Method: TRESTRequestMethod; Data: TJSONValue; QueryParams: TQueryParams;
   TokenMode: TTokenMode; OnResponse: TOnFirebaseResp;
@@ -510,7 +493,6 @@ begin
     InternalSendRequest(ResourceParams, Method, Data, QueryParams, TokenMode,
       OnResponse, OnRequestError, OnSuccess);
 end;
-
 procedure TFirebaseRequest.SendRequest(ResourceParams: TRequestResourceParam;
   Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
   QueryParams: TQueryParams; TokenMode: TTokenMode;
@@ -528,7 +510,6 @@ begin
     InternalSendRequest(ResourceParams, Method, Data, ContentType, QueryParams,
       TokenMode, OnResponse, OnRequestError, OnSuccess);
 end;
-
 procedure TFirebaseRequest.SendRequestAfterTokenRefresh(
   TokenRefreshed: boolean);
 var
@@ -551,7 +532,6 @@ begin
   else if assigned(fResendRequest.OnRequestError) then
     fResendRequest.OnRequestError(fRequestID, rsTokenRefreshFailed);
 end;
-
 procedure TFirebaseRequest.SendStreamRequestAfterTokenRefresh(
   TokenRefreshed: boolean);
 var
@@ -574,7 +554,6 @@ begin
   else if assigned(fResendRequest.OnRequestError) then
     fResendRequest.OnRequestError(fRequestID, rsTokenRefreshFailed);
 end;
-
 function TFirebaseRequest.EncodeToken: string;
 begin
   if assigned(fAuth) then
@@ -582,5 +561,4 @@ begin
   else
     result := '';
 end;
-
 end.
