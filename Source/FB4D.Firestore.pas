@@ -33,9 +33,6 @@ uses
   FB4D.Interfaces, FB4D.Response, FB4D.Request, FB4D.Document,
   FB4D.FireStore.Listener;
 
-const
-  DefaultDatabaseID = '(default)';
-
 type
   TFirestoreDatabase = class(TInterfacedObject, IFirestoreDatabase)
   private
@@ -61,7 +58,7 @@ type
       Response: IFirebaseResponse);
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
-      const DatabaseID: string = DefaultDatabaseID);
+      const DatabaseID: string = cDefaultDatabaseID);
     destructor Destroy; override;
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;

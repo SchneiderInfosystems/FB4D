@@ -46,7 +46,7 @@ type
     fFirebaseURL: string;
     fAuth: IFirebaseAuthentication;
     fRealTimeDB: IRealTimeDB;
-    fDatabase: IFirestoreDatabase;
+    fDatabase: TDictionary<string, IFirestoreDatabase>;
     fStorage: IFirebaseStorage;
     fFunctions: IFirebaseFunctions;
   public
@@ -57,6 +57,8 @@ type
     /// </summary>
     constructor Create(const ApiKey, ProjectID: string;
       const Bucket: string = ''; const FirebaseURL: string = ''); overload;
+
+    destructor Destroy; override;
 
     /// <summary>
     /// The second constructor parses the google-services.json file that shall
@@ -78,7 +80,8 @@ type
     function ProjectID: string;
     function Auth: IFirebaseAuthentication;
     function RealTimeDB: IRealTimeDB;
-    function Database: IFirestoreDatabase;
+    function Database(
+      const DatabaseID: string = cDefaultDatabaseID): IFirestoreDatabase;
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
     class function GetLibVersionInfo: string;
@@ -105,6 +108,7 @@ begin
     fFirebaseURL := Format(GOOGLE_FIREBASE, [fProjectID])
   else
     fFirebaseURL := FirebaseURL;
+  fDatabase := TDictionary<string, IFirestoreDatabase>.Create;
 end;
 
 constructor TFirebaseConfiguration.Create(const GoogleServicesFile: string);
@@ -133,6 +137,13 @@ begin
   finally
     JsonObj.Free;
   end;
+  fDatabase := TDictionary<string, IFirestoreDatabase>.Create;
+end;
+
+destructor TFirebaseConfiguration.Destroy;
+begin
+  fDatabase.Free;
+  inherited;
 end;
 
 procedure TFirebaseConfiguration.SetBucket(const Bucket: string);
@@ -161,12 +172,16 @@ begin
   result := fRealTimeDB;
 end;
 
-function TFirebaseConfiguration.Database: IFirestoreDatabase;
+function TFirebaseConfiguration.Database(
+  const DatabaseID: string): IFirestoreDatabase;
 begin
   Assert(not fProjectID.IsEmpty, 'ProjectID is required for Firestore');
-  if not assigned(fDatabase) then
-    fDatabase := TFirestoreDatabase.Create(fProjectID, Auth);
-  result := fDatabase;
+  Assert(not DatabaseID.IsEmpty, 'DatabaseID is required for Firestore');
+  if not fDatabase.TryGetValue(DatabaseID, result) then
+  begin
+    result := TFirestoreDatabase.Create(fProjectID, Auth, DatabaseID);
+    fDatabase.Add(DatabaseID, result);
+  end;
 end;
 
 function TFirebaseConfiguration.Storage: IFirebaseStorage;

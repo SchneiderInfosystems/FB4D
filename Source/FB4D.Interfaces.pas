@@ -41,6 +41,7 @@ uses
 
 const
   cDefaultCacheSpaceInBytes = 536870912; // 500 MByte
+  cDefaultDatabaseID = '(default)';
 
 type
   /// <summary>
@@ -714,7 +715,8 @@ type
     function ProjectID: string;
     function Auth: IFirebaseAuthentication;
     function RealTimeDB: IRealTimeDB;
-    function Database: IFirestoreDatabase;
+    function Database(
+      const DatabaseID: string = cDefaultDatabaseID): IFirestoreDatabase;
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
   end;
