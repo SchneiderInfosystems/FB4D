@@ -38,6 +38,7 @@ type
   published
     [TestCase]
     procedure ConvertGUIDtoFBIDtoGUID;
+    procedure DecodeTimeFromPushID;
   end;
 
 implementation
@@ -77,6 +78,30 @@ begin
     FBID := TFirebaseHelpers.ConvertGUIDtoFBID(Guid);
     Assert.AreEqual(Guid, TFirebaseHelpers.ConvertFBIDtoGUID(FBID));
   end;
+end;
+
+procedure UT_FBHelpers.DecodeTimeFromPushID;
+const
+  IDfromIssue107 = '-MdS-Zc5Ed383SNy4jH3';
+var
+  ID: string;
+  d, d2: TDateTime;
+  diff: double;
+begin
+ d := now;
+ ID := TFirebaseHelpers.CreateAutoID(PUSHID);
+ d2 := TFirebaseHelpers.DecodeTimeStampFromPUSHID(ID);
+ diff := d2 - d;
+ Assert.IsTrue(abs(Diff) < 1 / 24 / 3600, 'Timestamp difference > 1 s');
+ Status('PushID: ' + ID + ' was generated at ' + DateTimeToStr(d2));
+
+ ID := IDfromIssue107;
+ d2 := TFirebaseHelpers.DecodeTimeStampFromPUSHID(ID, false);
+ d := EncodeDate(2021, 6, 30) + EncodeTime(13, 01, 08, 0);
+ // UTC Date taken from Issue #107
+ diff := d2 - d;
+ Assert.IsTrue(Diff = 0, 'Timestamp difference');
+ Status('PushID: ' + ID + ' was generated at UTC: ' + DateTimeToStr(d2));
 end;
 
 initialization

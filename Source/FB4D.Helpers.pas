@@ -70,7 +70,8 @@ type
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
     class function ConvertTimeStampAndRandomPatternToPUSHID(timestamp: TDateTime;
       Random: TBytes): string;
-    class function DecodeTimeStampFromPUSHID(const PUSHID: string): TDateTime;
+    class function DecodeTimeStampFromPUSHID(const PUSHID: string;
+      ConvertToLocalTime: boolean = true): TDateTime;
 
     // File helpers
     class procedure SimpleDownload(const DownloadUrl: string; Stream: TStream;
@@ -552,16 +553,18 @@ begin
 end;
 
 class function TFirebaseHelpers.DecodeTimeStampFromPUSHID(
-  const PUSHID: string): TDateTime;
+  const PUSHID: string; ConvertToLocalTime: boolean): TDateTime;
 var
   tsi: int64;
   c: integer;
 begin
   Assert(length(PUSHID) = 20, 'Invalid PUSHID length');
   tsi := 0;
-  for c := low(PUSHID) to low(PUSHID) + 8 do
+  for c := low(PUSHID) to low(PUSHID) + 7 do
     tsi := tsi shl 6 + pos(PUSHID[c], cPushID64) - low(cPushID64);
-  result := TTimeZone.Local.ToLocalTime(UnixToDateTime(tsi div 1000));
+  result := UnixToDateTime(tsi div 1000);
+  if ConvertToLocalTime then
+    result := TTimeZone.Local.ToLocalTime(result);
 end;
 
 class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
