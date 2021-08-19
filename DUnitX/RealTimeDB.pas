@@ -63,13 +63,12 @@ implementation
 
 uses
   VCL.Forms,
-  FB4D.Configuration;
+  FB4D.Configuration,
+  Consts;
 
 {$I FBConfig.inc}
 
 const
-  cEMail = 'Integration.Tester@FB4D.org';
-  cPassword = 'It54623!';
   cDBPath: TRequestResourceParam = ['TestNode', '1234'];
 
 { UT_RealTimeDB }
