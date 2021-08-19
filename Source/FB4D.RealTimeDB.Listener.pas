@@ -150,9 +150,10 @@ procedure TRTDBListenerThread.RegisterEvents(ResParams: TRequestResourceParam;
   OnConnectionStateChange: TOnConnectionStateChange;
   DoNotSynchronizeEvents: boolean);
 begin
-  fURL := fBaseURL + TFirebaseHelpers.EncodeResourceParams(ResParams) +
+  fResParams := ResParams;
+  fURL := fBaseURL + TFirebaseHelpers.EncodeResourceParams(fResParams) +
     cJSONExt;
-  fRequestID :=  TFirebaseHelpers.ArrStrToCommaStr(ResParams);
+  fRequestID :=  TFirebaseHelpers.ArrStrToCommaStr(fResParams);
   fOnListenEvent := OnListenEvent;
   fOnStopListening := OnStopListening;
   fOnListenError := OnError;
