@@ -41,7 +41,8 @@ uses
   FirestoreDB in 'FirestoreDB.pas',
   Authentication in 'Authentication.pas',
   FBHelpers in 'FBHelpers.pas',
-  Storage in 'Storage.pas';
+  Storage in 'Storage.pas',
+  Consts in 'Consts.pas';
 
 begin
 {$IFDEF TESTINSIGHT}

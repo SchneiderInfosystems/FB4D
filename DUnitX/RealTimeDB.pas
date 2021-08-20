@@ -42,8 +42,11 @@ type
     fData: TJSONObject;
     fCallBack: boolean;
     fRes: TJSONValue;
+    fFirebaseEvent: IFirebaseEvent;
     procedure OnPutGet(ResourceParams: TRequestResourceParam; Val: TJSONValue);
     procedure OnError(const RequestID, ErrMsg: string);
+    procedure OnReceive(const Event: string; Params: TRequestResourceParam; JSONObj: TJSONObject);
+    procedure OnStop(Sender: TObject);
   public
     [Setup]
     procedure Setup;
@@ -53,19 +56,19 @@ type
     [TestCase]
     procedure PutGetSynchronous;
     procedure PutGet;
+    procedure GetResourceParamListener;
   end;
 
 implementation
 
 uses
   VCL.Forms,
-  FB4D.Configuration;
+  FB4D.Configuration,
+  Consts;
 
 {$I FBConfig.inc}
 
 const
-  cEMail = 'Integration.Tester@FB4D.org';
-  cPassword = 'It54623!';
   cDBPath: TRequestResourceParam = ['TestNode', '1234'];
 
 { UT_RealTimeDB }
@@ -83,10 +86,51 @@ end;
 
 procedure UT_RealTimeDB.TearDown;
 begin
+  if Assigned(fFirebaseEvent) and (not fFirebaseEvent.IsStopped) then
+    fFirebaseEvent.StopListening;
+
   fConfig.RealTimeDB.DeleteSynchronous(cDBPath);
   fData.Free;
   fConfig.Auth.DeleteCurrentUserSynchronous;
   fConfig := nil;
+end;
+
+procedure UT_RealTimeDB.GetResourceParamListener;
+var
+  Res: TJSONValue;
+  DBPath: string;
+  ResourcePath: string;
+begin
+  Status('Put single value');
+  fData.AddPair('Item1', 'TestVal1');
+  Res := fConfig.RealTimeDB.PutSynchronous(cDBPath, fData);
+  Assert.IsNotNull(res, 'Result of Put is nil');
+  Assert.AreEqual(fData.ToJSON, Res.ToJSON,
+    'result JSON is different from put');
+  Res.Free;
+
+  Status('Listen value');
+  fFirebaseEvent := fConfig.RealTimeDB.ListenForValueEvents(cDBPath,
+    OnReceive, OnStop, OnError);
+
+  sleep(1); //give time to the thread create fAsyncResult object
+
+  Assert.IsNotNull(fFirebaseEvent.GetResourceParams);
+  ResourcePath := string.Join('/', fFirebaseEvent.GetResourceParams);
+  DbPath := string.Join('/', cDBPath);
+  Assert.AreEqual(DBPath, ResourcePath,
+    'ResourceParams is different from the listened');
+end;
+
+procedure UT_RealTimeDB.OnReceive(const Event: string; Params:
+  TRequestResourceParam; JSONObj: TJSONObject);
+begin
+  fCallBack := true;
+end;
+
+procedure UT_RealTimeDB.OnStop(Sender: TObject);
+begin
+
 end;
 
 procedure UT_RealTimeDB.OnError(const RequestID, ErrMsg: string);

@@ -73,13 +73,14 @@ implementation
 
 uses
   VCL.Forms,
-  FB4D.Configuration, FB4D.Helpers, FB4D.Document;
+  FB4D.Configuration,
+  FB4D.Helpers,
+  FB4D.Document,
+  Consts;
 
 {$I FBConfig.inc}
 
 const
-  cEMail = 'Integration.Tester@FB4D.org';
-  cPassword = 'It54623!';
   cDBPath = 'TestNode';
   cTestF1 = 'TestField1';
   cTestF2 = 'testField2';
