@@ -181,8 +181,10 @@ implementation
 
 uses
   System.Character,
-{$IF Defined(VCL)}
+{$IFDEF MSWINDOWS}
   WinAPI.Windows,
+{$ENDIF}
+{$IF Defined(VCL)}
   VCL.Forms,
 {$ELSEIF Defined(FMX)}
   FMX.Types,
@@ -353,7 +355,7 @@ begin
   {$ENDIF}
 {$ELSEIF Defined(VCL)}
   OutputDebugString(PChar(msg));
-{$ELSEIF MSWINDOWS}
+{$ELSEIF Defined(MSWINDOWS)}
   OutputDebugString(PChar(msg));
 {$ELSE}
   writeln(msg);
