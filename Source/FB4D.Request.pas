@@ -459,14 +459,24 @@ function TFirebaseRequest.SendRequestSynchronous(
   Data: TStream; ContentType: TRESTContentType;
   QueryParams: TQueryParams;
   TokenMode: TTokenMode): IFirebaseResponse;
+var
+  StartPos: Int64;
 begin
+  if assigned(Data) then
+    StartPos := Data.Position
+  else
+    StartPos := -1;
   result := InternalSendRequestSynchronous(ResourceParams, Method, Data,
     ContentType, QueryParams, TokenMode);
   if (TokenMode > tmNoToken) and result.StatusIsUnauthorized then
-      if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
+    if assigned(fAuth) and fAuth.CheckAndRefreshTokenSynchronous then
+    begin
+      if assigned(Data) and (StartPos >= 0) then
+        Data.Position := StartPos;
       // Repeat once with fresh token
       result := InternalSendRequestSynchronous(ResourceParams, Method, Data,
         ContentType, QueryParams, TokenMode);
+    end;
 end;
 
 procedure TFirebaseRequest.RESTRequestAfterExecute(Sender: TCustomRESTRequest);
