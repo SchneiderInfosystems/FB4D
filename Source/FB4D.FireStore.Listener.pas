@@ -173,6 +173,7 @@ destructor TFSListenerThread.Destroy;
 begin
   FreeAndNil(fGetFinishedEvent);
   FreeAndNil(fTargets);
+  FreeAndNil(fStream);
   inherited;
 end;
 
