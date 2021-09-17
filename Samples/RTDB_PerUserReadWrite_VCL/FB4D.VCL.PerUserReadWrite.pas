@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2020 Christoph Schneider                                 }
+{  Copyright (c) 2018-2021 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -29,7 +29,7 @@ uses
   Winapi.Windows, Winapi.Messages,
   System.SysUtils, System.Variants, System.Classes, System.JSON,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.WinXPanels,
-  Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Mask,
   FB4D.Interfaces, FB4D.Configuration, FB4D.SelfRegistrationFra;
 
 type
@@ -53,6 +53,7 @@ type
   private
     fConfig: IFirebaseConfiguration;
     fUID: string;
+    fFirebaseEvent: IFirebaseEvent;
     function GetSettingFilename: string;
     function LoadLastToken: string;
     procedure SaveToken;
@@ -189,8 +190,8 @@ end;
 procedure TfrmMain.StartListening;
 begin
   WipeToCard(cardRTDBAccess);
-  fConfig.RealTimeDB.ListenForValueEvents(DBPath, OnDBEvent, OnDBStop,
-    OnDBError, nil);
+  fFirebaseEvent := fConfig.RealTimeDB.ListenForValueEvents(DBPath, OnDBEvent,
+    OnDBStop, OnDBError, nil);
   lblStatus.Caption := 'Firebase RT DB connected';
 end;
 

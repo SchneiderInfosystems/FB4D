@@ -5,6 +5,7 @@ object FraSelfRegistration: TFraSelfRegistration
   Height = 450
   Align = alClient
   TabOrder = 0
+  PixelsPerInch = 96
   object pnlStatus: TPanel
     Left = 0
     Top = 274
@@ -17,16 +18,14 @@ object FraSelfRegistration: TFraSelfRegistration
       AlignWithMargins = True
       Left = 10
       Top = 10
-      Width = 649
-      Height = 156
+      Width = 4
+      Height = 20
       Margins.Left = 10
       Margins.Top = 10
       Margins.Right = 10
       Margins.Bottom = 10
       Align = alClient
       Alignment = taCenter
-      ExplicitWidth = 3
-      ExplicitHeight = 13
     end
   end
   object gdpAcitivityInd: TGridPanel
@@ -61,11 +60,13 @@ object FraSelfRegistration: TFraSelfRegistration
       669
       64)
     object AniIndicator: TActivityIndicator
-      Left = 327
-      Top = 8
+      Left = 336
+      Top = 16
       Anchors = []
       IndicatorSize = aisLarge
       IndicatorType = aitSectorRing
+      ExplicitLeft = 327
+      ExplicitTop = 8
     end
   end
   object pnlCheckRegistered: TPanel
@@ -85,10 +86,11 @@ object FraSelfRegistration: TFraSelfRegistration
       Width = 617
       Height = 21
       Anchors = [akLeft, akTop, akRight]
-      EditLabel.Width = 174
-      EditLabel.Height = 13
+      EditLabel.Width = 243
+      EditLabel.Height = 20
       EditLabel.Caption = 'Enter e-mail for registration or login:'
       TabOrder = 0
+      Text = ''
       OnChange = edtEMailChange
     end
     object btnCheckEMail: TButton
@@ -119,11 +121,12 @@ object FraSelfRegistration: TFraSelfRegistration
       Width = 617
       Height = 21
       Anchors = [akLeft, akTop, akRight]
-      EditLabel.Width = 79
-      EditLabel.Height = 13
+      EditLabel.Width = 104
+      EditLabel.Height = 20
       EditLabel.Caption = 'Enter password:'
       PasswordChar = '*'
       TabOrder = 0
+      Text = ''
     end
     object btnSignIn: TButton
       Left = 504
