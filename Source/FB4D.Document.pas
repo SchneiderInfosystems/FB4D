@@ -96,7 +96,7 @@ type
       Index: integer): TFirestoreFieldType;
     function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
       overload;
-    function GetMapValue(const FieldName, SubFieldName: string): TJSONValue;
+    function GetMapValue(const FieldName, SubFieldName: string): TJSONObject;
       overload;
     function GetMapValues(const FieldName: string): TJSONObjects;
     function AddOrUpdateField(Field: TJSONPair): IFirestoreDocument; overload;
