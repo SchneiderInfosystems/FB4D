@@ -195,6 +195,30 @@ type
     edtFirebaseURL: TEdit;
     txtFirebaseURL: TText;
     lblFirebaseURL: TLabel;
+    tabFunctions: TTabItem;
+    edtFunctionName: TEdit;
+    lblFunctionName: TLabel;
+    btnCallFunctionSynchronous: TButton;
+    btnCallFunctionAsynchronous: TButton;
+    memFunctionResp: TMemo;
+    edtParam1: TEdit;
+    cboParams: TComboBox;
+    Label31: TLabel;
+    Label32: TLabel;
+    edtParam1Val: TEdit;
+    Label33: TLabel;
+    edtParam2: TEdit;
+    Label34: TLabel;
+    edtParam2Val: TEdit;
+    Label35: TLabel;
+    edtParam3: TEdit;
+    Label36: TLabel;
+    edtParam3Val: TEdit;
+    Label37: TLabel;
+    edtParam4: TEdit;
+    Label38: TLabel;
+    edtParam4Val: TEdit;
+    Label39: TLabel;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -251,6 +275,9 @@ type
     procedure edtDocumentChangeTracking(Sender: TObject);
     procedure btnStartFSListenerClick(Sender: TObject);
     procedure btnStopFSListenerClick(Sender: TObject);
+    procedure btnCallFunctionSynchronousClick(Sender: TObject);
+    procedure cboParamsChange(Sender: TObject);
+    procedure btnCallFunctionAsynchronousClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fStorageObject: IStorageObject;
@@ -261,6 +288,7 @@ type
     fDownloadStream: TFileStream;
     fStorage: IFirebaseStorage;
     fUploadStream: TFileStream;
+    fFirebaseFunction: IFirebaseFunctions;
     function CheckSignedIn(Log: TMemo): boolean;
     procedure DisplayUser(mem: TMemo; User: IFirebaseUser);
     procedure DisplayTokenJWT(mem: TMemo);
@@ -318,6 +346,9 @@ type
     procedure OnUploadError(const ObjectName, ErrorMsg: string);
     procedure OnDeleteStorage(const ObjectName: TObjectName);
     procedure OnDeleteStorageError(const ObjectName, ErrorMsg: string);
+    function CheckAndCreateFunctionClass: boolean;
+    procedure OnFunctionSuccess(const Info: string; ResultObj: TJSONObject);
+    procedure OnFunctionError(const RequestID, ErrMsg: string);
   end;
 
 var
@@ -377,10 +408,21 @@ begin
     edtCollectionIDForFSListener.Text := IniFile.ReadString('Firestore',
       'ListenerColID', '');
     edtDocPathForFSListener.Text := IniFile.ReadString('Firestore', 'DocPath', '');
+    edtFunctionName.Text := IniFile.ReadString('Function', 'FuncName', '');
+    cboParams.ItemIndex := IniFile.ReadInteger('Function', 'ParamCount', 0);
+    edtParam1.Text := IniFile.ReadString('Function', 'Param1', '');
+    edtParam1Val.Text := IniFile.ReadString('Function', 'Param1Val', '');
+    edtParam2.Text := IniFile.ReadString('Function', 'Param2', '');
+    edtParam2Val.Text := IniFile.ReadString('Function', 'Param2Val', '');
+    edtParam3.Text := IniFile.ReadString('Function', 'Param3', '');
+    edtParam3Val.Text := IniFile.ReadString('Function', 'Param3Val', '');
+    edtParam4.Text := IniFile.ReadString('Function', 'Param4', '');
+    edtParam4Val.Text := IniFile.ReadString('Function', 'Param4Val', '');
   finally
     IniFile.Free;
   end;
   CheckDocument;
+  cboParamsChange(nil);
 end;
 
 procedure TfmxFirebaseDemo.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -415,6 +457,16 @@ begin
     IniFile.WriteString('Firestore', 'ListenerColID',
       edtCollectionIDForFSListener.Text);
     IniFile.WriteString('Firestore', 'DocPath', edtDocPathForFSListener.Text);
+    IniFile.WriteString('Function', 'FuncName', edtFunctionName.Text);
+    IniFile.WriteInteger('Function', 'ParamCount', cboParams.ItemIndex);
+    IniFile.WriteString('Function', 'Param1', edtParam1.Text);
+    IniFile.WriteString('Function', 'Param1Val', edtParam1Val.Text);
+    IniFile.WriteString('Function', 'Param2', edtParam2.Text);
+    IniFile.WriteString('Function', 'Param2Val', edtParam2Val.Text);
+    IniFile.WriteString('Function', 'Param3', edtParam3.Text);
+    IniFile.WriteString('Function', 'Param3Val', edtParam3Val.Text);
+    IniFile.WriteString('Function', 'Param4', edtParam4.Text);
+    IniFile.WriteString('Function', 'Param4Val', edtParam4Val.Text);
   finally
     IniFile.Free;
   end;
@@ -731,7 +783,9 @@ end;
 {$REGION 'Storage'}
 function TfmxFirebaseDemo.CheckAndCreateStorageClass: boolean;
 begin
-  if not CheckSignedIn(memStorageResp) then
+  if assigned(fStorage) then
+    exit(true)
+  else if not CheckSignedIn(memStorageResp) then
     exit(false)
   else if edtStorageBucket.Text.IsEmpty then
   begin
@@ -2084,6 +2138,106 @@ begin
   fFirebaseEvent := nil;
   btnNotifyEvent.Enabled := true;
   btnStopEvent.Enabled := false;
+end;
+{$ENDREGION}
+
+{$REGION 'FB Function'}
+function TfmxFirebaseDemo.CheckAndCreateFunctionClass: boolean;
+begin
+  if assigned(fFirebaseFunction) then
+    exit(true)
+  else if not CheckSignedIn(memFunctionResp) then
+    exit(false);
+  fFirebaseFunction := TFirebaseFunctions.Create(edtProjectID.Text, fAuth);
+  edtProjectID.enabled := false;
+  result := true;
+end;
+
+procedure TfmxFirebaseDemo.cboParamsChange(Sender: TObject);
+begin
+  edtParam1.Visible := cboParams.ItemIndex > 0;
+  edtParam2.Visible := cboParams.ItemIndex > 1;
+  edtParam3.Visible := cboParams.ItemIndex > 2;
+  edtParam4.Visible := cboParams.ItemIndex > 3;
+end;
+
+procedure TfmxFirebaseDemo.btnCallFunctionSynchronousClick(Sender: TObject);
+var
+  Data, Res: TJSONObject;
+begin
+  if not CheckAndCreateFunctionClass then
+    exit;
+  memFunctionResp.Lines.Add('Call: ' + edtFunctionName.Text);
+  try
+    Data := TJSONObject.Create;
+    if cboParams.ItemIndex > 0 then
+    begin
+      Data.AddPair(edtParam1.Text, edtParam1Val.Text);
+      if cboParams.ItemIndex > 1 then
+      begin
+        Data.AddPair(edtParam2.Text, edtParam2Val.Text);
+        if cboParams.ItemIndex > 2 then
+        begin
+          Data.AddPair(edtParam3.Text, edtParam3Val.Text);
+          if cboParams.ItemIndex > 3 then
+            Data.AddPair(edtParam4.Text, edtParam4Val.Text);
+        end;
+      end;
+    end;
+    Res := fFirebaseFunction.CallFunctionSynchronous(edtFunctionName.Text, Data);
+    try
+      memFunctionResp.Lines.Add('Result: ' + Res.ToJSON);
+    finally
+      Res.Free;
+    end;
+  except
+    on e: exception do
+      memFunctionResp.Lines.Add('Call ' + edtFunctionName.Text + ' failed: ' +
+        e.Message);
+  end;
+end;
+
+procedure TfmxFirebaseDemo.btnCallFunctionAsynchronousClick(Sender: TObject);
+var
+  Data: TJSONObject;
+begin
+  if not CheckAndCreateFunctionClass then
+    exit;
+  memFunctionResp.Lines.Add('Call: ' + edtFunctionName.Text);
+  try
+    Data := TJSONObject.Create;
+    if cboParams.ItemIndex > 0 then
+    begin
+      Data.AddPair(edtParam1.Text, edtParam1Val.Text);
+      if cboParams.ItemIndex > 1 then
+      begin
+        Data.AddPair(edtParam2.Text, edtParam2Val.Text);
+        if cboParams.ItemIndex > 2 then
+        begin
+          Data.AddPair(edtParam3.Text, edtParam3Val.Text);
+          if cboParams.ItemIndex > 3 then
+            Data.AddPair(edtParam4.Text, edtParam4Val.Text);
+        end;
+      end;
+    end;
+    fFirebaseFunction.CallFunction(onFunctionSuccess, OnFunctionError,
+      edtFunctionName.Text, Data);
+  except
+    on e: exception do
+      memFunctionResp.Lines.Add('Call ' + edtFunctionName.Text +
+        ' failed: ' + e.Message);
+  end;
+end;
+
+procedure TfmxFirebaseDemo.OnFunctionSuccess(const Info: string;
+  ResultObj: TJSONObject);
+begin
+  memFunctionResp.Lines.Add('Result of ' + Info + ': ' + ResultObj.ToJSON);
+end;
+
+procedure TfmxFirebaseDemo.OnFunctionError(const RequestID, ErrMsg: string);
+begin
+  memFunctionResp.Lines.Add('Call ' + RequestID + ' failed: ' + ErrMsg);
 end;
 {$ENDREGION}
 
