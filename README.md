@@ -24,7 +24,7 @@ This log informs about interface changes and important library enhancements that
 
 🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
 
-The sample projects are developed and prepared for **Delphi 10.4.2 Sydney**.
+The sample projects are developed and prepared for **Delphi 11.0 Alexandria**.
 
 #### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are not longer supported because of an issue in the RTL. 
 
@@ -36,7 +36,9 @@ Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.
 
 #### Limitation on Linux64
 
-Due to a bug in the Linux RTL, all HTTPRequests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. This bug affects all Delphi version which supports Linux64 up to the newest Delphi 10.4.2. 
+There are no restrictions when using Delphi 11 Alexandria.
+
+For older versions up to 10.4.2, you must note the following RSP: Due to a bug in the Linux RTL, all HTTPRequests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses.  
 
 [For more information check and vote for RSP-33177](https://quality.embarcadero.com/browse/RSP-33177)
 

@@ -10,7 +10,6 @@ object frmMain: TfrmMain
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
@@ -50,6 +49,8 @@ object frmMain: TfrmMain
           inherited lblStatus: TLabel
             Width = 831
             Height = 152
+            ExplicitWidth = 3
+            ExplicitHeight = 13
           end
         end
         inherited gdpAcitivityInd: TGridPanel
@@ -62,9 +63,9 @@ object frmMain: TfrmMain
             end>
           ExplicitWidth = 851
           inherited AniIndicator: TActivityIndicator
-            Left = 423
+            Left = 424
             Top = 8
-            ExplicitLeft = 423
+            ExplicitLeft = 424
             ExplicitWidth = 48
             ExplicitHeight = 48
           end
@@ -74,6 +75,11 @@ object frmMain: TfrmMain
           ExplicitWidth = 851
           inherited edtEMail: TLabeledEdit
             Width = 799
+            EditLabel.Width = 174
+            EditLabel.Height = 13
+            EditLabel.ExplicitTop = 16
+            EditLabel.ExplicitWidth = 174
+            EditLabel.ExplicitHeight = 13
             ExplicitWidth = 799
           end
           inherited btnCheckEMail: TButton
@@ -86,6 +92,11 @@ object frmMain: TfrmMain
           ExplicitWidth = 851
           inherited edtPassword: TLabeledEdit
             Width = 799
+            EditLabel.Width = 79
+            EditLabel.Height = 13
+            EditLabel.ExplicitTop = 16
+            EditLabel.ExplicitWidth = 79
+            EditLabel.ExplicitHeight = 13
             ExplicitWidth = 799
           end
           inherited btnSignIn: TButton
@@ -162,6 +173,7 @@ object frmMain: TfrmMain
         EditLabel.Height = 13
         EditLabel.Caption = 'Global String Content:'
         TabOrder = 1
+        Text = ''
         OnChange = edtDBMessageChange
       end
       object btnWrite: TButton
