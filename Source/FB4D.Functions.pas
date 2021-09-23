@@ -138,7 +138,7 @@ var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
   Data: TJSONObject;
-  Obj: TJSONObject;
+  Obj, Res: TJSONObject;
 begin
   Data := TJSONObject.Create;
   try
@@ -148,9 +148,15 @@ begin
       nil, tmBearer);
     Response.CheckForJSONObj;
     Obj := Response.GetContentAsJSONObj;
-    if not Obj.TryGetValue('result', result) then
-      raise EFirebaseFunctions.CreateFmt(rsUnexpectedResult,
-        [FunctionName, Obj.ToJSON]);
+    try
+      if not Obj.TryGetValue('result', res) then
+        raise EFirebaseFunctions.CreateFmt(rsUnexpectedResult,
+          [FunctionName, Obj.ToJSON])
+      else
+        result := res.Clone as TJSONObject;
+    finally
+      Obj.Free;
+    end;
   finally
     Data.Free;
   end;
