@@ -38,21 +38,22 @@ uses
 
 type
   TFirebaseAuthentication = class(TInterfacedObject, IFirebaseAuthentication)
-  private
-    type
-      TSignType = (stNewUser, stLogin, stAnonymousLogin);
-    var
-      fApiKey: string;
-      fCSForToken: TCriticalSection;
-      fAuthenticated: boolean;
-      fToken: string;
-      {$IFDEF TOKENJWT}
-      fTokenJWT: ITokenJWT;
-      {$ENDIF}
-      fExpiresAt: TDateTime;
-      fRefreshToken: string;
-      fTokenRefreshCount: cardinal;
-      fOnTokenRefresh: TOnTokenRefresh;
+  private const
+    cSafetyMargin = 5 / 3600 / 24; // 5 sec
+  private type
+    TSignType = (stNewUser, stLogin, stAnonymousLogin);
+  private var
+    fApiKey: string;
+    fCSForToken: TCriticalSection;
+    fAuthenticated: boolean;
+    fToken: string;
+    {$IFDEF TOKENJWT}
+    fTokenJWT: ITokenJWT;
+    {$ENDIF}
+    fExpiresAt: TDateTime;
+    fRefreshToken: string;
+    fTokenRefreshCount: cardinal;
+    fOnTokenRefresh: TOnTokenRefresh;
     function SignWithEmailAndPasswordSynchronous(SignType: TSignType;
       const Email: string = ''; const Password: string = ''): IFirebaseUser;
     procedure SignWithEmailAndPassword(SignType: TSignType; const Info: string;
@@ -1381,62 +1382,79 @@ begin
       exit(false);
   end;
   result := false;
-  fAuthenticated := false;
-  Data := TJSONObject.Create;
-  Request := TFirebaseRequest.Create(GOOGLE_REFRESH_AUTH_URL, '');
-  Params := TQueryParams.Create;
+  fCSForToken.Acquire;
   try
-    Data.AddPair(TJSONPair.Create('grant_type', 'refresh_token'));
-    Data.AddPair(TJSONPair.Create('refresh_token', fRefreshToken));
-    Params.Add('key', [ApiKey]);
-    Response := Request.SendRequestSynchronous([], rmPost, Data, Params,
-      tmNoToken);
-    Response.CheckForJSONObj;
-    NewToken := Response.GetContentAsJSONObj;
-    fCSForToken.Acquire;
+    if now + cSafetyMargin < fExpiresAt then
+      exit(false); // Another thread has refreshed the token
+    fAuthenticated := false;
+    Data := TJSONObject.Create;
+    Request := TFirebaseRequest.Create(GOOGLE_REFRESH_AUTH_URL, '');
+    Params := TQueryParams.Create;
     try
-      fAuthenticated := true;
-      if not NewToken.TryGetValue('access_token', fToken) then
-        raise EFirebaseAuthentication.Create('access_token not found');
-      {$IFDEF TOKENJWT}
-      fTokenJWT := TTokenJWT.Create(fToken);
-      {$ENDIF}
-      inc(fTokenRefreshCount);
-      if NewToken.TryGetValue('expires_in', ExpiresInSec) then
-        fExpiresAt := now + ExpiresInSec / 24 / 3600
-      else
-        fExpiresAt := now;
-      if not NewToken.TryGetValue('refresh_token', fRefreshToken) then
-        fRefreshToken := ''
-      else
-        exit(true);
+      Data.AddPair(TJSONPair.Create('grant_type', 'refresh_token'));
+      Data.AddPair(TJSONPair.Create('refresh_token', fRefreshToken));
+      Params.Add('key', [ApiKey]);
+      Response := Request.SendRequestSynchronous([], rmPost, Data, Params,
+        tmNoToken);
+      Response.CheckForJSONObj;
+      NewToken := Response.GetContentAsJSONObj;
+      try
+        fAuthenticated := true;
+        if not NewToken.TryGetValue('access_token', fToken) then
+          raise EFirebaseAuthentication.Create('access_token not found');
+        {$IFDEF TOKENJWT}
+        fTokenJWT := TTokenJWT.Create(fToken);
+        {$ENDIF}
+        inc(fTokenRefreshCount);
+        if NewToken.TryGetValue('expires_in', ExpiresInSec) then
+          fExpiresAt := now + ExpiresInSec / 24 / 3600
+        else
+          fExpiresAt := now;
+        if not NewToken.TryGetValue('refresh_token', fRefreshToken) then
+          fRefreshToken := ''
+        else
+          result := true;
+      finally
+        NewToken.Free;
+      end;
     finally
-      fCSForToken.Release;
-      NewToken.Free;
-      if assigned(fOnTokenRefresh) then
-        fOnTokenRefresh(not fRefreshToken.IsEmpty);
+      Response := nil;
+      Params.Free;
+      Request.Free;
+      Data.Free;
     end;
+    {$IFDEF DEBUG}
+    if result then
+      TFirebaseHelpers.Log(
+        'FirebaseAuthentication.CheckAndRefreshTokenSynchronous done')
+    else
+      TFirebaseHelpers.Log(
+        'FirebaseAuthentication.CheckAndRefreshTokenSynchronous failed ' +
+        'because no token received');
+    {$ENDIF}
   finally
-    Response := nil;
-    Params.Free;
-    Request.Free;
-    Data.Free;
+    fCSForToken.Release;
+    if result and assigned(fOnTokenRefresh) then
+      fOnTokenRefresh(not fRefreshToken.IsEmpty);
   end;
 end;
 
 function TFirebaseAuthentication.Authenticated: boolean;
 begin
-  result := fAuthenticated;
+  fCSForToken.Acquire;
+  try
+    result := fAuthenticated;
+  finally
+    fCSForToken.Release;
+  end;
 end;
 
 function TFirebaseAuthentication.NeedTokenRefresh: boolean;
-const
-  safetyMargin = 5 / 3600 / 24; // 5 sec
 begin
   fCSForToken.Acquire;
   try
     if fAuthenticated then
-      result := now + safetyMargin > fExpiresAt
+      result := now + cSafetyMargin > fExpiresAt
     else
       result := false;
   finally
