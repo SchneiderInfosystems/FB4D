@@ -14,11 +14,12 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
+- October 2021: Prepared for Delphi Alexandria
 - April 7, 2021: Revised RT DB Listener
-- March 26, 2021: New optional cache to accelerate the repeated access to storage objects. Additional _IFirebaseStorage.GetAndDownload_ method in order to simplify the download from the storage. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirebaseStorage#optional-cache-for-storage-objects)
-- March 12, 2021: New option in _FB4D.SelfRegistrationFra_ framework to support enter display name and upload profile image when registering a new user. [see more details](https://github.com/SchneiderInfosystems/FB4D/wiki/Self-Registration-Workflow#optional-user-profile-image)
-- March 8, 2021: Real Time Database creation has changed within the Firebase Console. The Firebase ID is no longer sufficient to access newly created RT DBs. A Firebase URL is now required, which can also include the server location. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IRealTimeDB#create-an-instance-for-the-interface-irealtimedb).
-- March 5, 2021: A new listener detects changes within the Firestore Database without pooling. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirestoreDatabase#firestore-listener).
+- March 2021: New optional cache to accelerate the repeated access to storage objects. Additional _IFirebaseStorage.GetAndDownload_ method in order to simplify the download from the storage. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirebaseStorage#optional-cache-for-storage-objects)  
+New option in _FB4D.SelfRegistrationFra_ framework to support enter display name and upload profile image when registering a new user. [see more details](https://github.com/SchneiderInfosystems/FB4D/wiki/Self-Registration-Workflow#optional-user-profile-image)  
+Real Time Database creation has changed within the Firebase Console. The Firebase ID is no longer sufficient to access newly created RT DBs. A Firebase URL is now required, which can also include the server location. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IRealTimeDB#create-an-instance-for-the-interface-irealtimedb).  
+A new listener detects changes within the Firestore Database without pooling. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirestoreDatabase#firestore-listener).
 
 ### Prerequisites
 
@@ -26,25 +27,23 @@ This log informs about interface changes and important library enhancements that
 
 The sample projects are developed and prepared for **Delphi 11.0 Alexandria**.
 
-#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are not longer supported because of an issue in the RTL. 
+#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are no longer supported because of an issue in the RTL. 
 
 Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
 
 ### Supported Platforms
 
-**FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported plattforms. The library and its sample projects are currently tested with Win64/Win32, Mac64/32, Linux64 by using FMXLinux, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verifcation requires the installation of the OpenSSL libraries). For more information about using OpenSSL see the [installation of OpenSSL](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D#install-openssl)
+**FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported platforms. The library and its sample projects are currently tested with Win64/Win32, Mac64/32, Linux64 by using FMXLinux, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verification requires the installation of the OpenSSL libraries). For more information about using OpenSSL see the [installation of OpenSSL](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D#install-openssl)
 
 #### Limitation on Linux64
 
 There are no restrictions when using Delphi 11 Alexandria.
 
-For older versions up to 10.4.2, you must note the following RSP: Due to a bug in the Linux RTL, all HTTPRequests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses.  
-
-[For more information check and vote for RSP-33177](https://quality.embarcadero.com/browse/RSP-33177)
+For older versions up to 10.4.2, you must note the following RSP: Due to a bug in the Linux RTL, all HTTP requests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. [For more information see RSP-33177](https://quality.embarcadero.com/browse/RSP-33177).
 
 ### Submodules
 
-For authorization token verification and token content extraction this library uses the Delphi JOSE JWT library. Thank you Paolo Rossi for your great library!
+For authorization token verification and token content extraction this library uses the Delphi JOSE JWT library. Thank you, Paolo Rossi for your great library!
 
 https://github.com/paolo-rossi/delphi-jose-jwt
 
