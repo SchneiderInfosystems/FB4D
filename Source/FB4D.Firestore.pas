@@ -111,7 +111,7 @@ type
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
       OnConnectionStateChange: TOnConnectionStateChange = nil;
       DoNotSynchronizeEvents: boolean = false);
-    procedure StopListener;
+    procedure StopListener(RemoveAllSubscription: boolean = true);
     function GetTimeStampOfLastAccess: TDateTime;
     // Transaction
     procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
@@ -749,12 +749,18 @@ begin
   fListener.Start;
 end;
 
-procedure TFirestoreDatabase.StopListener;
+procedure TFirestoreDatabase.StopListener(RemoveAllSubscription: boolean);
+var
+  RestoredTargets: TTargets;
 begin
   fListener.StopListener;
+  if not RemoveAllSubscription then
+    RestoredTargets := fListener.CloneTargets;
   fListener.Free;
   // Recreate thread because a thread cannot be restarted
   fListener := TFSListenerThread.Create(fProjectID, fDatabaseID, fAuth);
+  if not RemoveAllSubscription then
+    fListener.RestoreClonedTargets(RestoredTargets);
 end;
 
 function TFirestoreDatabase.GetTimeStampOfLastAccess: TDateTime;

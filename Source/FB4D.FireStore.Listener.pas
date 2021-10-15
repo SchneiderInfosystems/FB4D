@@ -43,6 +43,7 @@ type
     // tkQuery:
     QueryJSON: string;
   end;
+  TTargets = TList<TTarget>;
 
   TFSListenerThread = class(TThread)
   private const
@@ -78,8 +79,11 @@ type
     fPartialResp: string;
     fLastTelegramNo: integer;
     fResumeToken: string;
-    fTargets: TList<TTarget>;
+    fTargets: TTargets;
     function GetTargetIndById(TargetID: cardinal): integer;
+    function SearchForTarget(TargetKind: TTargetKind; const DocumentPath,
+      QueryJSON: string; OnChangedDoc: TOnChangedDocument;
+      OnDeletedDoc: TOnDeletedDocument; out TargetID: cardinal): boolean;
     function GetRequestData: string;
     procedure InitListen(Mode: TInitMode = Refetch);
     function RequestSIDInThread: boolean;
@@ -111,6 +115,8 @@ type
       DocumentPath: TRequestResourceParam; OnChangedDoc: TOnChangedDocument;
       OnDeletedDoc: TOnDeletedDocument): cardinal;
     procedure Unsubscribe(TargetID: cardinal);
+    function CloneTargets: TTargets;
+    procedure RestoreClonedTargets(Targets: TTargets);
     property LastReceivedMsg: TDateTime read fLastReceivedMsg;
   end;
 
@@ -155,7 +161,7 @@ begin
   Assert(assigned(Auth), 'Authentication not initalized');
   fAuth := Auth;
   fDatabase := 'projects/' + ProjectID + '/databases/' + DatabaseID;
-  fTargets := TList<TTarget>.Create;
+  fTargets := TTargets.Create;
   {$IFDEF MSWINDOWS}
   EventName := 'FB4DFSListenerGetFini';
   {$ELSE}
@@ -182,18 +188,24 @@ function TFSListenerThread.SubscribeDocument(
   OnDeletedDoc: TOnDeletedDocument): cardinal;
 var
   Target: TTarget;
+  Path: string;
 begin
   if IsRunning then
     raise EFirestoreListener.Create(
       'SubscribeDocument must not be called for started Listener');
-  Target.TargetID := (fTargets.Count + 1) * 2;
-  Target.TargetKind := TTargetKind.tkDocument;
-  Target.DocumentPath := TFirebaseHelpers.EncodeResourceParams(DocumentPath);
-  Target.QueryJSON := '';
-  Target.OnChangedDoc := OnChangedDoc;
-  Target.OnDeletedDoc := OnDeletedDoc;
-  fTargets.Add(Target);
-  result := Target.TargetID;
+  Path := TFirebaseHelpers.EncodeResourceParams(DocumentPath);
+  if not SearchForTarget(tkDocument, Path, '', OnChangedDoc,
+    OnDeletedDoc, result) then
+  begin
+    Target.TargetID := (fTargets.Count + 1) * 2;
+    Target.TargetKind := TTargetKind.tkDocument;
+    Target.DocumentPath := Path;
+    Target.QueryJSON := '';
+    Target.OnChangedDoc := OnChangedDoc;
+    Target.OnDeletedDoc := OnDeletedDoc;
+    fTargets.Add(Target);
+    result := Target.TargetID;
+  end;
 end;
 
 function TFSListenerThread.SubscribeQuery(Query: IStructuredQuery;
@@ -206,17 +218,21 @@ begin
   if IsRunning then
     raise EFirestoreListener.Create(
       'SubscribeQuery must not be called for started Listener');
-  Target.TargetID := (fTargets.Count + 1) * 2;
-  Target.TargetKind := TTargetKind.tkQuery;
   JSONobj := Query.AsJSON;
   JSONobj.AddPair('parent', fDatabase + '/documents' +
     TFirebaseHelpers.EncodeResourceParams(DocumentPath));
-  Target.QueryJSON := JSONobj.ToJSON;
-  Target.DocumentPath := '';
-  Target.OnChangedDoc := OnChangedDoc;
-  Target.OnDeletedDoc := OnDeletedDoc;
-  fTargets.Add(Target);
-  result := Target.TargetID;
+  if not SearchForTarget(tkQuery, '', JSONobj.ToJSON, OnChangedDoc,
+    OnDeletedDoc, result) then
+  begin
+    Target.TargetID := (fTargets.Count + 1) * 2;
+    Target.TargetKind := TTargetKind.tkQuery;
+    Target.QueryJSON := JSONobj.ToJSON;
+    Target.DocumentPath := '';
+    Target.OnChangedDoc := OnChangedDoc;
+    Target.OnDeletedDoc := OnDeletedDoc;
+    fTargets.Add(Target);
+    result := Target.TargetID;
+  end;
 end;
 
 procedure TFSListenerThread.Unsubscribe(TargetID: cardinal);
@@ -239,6 +255,45 @@ begin
     if fTargets[c].TargetID = TargetID then
       exit(c);
   result := -1;
+end;
+
+function TFSListenerThread.SearchForTarget(TargetKind: TTargetKind;
+  const DocumentPath, QueryJSON: string; OnChangedDoc: TOnChangedDocument;
+  OnDeletedDoc: TOnDeletedDocument; out TargetID: cardinal): boolean;
+var
+  Target: TTarget;
+begin
+  result := false;
+  for Target in fTargets do
+    if (Target.TargetKind = TargetKind) and
+       (Target.DocumentPath = DocumentPath) and
+       (Target.QueryJSON = QueryJSON) and
+       (@Target.OnChangedDoc = @OnChangedDoc) and
+       (@Target.OnDeletedDoc = @OnDeletedDoc) then
+    begin
+      TargetID := Target.TargetID;
+      exit(true);
+    end;
+end;
+
+function TFSListenerThread.CloneTargets: TTargets;
+var
+  Target: TTarget;
+begin
+  result := TTargets.Create;
+  for Target in fTargets do
+    result.Add(Target);
+end;
+
+procedure TFSListenerThread.RestoreClonedTargets(Targets: TTargets);
+var
+  Target: TTarget;
+begin
+  Assert(fTargets.Count = 0, 'RestoreClonedTargets expects empty target list');
+  Assert(assigned(Targets), 'RestoreClonedTargets missing targets argument');
+  for Target in Targets do
+    fTargets.Add(Target);
+  Targets.Free; // Free the cloned targets
 end;
 
 function TFSListenerThread.GetRequestData: string;
