@@ -1230,7 +1230,7 @@ begin
            TLocationCoord2D.Create(1.1, 2.2)));
          Doc.AddOrUpdateField(TJSONObject.SetBytes('MyBytes', [0,1,2,253,254,255]));
          Doc.AddOrUpdateField(TJSONObject.SetMap('MyMap', [
-           TJSONObject.SetString('MapStr', 'Map would be called in Delphi "record"'),
+           TJSONObject.SetString('MapStr', 'Map corresponds to a TDictionary in Delphi'),
            TJSONObject.SetInteger('MapInt', 324),
            TJSONObject.SetBoolean('MapBool', false),
            TJSONObject.SetTimeStamp('MapTime', now + 1),
