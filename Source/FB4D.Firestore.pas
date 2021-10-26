@@ -875,6 +875,7 @@ begin
     ObjProjection.AddElement(TJSONObject.Create(
       TJSONPair.Create('fieldPath', FieldRef)));
   fSelect := TJSONObject.Create(TJSONPair.Create('fields', ObjProjection));
+  result := self;
 end;
 
 function TStructuredQuery.OrderBy(const FieldRef: string;
