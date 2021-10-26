@@ -1235,7 +1235,7 @@ begin
            TJSONObject.SetBoolean('MapBool', false),
            TJSONObject.SetTimeStamp('MapTime', now + 1),
            TJSONObject.SetArray('MapSubArray', [TJSONObject.SetIntegerValue(1),
-               TJSONObject.SetIntegerValue(2)]), // Array in Map
+             TJSONObject.SetStringValue('Types other than in element[0]!')]), // Array in Map
            TJSONObject.SetMap('SubMap', [ // Map in Map
              TJSONObject.SetString('SubMapStr', 'SubText'),
              TJSONObject.SetDouble('SubMapReal', 3.1414),
@@ -1491,6 +1491,8 @@ begin
   if not chbUseChildDoc.IsChecked then
     fDatabase.RunQuery(
       TStructuredQuery.CreateForCollection(edtCollection.Text).
+// To fetch partial documents
+//        Select(['testInt']).
         QueryForFieldFilter(
           TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
             trunc(trbMinTestInt.Value))).
@@ -1511,7 +1513,7 @@ begin
 //          TJSONObject.SetInteger('testInt', 61)), false).
 //        EndAt(TFirestoreDocument.CreateCursor.AddOrUpdateField(
 //          TJSONObject.SetInteger('testInt', 85)), false).
-        Limit(10).Offset(1),
+        Limit(10).Offset(0), // returns only the first 10 documents!
       OnFirestoreGet, OnFirestoreError, Query);
 end;
 
