@@ -1393,7 +1393,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object GroupBox1: TGroupBox
         Position.X = 32.000000000000000000
         Position.Y = 16.000000000000000000
-        Size.Width = 289.000000000000000000
+        Size.Width = 435.000000000000000000
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 1: Entire Collection'
@@ -1418,9 +1418,18 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             TabOrder = 0
           end
         end
+        object chbIncludeDescendants: TCheckBox
+          Position.X = 288.000000000000000000
+          Position.Y = 24.000000000000000000
+          Size.Width = 139.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 38
+          Text = 'Include descendants'
+        end
       end
       object GroupBox2: TGroupBox
-        Position.X = 336.000000000000000000
+        Position.X = 475.000000000000000000
         Position.Y = 16.000000000000000000
         Size.Width = 473.000000000000000000
         Size.Height = 57.000000000000000000

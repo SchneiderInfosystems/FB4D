@@ -219,6 +219,7 @@ type
     Label38: TLabel;
     edtParam4Val: TEdit;
     Label39: TLabel;
+    chbIncludeDescendants: TCheckBox;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -1552,13 +1553,14 @@ begin
   if not edtCollectionIDForFSListener.Text.IsEmpty then
   begin
     fDatabase.SubscribeQuery(TStructuredQuery.CreateForCollection(
-      edtCollectionIDForFSListener.Text), OnFSChangedDocInCollection,
-      OnFSDeletedDocCollection);
+      edtCollectionIDForFSListener.Text, chbIncludeDescendants.IsChecked),
+      OnFSChangedDocInCollection, OnFSDeletedDocCollection);
     Targets := 'Target-1: Collection ';
   end;
   if not edtDocPathForFSListener.Text.IsEmpty then
   begin
-    fDatabase.SubscribeDocument(edtDocPathForFSListener.Text.Split(['/']),
+    fDatabase.SubscribeDocument(
+      TFirebaseHelpers.FirestorePath(edtDocPathForFSListener.Text),
       OnFSChangedDoc, OnFSDeletedDoc);
     Targets := Targets + 'Target-2: Single Doc ';
   end;
@@ -1568,6 +1570,9 @@ begin
     fDatabase.StartListener(OnFSStopListening, OnFSRequestError, OnFSAuthRevoked);
     btnStartFSListener.Enabled := false;
     btnStopFSListener.Enabled := true;
+    edtCollectionIDForFSListener.Enabled := false;
+    edtDocPathForFSListener.Enabled := false;
+    chbIncludeDescendants.Enabled := false;
   end else
     memScanFS.Lines.Add('No target defined for starting listener');
 end;
@@ -1578,6 +1583,9 @@ begin
     exit;
   fDatabase.StopListener;
   btnStopFSListener.Enabled := false;
+  edtCollectionIDForFSListener.Enabled := true;
+  edtDocPathForFSListener.Enabled := true;
+  chbIncludeDescendants.Enabled := true;
 end;
 
 procedure TfmxFirebaseDemo.OnFSChangedDocInCollection(

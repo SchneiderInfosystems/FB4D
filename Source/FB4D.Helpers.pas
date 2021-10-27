@@ -61,6 +61,7 @@ type
     // Array of string helpers
     class function ArrStrToCommaStr(Arr: array of string): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
+    class function FirestorePath(const Path: string): TRequestResourceParam;
     // FBID is based on charset of cBase64: Helpers and converter to GUID
     // PUSHID is based on charset of cPushID64: Supports chronological sorting
     type TIDKind = (FBID {random 22 Chars},
@@ -303,6 +304,15 @@ begin
     result := ''
   else
     result := '?auth=' + TNetEncoding.URL.Encode(Token);
+end;
+
+class function TFirebaseHelpers.FirestorePath(
+  const Path: string): TRequestResourceParam;
+begin
+  if Path.StartsWith('/') or  Path.StartsWith('\') then
+    result := Path.Substring(1).Split(['/', '\'])
+  else
+    result := Path.Split(['/', '\']);
 end;
 
 class function TFirebaseHelpers.ArrStrToCommaStr(Arr: array of string): string;
