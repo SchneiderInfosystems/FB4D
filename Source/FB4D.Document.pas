@@ -109,7 +109,8 @@ type
     class function IsCompositeType(FieldType: TFirestoreFieldType): boolean;
   end;
 
-  TFirestoreDocuments = class(TInterfacedObject, IFirestoreDocuments)
+  TFirestoreDocuments = class(TInterfacedObject, IFirestoreDocuments,
+    IEnumerable<IFirestoreDocument>, IEnumerable)
   private
     fJSONArr: TJSONArray;
     fJSONObj: TJSONObject;
@@ -117,6 +118,12 @@ type
     fServerTimeStampUTC: TDatetime;
     fPageToken: string;
     fSkippedResults: integer;
+  protected
+    function GetGenericEnumerator: IEnumerator<IFirestoreDocument>;
+    function GetEnumerator: IEnumerator;
+    function IFirestoreDocuments.GetEnumerator = GetGenericEnumerator;
+    function IEnumerable<IFirestoreDocument>.GetEnumerator =
+      GetGenericEnumerator;
   public
     constructor CreateFromJSONDocumentsObj(Response: IFirebaseResponse);
     class function IsJSONDocumentsObj(Response: IFirebaseResponse): boolean;
@@ -129,6 +136,22 @@ type
     function MorePagesToLoad: boolean;
     function PageToken: string;
     procedure AddPageTokenToNextQuery(Query: TQueryParams);
+  end;
+
+  TFirestoreDocsEnumerator = class(TInterfacedObject,
+    IEnumerator<IFirestoreDocument>, IEnumerator)
+  private
+    fDocs: TFirestoreDocuments;
+    fCursor: integer;
+  protected
+  protected
+    function GetCurrent: TObject;
+    function GenericGetCurrent: IFirestoreDocument;
+    function IEnumerator<IFirestoreDocument>.GetCurrent = GenericGetCurrent;
+  public
+    constructor Create(Docs: TFirestoreDocuments);
+    function MoveNext: Boolean;
+    procedure Reset;
   end;
 
 implementation
@@ -295,6 +318,16 @@ procedure TFirestoreDocuments.AddPageTokenToNextQuery(Query: TQueryParams);
 begin
   if MorePagesToLoad then
     Query.AddPageToken(fPageToken);
+end;
+
+function TFirestoreDocuments.GetEnumerator: IEnumerator;
+begin
+  result := GetGenericEnumerator;
+end;
+
+function TFirestoreDocuments.GetGenericEnumerator: IEnumerator<IFirestoreDocument>;
+begin
+  result := TFirestoreDocsEnumerator.Create(self);
 end;
 
 { TFirestoreDocument }
@@ -950,6 +983,38 @@ class function TFirestoreDocument.IsCompositeType(
   FieldType: TFirestoreFieldType): boolean;
 begin
   result := FieldType in [fftArray, fftMap];
+end;
+
+{ TFirestoreDocsEnumerator }
+
+constructor TFirestoreDocsEnumerator.Create(Docs: TFirestoreDocuments);
+begin
+  fDocs := Docs;
+  fCursor := -1;
+end;
+
+function TFirestoreDocsEnumerator.GetCurrent: TObject;
+begin
+  result := TObject(GenericGetCurrent);
+end;
+
+function TFirestoreDocsEnumerator.GenericGetCurrent: IFirestoreDocument;
+begin
+  if fCursor < fDocs.Count then
+    result := fDocs.Document(fCursor)
+  else
+    result := nil;
+end;
+
+function TFirestoreDocsEnumerator.MoveNext: Boolean;
+begin
+  inc(fCursor);
+  result := fCursor < fDocs.Count;
+end;
+
+procedure TFirestoreDocsEnumerator.Reset;
+begin
+  fCursor := -1;
 end;
 
 end.

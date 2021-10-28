@@ -1122,7 +1122,7 @@ end;
 procedure TfmxFirebaseDemo.OnFirestoreGet(const Info: string;
   Docs: IFirestoreDocuments);
 var
-  c: integer;
+  Doc: IFirestoreDocument;
 begin
   memFirestore.Lines.Clear;
   try
@@ -1139,8 +1139,8 @@ begin
       chbUsePageToken.IsChecked := Docs.MorePagesToLoad;
       chbUsePageToken.Visible := chbUsePageToken.IsChecked;
       chbUsePageToken.TagString := Docs.PageToken;
-      for c := 0 to Docs.Count - 1 do
-        ShowDocument(Docs.Document(c));
+      for Doc in Docs do
+        ShowDocument(Doc);
     end else
       ShowDocument(nil);
   except

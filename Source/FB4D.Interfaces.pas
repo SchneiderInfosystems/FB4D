@@ -355,7 +355,7 @@ type
     property Fields[Index: integer]: TJSONObject read FieldValue;
   end;
 
-  IFirestoreDocuments = interface(IInterface)
+  IFirestoreDocuments = interface(IEnumerable<IFirestoreDocument>)
     function Count: integer;
     function Document(Ind: integer): IFirestoreDocument;
     function ServerTimeStamp(TimeZone: TTimeZone): TDateTime;
