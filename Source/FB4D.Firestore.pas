@@ -153,6 +153,12 @@ type
     function Offset(offset: integer): IStructuredQuery;
     function AsJSON: TJSONObject;
     function GetInfo: string;
+    function HasSelect: boolean;
+    function HasColSelector: boolean;
+    function HasFilter: boolean;
+    function HasOrder: boolean;
+    function HasStartAt: boolean;
+    function HasEndAt: boolean;
   end;
 
   TQueryFilter = class(TInterfacedObject, IQueryFilter)
@@ -731,6 +737,8 @@ function TFirestoreDatabase.SubscribeQuery(Query: IStructuredQuery;
   OnChangedDoc: TOnChangedDocument; OnDeletedDoc: TOnDeletedDocument;
   DocPath: TRequestResourceParam): cardinal;
 begin
+  Assert(not Query.HasSelect,
+    'Select clause in query is not supported by Firestore for SubscribeQuery');
   result := fListener.SubscribeQuery(Query, DocPath, OnChangedDoc, OnDeletedDoc);
 end;
 
@@ -755,7 +763,9 @@ var
 begin
   fListener.StopListener;
   if not RemoveAllSubscription then
-    RestoredTargets := fListener.CloneTargets;
+    RestoredTargets := fListener.CloneTargets
+  else
+    RestoredTargets := nil;
   fListener.Free;
   // Recreate thread because a thread cannot be restarted
   fListener := TFSListenerThread.Create(fProjectID, fDatabaseID, fAuth);
@@ -822,32 +832,32 @@ var
 begin
   fQuery := TJSONObject.Create;
   StructQuery := TJSONObject.Create;
-  if assigned(fSelect) then
+  if HasSelect then
   begin
     StructQuery.AddPair('select', fSelect);
     fSelect := nil;
   end;
-  if assigned(fColSelector) then
+  if HasColSelector then
   begin
     StructQuery.AddPair('from', TJSONArray.Create(fColSelector));
     fColSelector := nil;
   end;
-  if assigned(fFilter) then
+  if HasFilter then
   begin
     StructQuery.AddPair('where', fFilter);
     fFilter := nil;
   end;
-  if assigned(fOrder) then
+  if HasOrder then
   begin
     StructQuery.AddPair('orderBy', fOrder);
     fOrder := nil;
   end;
-  if assigned(fStartAt) then
+  if HasStartAt then
   begin
     StructQuery.AddPair('startAt', fStartAt);
     fStartAt := nil;
   end;
-  if assigned(fEndAt) then
+  if HasEndAt then
   begin
     StructQuery.AddPair('endAt', fEndAt);
     fEndAt := nil;
@@ -984,6 +994,36 @@ end;
 function TStructuredQuery.GetInfo: string;
 begin
   result := fInfo;
+end;
+
+function TStructuredQuery.HasSelect: boolean;
+begin
+  result := assigned(fSelect);
+end;
+
+function TStructuredQuery.HasColSelector: boolean;
+begin
+  result := assigned(fColSelector);
+end;
+
+function TStructuredQuery.HasFilter: boolean;
+begin
+  result := assigned(fFilter);
+end;
+
+function TStructuredQuery.HasOrder: boolean;
+begin
+  result := assigned(fOrder);
+end;
+
+function TStructuredQuery.HasStartAt: boolean;
+begin
+  result := assigned(fStartAt);
+end;
+
+function TStructuredQuery.HasEndAt: boolean;
+begin
+  result := assigned(fEndAt);
 end;
 
 { TQueryFilter }
