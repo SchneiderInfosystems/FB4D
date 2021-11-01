@@ -1175,7 +1175,7 @@ function TQueryParamsHelper.AddTransaction(
   const Transaction: string): TQueryParams;
 begin
   if not Transaction.IsEmpty then
-    Add(cFirestoreTransaction, ['"' + Transaction + '"']);
+    Add(cFirestoreTransaction, [Transaction]);
   result := self;
 end;
 
