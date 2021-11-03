@@ -155,7 +155,7 @@ uses
 {$R *.LgXhdpiPh.fmx ANDROID}
 
 const
-  cDocID = 'Chat';
+  cCollectionID = 'Chat';
 
 // Install the following Firestore Rule:
 // rules_version = '2';
@@ -363,7 +363,7 @@ begin
   lsvChat.Items.Clear;
   fLastCreated := 0;
   FilterMsgs := cboFilterMessages.Items[cboFilterMessages.ItemIndex];
-  Query := TStructuredQuery.CreateForCollection(cDocID).
+  Query := TStructuredQuery.CreateForCollection(cCollectionID).
     OrderBy('DateTime', odDescending);
   if FilterMsgs.Contains('newest') then
     Query.Limit(ExtractIntInStr(FilterMsgs))
@@ -561,8 +561,9 @@ begin
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log('Doc: ' + Doc.AsJSON.ToJSON);
   {$ENDIF}
-  fConfig.Database.InsertOrUpdateDocument([cDocID, Doc.DocumentName(false)],
-    Doc, nil, OnDocWrite, OnDocWriteError);
+  fConfig.Database.InsertOrUpdateDocument(
+    [cCollectionID, Doc.DocumentName(false)], Doc, nil,
+    OnDocWrite, OnDocWriteError);
   btnPushMessage.Enabled := false;
 end;
 
@@ -574,7 +575,7 @@ begin
   Doc := TFirestoreDocument.Create(fEditDocID);
   Doc.AddOrUpdateField(TJSONObject.SetString('Message', edtMessage.Text));
   Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('Edited', now));
-  fConfig.Database.PatchDocument([cDocID, fEditDocID], Doc,
+  fConfig.Database.PatchDocument([cCollectionID, fEditDocID], Doc,
     ['Message', 'Edited'], OnDocWrite, OnDocWriteError);
   btnEditMessage.Enabled := false;
   btnDeleteMessage.Enabled := false;
@@ -583,7 +584,7 @@ end;
 procedure TfmxChatMain.btnDeleteMessageClick(Sender: TObject);
 begin
   Assert(not fEditDocID.IsEmpty, 'No doc ID to patch');
-  fConfig.Database.Delete([cDocID, fEditDocID], nil, OnDocDelete,
+  fConfig.Database.Delete([cCollectionID, fEditDocID], nil, OnDocDelete,
     OnDocDeleteError);
   btnEditMessage.Enabled := false;
   btnDeleteMessage.Enabled := false;
