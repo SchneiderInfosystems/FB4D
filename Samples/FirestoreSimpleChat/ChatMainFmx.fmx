@@ -322,12 +322,12 @@ object fmxChatMain: TfmxChatMain
         TabOrder = 2
         object lblUserInfo: TLabel
           Align = Top
-          Margins.Left = 10.000000000000000000
+          Margins.Left = 200.000000000000000000
           Margins.Top = 5.000000000000000000
           Margins.Right = 10.000000000000000000
-          Position.X = 93.000000000000000000
+          Position.X = 283.000000000000000000
           Position.Y = 5.000000000000000000
-          Size.Width = 482.000000000000000000
+          Size.Width = 292.000000000000000000
           Size.Height = 20.000000000000000000
           Size.PlatformDefault = False
           TextSettings.HorzAlign = Trailing
@@ -367,9 +367,9 @@ object fmxChatMain: TfmxChatMain
         end
         object txtError: TText
           Anchors = [akLeft, akTop, akRight]
-          Position.X = 96.000000000000000000
+          Position.X = 278.000000000000000000
           Position.Y = 25.000000000000000000
-          Size.Width = 260.000000000000000000
+          Size.Width = 78.000000000000000000
           Size.Height = 20.000000000000000000
           Size.PlatformDefault = False
           TextSettings.Font.Size = 10.000000000000000000
@@ -574,6 +574,23 @@ object fmxChatMain: TfmxChatMain
           Size.Height = 55.000000000000000000
           Size.PlatformDefault = False
           Visible = False
+        end
+        object cboFilterMessages: TComboBox
+          Items.Strings = (
+            'Limit to newest 25 messages'
+            'Limit to newest 100 messages'
+            'Messages since last week'
+            'Messages since last month'
+            'Messages since last year'
+            'All messages')
+          ItemIndex = 2
+          Position.X = 90.000000000000000000
+          Position.Y = 15.000000000000000000
+          Size.Width = 191.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 2
+          OnChange = cboFilterMessagesChange
         end
       end
     end
