@@ -45,6 +45,7 @@ type
     fBucket: string;
     fAuth: IFirebaseAuthentication;
     fStorageObjs: TDictionary<TObjectName, IStorageObject>;
+    fCSForStorageObjs: TCriticalSection;
     fCacheFolder: string;
     fMaxCacheSpaceInBytes: Int64;
     fCacheSpaceInBytes: Int64;
@@ -176,6 +177,7 @@ begin
   fBucket := ExcludeTrailingSlash(BucketName);
   fAuth := Auth;
   fStorageObjs := TDictionary<TObjectName, IStorageObject>.Create;
+  fCSForStorageObjs := TCriticalSection.Create;
   fCacheFolder := '';
   fMaxCacheSpaceInBytes := 0;
   fCacheContent := TList<TCacheFile>.Create;
@@ -187,6 +189,7 @@ var
   CacheF: TCacheFile;
 begin
   fScanSync.Free;
+  fCSForStorageObjs.Free;
   for CacheF in fCacheContent do
     CacheF.Free;
   fCacheContent.Free;
@@ -227,7 +230,12 @@ begin
   try
     Response.CheckForJSONObj;
     StorageObj := TStorageObject.Create(self, Response);
-    fStorageObjs.TryAdd(ObjectName, StorageObJ);
+    fCSForStorageObjs.Acquire;
+    try
+      fStorageObjs.TryAdd(ObjectName, StorageObJ);
+    finally
+      fCSForStorageObjs.Release;
+    end;
     case Response.OnSuccess.OnSuccessCase of
       oscStorage:
         if assigned(Response.OnSuccess.OnStorage) then
@@ -265,7 +273,12 @@ begin
   {$ENDIF}
   Response.CheckForJSONObj;
   result := TStorageObject.Create(self, Response);
-  fStorageObjs.TryAdd(ObjectName, result);
+  fCSForStorageObjs.Acquire;
+  try
+    fStorageObjs.TryAdd(ObjectName, result);
+  finally
+    fCSForStorageObjs.Release;
+  end;
 end;
 
 procedure TFirebaseStorage.GetAndDownload(const ObjectName: TObjectName;
@@ -291,7 +304,12 @@ begin
     TFirebaseHelpers.Log('FirebaseStorage.OnGetAndDownloadResponse ' +
       Response.ContentAsString);
     {$ENDIF}
-    fStorageObjs.TryAdd(ObjectName, StorageObJ);
+    fCSForStorageObjs.Acquire;
+    try
+      fStorageObjs.TryAdd(ObjectName, StorageObJ);
+    finally
+      fCSForStorageObjs.Release;
+    end;
     if assigned(Response.OnSuccess.OnStorageGetAndDown) then
       StorageObj.DownloadToStream(Response.OnSuccess.DownStream,
         Response.OnSuccess.OnStorageGetAndDown,
@@ -322,7 +340,12 @@ begin
   {$ENDIF}
   Response.CheckForJSONObj;
   result := TStorageObject.Create(self, Response);
-  fStorageObjs.TryAdd(ObjectName, result);
+  fCSForStorageObjs.Acquire;
+  try
+    fStorageObjs.TryAdd(ObjectName, result);
+  finally
+    fCSForStorageObjs.Release;
+  end;
   result.DownloadToStreamSynchronous(Stream);
 end;
 
@@ -346,7 +369,12 @@ begin
       Response.ContentAsString);
     {$ENDIF}
     result := TStorageObject.Create(self, Response);
-    fStorageObjs.TryAdd(ObjectName, result);
+    fCSForStorageObjs.Acquire;
+    try
+      fStorageObjs.TryAdd(ObjectName, result);
+    finally
+      fCSForStorageObjs.Release;
+    end;
     AddToCache(result, Stream);
   finally
     QueryParams.Free;
@@ -386,7 +414,12 @@ begin
   try
     Response.CheckForJSONObj;
     StorageObj := TStorageObject.Create(self, Response);
-    fStorageObjs.TryAdd(ObjectName, StorageObj);
+    fCSForStorageObjs.Acquire;
+    try
+      fStorageObjs.TryAdd(ObjectName, StorageObJ);
+    finally
+      fCSForStorageObjs.Release;
+    end;
     if assigned(Response.OnSuccess.UpStream) then
       AddToCache(StorageObj, Response.OnSuccess.UpStream);
     if assigned(Response.OnSuccess.OnStorageUpload) then
@@ -421,7 +454,12 @@ begin
     {$ENDIF}
     raise EStorageObject.CreateFmt('Delete failed: %s', [Response.StatusText]);
   end else begin
-    fStorageObjs.Remove(ObjectName);
+    fCSForStorageObjs.Acquire;
+    try
+      fStorageObjs.Remove(ObjectName);
+    finally
+      fCSForStorageObjs.Release;
+    end;
     DeleteObjectFromCache(ObjectName);
   end;
 end;
@@ -444,7 +482,12 @@ begin
     begin
       if assigned(Response.OnSuccess.OnDelStorage) then
         Response.OnSuccess.OnDelStorage(ObjectName);
-      fStorageObjs.Remove(ObjectName);
+      fCSForStorageObjs.Acquire;
+      try
+        fStorageObjs.Remove(ObjectName);
+      finally
+        fCSForStorageObjs.Release;
+      end;
       DeleteObjectFromCache(ObjectName);
     end
     else if assigned(Response.OnError) then
