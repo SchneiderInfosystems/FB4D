@@ -1,0 +1,11 @@
+{
+	"name": "FB4D",
+	"description": "The OpenSource Cross-Platform Library for Firebase",
+	"version": "1.3.0",
+	"homepage": "https://www.youtube.com/channel/UC3qSIUzdGqoZA8hcA31X0Og",
+	"mainsrc": "Source",
+	"projects": [],
+	"dependencies": {
+		"https://github.com/paolo-rossi/delphi-jose-jwt": "^v3.0.3"
+	}
+}
