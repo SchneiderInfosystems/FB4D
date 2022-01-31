@@ -6,6 +6,6 @@
 	"mainsrc": "Source",
 	"projects": [],
 	"dependencies": {
-		"https://github.com/paolo-rossi/delphi-jose-jwt": "^v3.0.3"
+		"github.com/paolo-rossi/delphi-jose-jwt": "3.0.2"
 	}
 }
