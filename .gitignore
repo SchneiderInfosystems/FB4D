@@ -64,3 +64,5 @@ __recovery/
 
 # Castalia statistics file (since XE7 Castalia is distributed with Delphi)
 *.stat
+#Boss Dependency Manager for Delphi and Lazarus (Windows)
+modules/
