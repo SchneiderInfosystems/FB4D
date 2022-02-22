@@ -90,8 +90,9 @@ type
     class function GetPlatform: string;
   private const
     cBase64 =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-';
-    // The last char '-' is not real Base64 because '/' causes troubles in IDs
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+    // The last two chars '_' and '-' are not real Base64 because '+' and '/'
+    // causes troubles in IDs
     cPushID64 =
       '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
     // This notification is used in the Realtime DB for Post and Push operation
@@ -309,7 +310,7 @@ end;
 class function TFirebaseHelpers.FirestorePath(
   const Path: string): TRequestResourceParam;
 begin
-  if Path.StartsWith('/') or  Path.StartsWith('\') then
+  if Path.StartsWith('/') or Path.StartsWith('\') then
     result := Path.Substring(1).Split(['/', '\'])
   else
     result := Path.Split(['/', '\']);

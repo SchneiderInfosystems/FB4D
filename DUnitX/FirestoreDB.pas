@@ -47,6 +47,8 @@ type
     fChangedDocF1: string;
     fChangedDocF2: integer;
     fDeletedDoc: string;
+    fStarted: TDateTime;
+    procedure WaitAndCheckTimeout(const Step: string);
     procedure OnError(const RequestID, ErrMsg: string);
     procedure OnDoc(const Info: string; Document: IFirestoreDocument);
     procedure OnDoc2(const Info: string; Document: IFirestoreDocument);
@@ -103,6 +105,7 @@ begin
   fChangedDocF2 := -1;
   fDeletedDoc := '';
   fStopped := false;
+  fStarted := now;
 end;
 
 procedure UT_FirestoreDB.TearDown;
@@ -113,6 +116,15 @@ begin
     fConfig.Database.DeleteSynchronous([cDBPath, fDoc2.DocumentName(false)]);
   fConfig.Auth.DeleteCurrentUserSynchronous;
   fConfig := nil;
+end;
+
+procedure UT_FirestoreDB.WaitAndCheckTimeout(const Step: string);
+const
+  cTimeout = 10 / 24 / 3600; // 10 sec
+begin
+  Application.ProcessMessages;
+  if now - fStarted > cTimeout then
+    Assert.Fail('Timeout in ' + Step);
 end;
 
 procedure UT_FirestoreDB.OnDoc(const Info: string;
@@ -245,7 +257,7 @@ var
 begin
   fConfig.Database.CreateDocument([cDBPath], nil, OnDoc, OnError);
   while fCallBack < 1 do
-    Application.ProcessMessages;
+    WaitAndCheckTimeout('CreateDocument');
   Status('CreateDocument passed: ' + fInfo);
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   DocName := fDoc.DocumentName(false);
@@ -270,7 +282,7 @@ begin
   fCallBack := 0;
   fConfig.Database.InsertOrUpdateDocument([cDBPath, DocName], Doc, nil, OnDoc, OnError);
   while fCallBack < 1 do
-    Application.ProcessMessages;
+    WaitAndCheckTimeout('InsertOrUpdateDocument');
   Status('InsertOrUpdateDocument passed: ' + fInfo);
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDoc.CountFields, Doc.CountFields, 'Doc field count not as expected');
@@ -288,7 +300,7 @@ begin
   fCallBack := 0;
   fConfig.Database.Get([cDBPath, DocName], nil, OnDocs, OnError);
   while fCallBack < 1 do
-    Application.ProcessMessages;
+    WaitAndCheckTimeout('Get');
   Status('Get passed: ' + fInfo);
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDoc.CountFields, Doc.CountFields, 'Doc field count not as expected');
@@ -320,7 +332,7 @@ begin
   fConfig.Database.InsertOrUpdateDocument([cDBPath, Doc1Name], Doc1, nil, OnDoc, OnError);
   fConfig.Database.InsertOrUpdateDocument([cDBPath, Doc2Name], Doc2, nil, OnDoc2, OnError);
   while fCallBack < 2 do
-    Application.ProcessMessages;
+    WaitAndCheckTimeout('InsertOrUpdateDocument-2');
   Status('InsertOrUpdateDocument passed: ' + fInfo);
   Status('InsertOrUpdateDocument 2 passed: ' + fInfo2);
   Assert.IsNotNull(fDoc, 'Document 1 nil');
@@ -338,17 +350,23 @@ var
   DocID: string;
   Doc: IFirestoreDocument;
 begin
-  DocID := TFirebaseHelpers.CreateAutoID;
+  DocID := TFirebaseHelpers.CreateAutoID + '-_'; // Test with critical characters '-' and '_'
+  Status('Check for DocID including critical characters "-" and "_": ' + DocID);
   fConfig.Database.SubscribeDocument([cDBPath, DocID], OnDocChanged, OnDocDeleted);
   fConfig.Database.StartListener(OnStop, OnError);
+  while fCallBack < 1 do
+    WaitAndCheckTimeout('StartListener');
+  Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+  Assert.IsTrue(fDeletedDoc.EndsWith(DocID), 'Unexpected deleted doc: "' + fDeletedDoc + '"');
+  Status('OnDocDeleted check passed for empty query');
 
+  fCallBack := 0;
   Doc := TFirestoreDocument.Create(DocID);
   Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString));
   Doc.AddOrUpdateField(TJSONObject.SetInteger(cTestF2, cTestInt));
   fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
-
-  while fCallBack < 3 do
-    Application.ProcessMessages;
+  while fCallBack < 2 do
+    WaitAndCheckTimeout('InsertOrUpdateDocument');
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDoc.DocumentName(false), DocID, 'DocID');
   Status('InsertOrUpdateDocument passed: ' + fInfo);
@@ -365,7 +383,7 @@ begin
   fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
 
   while fCallBack < 2 do
-    Application.ProcessMessages;
+    WaitAndCheckTimeout('InsertOrUpdateDocument-2');
 
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDoc.DocumentName(false), DocID, '2nd DocID');
@@ -378,11 +396,12 @@ begin
   Status('2nd OnDocChanged check passed');
 
   fCallBack := 0;
-  fDeletedDoc := ''; // it is unclear why the FS reports a first that this document was deleted
+  fDeletedDoc := '';
   fConfig.Database.Delete([cDBPath, DocID], nil, OnDocDel, onError);
 
   while fCallBack < 2 do
-    Application.ProcessMessages;
+    WaitAndCheckTimeout('Delete');
+
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDeletedDoc, fDoc.DocumentName(true), 'DeleteDoc ID wrong');
   Status('3rd: Document deletion check passed');
@@ -390,7 +409,7 @@ begin
 
   fConfig.Database.StopListener;
   while not fStopped do
-    Application.ProcessMessages;
+    WaitAndCheckTimeout('StopListener');
   Status('Listener stopped properly');
 end;
 
