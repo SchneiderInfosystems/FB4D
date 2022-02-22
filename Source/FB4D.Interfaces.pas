@@ -423,6 +423,8 @@ type
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirestoreDocuments;
+    function GetAndAddSynchronous(var Docs: IFirestoreDocuments;
+      Params: TRequestResourceParam; QueryParams: TQueryParams = nil): boolean;
     procedure CreateDocument(DocumentPath: TRequestResourceParam;
       QueryParams: TQueryParams; OnDocument: TOnDocument;
       OnRequestError: TOnRequestError);

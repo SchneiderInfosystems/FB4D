@@ -112,8 +112,6 @@ type
   TFirestoreDocuments = class(TInterfacedObject, IFirestoreDocuments,
     IEnumerable<IFirestoreDocument>, IEnumerable)
   private
-    fJSONArr: TJSONArray;
-    fJSONObj: TJSONObject;
     fDocumentList: array of IFirestoreDocument;
     fServerTimeStampUTC: TDatetime;
     fPageToken: string;
@@ -129,6 +127,7 @@ type
     class function IsJSONDocumentsObj(Response: IFirebaseResponse): boolean;
     constructor CreateFromJSONArr(Response: IFirebaseResponse);
     destructor Destroy; override;
+    procedure AddFromJSONDocumentsObj(Response: IFirebaseResponse);
     function Count: integer;
     function Document(Ind: integer): IFirestoreDocument;
     function ServerTimeStamp(TimeZone: TTimeZone): TDateTime;
@@ -187,40 +186,45 @@ resourcestring
 
 constructor TFirestoreDocuments.CreateFromJSONArr(Response: IFirebaseResponse);
 var
+  JSONArr: TJSONArray;
   Obj: TJSONObject;
   c: integer;
 begin
   inherited Create;
   fSkippedResults := 0;
   fPageToken := '';
-  fJSONArr := Response.GetContentAsJSONArr;
-  SetLength(fDocumentList, 0);
-  if fJSONArr.Count < 1 then
-    raise EFirestoreDocument.Create(rsInvalidDocNotOneNode);
-  for c := 0 to fJSONArr.Count - 1 do
-  begin
-    Obj := fJSONArr.Items[c] as TJSONObject;
-    if (fJSONArr.Count >= 1) and
-       (Obj.Pairs[0].JsonString.Value = 'readTime') then
+  JSONArr := Response.GetContentAsJSONArr;
+  try
+    SetLength(fDocumentList, 0);
+    if JSONArr.Count < 1 then
+      raise EFirestoreDocument.Create(rsInvalidDocNotOneNode);
+    for c := 0 to JSONArr.Count - 1 do
     begin
-      // Empty [{'#$A'  "readTime": "2018-06-21T08:08:50.445723Z"'#$A'}'#$A']
-      SetLength(fDocumentList, 0);
-      if (fJSONArr.Count >= 2) and
-         (Obj.Pairs[1].JsonString.Value = 'skippedResults') then
-        fSkippedResults := (Obj.Pairs[1].JsonValue as TJSONNumber).AsInt;
-    end
-    else if Obj.Pairs[0].JsonString.Value <> 'document' then
-      raise EFirestoreDocument.CreateFmt(rsInvalidDocNode,
-        [Obj.Pairs[0].JsonString.ToString])
-    else if not(Obj.Pairs[0].JsonValue is TJSONObject) then
-      raise EFirestoreDocument.CreateFmt(rsInvalidDocNode,
-        [rsNotObj + Obj.ToString])
-    else begin
-      SetLength(fDocumentList, length(fDocumentList) + 1);
-      fDocumentList[length(fDocumentList) - 1] :=
-        TFirestoreDocument.CreateFromJSONObj(
-          Obj.Pairs[0].JsonValue as TJSONObject);
+      Obj := JSONArr.Items[c] as TJSONObject;
+      if (JSONArr.Count >= 1) and
+         (Obj.Pairs[0].JsonString.Value = 'readTime') then
+      begin
+        // Empty [{'#$A'  "readTime": "2018-06-21T08:08:50.445723Z"'#$A'}'#$A']
+        SetLength(fDocumentList, 0);
+        if (JSONArr.Count >= 2) and
+           (Obj.Pairs[1].JsonString.Value = 'skippedResults') then
+          fSkippedResults := (Obj.Pairs[1].JsonValue as TJSONNumber).AsInt;
+      end
+      else if Obj.Pairs[0].JsonString.Value <> 'document' then
+        raise EFirestoreDocument.CreateFmt(rsInvalidDocNode,
+          [Obj.Pairs[0].JsonString.ToString])
+      else if not(Obj.Pairs[0].JsonValue is TJSONObject) then
+        raise EFirestoreDocument.CreateFmt(rsInvalidDocNode,
+          [rsNotObj + Obj.ToString])
+      else begin
+        SetLength(fDocumentList, length(fDocumentList) + 1);
+        fDocumentList[length(fDocumentList) - 1] :=
+          TFirestoreDocument.CreateFromJSONObj(
+            Obj.Pairs[0].JsonValue as TJSONObject);
+      end;
     end;
+  finally
+    JSONArr.Free;
   end;
   fServerTimeStampUTC := Response.GetServerTime(tzUTC);
 end;
@@ -229,27 +233,69 @@ constructor TFirestoreDocuments.CreateFromJSONDocumentsObj(
   Response: IFirebaseResponse);
 var
   c: integer;
+  JSONObj: TJSONObject;
+  JSONArr: TJSONArray;
 begin
   fSkippedResults := 0;
-  fJSONObj := Response.GetContentAsJSONObj;
-  if fJSONObj.Count < 1 then
-    SetLength(fDocumentList, 0)
-  else if fJSONObj.Pairs[0].JsonString.ToString = '"documents"' then
-  begin
-    if not(fJSONObj.Pairs[0].JsonValue is TJSONArray) then
-      raise EFirestoreDocument.CreateFmt(rsInvalidDocArr, [fJSONObj.ToString]);
-    fJSONArr := fJSONObj.Pairs[0].JsonValue as TJSONArray;
-    SetLength(fDocumentList, fJSONArr.Count);
-    for c := 0 to fJSONArr.Count - 1 do
-      fDocumentList[c] := TFirestoreDocument.CreateFromJSONObj(
-        fJSONArr.Items[c] as TJSONObject);
-  end else begin
-    SetLength(fDocumentList, 1);
-    fDocumentList[0] := TFirestoreDocument.CreateFromJSONObj(fJSONObj);
+  JSONObj := Response.GetContentAsJSONObj;
+  try
+    if JSONObj.Count < 1 then
+      SetLength(fDocumentList, 0)
+    else if JSONObj.Pairs[0].JsonString.Value = 'documents' then
+    begin
+      if not(JSONObj.Pairs[0].JsonValue is TJSONArray) then
+        raise EFirestoreDocument.CreateFmt(rsInvalidDocArr, [JSONObj.ToString]);
+      JSONArr := JSONObj.Pairs[0].JsonValue as TJSONArray;
+      SetLength(fDocumentList, JSONArr.Count);
+      for c := 0 to JSONArr.Count - 1 do
+        fDocumentList[c] := TFirestoreDocument.CreateFromJSONObj(
+          JSONArr.Items[c] as TJSONObject);
+    end else begin
+      SetLength(fDocumentList, 1);
+      fDocumentList[0] := TFirestoreDocument.CreateFromJSONObj(JSONObj);
+    end;
+    fServerTimeStampUTC := Response.GetServerTime(tzUTC);
+    if not JSONObj.TryGetValue<string>('nextPageToken', fPageToken) then
+      fPageToken := '';
+  finally
+    JSONObj.Free;
   end;
-  fServerTimeStampUTC := Response.GetServerTime(tzUTC);
-  if not fJSONObj.TryGetValue<string>('nextPageToken', fPageToken) then
-    fPageToken := '';
+end;
+
+procedure TFirestoreDocuments.AddFromJSONDocumentsObj(
+  Response: IFirebaseResponse);
+var
+  c, l: integer;
+  JSONObj: TJSONObject;
+  JSONArr: TJSONArray;
+begin
+  fSkippedResults := 0;
+  JSONObj := Response.GetContentAsJSONObj;
+  try
+    if JSONObj.Count >= 1 then
+    begin
+      l := length(fDocumentList);
+      if JSONObj.Pairs[0].JsonString.Value = 'documents' then
+      begin
+        if not(JSONObj.Pairs[0].JsonValue is TJSONArray) then
+          raise EFirestoreDocument.CreateFmt(rsInvalidDocArr,
+            [JSONObj.ToString]);
+        JSONArr := JSONObj.Pairs[0].JsonValue as TJSONArray;
+        SetLength(fDocumentList, l + JSONArr.Count);
+        for c := 0 to JSONArr.Count - 1 do
+          fDocumentList[l + c] := TFirestoreDocument.CreateFromJSONObj(
+            JSONArr.Items[c] as TJSONObject);
+      end else begin
+        SetLength(fDocumentList, l + 1);
+        fDocumentList[l] := TFirestoreDocument.CreateFromJSONObj(JSONObj);
+      end;
+    end;
+    fServerTimeStampUTC := Response.GetServerTime(tzUTC);
+    if not JSONObj.TryGetValue<string>('nextPageToken', fPageToken) then
+      fPageToken := '';
+  finally
+    JSONObj.Free;
+  end;
 end;
 
 class function TFirestoreDocuments.IsJSONDocumentsObj(
@@ -258,16 +304,16 @@ var
   JSONObj: TJSONObject;
 begin
   JSONObj := Response.GetContentAsJSONObj;
-  result := (JSONObj.Count = 1) and
-    (JSONObj.Pairs[0].JsonString.ToString = '"documents"');
+  try
+    result := (JSONObj.Count = 1) and
+      (JSONObj.Pairs[0].JsonString.ToString = '"documents"');
+  finally
+    JSONObj.Free;
+  end;
 end;
 
 destructor TFirestoreDocuments.Destroy;
 begin
-  if assigned(fJSONObj) then
-    fJSONObj.Free
-  else if assigned(fJSONArr) then
-    fJSONArr.Free;
   SetLength(fDocumentList, 0);
   inherited;
 end;
@@ -375,7 +421,7 @@ begin
       fFields[c].Name := obj.Pairs[c].JsonString.Value;
       if not(obj.Pairs[c].JsonValue is TJSONObject) then
         raise EStorageObject.CreateFmt(rsFieldIsNotJSONObj, [c]);
-      fFields[c].Obj := obj.Pairs[c].JsonValue as TJSONObject;
+      fFields[c].Obj := obj.Pairs[c].JsonValue.Clone as TJSONObject;
     end;
   end else
     SetLength(fFields, 0);
@@ -388,7 +434,11 @@ begin
 end;
 
 destructor TFirestoreDocument.Destroy;
+var
+  c: integer;
 begin
+  for c := 0 to length(fFields) - 1 do
+    FreeAndNil(fFields[c].Obj);
   SetLength(fFields, 0);
   if fJSONObjOwned then
     fJSONObj.Free;
@@ -452,7 +502,7 @@ begin
   end else
     FieldsObj.RemovePair(FieldName).free;
   FieldsObj.AddPair(Field);
-  fFields[Ind].Obj := Field.JsonValue as TJSONObject;
+  fFields[Ind].Obj := Field.JsonValue.Clone as TJSONObject;
   result := self;
 end;
 

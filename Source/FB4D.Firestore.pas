@@ -76,6 +76,8 @@ type
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirestoreDocuments;
+    function GetAndAddSynchronous(var Docs: IFirestoreDocuments;
+      Params: TRequestResourceParam; QueryParams: TQueryParams = nil): boolean;
     procedure CreateDocument(DocumentPath: TRequestResourceParam;
       QueryParams: TQueryParams; OnDocument: TOnDocument;
       OnRequestError: TOnRequestError);
@@ -389,6 +391,24 @@ begin
     result := TFirestoreDocuments.CreateFromJSONDocumentsObj(Response)
   end else
     result := nil;
+end;
+
+function TFirestoreDatabase.GetAndAddSynchronous(var Docs: IFirestoreDocuments;
+  Params: TRequestResourceParam; QueryParams: TQueryParams): boolean;
+var
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  Request := TFirebaseRequest.Create(BaseURI, '', fAuth);
+  Response := Request.SendRequestSynchronous(Params, rmGet, nil, QueryParams);
+  fLastReceivedMsg := now;
+  if not Response.StatusNotFound then
+  begin
+    Response.CheckForJSONObj;
+    (Docs as TFirestoreDocuments).AddFromJSONDocumentsObj(Response);
+    result := true;
+  end else
+    result := false;
 end;
 
 procedure TFirestoreDatabase.CreateDocument(DocumentPath: TRequestResourceParam;
