@@ -62,6 +62,7 @@ type
     class function ArrStrToCommaStr(Arr: array of string): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
     class function FirestorePath(const Path: string): TRequestResourceParam;
+      deprecated 'Use TFirestorePath.ConvertToDocPath instead';
     // FBID is based on charset of cBase64: Helpers and converter to GUID
     // PUSHID is based on charset of cPushID64: Supports chronological sorting
     type TIDKind = (FBID {random 22 Chars},
@@ -96,6 +97,15 @@ type
     cPushID64 =
       '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
     // This notification is used in the Realtime DB for Post and Push operation
+  end;
+
+  TFirestorePath = class
+    class function TrimStartAndEndPathDelimiters(const Path: string): string;
+    class function ConvertToDocPath(const Path: string): TRequestResourceParam;
+    class function ContainsPathDelim(const Path: string): boolean;
+    class function ExtractLastCollection(const Path: string): string;
+    class function DocPathWithoutLastCollection(
+      const Path: string): TRequestResourceParam;
   end;
 
   TJSONHelpers = class helper for TJSONObject
@@ -712,6 +722,62 @@ begin
   result := 'Unknown Build/';
 {$ENDIF}
   result := result + GetPlatform;
+end;
+
+{ TFirestorePath }
+
+class function TFirestorePath.ContainsPathDelim(const Path: string): boolean;
+begin
+  result := (pos('/', Path) >= 0) or (pos('\', Path) >= 0);
+end;
+
+class function TFirestorePath.TrimStartAndEndPathDelimiters(
+  const Path: string): string;
+begin
+  if Path.StartsWith('/') or Path.StartsWith('\') then
+  begin
+    if Path.EndsWith('/') or Path.EndsWith('\') then
+      result := Path.Substring(1, length(Path) - 2)
+    else
+      result := Path.Substring(1)
+  end
+  else if Path.EndsWith('/') or Path.EndsWith('\') then
+    result := Path.Substring(0, length(Path) - 1)
+  else
+    result := Path;
+end;
+
+class function TFirestorePath.ConvertToDocPath(
+  const Path: string): TRequestResourceParam;
+begin
+  result := TrimStartAndEndPathDelimiters(Path).Split(['/', '\']);
+end;
+
+class function TFirestorePath.ExtractLastCollection(const Path: string): string;
+var
+  TrimmedPath: string;
+  c: integer;
+begin
+  TrimmedPath := TrimStartAndEndPathDelimiters(Path);
+  c := TrimmedPath.LastDelimiter(['/', '\']);
+  if c < 0 then
+    result := TrimmedPath
+  else
+    result := TrimmedPath.Substring(c + 1);
+end;
+
+class function TFirestorePath.DocPathWithoutLastCollection(
+  const Path: string): TRequestResourceParam;
+var
+  TrimmedPath: string;
+  c: integer;
+begin
+  TrimmedPath := TrimStartAndEndPathDelimiters(Path);
+  c := TrimmedPath.LastDelimiter(['/', '\']);
+  if c < 0 then
+    result := []
+  else
+    result := ConvertToDocPath(TrimmedPath.Substring(0, c));
 end;
 
 { TJSONHelpers }

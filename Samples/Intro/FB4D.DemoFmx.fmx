@@ -1358,7 +1358,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       ExplicitSize.cy = 26.000000000000000000
       object btnStartFSListener: TButton
         Position.X = 32.000000000000000000
-        Position.Y = 86.000000000000000000
+        Position.Y = 146.000000000000000000
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -1368,8 +1368,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object btnStopFSListener: TButton
         Enabled = False
-        Position.X = 200.000000000000000000
-        Position.Y = 86.000000000000000000
+        Position.X = 189.000000000000000000
+        Position.Y = 146.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -1382,31 +1382,35 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         DataDetectorTypes = []
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 32.000000000000000000
-        Position.Y = 120.000000000000000000
-        Size.Width = 924.000000000000000000
-        Size.Height = 592.000000000000000000
+        Position.Y = 184.000000000000000000
+        Size.Width = 945.000000000000000000
+        Size.Height = 527.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Viewport.Width = 920.000000000000000000
-        Viewport.Height = 588.000000000000000000
+        Viewport.Width = 941.000000000000000000
+        Viewport.Height = 523.000000000000000000
       end
       object GroupBox1: TGroupBox
+        Anchors = [akLeft, akTop, akRight]
         Position.X = 32.000000000000000000
         Position.Y = 16.000000000000000000
-        Size.Width = 435.000000000000000000
+        Size.Width = 945.000000000000000000
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 1: Entire Collection'
         TabOrder = 7
         object edtCollectionIDForFSListener: TEdit
           Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 6
           Position.X = 80.000000000000000000
           Position.Y = 23.000000000000000000
-          Size.Width = 193.000000000000000000
+          Size.Width = 689.000000000000000000
           Size.Height = 22.000000000000000000
           Size.PlatformDefault = False
-          TextPrompt = 'Enter Collection ID'
+          TextPrompt = 
+            'Enter ID of collection or for subcollection the document path se' +
+            'parated by /'
           object Label29: TLabel
             Position.X = -72.000000000000000000
             Position.Y = 2.000000000000000000
@@ -1419,7 +1423,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
         end
         object chbIncludeDescendants: TCheckBox
-          Position.X = 288.000000000000000000
+          Anchors = [akTop, akRight]
+          Position.X = 792.000000000000000000
           Position.Y = 24.000000000000000000
           Size.Width = 139.000000000000000000
           Size.Height = 19.000000000000000000
@@ -1429,22 +1434,24 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end
       end
       object GroupBox2: TGroupBox
-        Position.X = 475.000000000000000000
-        Position.Y = 16.000000000000000000
-        Size.Width = 473.000000000000000000
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 32.000000000000000000
+        Position.Y = 81.000000000000000000
+        Size.Width = 945.000000000000000000
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 2: Single Document'
         TabOrder = 6
         object edtDocPathForFSListener: TEdit
           Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 6
           Position.X = 80.000000000000000000
           Position.Y = 23.000000000000000000
-          Size.Width = 377.000000000000000000
+          Size.Width = 849.000000000000000000
           Size.Height = 22.000000000000000000
           Size.PlatformDefault = False
-          TextPrompt = 'Enter Document Path seperated by /'
+          TextPrompt = 'Enter document path separated by /'
           object Label30: TLabel
             Position.X = -64.000000000000000000
             Position.Y = 2.000000000000000000

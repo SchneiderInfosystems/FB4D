@@ -840,7 +840,8 @@ function TStructuredQuery.Collection(const CollectionId: string;
   IncludesDescendants: boolean): IStructuredQuery;
 begin
   fColSelector := TJSONObject.Create;
-  fColSelector.AddPair('collectionId', CollectionId);
+  if not CollectionId.IsEmpty then
+    fColSelector.AddPair('collectionId', CollectionId);
   fColSelector.AddPair('allDescendants', TJSONBool.Create(IncludesDescendants));
   result := self;
   fInfo := CollectionId;

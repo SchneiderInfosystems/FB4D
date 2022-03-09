@@ -1552,15 +1552,24 @@ begin
   Targets := '';
   if not edtCollectionIDForFSListener.Text.IsEmpty then
   begin
-    fDatabase.SubscribeQuery(TStructuredQuery.CreateForCollection(
-      edtCollectionIDForFSListener.Text, chbIncludeDescendants.IsChecked),
-      OnFSChangedDocInCollection, OnFSDeletedDocCollection);
+    if TFirestorePath.ContainsPathDelim(edtCollectionIDForFSListener.Text) then
+      fDatabase.SubscribeQuery(TStructuredQuery.CreateForCollection(
+        TFirestorePath.ExtractLastCollection(
+          edtCollectionIDForFSListener.Text),
+        chbIncludeDescendants.IsChecked),
+        OnFSChangedDocInCollection, OnFSDeletedDocCollection,
+        TFirestorePath.DocPathWithoutLastCollection(
+          edtCollectionIDForFSListener.Text))
+    else
+      fDatabase.SubscribeQuery(TStructuredQuery.CreateForCollection(
+        edtCollectionIDForFSListener.Text, chbIncludeDescendants.IsChecked),
+        OnFSChangedDocInCollection, OnFSDeletedDocCollection);
     Targets := 'Target-1: Collection ';
   end;
   if not edtDocPathForFSListener.Text.IsEmpty then
   begin
     fDatabase.SubscribeDocument(
-      TFirebaseHelpers.FirestorePath(edtDocPathForFSListener.Text),
+      TFirestorePath.ConvertToDocPath(edtDocPathForFSListener.Text),
       OnFSChangedDoc, OnFSDeletedDoc);
     Targets := Targets + 'Target-2: Single Doc ';
   end;
