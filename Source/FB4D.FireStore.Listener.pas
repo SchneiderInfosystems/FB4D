@@ -332,8 +332,13 @@ begin
       JSON := Format(cResumeToken, [fResumeToken]);
     case Target.TargetKind of
       tkDocument:
-        JSON := Format(cDocumentTemplate,
-          [fDatabase, Target.DocumentPath, Target.TargetID, JSON]);
+        begin
+          JSON := Format(cDocumentTemplate,
+            [fDatabase, Target.DocumentPath, Target.TargetID, JSON]);
+          {$IFDEF ParserLogDetails}
+          TFirebaseHelpers.Log('FSListenerThread.GetRequestData Doc: ' + JSON);
+          {$ENDIF}
+        end;
       tkQuery:
         begin
           JSON := Format(cQueryTemplate,
@@ -351,11 +356,25 @@ end;
 procedure TFSListenerThread.Interprete(const Telegram: string);
 
   procedure HandleTargetChanged(ChangedObj: TJsonObject);
+  var
+    targetChangeType, msg: string;
+    cause: TJsonObject;
   begin
-    ChangedObj.TryGetValue('resumeToken', fResumeToken);
-    {$IFDEF ParserLogDetails}
-    TFirebaseHelpers.Log('FSListenerThread.Interprete Token: ' + fResumeToken);
+    {$IFDEF ParserLog}
+    TFirebaseHelpers.Log('FSListenerThread.Interprete.HandleTargetChanged: ' +
+      ChangedObj.ToString);
     {$ENDIF}
+    if ChangedObj.TryGetValue('resumeToken', fResumeToken) then
+    begin
+      {$IFDEF ParserLogDetails}
+      TFirebaseHelpers.Log('FSListenerThread.Interprete Token: ' + fResumeToken);
+      {$ENDIF}
+    end
+    else if ChangedObj.TryGetValue('targetChangeType', targetChangeType) and
+            SameText(targetChangeType, 'REMOVE') and
+            ChangedObj.TryGetValue('cause', cause) and
+            cause.TryGetValue('message', msg) then
+      ReportErrorInThread(msg);
   end;
 
   procedure HandleDocChanged(DocChangedObj: TJsonObject);
