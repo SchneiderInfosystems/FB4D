@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2021 Christoph Schneider                                 }
+{  Copyright (c) 2018-2022 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -42,6 +42,29 @@ uses
 const
   cDefaultCacheSpaceInBytes = 536870912; // 500 MByte
   cDefaultDatabaseID = '(default)';
+
+  cRegionUSCent1 = 'us-central1';             // Iowa
+  cRegionUSEast1 = 'us-east1';                // South Carolina
+  cRegionUSEast4 = 'us-east4';                // Nothern Virginia
+  cRegionUSWest2 = 'us-west2';                // Los Angeles
+  cRegionUSWest3 = 'us-west3';                // Salt Lake City
+  cRegionUSWest4 = 'us-west4';                // Las Vegas
+  cRegionUSNoEa1 = 'northamerica-northeast1'; // Montreal
+  cRegionUSSoEa1 = 'southamerica-east1';      // Sao Paulo
+  cRegionEUWest1 = 'europe-west1';            // Belgium
+  cRegionEUWest2 = 'europe-west2';            // London
+  cRegionEUWest3 = 'europe-west3';            // Frankfurt
+  cRegionEUWest6 = 'europe-west6';            // Zürich
+  cRegionEUCent2 = 'europe-central2';         // Warsaw
+  cRegionAUSoEa1 = 'australia-southeast1';    // Sydney
+  cRegionASEast1 = 'asia-east1';              // Taiwan
+  cRegionASEast2 = 'asia-east2';              // Hong Kong
+  cRegionASNoEa1 = 'asia-northeast1';         // Tokyo
+  cRegionASNoEa2 = 'asia-northeast2';         // Osaka
+  cRegionASSout1 = 'asia-south1';             // Mumbai
+  cRegionASSoEa1 = 'asia-southeast1';         // Singapore
+  cRegionASSoEa2 = 'asia-southeast2';         // Jakarta
+  cRegionASSoEa3 = 'asia-southeast3';         // Seoul
 
 type
   /// <summary>
@@ -642,9 +665,10 @@ type
   IFirebaseFunctions = interface(IInterface)
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
-      Params: TJSONObject = nil);
+      Params: TJSONObject = nil; const Region: string = cRegionUSCent1);
     function CallFunctionSynchronous(const FunctionName: string;
-      Params: TJSONObject = nil): TJSONObject;
+      Params: TJSONObject = nil;
+      const Region: string = cRegionUSCent1): TJSONObject;
   end;
 
   TOnDownload = procedure(Obj: IStorageObject) of object;

@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2021 Christoph Schneider                                 }
+{  Copyright (c) 2018-2022 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -36,16 +36,17 @@ type
   private
     fProjectID: string;
     fAuth: IFirebaseAuthentication;
-    function BaseURL: string;
+    function BaseURL(const Region: string): string;
     procedure OnResp(const RequestID: string; Response: IFirebaseResponse);
   public
     constructor Create(const ProjectID: string;
       Auth: IFirebaseAuthentication = nil);
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
-      Params: TJSONObject = nil);
+      Params: TJSONObject = nil; const Region: string = cRegionUSCent1);
     function CallFunctionSynchronous(const FunctionName: string;
-      Params: TJSONObject = nil): TJSONObject;
+      Params: TJSONObject = nil;
+      const Region: string = cRegionUSCent1): TJSONObject;
   end;
 
 implementation
@@ -54,7 +55,7 @@ uses
   FB4D.Helpers;
 
 const
-  GOOGLE_CLOUD_FUNCTIONS_URL = 'https://us-central1-%s.cloudfunctions.net';
+  GOOGLE_CLOUD_FUNCTIONS_URL = 'https://%s-%s.cloudfunctions.net';
 
 resourcestring
   rsFunctionCall = 'Function call %s';
@@ -70,14 +71,14 @@ begin
   fAuth := Auth;
 end;
 
-function TFirebaseFunctions.BaseURL: string;
+function TFirebaseFunctions.BaseURL(const Region: string): string;
 begin
-  result := Format(GOOGLE_CLOUD_FUNCTIONS_URL, [fProjectID]);
+  result := Format(GOOGLE_CLOUD_FUNCTIONS_URL, [Region, fProjectID]);
 end;
 
 procedure TFirebaseFunctions.CallFunction(OnSuccess: TOnFunctionSuccess;
   OnRequestError: TOnRequestError; const FunctionName: string;
-  Params: TJSONObject);
+  Params: TJSONObject; const Region: string);
 var
   Request: IFirebaseRequest;
   Data: TJSONObject;
@@ -85,7 +86,7 @@ begin
   Data := TJSONObject.Create;
   try
     Data.AddPair('data', Params);
-    Request := TFirebaseRequest.Create(BaseURL,
+    Request := TFirebaseRequest.Create(BaseURL(Region),
       Format(rsFunctionCall, [FunctionName]), fAuth);
     Request.SendRequest([FunctionName], rmPost, Data, nil, tmBearer,
       OnResp, OnRequestError, TOnSuccess.CreateFunctionSuccess(OnSuccess));
@@ -133,7 +134,7 @@ begin
 end;
 
 function TFirebaseFunctions.CallFunctionSynchronous(const FunctionName: string;
-  Params: TJSONObject): TJSONObject;
+  Params: TJSONObject; const Region: string): TJSONObject;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
@@ -143,7 +144,7 @@ begin
   Data := TJSONObject.Create;
   try
     Data.AddPair('data', Params);
-    Request := TFirebaseRequest.Create(BaseURL, '', fAuth);
+    Request := TFirebaseRequest.Create(BaseURL(Region), '', fAuth);
     Response := Request.SendRequestSynchronous([FunctionName], rmPost, Data,
       nil, tmBearer);
     Response.CheckForJSONObj;
