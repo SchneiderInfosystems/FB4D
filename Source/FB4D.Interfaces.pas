@@ -665,10 +665,9 @@ type
   IFirebaseFunctions = interface(IInterface)
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
-      Params: TJSONObject = nil; const Region: string = cRegionUSCent1);
+      Params: TJSONObject = nil);
     function CallFunctionSynchronous(const FunctionName: string;
-      Params: TJSONObject = nil;
-      const Region: string = cRegionUSCent1): TJSONObject;
+      Params: TJSONObject = nil): TJSONObject;
   end;
 
   TOnDownload = procedure(Obj: IStorageObject) of object;

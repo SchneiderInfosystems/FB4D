@@ -44,6 +44,7 @@ type
     fProjectID: string;
     fBucket: string;
     fFirebaseURL: string;
+    fServerRegion: string;
     fAuth: IFirebaseAuthentication;
     fRealTimeDB: IRealTimeDB;
     fDatabase: TDictionary<string, IFirestoreDatabase>;
@@ -56,7 +57,8 @@ type
     /// and for accessing the Firebase RT-DB the FirebaseURL as parameters.
     /// </summary>
     constructor Create(const ApiKey, ProjectID: string;
-      const Bucket: string = ''; const FirebaseURL: string = ''); overload;
+      const Bucket: string = ''; const FirebaseURL: string = '';
+      const ServerRegion: string = cRegionUSCent1); overload;
 
     destructor Destroy; override;
 
@@ -65,7 +67,8 @@ type
     /// be loaded from the Firebase Console after adding an App in the project
     /// settings.
     /// </summary>
-    constructor Create(const GoogleServicesFile: string); overload;
+    constructor Create(const GoogleServicesFile: string;
+      const ServerRegion: string = cRegionUSCent1); overload;
 
     /// <summary>
     /// Define Bucket after creation but before access to Storage
@@ -77,7 +80,13 @@ type
     /// </summary>
     procedure SetFirebaseURL(const FirebaseURL: string);
 
+    /// <summary>
+    /// Define Server Region after creation but before access to Functions
+    /// </summary>
+    procedure SetServerRegion(const ServerRegion: string);
+
     function ProjectID: string;
+    function ServerRegion: string;
     function Auth: IFirebaseAuthentication;
     function RealTimeDB: IRealTimeDB;
     function Database(
@@ -99,11 +108,12 @@ uses
 { TFirebaseConfiguration }
 
 constructor TFirebaseConfiguration.Create(const ApiKey, ProjectID,
-  Bucket, FirebaseURL: string);
+  Bucket, FirebaseURL, ServerRegion: string);
 begin
   fApiKey := ApiKey;
   fProjectID := ProjectID;
   fBucket := Bucket;
+  fServerRegion := ServerRegion;
   if FirebaseURL.IsEmpty then
     fFirebaseURL := Format(GOOGLE_FIREBASE, [fProjectID])
   else
@@ -111,7 +121,8 @@ begin
   fDatabase := TDictionary<string, IFirestoreDatabase>.Create;
 end;
 
-constructor TFirebaseConfiguration.Create(const GoogleServicesFile: string);
+constructor TFirebaseConfiguration.Create(const GoogleServicesFile,
+  ServerRegion: string);
 var
   JsonObj, ProjInfo: TJSONValue;
   Client, ApiKey: TJSONArray;
@@ -137,6 +148,7 @@ begin
   finally
     JsonObj.Free;
   end;
+  fServerRegion := ServerRegion; // Region is missing in google-services.json
   fDatabase := TDictionary<string, IFirestoreDatabase>.Create;
 end;
 
@@ -154,6 +166,11 @@ end;
 procedure TFirebaseConfiguration.SetFirebaseURL(const FirebaseURL: string);
 begin
   fFirebaseURL := FirebaseURL;
+end;
+
+procedure TFirebaseConfiguration.SetServerRegion(const ServerRegion: string);
+begin
+  fServerRegion := ServerRegion;
 end;
 
 function TFirebaseConfiguration.Auth: IFirebaseAuthentication;
@@ -196,13 +213,18 @@ function TFirebaseConfiguration.Functions: IFirebaseFunctions;
 begin
   Assert(not fProjectID.IsEmpty, 'ProjectID is required for Functions');
   if not assigned(fFunctions) then
-    fFunctions := TFirebaseFunctions.Create(fProjectID, Auth);
+    fFunctions := TFirebaseFunctions.Create(fProjectID, Auth, fServerRegion);
   result := fFunctions;
 end;
 
 function TFirebaseConfiguration.ProjectID: string;
 begin
   result := fProjectID;
+end;
+
+function TFirebaseConfiguration.ServerRegion: string;
+begin
+  result := fServerRegion;
 end;
 
 class function TFirebaseConfiguration.GetLibVersionInfo: string;

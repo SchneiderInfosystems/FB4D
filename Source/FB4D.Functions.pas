@@ -35,18 +35,19 @@ type
   TFirebaseFunctions = class(TInterfacedObject, IFirebaseFunctions)
   private
     fProjectID: string;
+    fServerRegion: string;
     fAuth: IFirebaseAuthentication;
-    function BaseURL(const Region: string): string;
+    function BaseURL: string;
     procedure OnResp(const RequestID: string; Response: IFirebaseResponse);
   public
     constructor Create(const ProjectID: string;
-      Auth: IFirebaseAuthentication = nil);
+      Auth: IFirebaseAuthentication = nil;
+      const ServerRegion: string = cRegionUSCent1);
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
-      Params: TJSONObject = nil; const Region: string = cRegionUSCent1);
+      Params: TJSONObject = nil);
     function CallFunctionSynchronous(const FunctionName: string;
-      Params: TJSONObject = nil;
-      const Region: string = cRegionUSCent1): TJSONObject;
+      Params: TJSONObject = nil): TJSONObject;
   end;
 
 implementation
@@ -64,21 +65,22 @@ resourcestring
 { TFirestoreFunctions }
 
 constructor TFirebaseFunctions.Create(const ProjectID: string;
-  Auth: IFirebaseAuthentication);
+  Auth: IFirebaseAuthentication; const ServerRegion: string);
 begin
   inherited Create;
   fProjectID := ProjectID;
   fAuth := Auth;
+  fServerRegion := ServerRegion;
 end;
 
-function TFirebaseFunctions.BaseURL(const Region: string): string;
+function TFirebaseFunctions.BaseURL: string;
 begin
-  result := Format(GOOGLE_CLOUD_FUNCTIONS_URL, [Region, fProjectID]);
+  result := Format(GOOGLE_CLOUD_FUNCTIONS_URL, [fServerRegion, fProjectID]);
 end;
 
 procedure TFirebaseFunctions.CallFunction(OnSuccess: TOnFunctionSuccess;
   OnRequestError: TOnRequestError; const FunctionName: string;
-  Params: TJSONObject; const Region: string);
+  Params: TJSONObject);
 var
   Request: IFirebaseRequest;
   Data: TJSONObject;
@@ -86,7 +88,7 @@ begin
   Data := TJSONObject.Create;
   try
     Data.AddPair('data', Params);
-    Request := TFirebaseRequest.Create(BaseURL(Region),
+    Request := TFirebaseRequest.Create(BaseURL,
       Format(rsFunctionCall, [FunctionName]), fAuth);
     Request.SendRequest([FunctionName], rmPost, Data, nil, tmBearer,
       OnResp, OnRequestError, TOnSuccess.CreateFunctionSuccess(OnSuccess));
@@ -134,7 +136,7 @@ begin
 end;
 
 function TFirebaseFunctions.CallFunctionSynchronous(const FunctionName: string;
-  Params: TJSONObject; const Region: string): TJSONObject;
+  Params: TJSONObject): TJSONObject;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
@@ -144,7 +146,7 @@ begin
   Data := TJSONObject.Create;
   try
     Data.AddPair('data', Params);
-    Request := TFirebaseRequest.Create(BaseURL(Region), '', fAuth);
+    Request := TFirebaseRequest.Create(BaseURL, '', fAuth);
     Response := Request.SendRequestSynchronous([FunctionName], rmPost, Data,
       nil, tmBearer);
     Response.CheckForJSONObj;
