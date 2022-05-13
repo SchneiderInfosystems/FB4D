@@ -368,6 +368,7 @@ begin
     TFirebaseHelpers.Log('FirebaseStorage.UploadSynchronousFromStream ' +
       Response.ContentAsString);
     {$ENDIF}
+    Response.CheckForJSONObj;
     result := TStorageObject.Create(self, Response);
     fCSForStorageObjs.Acquire;
     try
