@@ -67,8 +67,7 @@ type
     /// be loaded from the Firebase Console after adding an App in the project
     /// settings.
     /// </summary>
-    constructor Create(const GoogleServicesFile: string;
-      const ServerRegion: string = cRegionUSCent1); overload;
+    constructor Create(const GoogleServicesFile: string); overload;
 
     /// <summary>
     /// Define Bucket after creation but before access to Storage
@@ -121,8 +120,7 @@ begin
   fDatabase := TDictionary<string, IFirestoreDatabase>.Create;
 end;
 
-constructor TFirebaseConfiguration.Create(const GoogleServicesFile,
-  ServerRegion: string);
+constructor TFirebaseConfiguration.Create(const GoogleServicesFile: string);
 var
   JsonObj, ProjInfo: TJSONValue;
   Client, ApiKey: TJSONArray;
@@ -148,7 +146,7 @@ begin
   finally
     JsonObj.Free;
   end;
-  fServerRegion := ServerRegion; // Region is missing in google-services.json
+  fServerRegion := cRegionUSCent1; // Region is missing in google-services.json
   fDatabase := TDictionary<string, IFirestoreDatabase>.Create;
 end;
 
