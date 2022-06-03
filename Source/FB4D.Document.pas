@@ -26,7 +26,7 @@ unit FB4D.Document;
 interface
 
 uses
-  System.Classes, System.JSON, System.SysUtils,
+  System.Types, System.Classes, System.JSON, System.SysUtils,
 {$IFNDEF LINUX64}
   System.Sensors,
 {$ENDIF}
@@ -91,9 +91,11 @@ type
     function GetArrayValue(const FieldName: string; Index: integer): TJSONValue;
     function GetArrayValues(const FieldName: string): TJSONObjects;
     function GetArrayMapValues(const FieldName: string): TJSONObjects;
+    function GetArrayStringValues(const FieldName: string): TStringDynArray;
     function GetMapSize(const FieldName: string): integer;
     function GetMapType(const FieldName: string;
       Index: integer): TFirestoreFieldType;
+    function GetMapSubFieldName(const FieldName: string; Index: integer): string;
     function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
       overload;
     function GetMapValue(const FieldName, SubFieldName: string): TJSONObject;
@@ -181,6 +183,7 @@ resourcestring
   rsArrFieldNoMap = 'Arrayfield[%d] does not contain a map';
   rsArrIndexOutOfBound = 'Array index out of bound for array field';
   rsMapIndexOutOfBound = 'Map index out of bound for array field';
+  rsInvalidMapField = 'Field %s is not a map field';
 
 { TFirestoreDocuments }
 
@@ -898,12 +901,47 @@ begin
   end;
 end;
 
+function TFirestoreDocument.GetArrayStringValues(
+  const FieldName: string): TStringDynArray;
+var
+  Val: TJSONValue;
+  Obj: TJSONObject;
+  Arr: TJSONArray;
+  c: integer;
+  FieldType: string;
+begin
+  SetLength(result, 0);
+  Val := FieldByName(FieldName);
+  if not assigned(Val) then
+    exit;
+  Obj := Val.GetValue<TJSONObject>('arrayValue');
+  Arr := Obj.GetValue('values') as TJSONArray;
+  if not assigned(Arr) then
+    exit;
+  SetLength(result, Arr.Count);
+  for c := 0 to Arr.Count - 1 do
+  begin
+    if not(Arr.Items[c] is TJSONObject) then
+      raise EFirestoreDocument.CreateFmt(rsArrFieldNotJSONObj, [c]);
+    Obj := Arr.Items[c] as TJSONObject;
+    if Obj.Count <> 1 then
+      raise EFirestoreDocument.CreateFmt(rsArrFieldNotTypeValue, [c]);
+    FieldType := Obj.Pairs[0].JsonString.Value;
+    if SameText(FieldType, 'stringValue') then
+      result[c] := Obj.GetValue<string>('stringValue')
+    else
+      raise EFirestoreDocument.CreateFmt(rsArrFieldNoMap, [c]);
+  end;
+end;
+
 function TFirestoreDocument.GetArrayType(const FieldName: string;
   Index: integer): TFirestoreFieldType;
 var
   Objs: TJSONObjects;
 begin
   Objs := GetArrayValues(FieldName);
+  if not assigned(Objs) then
+    raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
   if Index >= length(Objs) then
     raise EFirestoreDocument.Create(rsArrIndexOutOfBound);
   result := GetFieldType(Objs[Index].Pairs[0].JsonString.Value);
@@ -915,6 +953,8 @@ var
   Objs: TJSONObjects;
 begin
   Objs := GetArrayValues(FieldName);
+  if not assigned(Objs) then
+    raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
   if Index >= length(Objs) then
     raise EFirestoreDocument.Create(rsArrIndexOutOfBound);
   result := Objs[Index].Pairs[0].JsonValue;
@@ -926,6 +966,8 @@ var
   Objs: TJSONObjects;
 begin
   Objs := GetArrayValues(FieldName);
+  if not assigned(Objs) then
+    raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
   if Index >= length(Objs) then
     raise EFirestoreDocument.Create(rsArrIndexOutOfBound);
   result := Objs[Index].Pairs[0];
@@ -954,9 +996,31 @@ var
   Objs: TJSONObjects;
 begin
   Objs := GetMapValues(FieldName);
+  if not assigned(Objs) then
+    raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
   if (Index < 0) or (Index >= length(Objs)) then
     raise EFirestoreDocument.Create(rsMapIndexOutOfBound);
   result := GetFieldType(Objs[Index].Pairs[0].JsonString.Value);
+end;
+
+function TFirestoreDocument.GetMapSubFieldName(const FieldName: string;
+  Index: integer): string;
+var
+  Val: TJSONValue;
+  Obj, Obj2: TJSONObject;
+begin
+  Val := FieldByName(FieldName);
+  if not assigned(Val) then
+    raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
+  Obj := Val.GetValue<TJSONObject>('mapValue');
+  if not assigned(Obj) then
+    raise EFirestoreDocument.CreateFmt(rsInvalidMapField, [FieldName]);
+  Obj2 := Obj.GetValue('fields') as TJSONObject;
+  if not assigned(Obj2) then
+    raise EFirestoreDocument.CreateFmt(rsInvalidMapField, [FieldName]);
+  if (Index < 0) or (Index >= Obj2.Count) then
+    raise EFirestoreDocument.Create(rsMapIndexOutOfBound);
+  result := Obj2.Pairs[Index].JsonString.Value;
 end;
 
 function TFirestoreDocument.GetMapValue(const FieldName: string;
@@ -965,6 +1029,8 @@ var
   Objs: TJSONObjects;
 begin
   Objs := GetMapValues(FieldName);
+  if not assigned(Objs) then
+    raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
   if (Index < 0) or (Index >= length(Objs)) then
     raise EFirestoreDocument.Create(rsMapIndexOutOfBound);
   result := Objs[Index].Pairs[0].JsonValue;
@@ -1009,9 +1075,7 @@ begin
     exit(nil);
   SetLength(result, Obj2.Count);
   for c := 0 to Obj2.Count - 1 do
-  begin
     result[c] := Obj2.Pairs[c].JsonValue as TJSONObject;
-  end;
 end;
 
 function TFirestoreDocument.CreateTime: TDateTime;

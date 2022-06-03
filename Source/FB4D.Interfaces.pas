@@ -357,6 +357,7 @@ type
     function GetBytes(const FieldName: string): TBytes;
     function GetArrayValues(const FieldName: string): TJSONObjects;
     function GetArrayMapValues(const FieldName: string): TJSONObjects;
+    function GetArrayStringValues(const FieldName: string): TStringDynArray;
     function GetArraySize(const FieldName: string): integer;
     function GetArrayType(const FieldName: string;
       Index: integer): TFirestoreFieldType;
@@ -365,6 +366,7 @@ type
     function GetMapSize(const FieldName: string): integer;
     function GetMapType(const FieldName: string;
       Index: integer): TFirestoreFieldType;
+    function GetMapSubFieldName(const FieldName: string; Index: integer): string;
     function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
       overload;
     function GetMapValue(const FieldName, SubFieldName: string): TJSONObject;

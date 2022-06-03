@@ -79,6 +79,8 @@ type
     class procedure SimpleDownload(const DownloadUrl: string; Stream: TStream;
       OnSuccess: TOnSimpleDownloadSuccess;
       OnError: TOnSimpleDownloadError = nil);
+    class procedure SimpleDownloadSynchronous(const DownloadUrl: string;
+      Stream: TStream);
     // Miscellaneous functions
     class function IsEMailAdress(const EMail: string): boolean;
     // Application helpers
@@ -117,8 +119,12 @@ type
     // Integer
     function GetIntegerValue: integer; overload;
     function GetIntegerValue(const Name: string): integer; overload;
+    function GetInt64Value: Int64; overload;
+    function GetInt64Value(const Name: string): Int64; overload;
     class function SetIntegerValue(Val: integer): TJSONObject;
     class function SetInteger(const VarName: string; Val: integer): TJSONPair;
+    class function SetInt64Value(Val: Int64): TJSONObject;
+    class function SetInt64(const VarName: string; Val: Int64): TJSONPair;
     // Boolean
     function GetBooleanValue: Boolean; overload;
     function GetBooleanValue(const Name: string): Boolean; overload;
@@ -151,27 +157,33 @@ type
     class function SetGeoPoint(const VarName: string;
       Val: TLocationCoord2D): TJSONPair;
     // Bytes
-    class function SetBytesValue(Val: TBytes): TJSONObject;
-    class function SetBytes(const VarName: string; Val: TBytes): TJSONPair;
     function GetBytes: TBytes; overload;
     function GetBytes(const Name: string): TBytes; overload;
-    class function SetMapValue(MapVars: array of TJSONPair): TJSONObject;
-    class function SetMap(const VarName: string;
-      MapVars: array of TJSONPair): TJSONPair;
+    class function SetBytesValue(Val: TBytes): TJSONObject;
+    class function SetBytes(const VarName: string; Val: TBytes): TJSONPair;
     // Map
     function GetMapSize: integer; overload;
     function GetMapSize(const Name: string): integer; overload;
     function GetMapItem(Ind: integer): TJSONPair; overload;
     function GetMapItem(const Name: string): TJSONObject; overload;
     function GetMapItem(const Name: string; Ind: integer): TJSONPair; overload;
+    class function SetMapValue(MapVars: array of TJSONPair): TJSONObject;
+    class function SetMap(const VarName: string;
+      MapVars: array of TJSONPair): TJSONPair;
     // Array
-    class function SetArray(const VarName: string;
-      ArrayVars: array of TJSONValue): TJSONPair;
     function GetArraySize: integer; overload;
     function GetArraySize(const Name: string): integer; overload;
     function GetArrayItem(Ind: integer): TJSONObject; overload;
     function GetArrayItem(const Name: string; Ind: integer): TJSONObject;
       overload;
+    class function SetArray(const VarName: string;
+      ArrayVars: array of TJSONValue): TJSONPair;
+    class function SetStringArray(const VarName: string;
+      Strings: TStringDynArray): TJSONPair; overload;
+    class function SetStringArray(const VarName: string;
+      Strings: TStringList): TJSONPair; overload;
+    class function SetStringArray(const VarName: string;
+      Strings: TList<string>): TJSONPair; overload;
   end;
 
   TQueryParamsHelper = class helper for TQueryParams
@@ -471,6 +483,27 @@ begin
         Client.Free;
       end;
     end).Start;
+end;
+
+class procedure TFirebaseHelpers.SimpleDownloadSynchronous(
+  const DownloadUrl: string; Stream: TStream);
+var
+  Client: THTTPClient;
+  Response: IHTTPResponse;
+begin
+  Client := THTTPClient.Create;
+  try
+    Response := Client.Get(DownloadUrl, Stream);
+    if Response.StatusCode <> 200 then
+    begin
+      {$IFDEF DEBUG}
+      TFirebaseHelpers.Log(Response.ContentAsString);
+      {$ENDIF}
+      raise EFirebaseResponse.Create(Response.StatusText);
+    end;
+  finally
+    Client.Free;
+  end;
 end;
 
 class function TFirebaseHelpers.CreateAutoID(IDKind: TIDKind = FBID): string;
@@ -787,6 +820,11 @@ begin
   result := GetValue<integer>('integerValue');
 end;
 
+function TJSONHelpers.GetInt64Value: Int64;
+begin
+  result := GetValue<Int64>('integerValue');
+end;
+
 function TJSONHelpers.GetIntegerValue(const Name: string): integer;
 var
   Val: TJSONValue;
@@ -794,6 +832,17 @@ begin
   Val := GetValue(Name);
   if assigned(Val) then
     result := (Val as TJSONObject).GetIntegerValue
+  else
+    raise EJSONException.CreateFmt(SValueNotFound, [Name]);
+end;
+
+function TJSONHelpers.GetInt64Value(const Name: string): Int64;
+var
+  Val: TJSONValue;
+begin
+  Val := GetValue(Name);
+  if assigned(Val) then
+    result := (Val as TJSONObject).GetInt64Value
   else
     raise EJSONException.CreateFmt(SValueNotFound, [Name]);
 end;
@@ -897,6 +946,18 @@ class function TJSONHelpers.SetIntegerValue(Val: integer): TJSONObject;
 begin
   result := TJSONObject.Create(TJSONPair.Create('integerValue',
     TJSONNumber.Create(Val)));
+end;
+
+class function TJSONHelpers.SetInt64Value(Val: Int64): TJSONObject;
+begin
+  result := TJSONObject.Create(TJSONPair.Create('integerValue',
+    TJSONNumber.Create(Val)));
+end;
+
+class function TJSONHelpers.SetInt64(const VarName: string;
+  Val: Int64): TJSONPair;
+begin
+  result := TJSONPair.Create(VarName, SetInt64Value(Val));
 end;
 
 class function TJSONHelpers.SetInteger(const VarName: string;
@@ -1130,6 +1191,42 @@ class function TJSONHelpers.SetArray(const VarName: string;
 
 begin
   result := TJSONPair.Create(VarName, SetArrayValue(ArrayVars));
+end;
+
+class function TJSONHelpers.SetStringArray(const VarName: string;
+  Strings: TStringDynArray): TJSONPair;
+var
+  Arr: array of TJSONValue;
+  c: integer;
+begin
+  SetLength(Arr, length(Strings));
+  for c := 0 to length(Strings) - 1 do
+    Arr[c] := TJSONObject.SetStringValue(Strings[c]);
+  result := SetArray(VarName, Arr);
+end;
+
+class function TJSONHelpers.SetStringArray(const VarName: string;
+  Strings: TStringList): TJSONPair;
+var
+  Arr: array of TJSONValue;
+  c: integer;
+begin
+  SetLength(Arr, Strings.Count);
+  for c := 0 to Strings.Count - 1 do
+    Arr[c] := TJSONObject.SetStringValue(Strings[c]);
+  result := SetArray(VarName, Arr);
+end;
+
+class function TJSONHelpers.SetStringArray(const VarName: string;
+  Strings: TList<string>): TJSONPair;
+var
+  Arr: array of TJSONValue;
+  c: integer;
+begin
+  SetLength(Arr, Strings.Count);
+  for c := 0 to Strings.Count - 1 do
+    Arr[c] := TJSONObject.SetStringValue(Strings[c]);
+  result := SetArray(VarName, Arr);
 end;
 
 function TJSONHelpers.GetArraySize: integer;
