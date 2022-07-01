@@ -343,6 +343,9 @@ type
     function GetIntegerValue(const FieldName: string): integer;
     function GetIntegerValueDef(const FieldName: string;
       Default: integer): integer;
+    function GetInt64Value(const FieldName: string): Int64;
+    function GetInt64ValueDef(const FieldName: string;
+      Default: Int64): Int64;
     function GetDoubleValue(const FieldName: string): double;
     function GetDoubleValueDef(const FieldName: string;
       Default: double): double;

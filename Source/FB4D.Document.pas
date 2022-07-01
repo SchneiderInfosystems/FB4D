@@ -71,6 +71,9 @@ type
     function GetIntegerValue(const FieldName: string): integer;
     function GetIntegerValueDef(const FieldName: string;
       Default: integer): integer;
+    function GetInt64Value(const FieldName: string): Int64;
+    function GetInt64ValueDef(const FieldName: string;
+      Default: Int64): Int64;
     function GetDoubleValue(const FieldName: string): double;
     function GetDoubleValueDef(const FieldName: string;
       Default: double): double;
@@ -692,6 +695,29 @@ begin
   if not assigned(Val) then
     result := Default
   else if not Val.TryGetValue<integer>('integerValue', result) then
+    result := Default;
+end;
+
+function TFirestoreDocument.GetInt64Value(const FieldName: string): Int64;
+var
+  Val: TJSONValue;
+begin
+  Val := FieldByName(FieldName);
+  if assigned(Val) then
+    result := Val.GetValue<Int64>('integerValue')
+  else
+    raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
+end;
+
+function TFirestoreDocument.GetInt64ValueDef(const FieldName: string;
+  Default: Int64): Int64;
+var
+  Val: TJSONValue;
+begin
+  Val := FieldByName(FieldName);
+  if not assigned(Val) then
+    result := Default
+  else if not Val.TryGetValue<Int64>('integerValue', result) then
     result := Default;
 end;
 
