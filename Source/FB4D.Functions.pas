@@ -101,6 +101,7 @@ procedure TFirebaseFunctions.OnResp(const RequestID: string;
   Response: IFirebaseResponse);
 var
   Msg: string;
+  ResultVal: TJSONValue;
   Obj, ResultObj: TJSONObject;
 begin
   try
@@ -114,10 +115,24 @@ begin
     end else begin
       Obj := Response.GetContentAsJSONObj;
       try
-        if Obj.TryGetValue('result', ResultObj) then
+        if Obj.TryGetValue('result', ResultVal) and
+           assigned(Response.OnSuccess.OnFunctionSuccess) then
         begin
-          if assigned(Response.OnSuccess.OnFunctionSuccess) then
+          if ResultVal is TJSONObject then
+          begin
+            ResultObj := ResultVal as TJSONObject;
             Response.OnSuccess.OnFunctionSuccess(RequestID, ResultObj);
+          end
+          else if ResultVal is TJSONArray then
+          begin
+            ResultObj := TJSONObject.Create(
+              TJSONPair.Create('result', ResultVal as TJSONArray));
+            Response.OnSuccess.OnFunctionSuccess(RequestID, ResultObj);
+          end else begin
+            if assigned(Response.OnError) then
+              Response.OnError(RequestID, Format(rsUnexpectedResult,
+                [RequestID, Response.ContentAsString]));
+          end;
         end
         else if assigned(Response.OnError) then
           Response.OnError(RequestID, Format(rsUnexpectedResult,
@@ -141,7 +156,8 @@ var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
   Data: TJSONObject;
-  Obj, Res: TJSONObject;
+  Obj: TJSONObject;
+  ResultVal: TJSONValue;
 begin
   Data := TJSONObject.Create;
   try
@@ -152,11 +168,17 @@ begin
     Response.CheckForJSONObj;
     Obj := Response.GetContentAsJSONObj;
     try
-      if not Obj.TryGetValue('result', res) then
+      if not Obj.TryGetValue('result', ResultVal) then
         raise EFirebaseFunctions.CreateFmt(rsUnexpectedResult,
           [FunctionName, Obj.ToJSON])
+      else if ResultVal is TJSONObject then
+        result := ResultVal.Clone as TJSONObject
+      else if ResultVal is TJSONArray then
+        result := TJSONObject.Create(
+          TJSONPair.Create('result', ResultVal.Clone as TJSONArray))
       else
-        result := res.Clone as TJSONObject;
+        raise EFirebaseFunctions.CreateFmt(rsUnexpectedResult,
+          [FunctionName, Obj.ToJSON])
     finally
       Obj.Free;
     end;
