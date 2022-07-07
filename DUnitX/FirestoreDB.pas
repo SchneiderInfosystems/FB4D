@@ -120,7 +120,7 @@ end;
 
 procedure UT_FirestoreDB.WaitAndCheckTimeout(const Step: string);
 const
-  cTimeout = 10 / 24 / 3600; // 10 sec
+  cTimeout = 15 / 24 / 3600; // 15 sec
 begin
   Application.ProcessMessages;
   if now - fStarted > cTimeout then

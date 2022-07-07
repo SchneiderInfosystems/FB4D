@@ -110,6 +110,8 @@ type
       const Path: string): TRequestResourceParam;
   end;
 
+  TFirestoreMap = array of TJSONPair;
+  TFirestoreArr = array of TJSONValue;
   TJSONHelpers = class helper for TJSONObject
     // String
     function GetStringValue: string; overload;
@@ -183,9 +185,9 @@ type
     function GetMapItem(const Name: string): TJSONObject; overload;
     function GetMapItem(const Name: string; Ind: integer): TJSONPair; overload;
     function GetMapValue(const Name: string; Ind: integer): TJSONObject;
-    class function SetMapValue(MapVars: array of TJSONPair): TJSONObject;
+    class function SetMapValue(MapVars: TFirestoreMap): TJSONObject;
     class function SetMap(const VarName: string;
-      MapVars: array of TJSONPair): TJSONPair;
+      MapVars: TFirestoreMap): TJSONPair;
     // Array
     function GetArraySize: integer; overload;
     function GetArraySize(const Name: string): integer; overload;
@@ -194,7 +196,7 @@ type
       overload;
     function GetStringArray: TStringDynArray;
     class function SetArray(const VarName: string;
-      ArrayVars: array of TJSONValue): TJSONPair;
+      FSArr: TFirestoreArr): TJSONPair;
     class function SetStringArray(const VarName: string;
       Strings: TStringDynArray): TJSONPair; overload;
     class function SetStringArray(const VarName: string;
@@ -1268,8 +1270,7 @@ begin
   result := GetMapItem(Name, Ind).JsonValue as TJSONObject;
 end;
 
-class function TJSONHelpers.SetMapValue(
-  MapVars: array of TJSONPair): TJSONObject;
+class function TJSONHelpers.SetMapValue(MapVars: TFirestoreMap): TJSONObject;
 var
   Map: TJSONObject;
   c: integer;
@@ -1282,34 +1283,34 @@ begin
 end;
 
 class function TJSONHelpers.SetMap(const VarName: string;
-  MapVars: array of TJSONPair): TJSONPair;
+  MapVars: TFirestoreMap): TJSONPair;
 begin
   result := TJSONPair.Create(VarName, SetMapValue(MapVars));
 end;
 
 class function TJSONHelpers.SetArray(const VarName: string;
-  ArrayVars: array of TJSONValue): TJSONPair;
+  FSArr: TFirestoreArr): TJSONPair;
 
-  function SetArrayValue(ArrayVars: array of TJSONValue): TJSONObject;
+  function SetArrayValue(FSArr: TFirestoreArr): TJSONObject;
   var
     Arr: TJSONArray;
     c: integer;
   begin
     Arr := TJSONArray.Create;
-    for c := 0 to length(ArrayVars) - 1 do
-      Arr.AddElement(ArrayVars[c]);
+    for c := 0 to length(FSArr) - 1 do
+      Arr.AddElement(FSArr[c]);
     result := TJSONObject.Create(TJSONPair.Create('arrayValue',
       TJSONObject.Create(TJSONPair.Create('values', Arr))));
   end;
 
 begin
-  result := TJSONPair.Create(VarName, SetArrayValue(ArrayVars));
+  result := TJSONPair.Create(VarName, SetArrayValue(FSArr));
 end;
 
 class function TJSONHelpers.SetStringArray(const VarName: string;
   Strings: TStringDynArray): TJSONPair;
 var
-  Arr: array of TJSONValue;
+  Arr: TFirestoreArr;
   c: integer;
 begin
   SetLength(Arr, length(Strings));
@@ -1321,7 +1322,7 @@ end;
 class function TJSONHelpers.SetStringArray(const VarName: string;
   Strings: TStringList): TJSONPair;
 var
-  Arr: array of TJSONValue;
+  Arr: TFirestoreArr;
   c: integer;
 begin
   SetLength(Arr, Strings.Count);
@@ -1333,7 +1334,7 @@ end;
 class function TJSONHelpers.SetStringArray(const VarName: string;
   Strings: TList<string>): TJSONPair;
 var
-  Arr: array of TJSONValue;
+  Arr: TFirestoreArr;
   c: integer;
 begin
   SetLength(Arr, Strings.Count);
