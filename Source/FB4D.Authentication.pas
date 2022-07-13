@@ -174,6 +174,10 @@ type
     fRefreshToken: string;
   public
     constructor Create(JSONResp: TJSONObject; TokenExpected: boolean = true);
+      overload;
+    {$IFDEF TOKENJWT}
+    constructor Create(JSONResp: TJSONObject; TokenJWT: ITokenJWT); overload;
+    {$ENDIF}
     destructor Destroy; override;
     // Get User Identification
     function UID: string;
@@ -1227,8 +1231,13 @@ begin
           raise EFirebaseResponse.Create(
             'users field not found in getAccountInfo');
         for c := 0 to Users.Count - 1 do
-          result.Add(
-            TFirebaseUser.Create(
+          {$IFDEF TOKENJWT}
+          if fTokenJWT <> nil then
+            result.Add(TFirebaseUser.Create(
+              Users.Items[c].Clone as TJSONObject, fTokenJWT))
+          else
+          {$ENDIF}
+            result.Add(TFirebaseUser.Create(
               Users.Items[c].Clone as TJSONObject, false));
       finally
         UsersObj.Free;
@@ -1262,8 +1271,14 @@ begin
           raise EFirebaseResponse.Create(
             'users field not found in getAccountInfo');
         for c := 0 to Users.Count - 1 do
-          UserList.Add(TFirebaseUser.Create(
-            Users.Items[c].Clone as TJSONObject, false));
+          {$IFDEF TOKENJWT}
+          if fTokenJWT <> nil then
+            UserList.Add(TFirebaseUser.Create(
+              Users.Items[c].Clone as TJSONObject, fTokenJWT))
+          else
+          {$ENDIF}
+            UserList.Add(TFirebaseUser.Create(
+              Users.Items[c].Clone as TJSONObject, false));
         Response.OnSuccess.OnGetUserData(UserList);
       finally
         UsersObj.Free;
@@ -1546,6 +1561,30 @@ begin
   if not fJSONResp.TryGetValue('refreshToken', fRefreshToken) then
     fRefreshToken := '';
 end;
+
+{$IFDEF TOKENJWT}
+constructor TFirebaseUser.Create(JSONResp: TJSONObject; TokenJWT: ITokenJWT);
+var
+  ExpiresInSec: integer;
+  Claims: TJSONObject;
+  c: integer;
+begin
+  inherited Create;
+  fTokenJWT := TokenJWT;
+  fClaimFields := TDictionary<string,TJSONValue>.Create;
+  fJSONResp := JSONResp;
+  Claims := fTokenJWT.Claims.JSON;
+  for c := 0 to Claims.Count - 1 do
+    fClaimFields.Add(Claims.Pairs[c].JsonString.Value,
+      Claims.Pairs[c].JsonValue);
+  if fJSONResp.TryGetValue('expiresIn', ExpiresInSec) then
+    fExpiresAt := now + ExpiresInSec / 24 / 3600
+  else
+    fExpiresAt := now;
+  if not fJSONResp.TryGetValue('refreshToken', fRefreshToken) then
+    fRefreshToken := '';
+end;
+{$ENDIF}
 
 destructor TFirebaseUser.Destroy;
 begin
