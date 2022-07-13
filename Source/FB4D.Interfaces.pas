@@ -370,7 +370,7 @@ type
     function GetMapType(const FieldName: string;
       Index: integer): TFirestoreFieldType;
     function GetMapSubFieldName(const FieldName: string; Index: integer): string;
-    function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
+    function GetMapValue(const FieldName: string; Index: integer): TJSONObject;
       overload;
     function GetMapValue(const FieldName, SubFieldName: string): TJSONObject;
       overload;

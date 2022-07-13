@@ -99,7 +99,7 @@ type
     function GetMapType(const FieldName: string;
       Index: integer): TFirestoreFieldType;
     function GetMapSubFieldName(const FieldName: string; Index: integer): string;
-    function GetMapValue(const FieldName: string; Index: integer): TJSONValue;
+    function GetMapValue(const FieldName: string; Index: integer): TJSONObject;
       overload;
     function GetMapValue(const FieldName, SubFieldName: string): TJSONObject;
       overload;
@@ -1050,7 +1050,7 @@ begin
 end;
 
 function TFirestoreDocument.GetMapValue(const FieldName: string;
-  Index: integer): TJSONValue;
+  Index: integer): TJSONObject;
 var
   Objs: TJSONObjects;
 begin
@@ -1059,7 +1059,7 @@ begin
     raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
   if (Index < 0) or (Index >= length(Objs)) then
     raise EFirestoreDocument.Create(rsMapIndexOutOfBound);
-  result := Objs[Index].Pairs[0].JsonValue;
+  result := Objs[Index];
 end;
 
 function TFirestoreDocument.GetMapValue(const FieldName,
