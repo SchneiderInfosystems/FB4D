@@ -227,7 +227,8 @@ uses
 {$IFDEF MSWINDOWS}
   WinAPI.Windows,
 {$ENDIF}
-{$IF Defined(VCL)}
+{$IF Defined(CONSOLE)}
+{$ELSEIF Defined(VCL)}
   VCL.Forms,
 {$ELSEIF Defined(FMX)}
   FMX.Types,
