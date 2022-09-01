@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2021 Christoph Schneider                                 }
+{  Copyright (c) 2018-2022 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -410,7 +410,7 @@ begin
   OutputDebugString(PChar(msg));
 {$ELSEIF Defined(MSWINDOWS)}
   OutputDebugString(PChar(msg));
-{$ELSE}
+{$ELSEIF Defined(CONSOLE)}
   writeln(msg);
 {$ENDIF}
   if Assigned(OnLog) then
