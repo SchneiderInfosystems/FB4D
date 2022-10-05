@@ -101,7 +101,10 @@ var
   EventName: string;
 begin
   inherited Create(true);
-  fBaseURL := FirebaseURL;
+  if FirebaseURL.EndsWith('/') then
+    fBaseURL := FirebaseURL.Substring(0, FirebaseURL.Length - 1)
+  else
+    fBaseURL := FirebaseURL;
   fAuth := Auth;
   {$IFDEF MSWINDOWS}
   EventName := 'RTDBListenerGetFini';
