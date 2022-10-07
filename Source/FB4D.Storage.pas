@@ -239,7 +239,7 @@ begin
     case Response.OnSuccess.OnSuccessCase of
       oscStorage:
         if assigned(Response.OnSuccess.OnStorage) then
-         Response.OnSuccess.OnStorage(StorageObj);
+          Response.OnSuccess.OnStorage(StorageObj);
       oscStorageDeprecated:
         if assigned(Response.OnSuccess.OnStorageDeprecated) then
           Response.OnSuccess.OnStorageDeprecated(ObjectName, StorageObj);

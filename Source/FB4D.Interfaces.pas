@@ -33,7 +33,8 @@ uses
 {$IFDEF TOKENJWT}
   JOSE.Core.JWT,
 {$ENDIF}
-  REST.Types;
+  REST.Types,
+  FB4D.VisionMLDefinition;
 
 {$IFDEF LINUX64}
 {$I LinuxTypeDecl.inc}
@@ -125,12 +126,16 @@ type
   TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of
     object;
 
+  IVisionMLResponse = interface;
+
+  TOnAnnotate = procedure(Res: IVisionMLResponse) of object;
+
   TOnSuccess = record
     type TOnSuccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
       oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
       oscRTDBDelete, oscRTDBServerVariable, oscDocument, oscDocuments,
       oscBeginTransaction, oscStorage, oscStorageDeprecated, oscStorageUpload,
-      oscStorageGetAndDown, oscDelStorage, oscFunctionSuccess);
+      oscStorageGetAndDown, oscDelStorage, oscFunctionSuccess, oscVisionML);
     constructor Create(OnResp: TOnFirebaseResp);
     constructor CreateUser(OnUserResp: TOnUserResponse);
     constructor CreateFetchProviders(OnFetchProvidersResp: TOnFetchProviders);
@@ -153,6 +158,7 @@ type
     constructor CreateStorageUpload(OnStorageResp: TOnStorage; Stream: TStream);
     constructor CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
     constructor CreateFunctionSuccess(OnFunctionSuccessResp: TOnFunctionSuccess);
+    constructor CreateVisionML(OnAnnotateResp: TOnAnnotate);
     {$IFNDEF AUTOREFCOUNT}
     case OnSuccessCase: TOnSuccessCase of
       oscFB: (OnResponse: TOnFirebaseResp);
@@ -178,6 +184,7 @@ type
          UpStream: TStream);
       oscDelStorage: (OnDelStorage: TOnDeleteStorage);
       oscFunctionSuccess: (OnFunctionSuccess: TOnFunctionSuccess);
+      oscVisionML: (OnAnnotate: TOnAnnotate);
     {$ELSE}
     var
       OnSuccessCase: TOnSuccessCase;
@@ -202,6 +209,7 @@ type
       UpStream: TStream;
       OnDelStorage: TOnDeleteStorage;
       OnFunctionSuccess: TOnFunctionSuccess;
+      OnAnnotateResp: TOnAnnotate;
     {$ENDIF}
   end;
 
@@ -739,6 +747,59 @@ type
     function IsCacheOverflowed: boolean;
   end;
 
+  TVisionMLFeature = (vmlUnspecific, vmlFaceDetection, vmlLandmarkDetection,
+    vmlLogoDetection, vmlLabelDetection, vmlTextDetection, vmlDocTextDetection,
+    vmlSafeSearchDetection, vmlImageProperties, vmlCropHints, vmlWebDetection,
+    vmlProductSearch, vmlObjectLocalization);
+  TVisionMLFeatures = set of TVisionMLFeature;
+
+  IVisionMLResponse = interface(IInterface)
+    function GetFormatedJSON: string;
+    function GetNoPages: integer;
+    function GetPageAsFormatedJSON(PageNo: integer = 0): string;
+    function GetError(PageNo: integer = 0): TErrorStatus;
+    function LabelAnnotations(PageNo: integer = 0): TAnnotationList;
+    function LandmarkAnnotations(PageNo: integer = 0): TAnnotationList;
+    function LogoAnnotations(PageNo: integer = 0): TAnnotationList;
+    function TextAnnotations(PageNo: integer = 0): TAnnotationList;
+    function FullTextAnnotations(PageNo: integer = 0): TTextAnnotation;
+    function ImagePropAnnotation(
+      PageNo: integer = 0): TImagePropertiesAnnotation;
+    function CropHintsAnnotation(PageNo: integer = 0): TCropHintsAnnotation;
+    function WebDetection(PageNo: integer = 0): TWebDetection;
+    function SafeSearchAnnotation(PageNo: integer = 0): TSafeSearchAnnotation;
+    function FaceAnnotation(PageNo: integer = 0): TFaceAnnotationList;
+    function LocalizedObjectAnnotation(
+      PageNo: integer = 0): TLocalizedObjectList;
+    function ProductSearchAnnotation(
+      PageNo: integer = 0): TProductSearchAnnotation;
+    function ImageAnnotationContext(
+      PageNo: integer = 0): TImageAnnotationContext;
+  end;
+
+  TVisionModel = (vmUnset, vmStable, vmLatest);
+
+  IVisionML = interface(IInterface)
+    function AnnotateFileSynchronous(const FileAsBase64,
+      ContentType: string; Features: TVisionMLFeatures;
+      MaxResultsPerFeature: integer = 50;
+      Model: TVisionModel = vmStable): IVisionMLResponse;
+    procedure AnnotateFile(const FileAsBase64,
+      ContentType: string; Features: TVisionMLFeatures;
+      OnAnnotate: TOnAnnotate; OnAnnotateError: TOnRequestError;
+      const RequestID: string = ''; MaxResultsPerFeature: integer = 50;
+      Model: TVisionModel = vmStable);
+    function AnnotateStorageSynchronous(const RefStorageCloudURI,
+      ContentType: string; Features: TVisionMLFeatures;
+      MaxResultsPerFeature: integer = 50;
+      Model: TVisionModel = vmStable): IVisionMLResponse;
+    procedure AnnotateStorage(const RefStorageCloudURI,
+      ContentType: string; Features: TVisionMLFeatures;
+      OnAnnotate: TOnAnnotate; OnAnnotateError: TOnRequestError;
+      MaxResultsPerFeature: integer = 50;
+      Model: TVisionModel = vmStable);
+  end;
+
   /// <summary>
   /// The interface IFirebaseConfiguration provides a class factory for
   /// accessing all interfaces to the Firebase services. The interface will be
@@ -951,6 +1012,13 @@ begin
   Create(nil);
   OnSuccessCase := oscFunctionSuccess;
   OnFunctionSuccess := OnFunctionSuccessResp;
+end;
+
+constructor TOnSuccess.CreateVisionML(OnAnnotateResp: TOnAnnotate);
+begin
+  Create(nil);
+  OnSuccessCase := oscVisionML;
+  OnAnnotate := OnAnnotateResp;
 end;
 
 end.
