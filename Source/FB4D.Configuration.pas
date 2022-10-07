@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2021 Christoph Schneider                                 }
+{  Copyright (c) 2018-2022 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -93,6 +93,7 @@ type
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
     class function GetLibVersionInfo: string;
+    class function GetLibLicenseInfo: string;
   end;
 
 implementation
@@ -223,6 +224,11 @@ end;
 function TFirebaseConfiguration.ServerRegion: string;
 begin
   result := fServerRegion;
+end;
+
+class function TFirebaseConfiguration.GetLibLicenseInfo: string;
+begin
+  result := 'Apache 2.0 License © Schneider Infosystems Ltd';
 end;
 
 class function TFirebaseConfiguration.GetLibVersionInfo: string;
