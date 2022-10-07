@@ -369,6 +369,10 @@
         <DCCReference Include="..\..\Source\FB4D.FireStore.Listener.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Configuration.pas"/>
         <DCCReference Include="..\..\Source\FB4D.RealTimeDB.Listener.pas"/>
+        <DCCReference Include="..\..\Source\FB4D.VisionMLDefinition.pas"/>
+        <DCCReference Include="..\..\Source\FB4D.VisionML.pas">
+            <Form>$R *.res</Form>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

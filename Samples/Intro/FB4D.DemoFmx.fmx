@@ -1,9 +1,10 @@
 object fmxFirebaseDemo: TfmxFirebaseDemo
   Left = 0
   Top = 0
+  ActiveControl = lstFeatures
   Caption = 'Firebase Lib Demo'
-  ClientHeight = 801
-  ClientWidth = 995
+  ClientHeight = 800
+  ClientWidth = 996
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -31,32 +32,34 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
   object TabControl: TTabControl
     Align = Client
     Margins.Top = 50.000000000000000000
-    Size.Width = 995.000000000000000000
-    Size.Height = 751.000000000000000000
+    Size.Width = 996.000000000000000000
+    Size.Height = 750.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 0
+    TabIndex = 7
     TabPosition = PlatformDefault
     OnChange = TabControlChange
     Sizes = (
-      995s
-      725s
-      995s
-      725s
-      995s
-      725s
-      995s
-      725s
-      995s
-      725s
-      995s
-      725s
-      995s
-      725s)
+      996s
+      724s
+      996s
+      724s
+      996s
+      724s
+      996s
+      724s
+      996s
+      724s
+      996s
+      724s
+      996s
+      724s
+      996s
+      724s)
     object tabAuth: TTabItem
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Size.Width = 98.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
@@ -67,7 +70,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       ExplicitSize.cy = 26.000000000000000000
       object btnLogin: TButton
         Anchors = [akTop, akRight]
-        Position.X = 723.000000000000000000
+        Position.X = 724.000000000000000000
         Position.Y = 40.000000000000000000
         Size.Width = 113.000000000000000000
         Size.Height = 22.000000000000000000
@@ -91,7 +94,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 17
         Position.X = 328.000000000000000000
         Position.Y = 104.000000000000000000
-        Size.Width = 644.000000000000000000
+        Size.Width = 645.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
       end
@@ -144,7 +147,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Password = True
         Position.X = 328.000000000000000000
         Position.Y = 40.000000000000000000
-        Size.Width = 252.000000000000000000
+        Size.Width = 253.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         Left = 9
@@ -152,7 +155,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object btnRefresh: TButton
         Anchors = [akTop, akRight]
-        Position.X = 891.000000000000000000
+        Position.X = 892.000000000000000000
         Position.Y = 40.000000000000000000
         TabOrder = 18
         Text = 'Refresh'
@@ -163,7 +166,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight]
         Position.X = 384.000000000000000000
         Position.Y = 80.000000000000000000
-        Size.Width = 588.000000000000000000
+        Size.Width = 589.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Trailing
@@ -172,7 +175,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object btnSignUpNewUser: TButton
         Anchors = [akTop, akRight]
-        Position.X = 592.000000000000000000
+        Position.X = 593.000000000000000000
         Position.Y = 40.000000000000000000
         Size.Width = 113.000000000000000000
         Size.Height = 22.000000000000000000
@@ -184,7 +187,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object btnPasswordReset: TButton
         Anchors = [akTop, akRight]
         Enabled = False
-        Position.X = 848.000000000000000000
+        Position.X = 849.000000000000000000
         Position.Y = 40.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
@@ -197,23 +200,23 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 16.000000000000000000
         Position.Y = 160.000000000000000000
-        Size.Width = 953.000000000000000000
-        Size.Height = 544.000000000000000000
+        Size.Width = 954.000000000000000000
+        Size.Height = 543.000000000000000000
         Size.PlatformDefault = False
         TabIndex = 0
         TabOrder = 21
         TabPosition = PlatformDefault
         Sizes = (
-          953s
-          518s
-          953s
-          518s)
+          954s
+          517s
+          954s
+          517s)
         object tabInfo: TTabItem
           CustomIcon = <
             item
             end>
           IsSelected = True
-          Size.Width = 83.000000000000000000
+          Size.Width = 82.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
           StyleLookup = ''
@@ -230,12 +233,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Margins.Top = 60.000000000000000000
             Margins.Right = 10.000000000000000000
             Margins.Bottom = 10.000000000000000000
-            Size.Width = 933.000000000000000000
-            Size.Height = 448.000000000000000000
+            Size.Width = 934.000000000000000000
+            Size.Height = 447.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
-            Viewport.Width = 929.000000000000000000
-            Viewport.Height = 444.000000000000000000
+            Viewport.Width = 930.000000000000000000
+            Viewport.Height = 443.000000000000000000
           end
           object btnGetUserData: TButton
             Position.X = 16.000000000000000000
@@ -264,7 +267,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             TabOrder = 3
             Position.X = 24.000000000000000000
             Position.Y = 142.000000000000000000
-            Size.Width = 673.000000000000000000
+            Size.Width = 674.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
             object txtEMail: TText
@@ -282,7 +285,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             TabOrder = 0
             Position.X = 24.000000000000000000
             Position.Y = 62.000000000000000000
-            Size.Width = 673.000000000000000000
+            Size.Width = 674.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
             object Text3: TText
@@ -296,7 +299,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
           object btnChange: TButton
             Anchors = [akTop, akRight]
-            Position.X = 728.000000000000000000
+            Position.X = 729.000000000000000000
             Position.Y = 62.000000000000000000
             Size.Width = 185.000000000000000000
             Size.Height = 22.000000000000000000
@@ -307,7 +310,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
           object btnChangeEMail: TButton
             Anchors = [akTop, akRight]
-            Position.X = 728.000000000000000000
+            Position.X = 729.000000000000000000
             Position.Y = 142.000000000000000000
             Size.Width = 185.000000000000000000
             Size.Height = 22.000000000000000000
@@ -323,7 +326,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Password = True
             Position.X = 24.000000000000000000
             Position.Y = 214.000000000000000000
-            Size.Width = 673.000000000000000000
+            Size.Width = 674.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
             object Text4: TText
@@ -337,7 +340,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
           object btnChangePwd: TButton
             Anchors = [akTop, akRight]
-            Position.X = 728.000000000000000000
+            Position.X = 729.000000000000000000
             Position.Y = 214.000000000000000000
             Size.Width = 185.000000000000000000
             Size.Height = 22.000000000000000000
@@ -352,7 +355,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             TabOrder = 1
             Position.X = 24.000000000000000000
             Position.Y = 294.000000000000000000
-            Size.Width = 673.000000000000000000
+            Size.Width = 674.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
             object txtPhotoURL: TText
@@ -366,7 +369,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
           object btnChangePhotoURL: TButton
             Anchors = [akTop, akRight]
-            Position.X = 728.000000000000000000
+            Position.X = 729.000000000000000000
             Position.Y = 294.000000000000000000
             Size.Width = 185.000000000000000000
             Size.Height = 22.000000000000000000
@@ -428,12 +431,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
         Position.Y = 288.000000000000000000
-        Size.Width = 956.000000000000000000
-        Size.Height = 424.000000000000000000
+        Size.Width = 957.000000000000000000
+        Size.Height = 423.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 952.000000000000000000
-        Viewport.Height = 420.000000000000000000
+        Viewport.Width = 953.000000000000000000
+        Viewport.Height = 419.000000000000000000
       end
       object edtPath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -441,7 +444,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 6
         Position.X = 120.000000000000000000
         Position.Y = 47.000000000000000000
-        Size.Width = 857.000000000000000000
+        Size.Width = 858.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Data base path separated by /'
@@ -460,30 +463,30 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight]
         Position.X = 24.000000000000000000
         Position.Y = 79.000000000000000000
-        Size.Width = 953.000000000000000000
+        Size.Width = 954.000000000000000000
         Size.Height = 200.000000000000000000
         Size.PlatformDefault = False
         TabIndex = 1
         TabOrder = 7
         TabPosition = Top
         Sizes = (
-          953s
+          954s
           174s
-          953s
+          954s
           174s
-          953s
+          954s
           174s
-          953s
+          954s
           174s
-          953s
+          954s
           174s
-          953s
+          954s
           174s)
         object tabGet: TTabItem
           CustomIcon = <
             item
             end>
-          IsSelected = True
+          IsSelected = False
           Size.Width = 39.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
@@ -516,7 +519,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Anchors = [akLeft, akTop, akRight]
             Position.X = 440.000000000000000000
             Position.Y = 16.000000000000000000
-            Size.Width = 497.000000000000000000
+            Size.Width = 498.000000000000000000
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
@@ -737,7 +740,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Anchors = [akLeft, akTop, akRight]
             Position.X = 656.000000000000000000
             Position.Y = 21.000000000000000000
-            Size.Width = 289.000000000000000000
+            Size.Width = 290.000000000000000000
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
@@ -752,7 +755,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             item
             end>
           IsSelected = False
-          Size.Width = 49.000000000000000000
+          Size.Width = 50.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
           StyleLookup = ''
@@ -774,7 +777,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Anchors = [akLeft, akTop, akRight]
             Position.X = 664.000000000000000000
             Position.Y = 21.000000000000000000
-            Size.Width = 289.000000000000000000
+            Size.Width = 290.000000000000000000
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
@@ -865,7 +868,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Anchors = [akLeft, akTop, akRight]
             Position.X = 664.000000000000000000
             Position.Y = 21.000000000000000000
-            Size.Width = 289.000000000000000000
+            Size.Width = 290.000000000000000000
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
@@ -935,7 +938,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             item
             end>
           IsSelected = False
-          Size.Width = 55.000000000000000000
+          Size.Width = 54.000000000000000000
           Size.Height = 26.000000000000000000
           Size.PlatformDefault = False
           StyleLookup = ''
@@ -957,7 +960,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Anchors = [akLeft, akTop, akRight]
             Position.X = 664.000000000000000000
             Position.Y = 21.000000000000000000
-            Size.Width = 289.000000000000000000
+            Size.Width = 290.000000000000000000
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
@@ -1012,7 +1015,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 4
         Position.X = 120.000000000000000000
         Position.Y = 16.000000000000000000
-        Size.Width = 857.000000000000000000
+        Size.Width = 858.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 
@@ -1035,7 +1038,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         item
         end>
       IsSelected = False
-      Size.Width = 135.000000000000000000
+      Size.Width = 134.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -1049,7 +1052,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 137.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 0
+        TabOrder = 1
         Text = 'Start Listener'
         OnClick = btnNotifyEventClick
       end
@@ -1059,12 +1062,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 32.000000000000000000
         Position.Y = 96.000000000000000000
-        Size.Width = 924.000000000000000000
-        Size.Height = 616.000000000000000000
+        Size.Width = 925.000000000000000000
+        Size.Height = 615.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 1
-        Viewport.Width = 920.000000000000000000
-        Viewport.Height = 612.000000000000000000
+        TabOrder = 2
+        Viewport.Width = 921.000000000000000000
+        Viewport.Height = 611.000000000000000000
       end
       object btnStopEvent: TButton
         Position.X = 192.000000000000000000
@@ -1072,17 +1075,17 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 2
+        TabOrder = 4
         Text = 'Stop Listener'
         OnClick = btnStopEventClick
       end
       object edtRTDBEventPath: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akLeft, akTop, akRight]
-        TabOrder = 6
+        TabOrder = 8
         Position.X = 124.000000000000000000
         Position.Y = 31.000000000000000000
-        Size.Width = 825.000000000000000000
+        Size.Width = 826.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Database path separated by /'
@@ -1105,14 +1108,14 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TextSettings.Font.Size = 10.000000000000000000
         Text = 'Enter Firebase URL in Real Time DB tab'
-        TabOrder = 11
+        TabOrder = 13
       end
       object btnStart2ndListener: TButton
         Anchors = [akTop, akBottom]
-        Position.X = 672.744201660156300000
+        Position.X = 673.489196777343800000
         Position.Y = 61.000000000000000000
         Size.Width = 137.000000000000000000
-        Size.Height = 21.000000000000000000
+        Size.Height = 20.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         Text = 'Start 2nd Listener'
@@ -1120,7 +1123,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end
       object btnStopEvent2: TButton
         Anchors = [akTop, akRight]
-        Position.X = 830.000000000000000000
+        Position.X = 831.000000000000000000
         Position.Y = 61.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
@@ -1133,7 +1136,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akTop, akRight]
         TabOrder = 12
-        Position.X = 673.000000000000000000
+        Position.X = 674.000000000000000000
         Position.Y = 31.000000000000000000
         Size.Width = 278.000000000000000000
         Size.Height = 22.000000000000000000
@@ -1207,12 +1210,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
         Position.Y = 135.000000000000000000
-        Size.Width = 948.000000000000000000
-        Size.Height = 576.000000000000000000
+        Size.Width = 949.000000000000000000
+        Size.Height = 575.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 10
-        Viewport.Width = 944.000000000000000000
-        Viewport.Height = 572.000000000000000000
+        Viewport.Width = 945.000000000000000000
+        Viewport.Height = 571.000000000000000000
       end
       object btnCreateDocument: TButton
         Position.X = 24.000000000000000000
@@ -1381,7 +1384,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         item
         end>
       IsSelected = False
-      Size.Width = 111.000000000000000000
+      Size.Width = 110.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -1416,18 +1419,18 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 32.000000000000000000
         Position.Y = 184.000000000000000000
-        Size.Width = 945.000000000000000000
-        Size.Height = 527.000000000000000000
+        Size.Width = 946.000000000000000000
+        Size.Height = 526.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Viewport.Width = 941.000000000000000000
-        Viewport.Height = 523.000000000000000000
+        Viewport.Width = 942.000000000000000000
+        Viewport.Height = 522.000000000000000000
       end
       object GroupBox1: TGroupBox
         Anchors = [akLeft, akTop, akRight]
         Position.X = 32.000000000000000000
         Position.Y = 16.000000000000000000
-        Size.Width = 945.000000000000000000
+        Size.Width = 946.000000000000000000
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 1: Entire Collection'
@@ -1438,7 +1441,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           TabOrder = 6
           Position.X = 80.000000000000000000
           Position.Y = 23.000000000000000000
-          Size.Width = 689.000000000000000000
+          Size.Width = 690.000000000000000000
           Size.Height = 22.000000000000000000
           Size.PlatformDefault = False
           TextPrompt = 
@@ -1457,7 +1460,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end
         object chbIncludeDescendants: TCheckBox
           Anchors = [akTop, akRight]
-          Position.X = 792.000000000000000000
+          Position.X = 793.000000000000000000
           Position.Y = 24.000000000000000000
           Size.Width = 139.000000000000000000
           Size.Height = 19.000000000000000000
@@ -1470,7 +1473,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight]
         Position.X = 32.000000000000000000
         Position.Y = 81.000000000000000000
-        Size.Width = 945.000000000000000000
+        Size.Width = 946.000000000000000000
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 2: Single Document'
@@ -1481,7 +1484,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           TabOrder = 6
           Position.X = 80.000000000000000000
           Position.Y = 23.000000000000000000
-          Size.Width = 849.000000000000000000
+          Size.Width = 850.000000000000000000
           Size.Height = 22.000000000000000000
           Size.PlatformDefault = False
           TextPrompt = 'Enter document path separated by /'
@@ -1549,12 +1552,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
         Position.Y = 232.000000000000000000
-        Size.Width = 948.000000000000000000
-        Size.Height = 464.000000000000000000
+        Size.Width = 949.000000000000000000
+        Size.Height = 463.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 5
-        Viewport.Width = 944.000000000000000000
-        Viewport.Height = 460.000000000000000000
+        Viewport.Width = 945.000000000000000000
+        Viewport.Height = 459.000000000000000000
       end
       object btnDownloadAsync: TButton
         Enabled = False
@@ -1610,7 +1613,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 14
         Position.X = 408.000000000000000000
         Position.Y = 103.000000000000000000
-        Size.Width = 561.000000000000000000
+        Size.Width = 562.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Enter the path including path separator /'
@@ -1701,12 +1704,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Anchors = [akLeft, akTop, akRight, akBottom]
         Position.X = 24.000000000000000000
         Position.Y = 256.000000000000000000
-        Size.Width = 953.000000000000000000
-        Size.Height = 457.000000000000000000
+        Size.Width = 954.000000000000000000
+        Size.Height = 456.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 3
-        Viewport.Width = 949.000000000000000000
-        Viewport.Height = 453.000000000000000000
+        Viewport.Width = 950.000000000000000000
+        Viewport.Height = 452.000000000000000000
       end
       object edtParam1: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -1850,6 +1853,330 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         OnClick = btnCallFunctionAsynchronousClick
       end
     end
+    object tabVisionML: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = True
+      Size.Width = 69.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'VisionML'
+      ExplicitSize.cx = 69.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnVisionMLAnotateStorage: TButton
+        Enabled = False
+        Position.X = 16.000000000000000000
+        Position.Y = 22.000000000000000000
+        Size.Width = 141.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Anotate from Storage'
+        OnClick = btnVisionMLAnotateStorageClick
+      end
+      object memVisionML: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Position.X = 16.000000000000000000
+        Position.Y = 280.000000000000000000
+        Size.Width = 955.000000000000000000
+        Size.Height = 431.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+        Viewport.Width = 951.000000000000000000
+        Viewport.Height = 427.000000000000000000
+      end
+      object edtRefStorage: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        TabOrder = 5
+        Position.X = 224.000000000000000000
+        Position.Y = 22.000000000000000000
+        Size.Width = 521.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object memAnnotateFile: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Lines.Strings = (
+          '')
+        OnChange = memAnnotateFileChange
+        Position.X = 224.000000000000000000
+        Position.Y = 64.000000000000000000
+        Size.Width = 638.000000000000000000
+        Size.Height = 82.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 6
+        Viewport.Width = 634.000000000000000000
+        Viewport.Height = 78.000000000000000000
+      end
+      object bntLoadML: TButton
+        Position.X = 870.000000000000000000
+        Position.Y = 94.000000000000000000
+        Size.Width = 100.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+        Text = 'Upload File'
+        OnClick = bntLoadMLClick
+      end
+      object edtAnotateFileType: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        TabOrder = 9
+        Position.X = 870.000000000000000000
+        Position.Y = 64.000000000000000000
+      end
+      object btnVisionMLAnotateFile: TButton
+        Enabled = False
+        Position.X = 16.000000000000000000
+        Position.Y = 64.000000000000000000
+        Size.Width = 141.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Anotate from File'
+        OnClick = btnVisionMLAnotateFileClick
+      end
+      object lstFeatures: TListBox
+        Position.X = 16.000000000000000000
+        Position.Y = 154.000000000000000000
+        Size.Width = 954.000000000000000000
+        Size.Height = 57.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 10
+        Columns = 3
+        DisableFocusEffect = True
+        ItemIndex = 7
+        DefaultItemStyles.ItemStyle = ''
+        DefaultItemStyles.GroupHeaderStyle = ''
+        DefaultItemStyles.GroupFooterStyle = ''
+        ListStyle = Horizontal
+        ShowCheckboxes = True
+        Viewport.Width = 950.000000000000000000
+        Viewport.Height = 53.000000000000000000
+        object lbiLabelDetection: TListBoxItem
+          IsChecked = True
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 3
+          Text = 'Label Detection'
+        end
+        object lbiObjectLocalization: TListBoxItem
+          IsChecked = True
+          Position.Y = 17.666666030883790000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 45
+          Text = 'Object Localization'
+        end
+        object lbiTextDetection: TListBoxItem
+          IsChecked = True
+          Position.Y = 35.333332061767580000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          Text = 'Text Detection'
+        end
+        object lbiDocTextDetection: TListBoxItem
+          Position.X = 229.000000000000000000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 48
+          Text = 'Doc Text Detection'
+        end
+        object lbiFaceDetection: TListBoxItem
+          Position.X = 229.000000000000000000
+          Position.Y = 17.666666030883790000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = 'Face Detection'
+        end
+        object lbiLogoDetection: TListBoxItem
+          Position.X = 229.000000000000000000
+          Position.Y = 35.333332061767580000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 43
+          Text = 'Logo Detection'
+        end
+        object lbiLandmarkDetection: TListBoxItem
+          Position.X = 458.000000000000000000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 2
+          Text = 'Landmark Detection'
+        end
+        object lbiWebDetection: TListBoxItem
+          IsSelected = True
+          Position.X = 458.000000000000000000
+          Position.Y = 17.666666030883790000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 44
+          Text = 'Web Detection'
+        end
+        object lbiImageProp: TListBoxItem
+          Position.X = 458.000000000000000000
+          Position.Y = 35.333332061767580000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 4
+          Text = 'Image Properties'
+        end
+        object lbiCropHints: TListBoxItem
+          Position.X = 687.000000000000000000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 49
+          Text = 'Crop Image Hints'
+        end
+        object lbiSafeSearch: TListBoxItem
+          Position.X = 687.000000000000000000
+          Position.Y = 17.666666030883790000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 47
+          Text = 'Safe Search'
+        end
+        object lbiProductSearch: TListBoxItem
+          Position.X = 687.000000000000000000
+          Position.Y = 35.333332061767580000
+          Size.Width = 229.000000000000000000
+          Size.Height = 17.666666030883790000
+          Size.PlatformDefault = False
+          TabOrder = 46
+          Text = 'Product Search'
+        end
+      end
+      object gpbMLResult: TGroupBox
+        Anchors = [akTop, akRight]
+        Enabled = False
+        Position.X = 706.000000000000000000
+        Position.Y = 219.000000000000000000
+        Size.Width = 265.000000000000000000
+        Size.Height = 50.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Representation of Result'
+        TabOrder = 12
+        object rdbResAsJSON: TRadioButton
+          GroupName = 'ResultML'
+          Position.X = 150.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 98.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 38
+          Text = 'Original JSON'
+          OnChange = rdbResAsChange
+        end
+        object rdbResAsText: TRadioButton
+          GroupName = 'ResultML'
+          IsChecked = True
+          Position.X = 15.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 97.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 39
+          Text = 'Evaluated Text'
+          OnChange = rdbResAsChange
+        end
+      end
+      object Label40: TLabel
+        Position.X = 16.000000000000000000
+        Position.Y = 129.000000000000000000
+        Text = 'ML Vision Features'
+        TabOrder = 13
+      end
+      object gpbMLModel: TGroupBox
+        Anchors = [akTop, akRight]
+        Position.X = 19.000000000000000000
+        Position.Y = 219.000000000000000000
+        Size.Width = 343.000000000000000000
+        Size.Height = 50.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Model type'
+        TabOrder = 11
+        object rdbLatestModel: TRadioButton
+          GroupName = 'ModelType'
+          Position.X = 238.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 98.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 38
+          Text = ' Latest Model'
+        end
+        object rdbStableModel: TRadioButton
+          GroupName = 'ModelType'
+          Position.X = 103.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 97.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 40
+          Text = 'Stable Model'
+        end
+        object rdbUnsetModel: TRadioButton
+          GroupName = 'ModelType'
+          IsChecked = True
+          Position.X = 15.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 66.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 39
+          Text = 'Unset'
+        end
+      end
+      object gpbMaxResultSet: TGroupBox
+        Position.X = 369.000000000000000000
+        Position.Y = 219.000000000000000000
+        Size.Width = 248.000000000000000000
+        Size.Height = 50.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Maximal number of results per feature'
+        TabOrder = 14
+        object spbMaxFeatures: TSpinBox
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 38
+          Cursor = crIBeam
+          Max = 150.000000000000000000
+          Value = 50.000000000000000000
+          Position.X = 24.000000000000000000
+          Position.Y = 20.000000000000000000
+          Size.Width = 113.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+      end
+      object btnClearML: TButton
+        Position.X = 870.000000000000000000
+        Position.Y = 124.000000000000000000
+        Size.Width = 100.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 7
+        Text = 'Clear File'
+        OnClick = btnClearMLClick
+      end
+    end
   end
   object edtKey: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -1874,16 +2201,23 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
   object timRefresh: TTimer
     Enabled = False
     OnTimer = timRefreshTimer
-    Left = 801
-    Top = 242
+    Left = 377
+    Top = 346
   end
   object SaveDialog: TSaveDialog
-    Left = 584
-    Top = 242
+    Left = 208
+    Top = 346
   end
   object OpenDialog: TOpenDialog
     DefaultExt = 'png'
-    Left = 680
-    Top = 242
+    Left = 288
+    Top = 346
+  end
+  object OpenDialogFileAnnotate: TOpenDialog
+    Filter = 
+      'GIF (*.gif)|*.gif|TIFF (*.tif or *.tiff)|*.tiff;*.tif|PDF (*.pdf' +
+      ')|*.pdf'
+    Left = 64
+    Top = 354
   end
 end

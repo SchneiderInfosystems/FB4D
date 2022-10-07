@@ -1,4 +1,4 @@
-# FB4D – The OpenSource Cross-Platform Library for _Firebase_
+﻿# FB4D – The OpenSource Cross-Platform Library for _Firebase_
 
 The _Google Firebase Cloud Database_ is used in many mobile and web applications worldwide and there are well-documented libraries for many languages and platforms. For Delphi, the cross-platform library **FB4D** supports the _Firebase Realtime Database_, the _Firestore Database_, the _Firebase Storage_ (for file storage), and _Firebase Functions_ (for calling server functions). For authentication, **FB4D** currently supports email/password authentication and anonymous login. 
 
@@ -14,6 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
+- October 2022: Interface for ML Vision service added
 - October 2021: Prepared for Delphi Alexandria
 - April 7, 2021: Revised RT DB Listener
 - March 2021: New optional cache to accelerate the repeated access to storage objects. Additional _IFirebaseStorage.GetAndDownload_ method in order to simplify the download from the storage. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirebaseStorage#optional-cache-for-storage-objects)  

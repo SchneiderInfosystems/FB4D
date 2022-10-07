@@ -43,6 +43,7 @@ type
     class var OnLog: TOnLog;
     // Time conversion functions
     class function CodeRFC3339DateTime(DateTimeStamp: TDateTime): string;
+    class function DecodeRFC3339DateTime(DateTimeStamp: string): TDateTime;
     class function ConvertTimeStampToUTCDateTime(TimeStamp: Int64): TDateTime;
     class function ConvertRFC5322ToUTCDateTime(DateTime: string): TDateTime;
     class function ConvertRFC5322ToLocalDateTime(DateTime: string): TDateTime;
@@ -91,6 +92,9 @@ type
     class function IsMainThread: boolean;
     class function GetConfigAndPlatform: string;
     class function GetPlatform: string;
+
+    // ML helpers
+    class function GetLanguageInEnglishFromCode(const Code: string): string;
   private const
     cBase64 =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
@@ -258,6 +262,12 @@ begin
   // Format RFC3339
   result := FormatDateTime('yyyy-mm-dd', UTC) + 'T' +
     FormatDateTime('hh:mm:ss', UTC) + 'Z';
+end;
+
+class function TFirebaseHelpers.DecodeRFC3339DateTime(
+  DateTimeStamp: string): TDateTime;
+begin
+  result := ISO8601ToDate(DateTimeStamp, false); // To local time
 end;
 
 class function TFirebaseHelpers.ConvertRFC5322ToLocalDateTime(
@@ -775,6 +785,263 @@ begin
   result := 'Unknown Build/';
 {$ENDIF}
   result := result + GetPlatform;
+end;
+
+class function TFirebaseHelpers.GetLanguageInEnglishFromCode(
+  const Code: string): string;
+begin
+  if SameText(Code, 'af') then
+    result := 'Afrikaans'
+  else if SameText(Code, 'am') then
+    result := 'Amharic'
+  else if SameText(Code, 'ar') then
+    result := 'Arabic'
+  else if SameText(Code, 'arn') then
+    result := 'Mapudungun'
+  else if SameText(Code, 'as') then
+    result := 'Assamese'
+  else if SameText(Code, 'az') then
+    result := 'Azeri'
+  else if SameText(Code, 'ba') then
+    result := 'Bashkir'
+  else if SameText(Code, 'be') then
+    result := 'Belarusian'
+  else if SameText(Code, 'bg') then
+    result := 'Bulgarian'
+  else if SameText(Code, 'bn') then
+    result := 'Bengali'
+  else if SameText(Code, 'bo') then
+    result := 'Tibetan'
+  else if SameText(Code, 'br') then
+    result := 'Breton'
+  else if SameText(Code, 'bs') then
+    result := 'Bosnian'
+  else if SameText(Code, 'ca') then
+    result := 'Catalan'
+  else if SameText(Code, 'co') then
+    result := 'Corsican'
+  else if SameText(Code, 'cs') then
+    result := 'Czech'
+  else if SameText(Code, 'cy') then
+    result := 'Welsh'
+  else if SameText(Code, 'da') then
+    result := 'Danish'
+  else if SameText(Code, 'de') then
+    result := 'German'
+  else if SameText(Code, 'dsb') then
+    result := 'Lower Sorbian'
+  else if SameText(Code, 'dv') then
+    result := 'Divehi'
+  else if SameText(Code, 'el') then
+    result := 'Greek'
+  else if SameText(Code, 'en') then
+    result := 'English'
+  else if SameText(Code, 'es') then
+    result := 'Spanish'
+  else if SameText(Code, 'et') then
+    result := 'Estonian'
+  else if SameText(Code, 'eu') then
+    result := 'Basque'
+  else if SameText(Code, 'fa') then
+    result := 'Persian'
+  else if SameText(Code, 'fi') then
+    result := 'Finnish'
+  else if SameText(Code, 'fil') then
+    result := 'Filipino'
+  else if SameText(Code, 'fo') then
+    result := 'Faroese'
+  else if SameText(Code, 'fr') then
+    result := 'French'
+  else if SameText(Code, 'fy') then
+    result := 'Frisian'
+  else if SameText(Code, 'ga') then
+    result := 'Irish'
+  else if SameText(Code, 'gd') then
+    result := 'Scottish Gaelic'
+  else if SameText(Code, 'gl') then
+    result := 'Galician'
+  else if SameText(Code, 'gsw') then
+    result := 'Alsatian'
+  else if SameText(Code, 'gu') then
+    result := 'Gujarati'
+  else if SameText(Code, 'ha') then
+    result := 'Hausa'
+  else if SameText(Code, 'he') then
+    result := 'Hebrew'
+  else if SameText(Code, 'hi') then
+    result := 'Hindi'
+  else if SameText(Code, 'hr') then
+    result := 'Croatian'
+  else if SameText(Code, 'hsb') then
+    result := 'Upper Sorbian'
+  else if SameText(Code, 'hu') then
+    result := 'Hungarian'
+  else if SameText(Code, 'hy') then
+    result := 'Armenian'
+  else if SameText(Code, 'id') then
+    result := 'Indonesian'
+  else if SameText(Code, 'ig') then
+    result := 'Igbo'
+  else if SameText(Code, 'ii') then
+    result := 'Yi'
+  else if SameText(Code, 'is') then
+    result := 'Icelandic'
+  else if SameText(Code, 'it') then
+    result := 'Italian'
+  else if SameText(Code, 'iu') then
+    result := 'Inuktitut'
+  else if SameText(Code, 'ja') then
+    result := 'Japanese'
+  else if SameText(Code, 'ka') then
+    result := 'Georgian'
+  else if SameText(Code, 'kk') then
+    result := 'Kazakh'
+  else if SameText(Code, 'kl') then
+    result := 'Greenlandic'
+  else if SameText(Code, 'km') then
+    result := 'Khmer'
+  else if SameText(Code, 'kn') then
+    result := 'Kannada'
+  else if SameText(Code, 'ko') then
+    result := 'Korean'
+  else if SameText(Code, 'kok') then
+    result := 'Konkani'
+  else if SameText(Code, 'ky') then
+    result := 'Kyrgyz'
+  else if SameText(Code, 'lb') then
+    result := 'Luxembourgish'
+  else if SameText(Code, 'lo') then
+    result := 'Lao'
+  else if SameText(Code, 'lt') then
+    result := 'Lithuanian'
+  else if SameText(Code, 'lv') then
+    result := 'Latvian'
+  else if SameText(Code, 'mi') then
+    result := 'Maori'
+  else if SameText(Code, 'mk') then
+    result := 'Macedonian'
+  else if SameText(Code, 'ml') then
+    result := 'Malayalam'
+  else if SameText(Code, 'mn') then
+    result := 'Mongolian'
+  else if SameText(Code, 'moh') then
+    result := 'Mohawk'
+  else if SameText(Code, 'mr') then
+    result := 'Marathi'
+  else if SameText(Code, 'ms') then
+    result := 'Malay'
+  else if SameText(Code, 'mt') then
+    result := 'Maltese'
+  else if SameText(Code, 'my') then
+    result := 'Burmese'
+  else if SameText(Code, 'nb') then
+    result := 'Norwegian (Bokmål)'
+  else if SameText(Code, 'ne') then
+    result := 'Nepali'
+  else if SameText(Code, 'nl') then
+    result := 'Dutch'
+  else if SameText(Code, 'nn') then
+    result := 'Norwegian (Nynorsk)'
+  else if SameText(Code, 'no') then
+    result := 'Norwegian'
+  else if SameText(Code, 'nso') then
+    result := 'Sesotho'
+  else if SameText(Code, 'oc') then
+    result := 'Occitan'
+  else if SameText(Code, 'or') then
+    result := 'Oriya'
+  else if SameText(Code, 'pa') then
+    result := 'Punjabi'
+  else if SameText(Code, 'pl') then
+    result := 'Polish'
+  else if SameText(Code, 'prs') then
+    result := 'Dari'
+  else if SameText(Code, 'ps') then
+    result := 'Pashto'
+  else if SameText(Code, 'pt') then
+    result := 'Portuguese'
+  else if SameText(Code, 'quc') then
+    result := 'K''iche'
+  else if SameText(Code, 'quz') then
+    result := 'Quechua'
+  else if SameText(Code, 'rm') then
+    result := 'Romansh'
+  else if SameText(Code, 'ro') then
+    result := 'Romanian'
+  else if SameText(Code, 'ru') then
+    result := 'Russian'
+  else if SameText(Code, 'rw') then
+    result := 'Kinyarwanda'
+  else if SameText(Code, 'sa') then
+    result := 'Sanskrit'
+  else if SameText(Code, 'sah') then
+    result := 'Yakut'
+  else if SameText(Code, 'se') then
+    result := 'Sami (Northern)'
+  else if SameText(Code, 'si') then
+    result := 'Sinhala'
+  else if SameText(Code, 'sk') then
+    result := 'Slovak'
+  else if SameText(Code, 'sl') then
+    result := 'Slovenian'
+  else if SameText(Code, 'sma') then
+    result := 'Sami (Southern)'
+  else if SameText(Code, 'smj') then
+    result := 'Sami (Lule)'
+  else if SameText(Code, 'smn') then
+    result := 'Sami (Inari)'
+  else if SameText(Code, 'sms') then
+    result := 'Sami (Skolt)'
+  else if SameText(Code, 'sq') then
+    result := 'Albanian'
+  else if SameText(Code, 'sr') then
+    result := 'Serbian'
+  else if SameText(Code, 'sv') then
+    result := 'Swedish'
+  else if SameText(Code, 'sw') then
+    result := 'Kiswahili'
+  else if SameText(Code, 'syr') then
+    result := 'Syriac'
+  else if SameText(Code, 'ta') then
+    result := 'Tamil'
+  else if SameText(Code, 'te') then
+    result := 'Telugu'
+  else if SameText(Code, 'tg') then
+    result := 'Tajik'
+  else if SameText(Code, 'th') then
+    result := 'Thai'
+  else if SameText(Code, 'tk') then
+    result := 'Turkmen'
+  else if SameText(Code, 'tn') then
+    result := 'Setswana'
+  else if SameText(Code, 'tr') then
+    result := 'Turkish'
+  else if SameText(Code, 'tt') then
+    result := 'Tatar'
+  else if SameText(Code, 'tzm') then
+    result := 'Tamazight'
+  else if SameText(Code, 'ug') then
+    result := 'Uyghur'
+  else if SameText(Code, 'uk') then
+    result := 'Ukrainian'
+  else if SameText(Code, 'ur') then
+    result := 'Urdu'
+  else if SameText(Code, 'uz') then
+    result := 'Uzbek'
+  else if SameText(Code, 'vi') then
+    result := 'Vietnamese'
+  else if SameText(Code, 'wo') then
+    result := 'Wolof'
+  else if SameText(Code, 'xh') then
+    result := 'isiXhosa'
+  else if SameText(Code, 'yo') then
+    result := 'Yoruba'
+  else if SameText(Code, 'zh') then
+    result := 'Chinese'
+  else if SameText(Code, 'zu') then
+    result := 'isiZulu'
+  else
+    result := Code + '?';
 end;
 
 { TFirestorePath }
