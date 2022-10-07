@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2021 Christoph Schneider                                 }
+{  Copyright (c) 2018-2022 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -91,6 +91,7 @@ type
     procedure Delete(const ObjectName: TObjectName;
       OnDelete: TOnDeleteStorage; OnDelError: TOnStorageError);
     procedure DeleteSynchronous(const ObjectName: TObjectName);
+    function ListSynchronous(const ObjectPath: string): string; //TStorageObjectList;
 
     // Long-term storage (beyond the runtime of the app) of loaded storage files
     procedure SetupCacheFolder(const FolderName: string;
@@ -154,7 +155,8 @@ uses
   FB4D.Helpers;
 
 const
-  GOOGLE_STORAGE = 'https://firebasestorage.googleapis.com/v0/b/%s/o';
+//  GOOGLE_STORAGE = 'https://firebasestorage.googleapis.com/v0/b/%s/o';
+  GOOGLE_STORAGE = 'https://storage.googleapis.com/storage/v1/b/%s/o';
 
 { TFirestoreStorage }
 
@@ -446,7 +448,7 @@ var
   Response: IFirebaseResponse;
 begin
   Request := TFirebaseRequest.Create(BaseURL, '', fAuth);
-  Response := Request.SendRequestSynchronous([ObjectName], rmDelete, nil, nil);
+  Response := Request.SendRequestSynchronous([ObjectName], rmDelete);
   if not Response.StatusOk then
   begin
     {$IFDEF DEBUG}
@@ -505,6 +507,35 @@ begin
         TFirebaseHelpers.LogFmt(rsFBFailureIn,
           ['FirebaseStorage.OnDelResponse', ObjectName, e.Message]);
     end;
+  end;
+end;
+
+function TFirebaseStorage.ListSynchronous(
+  const ObjectPath: string): string; //TStorageObjectList;
+var
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  Request := TFirebaseRequest.Create(BaseURL, '', fAuth);
+  Response := Request.SendRequestSynchronous([ObjectPath], rmGet , nil, nil, tmBearer); // AuthParam);
+  if not Response.StatusOk then
+  begin
+    {$IFDEF DEBUG}
+    TFirebaseHelpers.Log('FirebaseStorage.ListSynchronous: ' +
+      Response.ContentAsString);
+    {$ENDIF}
+    raise EStorageObject.CreateFmt('List failed: %s', [Response.StatusText]);
+  end else begin
+    Response.CheckForJSONObj;
+result := Response.ContentAsString;
+//    result := TStorageObjectList.Create;
+//  result := TStorageObject.Create(self, Response);
+//  fCSForStorageObjs.Acquire;
+//  try
+//    fStorageObjs.TryAdd(ObjectName, result);
+//  finally
+//    fCSForStorageObjs.Release;
+//  end;
   end;
 end;
 

@@ -220,6 +220,7 @@ type
     edtParam4Val: TEdit;
     Label39: TLabel;
     chbIncludeDescendants: TCheckBox;
+    btnListSync: TButton;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -279,6 +280,7 @@ type
     procedure btnCallFunctionSynchronousClick(Sender: TObject);
     procedure cboParamsChange(Sender: TObject);
     procedure btnCallFunctionAsynchronousClick(Sender: TObject);
+    procedure btnListSyncClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fStorageObject: IStorageObject;
@@ -858,21 +860,21 @@ begin
   if assigned(Obj) then
   begin
     memStorageResp.Lines.Add('ObjectName: ' + Obj.ObjectName(false));
-    memStorageResp.Lines.Add('Path: ' + Obj.Path);
-    memStorageResp.Lines.Add('Type: ' + Obj.ContentType);
+    memStorageResp.Lines.Add('  Path: ' + Obj.Path);
+    memStorageResp.Lines.Add('  Type: ' + Obj.ContentType);
     sizeInBytes := Obj.Size;
-    memStorageResp.Lines.Add('Size: ' + Format('%.0n bytes', [SizeInBytes]));
-    memStorageResp.Lines.Add('Created: ' +
+    memStorageResp.Lines.Add('  Size: ' + Format('%.0n bytes', [SizeInBytes]));
+    memStorageResp.Lines.Add('  Created: ' +
       DateTimeToStr(Obj.createTime));
-    memStorageResp.Lines.Add('Updated: ' +
+    memStorageResp.Lines.Add('  Updated: ' +
       DateTimeToStr(Obj.updateTime));
-    memStorageResp.Lines.Add('Download URL: ' + Obj.DownloadUrl);
-    memStorageResp.Lines.Add('Download Token: ' + Obj.DownloadToken);
-    memStorageResp.Lines.Add('MD5 hash code: ' + Obj.MD5HashCode);
-    memStorageResp.Lines.Add('E-Tag: ' + Obj.etag);
-    memStorageResp.Lines.Add('Generation: ' + IntTostr(Obj.generation));
-    memStorageResp.Lines.Add('StorageClass: ' + Obj.storageClass);
-    memStorageResp.Lines.Add('Meta Generation: ' +
+    memStorageResp.Lines.Add('  Download URL: ' + Obj.DownloadUrl);
+    memStorageResp.Lines.Add('  Download Token: ' + Obj.DownloadToken);
+    memStorageResp.Lines.Add('  MD5 hash code: ' + Obj.MD5HashCode);
+    memStorageResp.Lines.Add('  E-Tag: ' + Obj.etag);
+    memStorageResp.Lines.Add('  Generation: ' + IntTostr(Obj.generation));
+    memStorageResp.Lines.Add('  StorageClass: ' + Obj.storageClass);
+    memStorageResp.Lines.Add('  Meta Generation: ' +
       IntTostr(Obj.metaGeneration));
   end else
     memStorageResp.Lines.Text := 'No Storage object';
@@ -1048,6 +1050,24 @@ begin
   memStorageResp.Lines.Text := 'Error while asynchronous delete of ' + ObjectName;
   memStorageResp.Lines.Add('Error: ' + ErrorMsg);
 end;
+
+procedure TfmxFirebaseDemo.btnListSyncClick(Sender: TObject);
+var
+  StorageObjList: TStorageObjectList;
+  Obj: IStorageObject;
+begin
+  if not CheckAndCreateStorageClass then
+    exit;
+  memStorageResp.Lines.Text := fStorage.ListSynchronous(edtStoragePath.Text);
+//  StorageObjList := fStorage.ListSynchronous(edtStoragePath.Text);
+//  try
+//    for Obj in StorageObjList do
+//      ShowFirestoreObject(Obj);
+//  finally
+//    StorageObjList.Free;
+//  end;
+end;
+
 {$ENDREGION}
 
 {$REGION 'Firestore DB'}

@@ -1624,6 +1624,16 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Text = 'Delete Asynchronous'
         OnClick = btnDeleteAsyncClick
       end
+      object btnListSync: TButton
+        Position.X = 408.000000000000000000
+        Position.Y = 78.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        Text = 'List Synchronous'
+        OnClick = btnListSyncClick
+      end
     end
     object tabFunctions: TTabItem
       CustomIcon = <

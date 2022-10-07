@@ -707,6 +707,7 @@ type
     function metaGeneration: Int64;
     function CacheFileName: string;
   end;
+  TStorageObjectList = TList<IStorageObject>;
 
   IFirebaseStorage = interface(IInterface)
     procedure Get(const ObjectName: TObjectName; OnGetStorage: TOnStorage;
@@ -728,6 +729,7 @@ type
     function UploadSynchronousFromStream(Stream: TStream;
       const ObjectName: TObjectName;
       ContentType: TRESTContentType): IStorageObject;
+    function ListSynchronous(const ObjectPath: string): string; //TStorageObjectList;
 
     // Long-term storage (beyond the runtime of the app) of loaded storage files
     procedure SetupCacheFolder(const FolderName: string;
