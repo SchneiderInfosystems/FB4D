@@ -220,6 +220,9 @@ type
     edtParam4Val: TEdit;
     Label39: TLabel;
     chbIncludeDescendants: TCheckBox;
+    btnStart2ndListener: TButton;
+    btnStopEvent2: TButton;
+    edtRTDBEvent2Path: TEdit;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -279,13 +282,15 @@ type
     procedure btnCallFunctionSynchronousClick(Sender: TObject);
     procedure cboParamsChange(Sender: TObject);
     procedure btnCallFunctionAsynchronousClick(Sender: TObject);
+    procedure btnStart2ndListenerClick(Sender: TObject);
+    procedure btnStopEvent2Click(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fStorageObject: IStorageObject;
     fDatabase: IFirestoreDatabase;
     fTransaction: TTransaction;
     fRealTimeDB: IRealTimeDB;
-    fFirebaseEvent: IFirebaseEvent;
+    fFirebaseEvent, fFirebaseEvent2: IFirebaseEvent;
     fDownloadStream: TFileStream;
     fStorage: IFirebaseStorage;
     fUploadStream: TFileStream;
@@ -297,6 +302,10 @@ type
       JSONObj: TJSONObject);
     procedure OnRecDataError(const Info, ErrMsg: string);
     procedure OnRecDataStop(Sender: TObject);
+    procedure OnRecData2(const Event: string; Params: TRequestResourceParam;
+      JSONObj: TJSONObject);
+    procedure OnRecDataError2(const Info, ErrMsg: string);
+    procedure OnRecDataStop2(Sender: TObject);
     procedure ShowDocument(Doc: IFirestoreDocument);
     procedure CheckDocument;
     procedure OnUserResp(const Info: string; Response: IFirebaseResponse);
@@ -395,6 +404,7 @@ begin
     edtPath.Text := IniFile.ReadString('RTDB', 'DBPath', 'TestNode');
     edtRTDBEventPath.Text := IniFile.ReadString('RTDBEvent', 'DBPath',
       'TestNode');
+    edtRTDBEvent2Path.Text := IniFile.ReadString('RTDBEvent', 'DBPath2', '');
     edtStorageBucket.Text := IniFile.ReadString('Storage', 'Bucket', '');
     edtStorageObject.Text := IniFile.ReadString('Storage', 'Object', '');
     edtStoragePath.Text := IniFile.ReadString('Storage', 'Path', '');
@@ -444,6 +454,7 @@ begin
     IniFile.WriteString('RTDB', 'FirebaseURL', edtFirebaseURL.Text);
     IniFile.WriteString('RTDB', 'DBPath', edtPath.Text);
     IniFile.WriteString('RTDBEvent', 'DBPath', edtRTDBEventPath.Text);
+    IniFile.WriteString('RTDBEvent', 'DBPath2', edtRTDBEvent2Path.Text);
     IniFile.WriteString('Storage', 'Bucket', edtStorageBucket.Text);
     IniFile.WriteString('Storage', 'Object', edtStorageObject.Text);
     IniFile.WriteString('Storage', 'Path', edtStoragePath.Text);
@@ -1673,6 +1684,7 @@ begin
     edtFirebaseURL.ReadOnly := true;
     edtProjectID.enabled := false;
     fFirebaseEvent := nil;
+    fFirebaseEvent2 := nil;
   end;
   result := true;
 end;
@@ -2117,8 +2129,11 @@ begin
   fFirebaseEvent := fRealTimeDB.ListenForValueEvents(
     SplitString(edtRTDBEventPath.Text.Replace('\', '/'), '/'),
     OnRecData, OnRecDataStop, OnRecDataError);
-  memScans.Lines.Add(TimeToStr(now) + ': Event handler started for ' +
-    TFirebaseHelpers.ArrStrToCommaStr(fFirebaseEvent.GetResourceParams));
+  if assigned(fFirebaseEvent) then
+    memScans.Lines.Add(TimeToStr(now) + ': Event handler started for ' +
+      TFirebaseHelpers.ArrStrToCommaStr(fFirebaseEvent.GetResourceParams))
+  else
+    memScans.Lines.Add(TimeToStr(now) + ': Event handler start failed');
   btnNotifyEvent.Enabled := false;
   btnStopEvent.Enabled := true;
 end;
@@ -2158,6 +2173,59 @@ begin
   btnNotifyEvent.Enabled := true;
   btnStopEvent.Enabled := false;
 end;
+
+procedure TfmxFirebaseDemo.btnStart2ndListenerClick(Sender: TObject);
+begin
+  if not CheckAndCreateRealTimeDBClass(memScans) then
+    exit;
+  fFirebaseEvent2 := fRealTimeDB.ListenForValueEvents(
+    SplitString(edtRTDBEvent2Path.Text.Replace('\', '/'), '/'),
+    OnRecData2, OnRecDataStop2, OnRecDataError2);
+  if assigned(fFirebaseEvent2) then
+    memScans.Lines.Add(TimeToStr(now) + ': 2nd Event handler started for ' +
+      TFirebaseHelpers.ArrStrToCommaStr(fFirebaseEvent2.GetResourceParams))
+  else
+    memScans.Lines.Add(TimeToStr(now) + ': end Event handler start failed');
+  btnStart2ndListener.Enabled := false;
+  btnStopEvent2.Enabled := true;
+end;
+
+procedure TfmxFirebaseDemo.btnStopEvent2Click(Sender: TObject);
+begin
+  if assigned(fFirebaseEvent2) then
+    fFirebaseEvent2.StopListening;
+end;
+
+procedure TfmxFirebaseDemo.OnRecData2(const Event: string;
+  Params: TRequestResourceParam; JSONObj: TJSONObject);
+var
+  par, p: string;
+begin
+  par := '[';
+  for p in Params do
+  begin
+    if par.Length > 1 then
+      par := par + ', ' + p
+    else
+      par := par + p;
+  end;
+  memScans.Lines.Add(TimeToStr(now) + '::2nd: ' + Event + par + '] = ' +
+    JSONObj.ToJSON);
+end;
+
+procedure TfmxFirebaseDemo.OnRecDataError2(const Info, ErrMsg: string);
+begin
+  memScans.Lines.Add(TimeToStr(now) + ':: 2nd Error in ' + Info + ': ' + ErrMsg);
+end;
+
+procedure TfmxFirebaseDemo.OnRecDataStop2(Sender: TObject);
+begin
+  memScans.Lines.Add(TimeToStr(now) + ': 2nd Event handler stopped');
+  fFirebaseEvent2 := nil;
+  btnStart2ndListener.Enabled := true;
+  btnStopEvent2.Enabled := false;
+end;
+
 {$ENDREGION}
 
 {$REGION 'FB Function'}

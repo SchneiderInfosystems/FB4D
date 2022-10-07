@@ -40,6 +40,9 @@ type
     cDefTimeOutInMS = 500;
     cJSONExt = '.json';
   private
+    class var FNoOfConcurrentThreads: integer;
+    class constructor ClassCreate;
+  private
     fBaseURL: string;
     fURL: string;
     fRequestID: string;
@@ -95,6 +98,11 @@ resourcestring
 
 { TRTDBListenerThread }
 
+class constructor TRTDBListenerThread.ClassCreate;
+begin
+  FNoOfConcurrentThreads := 0;
+end;
+
 constructor TRTDBListenerThread.Create(const FirebaseURL: string;
   Auth: IFirebaseAuthentication);
 var
@@ -107,13 +115,14 @@ begin
     fBaseURL := FirebaseURL;
   fAuth := Auth;
   {$IFDEF MSWINDOWS}
-  EventName := 'RTDBListenerGetFini';
+  EventName := 'RTDBListenerGetFini' + FNoOfConcurrentThreads.ToString;
   {$ELSE}
   EventName := '';
   {$ENDIF}
   fGetFinishedEvent := TEvent.Create(nil, false, false, EventName);
   OnTerminate := OnEndThread;
   FreeOnTerminate := false;
+  inc(FNoOfConcurrentThreads);
   {$IFNDEF LINUX64}
   NameThreadForDebugging('FB4D.RTListenerThread', ThreadID);
   {$ENDIF}

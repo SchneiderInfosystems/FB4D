@@ -1085,7 +1085,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 825.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TextPrompt = 'Data base path separated by /'
+        TextPrompt = 'Database path separated by /'
         object Label26: TLabel
           Position.X = -92.000000000000000000
           Position.Y = 2.000000000000000000
@@ -1105,7 +1105,40 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TextSettings.Font.Size = 10.000000000000000000
         Text = 'Enter Firebase URL in Real Time DB tab'
-        TabOrder = 7
+        TabOrder = 11
+      end
+      object btnStart2ndListener: TButton
+        Anchors = [akTop, akBottom]
+        Position.X = 672.744201660156300000
+        Position.Y = 61.000000000000000000
+        Size.Width = 137.000000000000000000
+        Size.Height = 21.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Start 2nd Listener'
+        OnClick = btnStart2ndListenerClick
+      end
+      object btnStopEvent2: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 830.000000000000000000
+        Position.Y = 61.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        Text = 'Stop 2nd Listener'
+        OnClick = btnStopEvent2Click
+      end
+      object edtRTDBEvent2Path: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akTop, akRight]
+        TabOrder = 12
+        Position.X = 673.000000000000000000
+        Position.Y = 31.000000000000000000
+        Size.Width = 278.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 'Database path for 2nd Listener'
       end
     end
     object tabFirestore: TTabItem
