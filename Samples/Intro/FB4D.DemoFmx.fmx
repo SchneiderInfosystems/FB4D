@@ -2105,7 +2105,6 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 13
       end
       object gpbMLModel: TGroupBox
-        Anchors = [akTop, akRight]
         Position.X = 19.000000000000000000
         Position.Y = 219.000000000000000000
         Size.Width = 343.000000000000000000
