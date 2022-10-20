@@ -908,12 +908,20 @@ begin
     result := 'Konkani'
   else if SameText(Code, 'ky') then
     result := 'Kyrgyz'
+  else if SameText(Code, 'la') then
+    result := 'Latin'
   else if SameText(Code, 'lb') then
     result := 'Luxembourgish'
+  else if SameText(Code, 'li') then
+    result := 'Limburgan'
   else if SameText(Code, 'lo') then
     result := 'Lao'
+  else if SameText(Code, 'ln') then
+    result := 'Lingala'
   else if SameText(Code, 'lt') then
     result := 'Lithuanian'
+  else if SameText(Code, 'lu') then
+    result := 'Luba-Katanga'
   else if SameText(Code, 'lv') then
     result := 'Latvian'
   else if SameText(Code, 'mi') then
