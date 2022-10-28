@@ -2226,15 +2226,16 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Width = 300.000000000000000000
             Size.Height = 434.000000000000000000
             Size.PlatformDefault = False
-            OnMouseDown = imgAnotateFileMouseDown
           end
-          object rctMLMarker: TRectangle
-            Fill.Kind = None
-            HitTest = False
-            Size.Width = 169.000000000000000000
-            Size.Height = 50.000000000000000000
+          object pathAnotateFile: TPath
+            Fill.Color = x50DC143C
+            Position.X = 56.000000000000000000
+            Position.Y = 40.000000000000000000
+            Size.Width = 204.000000000000000000
+            Size.Height = 338.000000000000000000
             Size.PlatformDefault = False
             Stroke.Color = claRed
+            Stroke.Thickness = 3.000000000000000000
           end
         end
       end
