@@ -1877,22 +1877,9 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Text = 'Anotate from Storage'
         OnClick = btnVisionMLAnotateStorageClick
       end
-      object memVisionML: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 16.000000000000000000
-        Position.Y = 280.000000000000000000
-        Size.Width = 955.000000000000000000
-        Size.Height = 431.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 4
-        Viewport.Width = 951.000000000000000000
-        Viewport.Height = 427.000000000000000000
-      end
       object edtRefStorage: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 5
+        TabOrder = 4
         Position.X = 224.000000000000000000
         Position.Y = 22.000000000000000000
         Size.Width = 521.000000000000000000
@@ -1910,7 +1897,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 638.000000000000000000
         Size.Height = 82.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 6
+        TabOrder = 5
         Viewport.Width = 634.000000000000000000
         Viewport.Height = 78.000000000000000000
       end
@@ -1920,13 +1907,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 100.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 8
+        TabOrder = 7
         Text = 'Upload File'
         OnClick = bntLoadMLClick
       end
       object edtAnotateFileType: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 9
+        TabOrder = 8
         Position.X = 870.000000000000000000
         Position.Y = 64.000000000000000000
       end
@@ -1947,7 +1934,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 954.000000000000000000
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 10
+        TabOrder = 9
         Columns = 3
         DisableFocusEffect = True
         ItemIndex = 7
@@ -2073,7 +2060,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 50.000000000000000000
         Size.PlatformDefault = False
         Text = 'Representation of Result'
-        TabOrder = 12
+        TabOrder = 11
         object rdbResAsJSON: TRadioButton
           GroupName = 'ResultML'
           Position.X = 150.000000000000000000
@@ -2102,7 +2089,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Position.X = 16.000000000000000000
         Position.Y = 129.000000000000000000
         Text = 'ML Vision Features'
-        TabOrder = 13
+        TabOrder = 12
       end
       object gpbMLModel: TGroupBox
         Position.X = 19.000000000000000000
@@ -2111,7 +2098,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 50.000000000000000000
         Size.PlatformDefault = False
         Text = 'Model type'
-        TabOrder = 11
+        TabOrder = 10
         object rdbLatestModel: TRadioButton
           GroupName = 'ModelType'
           Position.X = 238.000000000000000000
@@ -2151,7 +2138,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 50.000000000000000000
         Size.PlatformDefault = False
         Text = 'Maximal number of results per feature'
-        TabOrder = 14
+        TabOrder = 13
         object spbMaxFeatures: TSpinBox
           Touch.InteractiveGestures = [LongTap, DoubleTap]
           TabOrder = 38
@@ -2171,9 +2158,85 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 100.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 7
+        TabOrder = 6
         Text = 'Clear File'
         OnClick = btnClearMLClick
+      end
+      object layResult: TLayout
+        Align = Client
+        Margins.Left = 16.000000000000000000
+        Margins.Top = 280.000000000000000000
+        Margins.Right = 16.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Size.Width = 964.000000000000000000
+        Size.Height = 434.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 14
+        object sptMLVision: TSplitter
+          Align = Right
+          Cursor = crHSplit
+          MinSize = 20.000000000000000000
+          Position.X = 656.000000000000000000
+          Size.Width = 8.000000000000000000
+          Size.Height = 434.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object lstVisionML: TListBox
+          Align = Client
+          PopupMenu = popMLList
+          Size.Width = 656.000000000000000000
+          Size.Height = 434.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 5
+          DisableFocusEffect = True
+          DefaultItemStyles.ItemStyle = ''
+          DefaultItemStyles.GroupHeaderStyle = ''
+          DefaultItemStyles.GroupFooterStyle = ''
+          OnItemClick = lstVisionMLItemClick
+          Viewport.Width = 652.000000000000000000
+          Viewport.Height = 430.000000000000000000
+        end
+        object rctBackgroundML: TRectangle
+          Align = MostRight
+          Fill.Kind = Gradient
+          Fill.Gradient.Points = <
+            item
+              Color = xFF252525
+              Offset = 0.000000000000000000
+            end
+            item
+              Color = xFF929292
+              Offset = 1.000000000000000000
+            end>
+          Fill.Gradient.StartPosition.X = 0.500000000000000000
+          Fill.Gradient.StartPosition.Y = 1.000000000000000000
+          Fill.Gradient.StopPosition.X = 0.499999970197677600
+          Fill.Gradient.StopPosition.Y = 0.000000000000000000
+          Position.X = 664.000000000000000000
+          Size.Width = 300.000000000000000000
+          Size.Height = 434.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          OnResized = rctBackgroundMLResized
+          object imgAnotateFile: TImage
+            MultiResBitmap = <
+              item
+              end>
+            Align = Client
+            Size.Width = 300.000000000000000000
+            Size.Height = 434.000000000000000000
+            Size.PlatformDefault = False
+            OnMouseDown = imgAnotateFileMouseDown
+          end
+          object rctMLMarker: TRectangle
+            Fill.Kind = None
+            HitTest = False
+            Size.Width = 169.000000000000000000
+            Size.Height = 50.000000000000000000
+            Size.PlatformDefault = False
+            Stroke.Color = claRed
+          end
+        end
       end
     end
   end
@@ -2218,5 +2281,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       ')|*.pdf'
     Left = 64
     Top = 354
+  end
+  object popMLList: TPopupMenu
+    Left = 40
+    Top = 692
+    object mniMLListExport: TMenuItem
+      Text = 'Export to file'
+      OnClick = mniMLListExportClick
+    end
   end
 end

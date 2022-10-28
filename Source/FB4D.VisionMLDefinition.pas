@@ -181,6 +181,7 @@ type
     procedure Init;
     procedure SetFromJSON(TextProperty: TJSONObject);
     procedure AddStrings(s: TStrings; Indent: integer);
+    function AsStr: string;
   end;
 
   TSymbols = record
@@ -191,7 +192,7 @@ type
     procedure Init;
     procedure SetFromJSON(Symbol: TJSONObject);
     procedure AddStrings(s: TStrings; Indent: integer);
-    function AsStr: string;
+    function AsStr(Short: boolean = false): string;
   end;
 
   TWord = record
@@ -202,7 +203,7 @@ type
     procedure Init;
     procedure SetFromJSON(Word: TJSONObject);
     procedure AddStrings(s: TStrings; Indent: integer);
-    function AsStr: string;
+    function AsStr(Short: boolean = false): string;
   end;
 
   TParagraph = record
@@ -704,6 +705,52 @@ begin
   end;
 end;
 
+function TTextProperty.AsStr: string;
+var
+  dl: TDetectedLanguage;
+  sl: TStringList;
+begin
+  sl := TStringList.Create;
+  try
+    for dl in DetectedLanguages do
+      sl.Add(dl.AsStr);
+    if DetectedBreakType > TDetectedBreakType.dbtUnknown then
+    begin
+      if DetectedBreakIsPrefix then
+        case DetectedBreakType of
+          dbtSpace:
+            sl.Add('Prepends break: regular space');
+          dbtSureSpace:
+            sl.Add('Prepends break: wide space');
+          dbtEOLSureSpace:
+            sl.Add('Prepends break: line-wrapping');
+          dtbHyphen:
+            sl.Add('Prepends break: end line hyphen');
+          dbtLineBreak:
+            sl.Add('Prepends break: end line break');
+        end
+      else
+        case DetectedBreakType of
+          dbtSpace:
+            sl.Add('Break: regular space');
+          dbtSureSpace:
+            sl.Add('Break: wide space');
+          dbtEOLSureSpace:
+            sl.Add('Break: line-wrapping');
+          dtbHyphen:
+            sl.Add('Break: end line hyphen');
+          dbtLineBreak:
+            sl.Add('Break: end line break');
+        end;
+    end;
+    sl.QuoteChar := #0;
+    sl.Delimiter := ',';
+    result := sl.DelimitedText;
+  finally
+    sl.Free;
+  end;
+end;
+
 { TTextBlock }
 
 procedure TBlock.Init;
@@ -829,7 +876,6 @@ procedure TParagraph.AddStrings(s: TStrings; Indent: integer);
 var
   c: integer;
 begin
-  TextProperty.AddStrings(s, Indent);
   BoundingBox.AddStrings(s, Indent);
   for c := 0 to Length(Words) - 1 do
   begin
@@ -837,18 +883,19 @@ begin
       [StringOfChar(' ', Indent), c + 1, Length(Words), Words[c].AsStr]));
     Words[c].AddStrings(s, Indent + 2);
   end;
-  if Confidence > 0 then
-    s.Add(Format('%s%3.1f%% confidence',
-      [StringOfChar(' ', Indent), Confidence * 100]));
 end;
 
 function TParagraph.AsStr: string;
 var
   c: integer;
 begin
-  result := '';
+  result := '"';
   for c := 0 to Length(Words) - 1 do
-    result := result + Words[c].AsStr + ' ';
+    result := result + Words[c].AsStr(true) + ' ';
+  result := trim(result) + '"';
+  if Confidence > 0 then
+    result := result + Format(', %3.1f%% confidence', [Confidence * 100]);
+  result := result + TextProperty.AsStr;
 end;
 
 { TWord }
@@ -889,26 +936,30 @@ procedure TWord.AddStrings(s: TStrings; Indent: integer);
 var
   c: integer;
 begin
-  TextProperty.AddStrings(s, Indent);
   BoundingBox.AddStrings(s, Indent);
   for c := 0 to Length(Symbols) - 1 do
   begin
-    s.Add(Format('%sSymbols %d of %d',
-      [StringOfChar(' ', Indent), c + 1, Length(Symbols)]));
+    s.Add(Format('%sSymbols %d of %d: %s',
+      [StringOfChar(' ', Indent), c + 1, Length(Symbols), Symbols[c].AsStr]));
     Symbols[c].AddStrings(s, Indent + 2);
   end;
-  if Confidence > 0 then
-    s.Add(Format('%s%3.1f%% confidence',
-      [StringOfChar(' ', Indent), Confidence * 100]));
 end;
 
-function TWord.AsStr: string;
+function TWord.AsStr(Short: boolean): string;
 var
   c: integer;
 begin
   result := '';
   for c := 0 to Length(Symbols) - 1 do
-    result := result + Symbols[c].AsStr;
+    result := result + Symbols[c].AsStr(true);
+  if not Short then
+  begin
+    result := '"' + result + '"';
+    if Confidence > 0 then
+      result := result + Format(', confidence %3.1f%%', [Confidence * 100]);
+    if not TextProperty.AsStr.IsEmpty then
+      result := result + ', ' + TextProperty.AsStr;
+  end;
 end;
 
 { TSymbols }
@@ -940,21 +991,20 @@ begin
 end;
 
 procedure TSymbols.AddStrings(s: TStrings; Indent: integer);
-var
-  Line: string;
 begin
-  TextProperty.AddStrings(s, Indent);
   BoundingBox.AddStrings(s, Indent);
-  if Confidence > 0 then
-    Line := Format(' %3.1f%% confidence', [Confidence * 100])
-  else
-    Line := '';
-  s.Add(StringOfChar(' ', Indent) + 'Symbol "' + Text + '"' + Line);
 end;
 
-function TSymbols.AsStr: string;
+function TSymbols.AsStr(Short: boolean): string;
 begin
-  result := Text;
+  if Short then
+    result := Text
+  else begin
+    result := '"' + Text + '" ';
+    if Confidence > 0 then
+      result := result + Format(', %3.1f%% confidence', [Confidence * 100]);
+    result := result + ' ' + TextProperty.AsStr;
+  end;
 end;
 
 { TBoundingPoly }
