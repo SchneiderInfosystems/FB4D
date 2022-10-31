@@ -40,6 +40,7 @@ uses
   FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas',
   FB4D.Storage in '..\..\Source\FB4D.Storage.pas',
   FB4D.Functions in '..\..\Source\FB4D.Functions.pas',
+  FB4D.VisionMLDefinition in '..\..\Source\FB4D.VisionMLDefinition.pas',
   FB4D.SelfRegistrationFra in '..\..\GUIPatterns\FMX\FB4D.SelfRegistrationFra.pas' {FraSelfRegistration: TFrame};
 
 {$R *.res}

@@ -298,6 +298,7 @@
         <DCCReference Include="..\..\Source\FB4D.RealTimeDB.Listener.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Storage.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Functions.pas"/>
+        <DCCReference Include="..\..\Source\FB4D.VisionMLDefinition.pas"/>
         <DCCReference Include="..\..\GUIPatterns\FMX\FB4D.SelfRegistrationFra.pas">
             <Form>FraSelfRegistration</Form>
             <FormType>fmx</FormType>
@@ -352,7 +353,12 @@
                 <DeployFile LocalName="OSX64\Debug\FSSimpleChat" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="Win32\Debug\FSSimpleChat.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="Win64\Debug\FSSimpleChat.exe" Configuration="Debug" Class="ProjectOutput"/>
-                <DeployFile LocalName="Win64\Debug\FSSimpleChat.rsm" Configuration="Debug" Class="DebugSymbols"/>
+                <DeployFile LocalName="Win64\Release\FSSimpleChat.exe" Configuration="Release" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>FSSimpleChat.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="iOSSimulator">
                         <Operation>1</Operation>
