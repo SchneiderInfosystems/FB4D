@@ -2,5 +2,5 @@ const
   cLibMajorVersion = 1;
   cLibMinorVersion = 4;
   cLibReleaseVersion = 0;
-  cLibBuildVersion = 478; // Number of commits since start in GitHub
+  cLibBuildVersion = 480; // Number of commits since start in GitHub
   // git rev-list --count head

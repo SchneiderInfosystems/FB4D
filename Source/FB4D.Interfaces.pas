@@ -819,6 +819,7 @@ type
       const DatabaseID: string = cDefaultDatabaseID): IFirestoreDatabase;
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
+    function VisionML: IVisionML;
   end;
 
 const

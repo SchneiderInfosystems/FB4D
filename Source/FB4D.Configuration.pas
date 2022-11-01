@@ -50,6 +50,7 @@ type
     fDatabase: TDictionary<string, IFirestoreDatabase>;
     fStorage: IFirebaseStorage;
     fFunctions: IFirebaseFunctions;
+    fVisionML: IVisionML;
   public
     /// <summary>
     /// The first constructor requires all secrets of the Firebase project as
@@ -92,6 +93,7 @@ type
       const DatabaseID: string = cDefaultDatabaseID): IFirestoreDatabase;
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
+    function VisionML: IVisionML;
     class function GetLibVersionInfo: string;
     class function GetLibLicenseInfo: string;
   end;
@@ -101,7 +103,7 @@ implementation
 uses
   System.IOUtils,
   FB4D.Authentication, FB4D.RealTimeDB, FB4D.Firestore, FB4D.Storage,
-  FB4D.Functions;
+  FB4D.Functions, FB4D.VisionML;
 
 {$I FB4DVersion.inc}
 
@@ -214,6 +216,15 @@ begin
   if not assigned(fFunctions) then
     fFunctions := TFirebaseFunctions.Create(fProjectID, Auth, fServerRegion);
   result := fFunctions;
+end;
+
+function TFirebaseConfiguration.VisionML: IVisionML;
+begin
+  Assert(not fProjectID.IsEmpty, 'ProjectID is required for VisionML');
+  Assert(not fApiKey.IsEmpty, 'ApiKey is required for VisionML');
+  if not assigned(fVisionML) then
+    fVisionML := TVisionML.Create(fProjectID, fAPIKey, Auth);
+  result := fVisionML;
 end;
 
 function TFirebaseConfiguration.ProjectID: string;

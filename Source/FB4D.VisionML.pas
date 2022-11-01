@@ -45,7 +45,7 @@ type
       Response: IFirebaseResponse);
   public
     constructor Create(const ProjectID, ApiKey: string;
-      Auth: IFirebaseAuthentication;
+      Auth: IFirebaseAuthentication = nil;
       const ServerRegion: string = cRegionUSCent1);
     function AnnotateFileSynchronous(const FileAsBase64,
       ContentType: string; Features: TVisionMLFeatures;
@@ -121,7 +121,7 @@ begin
 end;
 
 constructor TVisionML.Create(const ProjectID, ApiKey: string;
-  Auth: IFirebaseAuthentication; const ServerRegion: string = cRegionUSCent1);
+  Auth: IFirebaseAuthentication; const ServerRegion: string);
 begin
   fProjectID := ProjectID;
   fApiKey := ApiKey;
