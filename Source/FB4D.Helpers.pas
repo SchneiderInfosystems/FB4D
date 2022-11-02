@@ -31,6 +31,7 @@ uses
   System.Sensors,
 {$ENDIF}
   System.JSON, System.Generics.Collections,
+  REST.Types,
   FB4D.Interfaces;
 
 type
@@ -82,6 +83,10 @@ type
       OnError: TOnSimpleDownloadError = nil);
     class procedure SimpleDownloadSynchronous(const DownloadUrl: string;
       Stream: TStream);
+    {$IF Defined(FMX)}
+    class function ContentTypeToFileExt(const ContentType: string): string;
+    class function ImageStreamToContentType(Stream: TStream): TRESTContentType;
+    {$ENDIF}
     // Miscellaneous functions
     class function IsEMailAdress(const EMail: string): boolean;
     // Application helpers
@@ -235,11 +240,9 @@ uses
 {$ELSEIF Defined(VCL)}
   VCL.Forms,
 {$ELSEIF Defined(FMX)}
-  FMX.Types,
-  FMX.Forms,
+  FMX.Types, FMX.Forms, FMX.Graphics, FMX.Consts,
 {$ELSE}
-  FMX.Types,
-  FMX.Forms,
+  FMX.Types, FMX.Forms,
 {$ENDIF}
   System.DateUtils, System.NetEncoding, System.JSONConsts, System.Math,
   System.Net.HttpClient, System.Hash,
@@ -652,6 +655,65 @@ begin
   if ConvertToLocalTime then
     result := TTimeZone.Local.ToLocalTime(result);
 end;
+
+{$IF Defined(FMX)}
+class function TFirebaseHelpers.ContentTypeToFileExt(
+  const ContentType: string): string;
+begin
+  if SameText(ContentType, TRESTContentType.ctIMAGE_JPEG) then
+    result := SJPGImageExtension
+  else if SameText(ContentType, TRESTContentType.ctIMAGE_GIF) then
+    result := SGIFImageExtension
+  else if SameText(ContentType, TRESTContentType.ctIMAGE_PNG) then
+    result := SPNGImageExtension
+  else if SameText(ContentType, TRESTContentType.ctIMAGE_TIFF) then
+    result := STIFFImageExtension
+  else if SameText(ContentType, TRESTContentType.ctIMAGE_SVG_XML) or
+          SameText(ContentType, TRESTContentType.ctAPPLICATION_XML) or
+          SameText(ContentType, TRESTContentType.ctTEXT_XML) then
+    result := '.xml'
+  else if SameText(ContentType, TRESTContentType.ctAPPLICATION_JSON) then
+    result := '.json'
+  else if SameText(ContentType, TRESTContentType.ctAPPLICATION_PDF) then
+    result := '.pdf'
+  else if SameText(ContentType, TRESTContentType.ctAPPLICATION_ZIP) then
+    result := '.zip'
+  else if SameText(ContentType, TRESTContentType.ctTEXT_HTML) then
+    result := '.htm'
+  else if SameText(ContentType, TRESTContentType.ctTEXT_CSS) then
+    result := '.css'
+  else if SameText(ContentType, TRESTContentType.ctTEXT_JAVASCRIPT) or
+          SameText(ContentType, TRESTContentType.ctAPPLICATION_JAVASCRIPT)then
+    result := '.js'
+  else if SameText(ContentType, TRESTContentType.ctTEXT_PLAIN) then
+    result := '.txt'
+  else if SameText(ContentType, TRESTContentType.ctTEXT_CSV) then
+    result := '.csv'
+  else if SameText(ContentType, TRESTContentType.ctTEXT_X_MARKDOWN) then
+    result := '.md'
+  else
+    result := '';
+end;
+
+class function TFirebaseHelpers.ImageStreamToContentType(
+  Stream: TStream): TRESTContentType;
+var
+  ImgType: string;
+begin
+  ImgType := TImageTypeChecker.GetType(Stream);
+  if ImgType = SJPGImageExtension then
+    result := TRESTContentType.ctIMAGE_JPEG
+  else if ImgType = SGIFImageExtension then
+    result := TRESTContentType.ctIMAGE_GIF
+  else if ImgType = SPNGImageExtension then
+    result := TRESTContentType.ctIMAGE_PNG
+  else if ImgType = STIFFImageExtension then
+    result := TRESTContentType.ctIMAGE_TIFF
+  else if ImgType = SBMPImageExtension then
+    // Unsupported image type!
+    result := '';
+end;
+{$ENDIF}
 
 class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
 // Returns True if the email address is valid
