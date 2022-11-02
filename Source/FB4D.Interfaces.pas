@@ -742,6 +742,8 @@ type
       MaxCacheSpaceInBytes: Int64 = cDefaultCacheSpaceInBytes);
     function IsCacheInUse: boolean;
     function IsCacheScanFinished: boolean;
+    function GetObjectFromCache(const ObjectName: TObjectName): IStorageObject;
+    function GetFileFromCache(const ObjectName: TObjectName): TStream;
     procedure ClearCache;
     function CacheUsageInPercent: extended;
     function IsCacheOverflowed: boolean;
@@ -820,6 +822,7 @@ type
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
     function VisionML: IVisionML;
+    procedure SetBucket(const Bucket: string);
   end;
 
 const

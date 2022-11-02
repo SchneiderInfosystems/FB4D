@@ -97,6 +97,8 @@ type
       MaxCacheSpaceInBytes: Int64 = cDefaultCacheSpaceInBytes);
     function IsCacheInUse: boolean;
     function IsCacheScanFinished: boolean;
+    function GetObjectFromCache(const ObjectName: TObjectName): IStorageObject;
+    function GetFileFromCache(const ObjectName: TObjectName): TStream;
     procedure ClearCache;
     function CacheUsageInPercent: extended;
     function IsCacheOverflowed: boolean;
@@ -299,7 +301,7 @@ var
 begin
   try
     Response.CheckForJSONObj;
-    StorageObJ := TStorageObject.Create(self, Response);
+    StorageObj := TStorageObject.Create(self, Response);
     {$IFDEF DEBUG}
     TFirebaseHelpers.Log('FirebaseStorage.OnGetAndDownloadResponse ' +
       Response.ContentAsString);
@@ -638,7 +640,7 @@ begin
   result := fCacheSpaceInBytes * 100 / fMaxCacheSpaceInBytes;
 end;
 
-function  TFirebaseStorage.CheckInCache(StorageObj: IStorageObject;
+function TFirebaseStorage.CheckInCache(StorageObj: IStorageObject;
   Stream: TStream): boolean;
 var
   FileName: string;
@@ -750,6 +752,37 @@ begin
   TFirebaseHelpers.LogFmt('FirebaseStorage.StartReduceCacheSize finished, ' +
     '%d cache file deleted (Remain usage: %4.2f%%)', [Count, Usage]);
   {$ENDIF}
+end;
+
+function TFirebaseStorage.GetObjectFromCache(
+  const ObjectName: TObjectName): IStorageObject;
+begin
+  fCSForStorageObjs.Acquire;
+  try
+    if not fStorageObjs.TryGetValue(ObjectName, result) then
+      exit(nil);
+  finally
+    fCSForStorageObjs.Release;
+  end;
+end;
+
+function TFirebaseStorage.GetFileFromCache(
+  const ObjectName: TObjectName): TStream;
+var
+  Obj: IStorageObject;
+begin
+  result := nil;
+  Obj := GetObjectFromCache(ObjectName);
+  if assigned(Obj) then
+  begin
+    result := TMemoryStream.Create;
+    if not CheckInCache(Obj, result) then
+    begin
+      result.Free;
+      exit(nil);
+    end;
+    result.Position := 0;
+  end;
 end;
 {$ENDREGION}
 
