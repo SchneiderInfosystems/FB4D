@@ -215,6 +215,7 @@ type
     procedure SetFromJSON(Paragraph: TJSONObject);
     procedure AddStrings(s: TStrings; Indent: integer);
     function AsStr: string;
+    function GetText(MinConfidence: double): string;
   end;
 
   TBlockType = (btUnkown, btText, btTable, btPicture, btRuler, btBarcode);
@@ -227,6 +228,7 @@ type
     procedure Init;
     procedure SetFromJSON(Block: TJSONObject);
     procedure AddStrings(s: TStrings; Indent: integer);
+    function GetText(MinConfidence: double): string;
   end;
 
   TTextPages = record
@@ -237,6 +239,7 @@ type
     procedure Init;
     procedure SetFromJSON(Page: TJSONObject);
     procedure AddStrings(s: TStrings; Indent: integer);
+    function GetText(MinConfidence: double): string;
   end;
 
   TTextAnnotation = record
@@ -246,6 +249,7 @@ type
     procedure Init;
     procedure SetFromJSON(FullText: TJSONObject);
     procedure AddStrings(s: TStrings; Indent: integer);
+    function GetText(MinConfidence: double): string;
   end;
 
   TColorInfo = record
@@ -566,6 +570,26 @@ begin
     Blocks[c].AddStrings(s, Indent + 2);
 end;
 
+function TTextPages.GetText(MinConfidence: double): string;
+var
+  c: integer;
+  sl: TStringList;
+  s: string;
+begin
+  sl := TStringList.Create;
+  try
+    for c := 0 to length(Blocks) - 1 do
+    begin
+      s := Blocks[c].GetText(MinConfidence);
+      if not s.IsEmpty then
+        sl.Add(s);
+    end;
+    result := trim(sl.Text);
+  finally
+    sl.Free;
+  end;
+end;
+
 { TTextAnnotation }
 
 procedure TTextAnnotation.Init;
@@ -616,6 +640,26 @@ begin
     s.Add(Format('%sText: %s', [Ind, Text]))
   else
     s.Add(Format('%sNo text found', [Ind]));
+end;
+
+function TTextAnnotation.GetText(MinConfidence: double): string;
+var
+  c: integer;
+  sl: TStringList;
+  s: string;
+begin
+  sl := TStringList.Create;
+  try
+    for c := 0 to length(TextPages) - 1 do
+    begin
+      s := TextPages[c].GetText(MinConfidence);
+      if not s.IsEmpty then
+        sl.Add(s);
+    end;
+    result := trim(sl.Text);
+  finally
+    sl.Free;
+  end;
 end;
 
 { TTextProperty }
@@ -838,6 +882,26 @@ begin
   end;
 end;
 
+function TBlock.GetText(MinConfidence: double): string;
+var
+  c: integer;
+  sl: TStringList;
+  s: string;
+begin
+  sl := TStringList.Create;
+  try
+    for c := 0 to length(Paragraphs) - 1 do
+    begin
+      s := Paragraphs[c].GetText(MinConfidence);
+      if not s.IsEmpty then
+        sl.Add(s);
+    end;
+    result := trim(sl.Text);
+  finally
+    sl.Free;
+  end;
+end;
+
 { TParagraph }
 
 procedure TParagraph.Init;
@@ -896,6 +960,29 @@ begin
   if Confidence > 0 then
     result := result + Format(', %3.1f%% confidence', [Confidence * 100]);
   result := result + TextProperty.AsStr;
+end;
+
+function TParagraph.GetText(MinConfidence: double): string;
+var
+  c: integer;
+  s: string;
+begin
+  if (Confidence = 0) or (Confidence > MinConfidence) then
+  begin
+    result := '';
+    for c := 0 to length(Words) - 1 do
+    begin
+      s := Words[c].AsStr(true);
+      if not s.IsEmpty then
+      begin
+        if not result.IsEmpty and not result.EndsWith(' ') then
+          result := result + ' ' + s
+        else
+          result := result + s;
+      end;
+    end;
+  end else
+    result := '';
 end;
 
 { TWord }
