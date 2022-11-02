@@ -177,6 +177,7 @@ end;
 
 destructor TFSListenerThread.Destroy;
 begin
+  fAsyncResult := nil;
   FreeAndNil(fGetFinishedEvent);
   FreeAndNil(fTargets);
   FreeAndNil(fStream);
