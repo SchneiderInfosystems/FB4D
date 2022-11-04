@@ -1,0 +1,323 @@
+object fmxMain: TfmxMain
+  Left = 0
+  Top = 0
+  Caption = 'PhotoBox - Step3'
+  ClientHeight = 480
+  ClientWidth = 640
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object TabControl: TTabControl
+    Align = Client
+    Size.Width = 640.000000000000000000
+    Size.Height = 458.000000000000000000
+    Size.PlatformDefault = False
+    TabIndex = 1
+    TabOrder = 0
+    TabPosition = None
+    Sizes = (
+      640s
+      458s
+      640s
+      458s
+      640s
+      458s)
+    object tabRegister: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabRegister'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      object layFBConfig: TLayout
+        Align = Top
+        Size.Width = 640.000000000000000000
+        Size.Height = 121.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object edtKey: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 2
+          Position.X = 125.000000000000000000
+          Position.Y = 48.000000000000000000
+          Size.Width = 500.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 
+            'Enter Web API key from Firebase Console > Project Overview > Set' +
+            'tings > General> Project'
+          Left = 8
+          Top = 147
+          object Text2: TText
+            Position.X = -112.000000000000000000
+            Size.Width = 104.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Web API Key'
+            TextSettings.HorzAlign = Trailing
+          end
+        end
+        object edtProjectID: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 0
+          Position.X = 125.000000000000000000
+          Position.Y = 16.000000000000000000
+          Size.Width = 500.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 'Enter Project ID from FB Settings'
+          object Text3: TText
+            Position.X = -112.000000000000000000
+            Size.Width = 105.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Project ID'
+            TextSettings.HorzAlign = Trailing
+          end
+        end
+        object lblVersionInfo: TLabel
+          Anchors = [akRight, akBottom]
+          Position.X = 344.000000000000000000
+          Position.Y = 104.000000000000000000
+          Size.Width = 280.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.HorzAlign = Trailing
+          Text = 'Version Nov-2022'
+          TabOrder = 4
+        end
+        object edtBucket: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 1
+          Position.X = 125.000000000000000000
+          Position.Y = 80.000000000000000000
+          Size.Width = 500.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 
+            'Enter Storage Bucket URL without gs:// from Firebase Console > S' +
+            'torage > Folder Path'
+          Left = 8
+          Top = 147
+          object Text1: TText
+            Position.X = -112.000000000000000000
+            Size.Width = 104.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Storage Bucket'
+            TextSettings.HorzAlign = Trailing
+          end
+        end
+      end
+      object btnStart: TButton
+        Align = Center
+        Size.Width = 375.000000000000000000
+        Size.Height = 40.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Start (Will be replaced later by Login)'
+        OnClick = btnStartClick
+      end
+    end
+    object tabBox: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = True
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabBox'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      object layToolbar: TLayout
+        Align = Top
+        Size.Width = 640.000000000000000000
+        Size.Height = 50.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object btnCaptureImg: TButton
+          Align = Left
+          Size.Width = 50.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'cameratoolbutton'
+          TabOrder = 0
+          OnClick = btnCaptureImgClick
+        end
+        object btnPhotoLib: TButton
+          Align = Left
+          Position.X = 50.000000000000000000
+          Size.Width = 50.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'addtoolbutton'
+          TabOrder = 4
+          Text = 'btnPhotoLib'
+          OnClick = btnPhotoLibClick
+        end
+        object btnHidePreview: TButton
+          Align = Right
+          Position.X = 490.000000000000000000
+          Size.Width = 50.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'arrowlefttoolbutton'
+          TabOrder = 3
+          Text = 'btnPhotoLib'
+          OnClick = btnHidePreviewClick
+        end
+        object btnDelete: TButton
+          Align = MostRight
+          Position.X = 590.000000000000000000
+          Size.Width = 50.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'trashtoolbutton'
+          TabOrder = 1
+          Text = 'btnPhotoLib'
+          OnClick = btnDeleteClick
+        end
+        object btnDownload: TButton
+          Align = MostRight
+          Position.X = 540.000000000000000000
+          Size.Width = 50.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'organizetoolbutton'
+          TabOrder = 2
+          Text = 'btnPhotoLib'
+          OnClick = btnDownloadClick
+        end
+      end
+      object lstPhotoList: TListBox
+        Align = Client
+        Size.Width = 376.000000000000000000
+        Size.Height = 408.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        OnMouseUp = lstPhotoListMouseUp
+        DisableFocusEffect = True
+        ItemHeight = 40.000000000000000000
+        DefaultItemStyles.ItemStyle = 'listboxitembottomdetail'
+        DefaultItemStyles.GroupHeaderStyle = ''
+        DefaultItemStyles.GroupFooterStyle = ''
+        OnItemClick = lstPhotoListItemClick
+        Viewport.Width = 372.000000000000000000
+        Viewport.Height = 404.000000000000000000
+      end
+      object layPreview: TLayout
+        Align = Right
+        Position.X = 384.000000000000000000
+        Position.Y = 50.000000000000000000
+        Size.Width = 256.000000000000000000
+        Size.Height = 408.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        object imvPreview: TImageViewer
+          Align = Client
+          Size.Width = 256.000000000000000000
+          Size.Height = 408.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 3
+          OnResized = imvPreviewResized
+          Viewport.Width = 252.000000000000000000
+          Viewport.Height = 404.000000000000000000
+          object memPhotoInterpretation: TMemo
+            Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+            DataDetectorTypes = []
+            ReadOnly = True
+            Align = Bottom
+            Position.Y = 354.000000000000000000
+            Size.Width = 252.000000000000000000
+            Size.Height = 50.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 2
+            Viewport.Width = 248.000000000000000000
+            Viewport.Height = 46.000000000000000000
+          end
+        end
+      end
+      object sptPreview: TSplitter
+        Align = Right
+        Cursor = crHSplit
+        MinSize = 20.000000000000000000
+        Position.X = 376.000000000000000000
+        Position.Y = 50.000000000000000000
+        Size.Width = 8.000000000000000000
+        Size.Height = 408.000000000000000000
+        Size.PlatformDefault = False
+      end
+    end
+    object tabCaptureImg: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabCaptureImg'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
+      inline fraCameraCapture: TfraCameraCapture3
+        Align = Client
+        Size.Width = 640.000000000000000000
+        Size.Height = 458.000000000000000000
+        Size.PlatformDefault = False
+        inherited btnTakePhotoFromCamera: TButton
+          Position.X = 453.000000000000000000
+        end
+        inherited rctBackgroundImg: TRectangle
+          Size.Width = 597.000000000000000000
+          Size.Height = 387.000000000000000000
+          inherited imgCameraPreview: TImage
+            Size.Width = 597.000000000000000000
+            Size.Height = 387.000000000000000000
+          end
+        end
+        inherited btnTake: TButton
+          Position.X = 453.000000000000000000
+          Text = 'Ok'
+          Visible = False
+        end
+        inherited btnRestart: TButton
+          Position.X = 541.000000000000000000
+          TabOrder = 4
+          Visible = False
+        end
+      end
+    end
+  end
+  object StatusBar: TStatusBar
+    Position.Y = 458.000000000000000000
+    ShowSizeGrip = True
+    Size.Width = 640.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    object lblStatus: TLabel
+      Position.X = 8.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 601.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+    end
+  end
+end

@@ -1,0 +1,82 @@
+object fraCameraCapture3: TfraCameraCapture3
+  Align = Client
+  Size.Width = 484.000000000000000000
+  Size.Height = 320.000000000000000000
+  Size.PlatformDefault = False
+  object btnTakePhotoFromCamera: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 297.000000000000000000
+    Position.Y = 14.000000000000000000
+    Size.Width = 168.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Take Photo from Camera'
+    OnClick = btnTakePhotoFromCameraClick
+  end
+  object CameraComponent: TCameraComponent
+    OnSampleBufferReady = CameraComponentSampleBufferReady
+    Left = 48
+    Top = 252
+  end
+  object rctBackgroundImg: TRectangle
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Fill.Kind = Gradient
+    Fill.Gradient.Points = <
+      item
+        Color = xFF545454
+        Offset = 0.000000000000000000
+      end
+      item
+        Color = xFF2F2F2F
+        Offset = 0.007407409138977528
+      end
+      item
+        Color = xFF939393
+        Offset = 1.000000000000000000
+      end>
+    Fill.Gradient.StartPosition.X = 0.500000000000000000
+    Fill.Gradient.StartPosition.Y = 1.000000000000000000
+    Fill.Gradient.StopPosition.X = 0.499999970197677600
+    Fill.Gradient.StopPosition.Y = 0.000000000000000000
+    Position.X = 24.000000000000000000
+    Position.Y = 48.000000000000000000
+    Size.Width = 441.000000000000000000
+    Size.Height = 249.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+    object imgCameraPreview: TImage
+      MultiResBitmap = <
+        item
+        end>
+      Align = Client
+      Size.Width = 441.000000000000000000
+      Size.Height = 249.000000000000000000
+      Size.PlatformDefault = False
+    end
+  end
+  object btnTake: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 297.000000000000000000
+    Position.Y = 14.000000000000000000
+    TabOrder = 3
+    Text = 'Take Photo'
+    OnClick = btnTakeClick
+  end
+  object btnRestart: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 385.000000000000000000
+    Position.Y = 14.000000000000000000
+    TabOrder = 5
+    Text = 'Retry'
+    OnClick = btnRestartClick
+  end
+  object OpenDialogPictures: TOpenDialog
+    Left = 88
+    Top = 66
+  end
+  object SaveDialogPictures: TSaveDialog
+    Left = 88
+    Top = 130
+  end
+end
