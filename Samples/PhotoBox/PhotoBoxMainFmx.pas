@@ -235,6 +235,7 @@ begin
   fConfig.Auth.SignOut;
   fUID := '';
   FraSelfRegistration.StartEMailEntering;
+  SaveSettings;
   WipeToTab(tabRegister);
 end;
 {$ENDREGION}
