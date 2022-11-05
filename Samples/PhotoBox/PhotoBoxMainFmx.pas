@@ -239,6 +239,7 @@ begin
   fConfig.Database.StopListener;
   fConfig.Auth.SignOut;
   fUID := '';
+  lstPhotoList.Items.Clear;
   FraSelfRegistration.StartEMailEntering;
   WipeToTab(tabRegister);
 end;

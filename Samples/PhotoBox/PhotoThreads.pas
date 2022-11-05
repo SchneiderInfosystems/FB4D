@@ -311,6 +311,9 @@ begin
   if assigned(fItem) then
   begin
     fItem.Text := Doc.GetStringValue('fileName');
+    {$IFDEF DEBUG}
+    fItem.Text := fItem.Text + ' (ID: ' + fDocID + ')';
+    {$ENDIF}
     if assigned(fItem.Data) then
     begin
       PhotoInterpretation := fItem.Data as TPhotoInterpretation;
@@ -326,6 +329,11 @@ begin
   end else begin
     fItem := TListBoxItem.Create(lstPhotoList);
     fItem.Text := Doc.GetStringValue('fileName');
+    {$IFDEF DEBUG}
+    fItem.Text := fItem.Text + ' (ID: ' + fDocID + ')';
+    {$ENDIF}
+    if not SameText(Doc.GetStringValue('createdBy'), UID) then
+      raise Exception.Create('Unerlaubtes Photo empfangen');
     PhotoInterpretation := TPhotoInterpretation.Create(
       Doc.GetArrayStringValues('labels'),
       Doc.GetArrayStringValues('texts'));
