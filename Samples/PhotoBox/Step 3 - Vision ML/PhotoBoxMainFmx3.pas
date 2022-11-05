@@ -6,7 +6,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   FMX.Controls.Presentation, FMX.TabControl, FMX.StdCtrls, FMX.Objects,
-  FMX.Edit, FMX.Layouts, FMX.Media, FMX.StdActns, FMX.ListBox, FMX.ExtCtrls,
+  FMX.Edit, FMX.Layouts, FMX.Media, FMX.ListBox, FMX.ExtCtrls,
   FMX.Memo.Types, FMX.ScrollBox, FMX.Memo,
   FB4D.Interfaces, FB4D.Configuration,
   CameraCaptureFra3, PhotoThreads3;
@@ -52,6 +52,7 @@ type
     procedure btnDeleteClick(Sender: TObject);
     procedure btnHidePreviewClick(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     fConfig: IFirebaseConfiguration;
     fUID: string;
@@ -126,6 +127,11 @@ begin
     edtProjectID.SetFocus;
 end;
 
+procedure TfmxMain.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SaveSettings;
+end;
+
 function TfmxMain.GetSettingFilename: string;
 var
   FileName: string;
@@ -195,7 +201,6 @@ begin
   fConfig.Database.SubscribeQuery(Query, OnChangedColDocument,
     OnDeletedColDocument);
   fConfig.Database.StartListener(OnStopListening, OnListenerError);
-  SaveSettings;
   WipeToTab(tabBox);
 end;
 {$ENDREGION}

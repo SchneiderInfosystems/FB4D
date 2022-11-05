@@ -8,6 +8,7 @@ object fmxMain: TfmxMain
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
+  OnClose = FormClose
   DesignerMasterStyle = 0
   object TabControl: TTabControl
     Align = Client

@@ -55,6 +55,7 @@ type
     procedure btnDeleteClick(Sender: TObject);
     procedure btnHidePreviewClick(Sender: TObject);
     procedure btnSignOutClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     fConfig: IFirebaseConfiguration;
     fUID: string;
@@ -137,6 +138,11 @@ begin
     LastEMail, true, false, true);
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus;
+end;
+
+procedure TfmxMain.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SaveSettings;
 end;
 
 function TfmxMain.GetSettingFilename: string;
@@ -225,7 +231,6 @@ begin
   fConfig.Database.SubscribeQuery(Query, OnChangedColDocument,
     OnDeletedColDocument);
   fConfig.Database.StartListener(OnStopListening, OnListenerError);
-  SaveSettings;
   WipeToTab(tabBox);
 end;
 
@@ -235,7 +240,6 @@ begin
   fConfig.Auth.SignOut;
   fUID := '';
   FraSelfRegistration.StartEMailEntering;
-  SaveSettings;
   WipeToTab(tabRegister);
 end;
 {$ENDREGION}

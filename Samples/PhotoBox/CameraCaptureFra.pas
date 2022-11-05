@@ -332,6 +332,8 @@ begin
       Bitmap.LoadFromFile(OpenDialogPictures.FileName);
       if assigned(fOnPhotoCaptured) then
         fOnPhotoCaptured(Bitmap, ExtractFileName(OpenDialogPictures.FileName));
+      OpenDialogPictures.InitialDir :=
+        ExtractFilePath(OpenDialogPictures.FileName);
     finally
       Bitmap.Free;
     end;

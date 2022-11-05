@@ -35,6 +35,7 @@ type
     procedure btnCaptureImgClick(Sender: TObject);
     procedure btnPhotoLibClick(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     fConfig: IFirebaseConfiguration;
     function GetSettingFilename: string;
@@ -95,6 +96,11 @@ begin
     edtProjectID.SetFocus;
 end;
 
+procedure TfmxMain.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SaveSettings;
+end;
+
 function TfmxMain.GetSettingFilename: string;
 var
   FileName: string;
@@ -148,7 +154,6 @@ begin
   fConfig.Database.SubscribeQuery(Query, OnChangedColDocument,
     OnDeletedColDocument);
   fConfig.Database.StartListener(OnStopListening, OnListenerError);
-  SaveSettings;
   WipeToTab(tabBox);
 end;
 {$ENDREGION}

@@ -69,8 +69,8 @@ uses
   {$IFDEF ANDROID}
   Androidapi.Helpers, Androidapi.JNI.Os, Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Toast,
-  {$ENDIF}
   FMX.MediaLibrary, FMX.Platform,
+  {$ENDIF}
   FB4D.Helpers,
   PhotoBoxMainFmx2;
 
@@ -332,6 +332,8 @@ begin
       Bitmap.LoadFromFile(OpenDialogPictures.FileName);
       if assigned(fOnPhotoCaptured) then
         fOnPhotoCaptured(Bitmap, ExtractFileName(OpenDialogPictures.FileName));
+      OpenDialogPictures.InitialDir :=
+        ExtractFilePath(OpenDialogPictures.FileName);
     finally
       Bitmap.Free;
     end;
