@@ -36,6 +36,14 @@ Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.
 
 **FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported platforms. The library and its sample projects are currently tested with Win64/Win32, Mac64/32, Linux64 by using FMXLinux, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verification requires the installation of the OpenSSL libraries). For more information about using OpenSSL see the [installation of OpenSSL](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D#install-openssl)
 
+#### Limitation on Android for VisionML
+
+AnnotateFile is limited to pdf only, as gif support does not work due [RSP-17682](https://quality.embarcadero.com/browse/RSP-17682), and the tif image format is not yet supported.
+
+#### Limitation on iOS for VisionML
+
+AnnotateFile is limited to pdf only, as the gif and tif image format is not yet supported by FMX.Graphics. You cannot convert an TBitmap to one of the image formats required by VisionML with the standard library.
+ 
 #### Limitation on Linux64
 
 There are no restrictions when using Delphi 11 Alexandria.
