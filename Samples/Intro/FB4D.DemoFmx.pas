@@ -2544,7 +2544,11 @@ end;
 procedure TfmxFirebaseDemo.btnVisionMLAnotateStorageClick(Sender: TObject);
 var
   ext: string;
+  {$IF CompilerVersion < 34} // Delphi 10.3 and before
+  ContentType: string;
+  {$ELSE}
   ContentType: TRESTContentType;
+  {$ENDIF}
 begin
   CheckAndCreateMLVisionClass;
   FreeAndNil(fMLResultAsJSON);
@@ -2557,11 +2561,23 @@ begin
   sptMLVision.Visible := false;
   ext := ExtractFileExt(edtRefStorage.Text);
   if SameText('.tiff', ext) or SameText('.tif', ext) then
+    {$IF CompilerVersion < 34} // Delphi 10.3 and before
+    ContentType := ContentTypeToString(TRESTContentType.ctIMAGE_TIFF)
+    {$ELSE}
     ContentType := TRESTContentType.ctIMAGE_TIFF
+    {$ENDIF}
   else if SameText('.gif', ext) then
+    {$IF CompilerVersion < 34} // Delphi 10.3 and before
+    ContentType := ContentTypeToString(TRESTContentType.ctIMAGE_GIF)
+    {$ELSE}
     ContentType := TRESTContentType.ctIMAGE_GIF
+    {$ENDIF}
   else if SameText('.pdf', ext) then
+    {$IF CompilerVersion < 34} // Delphi 10.3 and before
+    ContentType := ContentTypeToString(TRESTContentType.ctAPPLICATION_PDF)
+    {$ELSE}
     ContentType := TRESTContentType.ctAPPLICATION_PDF
+    {$ENDIF}
   else
     ContentType := edtAnotateFileType.Text;
   fVisionML.AnnotateStorage(edtRefStorage.Text, ContentType,

@@ -453,14 +453,14 @@ begin
   begin
     SetLength(Locations, A.Count);
     for c := 0 to A.Count - 1 do
-      Locations[c].SetFromJSON(A[c] as TJSONObject);
+      Locations[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(Locations, 0);
   if Item.TryGetValue<TJSONArray>('properties', A) then
   begin
     SetLength(Properties, A.Count);
     for c := 0 to A.Count - 1 do
-      Properties[c].SetFromJSON(A[c] as TJSONObject);
+      Properties[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(Properties, 0);
 end;
@@ -547,7 +547,7 @@ begin
   begin
     SetLength(Blocks, B.Count);
     for c := 0 to B.Count - 1 do
-      Blocks[c].SetFromJSON(B[c] as TJSONObject);
+      Blocks[c].SetFromJSON(B.Items[c] as TJSONObject);
   end;
 end;
 
@@ -617,7 +617,7 @@ begin
   begin
     SetLength(TextPages, Pages.Count);
     for c := 0 to Pages.Count - 1 do
-      TextPages[c].SetFromJSON(Pages[c] as TJSONObject);
+      TextPages[c].SetFromJSON(Pages.Items[c] as TJSONObject);
   end else
     SetLength(TextPages, 0);
 end;
@@ -682,7 +682,7 @@ begin
   begin
     SetLength(DetectedLanguages, L.Count);
     for c := 0 to L.Count - 1 do
-      DetectedLanguages[c].SetFromJSON(L[c] as TJSONObject);
+      DetectedLanguages[c].SetFromJSON(L.Items[c] as TJSONObject);
   end else
     SetLength(DetectedLanguages, 0);
   if TextProperty.TryGetValue<TJSONObject>('detectedBreak', O) then
@@ -825,7 +825,7 @@ begin
   begin
     SetLength(Paragraphs, Arr.Count);
     for c := 0 to Arr.Count - 1 do
-      Paragraphs[c].SetFromJSON(Arr[c] as TJSONObject);
+      Paragraphs[c].SetFromJSON(Arr.Items[c] as TJSONObject);
   end;
   if Block.TryGetValue<string>('blockType', bType) then
   begin
@@ -930,7 +930,7 @@ begin
   begin
     SetLength(Words, Arr.Count);
     for c := 0 to Arr.Count - 1 do
-      Words[c].SetFromJSON(Arr[c] as TJSONObject);
+      Words[c].SetFromJSON(Arr.Items[c] as TJSONObject);
   end;
   if not Paragraph.TryGetValue<double>('confidence', Confidence) then
     Confidence := 0;
@@ -1013,7 +1013,7 @@ begin
   begin
     SetLength(Symbols, Arr.Count);
     for c := 0 to Arr.Count - 1 do
-      Symbols[c].SetFromJSON(Arr[c] as TJSONObject);
+      Symbols[c].SetFromJSON(Arr.Items[c] as TJSONObject);
   end;
   if not Word.TryGetValue<double>('confidence', Confidence) then
     Confidence := 0;
@@ -1111,13 +1111,13 @@ begin
   begin
     SetLength(Vertices, Arr.Count);
     for c := 0 to Arr.Count - 1 do
-      Vertices[c].SetFromJSON(Arr[c] as TJSONObject);
+      Vertices[c].SetFromJSON(Arr.Items[c] as TJSONObject);
   end;
   if BoundingPoly.TryGetValue<TJSONArray>('normalizedVertices', Arr) then
   begin
     SetLength(NormalizedVertices, Arr.Count);
     for c := 0 to Arr.Count - 1 do
-      NormalizedVertices[c].SetFromJSON(Arr[c] as TJSONObject);
+      NormalizedVertices[c].SetFromJSON(Arr.Items[c] as TJSONObject);
   end;
 end;
 
@@ -1407,7 +1407,7 @@ begin
   begin
     SetLength(DominantColors, A.Count);
     for c := 0 to A.Count - 1 do
-      DominantColors[c].SetFromJSON(A[c] as TJSONObject);
+      DominantColors[c].SetFromJSON(A.Items[c] as TJSONObject);
   end;
 end;
 
@@ -1475,7 +1475,7 @@ begin
   begin
     SetLength(CropHints, A.Count);
     for c := 0 to A.Count - 1 do
-      CropHints[c].SetFromJSON(A[c] as TJSONObject);
+      CropHints[c].SetFromJSON(A.Items[c] as TJSONObject);
   end;
 end;
 
@@ -1577,14 +1577,14 @@ begin
   begin
     SetLength(FullMatchingImages, A.Count);
     for c := 0 to A.Count - 1 do
-      FullMatchingImages[c].SetFromJSON(A[c] as TJSONObject);
+      FullMatchingImages[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(FullMatchingImages, 0);
   if Item.TryGetValue<TJSONArray>('partialMatchingImages', A) then
   begin
     SetLength(PartialMatchingImages, A.Count);
     for c := 0 to A.Count - 1 do
-      PartialMatchingImages[c].SetFromJSON(A[c] as TJSONObject);
+      PartialMatchingImages[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(PartialMatchingImages, 0);
 end;
@@ -1654,35 +1654,35 @@ begin
   begin
     SetLength(WebEntities, A.Count);
     for c := 0 to A.Count - 1 do
-      WebEntities[c].SetFromJSON(A[c] as TJSONObject);
+      WebEntities[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(WebEntities, 0);
   if Item.TryGetValue<TJSONArray>('fullMatchingImages', A) then
   begin
     SetLength(FullMatchingImages, A.Count);
     for c := 0 to A.Count - 1 do
-      FullMatchingImages[c].SetFromJSON(A[c] as TJSONObject);
+      FullMatchingImages[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(FullMatchingImages, 0);
   if Item.TryGetValue<TJSONArray>('partialMatchingImages', A) then
   begin
     SetLength(PartialMatchingImages, A.Count);
     for c := 0 to A.Count - 1 do
-      PartialMatchingImages[c].SetFromJSON(A[c] as TJSONObject);
+      PartialMatchingImages[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(PartialMatchingImages, 0);
   if Item.TryGetValue<TJSONArray>('visuallySimilarImages', A) then
   begin
     SetLength(VisuallySimilarImages, A.Count);
     for c := 0 to A.Count - 1 do
-      VisuallySimilarImages[c].SetFromJSON(A[c] as TJSONObject);
+      VisuallySimilarImages[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(VisuallySimilarImages, 0);
   if Item.TryGetValue<TJSONArray>('bestGuessLabels', A) then
   begin
     SetLength(BestGuessLabels, A.Count);
     for c := 0 to A.Count - 1 do
-      BestGuessLabels[c].SetFromJSON(A[c] as TJSONObject);
+      BestGuessLabels[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(BestGuessLabels, 0);
 end;
@@ -1958,7 +1958,7 @@ begin
   begin
     SetLength(FaceLandmarks, A.Count);
     for c := 0 to A.Count - 1 do
-      FaceLandmarks[c].SetFromJSON(A[c] as TJSONObject);
+      FaceLandmarks[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(FaceLandmarks, 0);
   if not Item.TryGetValue<double>('rollAngle', RollAngle) then
@@ -2123,7 +2123,7 @@ begin
   begin
     SetLength(ProductLabels, A.Count);
     for c := 0 to A.Count - 1 do
-      ProductLabels[c].SetFromJSON(A[c] as TJSONObject);
+      ProductLabels[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(ProductLabels, 0);
 end;
@@ -2241,14 +2241,14 @@ begin
   begin
     SetLength(ProductResults, A.Count);
     for c := 0 to A.Count - 1 do
-      ProductResults[c].SetFromJSON(A[c] as TJSONObject);
+      ProductResults[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(ProductResults, 0);
   if Item.TryGetValue<TJSONArray>('objectAnnotations', A) then
   begin
     SetLength(ObjectAnnotations, A.Count);
     for c := 0 to A.Count - 1 do
-      ObjectAnnotations[c].SetFromJSON(A[c] as TJSONObject);
+      ObjectAnnotations[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(ObjectAnnotations, 0);
 end;
@@ -2296,14 +2296,14 @@ begin
   begin
     SetLength(ProductResults, A.Count);
     for c := 0 to A.Count - 1 do
-      ProductResults[c].SetFromJSON(A[c] as TJSONObject);
+      ProductResults[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(ProductResults, 0);
   if Item.TryGetValue<TJSONArray>('productGroupedResults', A) then
   begin
     SetLength(GroupedProductResults, A.Count);
     for c := 0 to A.Count - 1 do
-      GroupedProductResults[c].SetFromJSON(A[c] as TJSONObject);
+      GroupedProductResults[c].SetFromJSON(A.Items[c] as TJSONObject);
   end else
     SetLength(GroupedProductResults, 0);
 end;

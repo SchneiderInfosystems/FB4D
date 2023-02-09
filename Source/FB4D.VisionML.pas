@@ -186,11 +186,11 @@ begin
     if Model = vmUnset then
       result.Add(TJSONObject.Create
         .AddPair(TJSONPair.Create('type', FeatureAsStr(Feature)))
-        .AddPair(TJSONPair.Create('maxResults', MaxResults)))
+        .AddPair(TJSONPair.Create('maxResults', TJSONNumber.Create(MaxResults))))
     else
       result.Add(TJSONObject.Create
         .AddPair(TJSONPair.Create('type', FeatureAsStr(Feature)))
-        .AddPair(TJSONPair.Create('maxResults', MaxResults))
+        .AddPair(TJSONPair.Create('maxResults', TJSONNumber.Create(MaxResults)))
         .AddPair(TJSONPair.Create('model', ModelAsStr)));
 end;
 
@@ -450,7 +450,7 @@ begin
   begin
     SetLength(result, A.Count);
     for c := 0 to A.Count - 1 do
-      result[c].SetFromJSON(A[c] as TJSONObject);
+      result[c].SetFromJSON(A.Items[c] as TJSONObject);
   end;
 end;
 
@@ -466,7 +466,7 @@ begin
   begin
     SetLength(result, A.Count);
     for c := 0 to A.Count - 1 do
-      result[c].SetFromJSON(A[c] as TJSONObject);
+      result[c].SetFromJSON(A.Items[c] as TJSONObject);
   end;
 end;
 
