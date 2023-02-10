@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -40,6 +40,7 @@ uses
   FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas',
   FB4D.Storage in '..\..\Source\FB4D.Storage.pas',
   FB4D.Functions in '..\..\Source\FB4D.Functions.pas',
+  FB4D.VisionML in '..\..\Source\FB4D.VisionML.pas',
   FB4D.VisionMLDefinition in '..\..\Source\FB4D.VisionMLDefinition.pas',
   FB4D.SelfRegistrationFra in '..\..\GUIPatterns\FMX\FB4D.SelfRegistrationFra.pas' {FraSelfRegistration: TFrame};
 

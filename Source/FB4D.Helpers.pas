@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -660,7 +660,7 @@ end;
 class function TFirebaseHelpers.ContentTypeToFileExt(
   const ContentType: string): string;
 
-  {$IF CompilerVersion < 34} // Delphi 10.3 and before
+  {$IF CompilerVersion < 35} // Delphi 10.4 and before
   function SameText(const ContentType: string;
     AContentType: TRESTContentType): boolean;
   begin
@@ -721,7 +721,7 @@ begin
     result := TRESTContentType.ctIMAGE_TIFF
   else // if ImgType = SBMPImageExtension then
     // Unsupported image type!
-    {$IF CompilerVersion < 34} // Delphi 10.3 and before
+    {$IF CompilerVersion < 35} // Delphi 10.4 and before
     result := ctNone;
     {$ELSE}
     result := '';
