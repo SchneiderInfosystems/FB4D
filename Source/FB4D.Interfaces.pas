@@ -209,7 +209,7 @@ type
       UpStream: TStream;
       OnDelStorage: TOnDeleteStorage;
       OnFunctionSuccess: TOnFunctionSuccess;
-      OnAnnotateResp: TOnAnnotate;
+      OnAnnotate: TOnAnnotate;
     {$ENDIF}
   end;
 
