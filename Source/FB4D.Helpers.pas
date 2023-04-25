@@ -83,7 +83,7 @@ type
       OnError: TOnSimpleDownloadError = nil);
     class procedure SimpleDownloadSynchronous(const DownloadUrl: string;
       Stream: TStream);
-    {$IF Defined(FMX)}
+    {$IF Defined(FMX) OR Defined(FGX)}
     class function ContentTypeToFileExt(const ContentType: string): string;
     class function ImageStreamToContentType(Stream: TStream): TRESTContentType;
     {$ENDIF}
@@ -241,6 +241,8 @@ uses
   VCL.Forms,
 {$ELSEIF Defined(FMX)}
   FMX.Types, FMX.Forms, FMX.Graphics, FMX.Consts,
+{$ELSEIF Defined(FGX)}
+  FGX.Forms, FGX.Logs,
 {$ELSE}
   FMX.Types, FMX.Forms,
 {$ENDIF}
@@ -419,6 +421,8 @@ begin
   FMX.Types.Log.d(msg, []);
   // there is a bug in DE 10.2 when the wrong method is calling?
   {$ENDIF}
+{$ELSEIF Defined(FGX)}
+  TfgLog.Debug(msg);
 {$ELSEIF Defined(VCL)}
   OutputDebugString(PChar(msg));
 {$ELSEIF Defined(MSWINDOWS)}
@@ -656,7 +660,7 @@ begin
     result := TTimeZone.Local.ToLocalTime(result);
 end;
 
-{$IF Defined(FMX)}
+{$IF Defined(FMX) OR Defined(FGX)}
 class function TFirebaseHelpers.ContentTypeToFileExt(
   const ContentType: string): string;
 
