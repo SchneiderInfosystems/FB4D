@@ -672,6 +672,7 @@ type
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
+    function GetLastUTCServerTime: TDateTime;
   end;
 
   EFirebaseFunctions = class(Exception);

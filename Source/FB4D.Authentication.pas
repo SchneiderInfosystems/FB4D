@@ -54,6 +54,7 @@ type
     fRefreshToken: string;
     fTokenRefreshCount: cardinal;
     fOnTokenRefresh: TOnTokenRefresh;
+    fLastUTCServerTime: TDateTime;
     function SignWithEmailAndPasswordSynchronous(SignType: TSignType;
       const Email: string = ''; const Password: string = ''): IFirebaseUser;
     procedure SignWithEmailAndPassword(SignType: TSignType; const Info: string;
@@ -159,6 +160,7 @@ type
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
+    function GetLastUTCServerTime: TDateTime;
     property ApiKey: string read fApiKey;
   end;
 
@@ -260,6 +262,7 @@ begin
   fCSForToken := TCriticalSection.Create;
   fTokenRefreshCount := 1; // begin with 1 and use 0 as sentinel
   fOnTokenRefresh := nil;
+  fLastUTCServerTime := 0;
 end;
 
 destructor TFirebaseAuthentication.Destroy;
@@ -472,6 +475,7 @@ var
 begin
   try
     Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
     fCSForToken.Acquire;
     try
@@ -577,6 +581,7 @@ begin
     Response := Request.SendRequestSynchronous([ResourceStr[SignType]], rmPost,
       Data, Params, tmNoToken);
     Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
     fCSForToken.Acquire;
     try
@@ -640,6 +645,7 @@ var
 begin
   try
     Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     ResObj := Response.GetContentAsJSONObj;
     Providers := TStringList.Create;
     try
@@ -688,6 +694,7 @@ begin
     Response := Request.SendRequestSynchronous(['createAuthUri'], rmPOST, Data,
       Params, tmNoToken);
     Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     ResObj := Response.GetContentAsJSONObj;
     if not ResObj.GetValue('registered').TryGetValue(result) then
       raise EFirebaseAuthentication.Create('JSON field registered missing');
@@ -742,6 +749,7 @@ begin
     if Response.StatusOk then
     begin
       Response.CheckForJSONObj;
+      fLastUTCServerTime := Response.GetServerTime(tzUTC);
       if assigned(Response.OnSuccess.OnResponse) then
         Response.OnSuccess.OnResponse(RequestID, Response);
     end;
@@ -782,6 +790,7 @@ begin
     if Response.StatusOk then
     begin
       Response.CheckForJSONObj;
+      fLastUTCServerTime := Response.GetServerTime(tzUTC);
       result := true;
     end;
   finally
@@ -834,6 +843,7 @@ begin
       rmPost, Data, Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
   finally
     Response := nil;
     Params.Free;
@@ -965,6 +975,7 @@ begin
       Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
   finally
     Response := nil;
     Params.Free;
@@ -1061,6 +1072,7 @@ begin
       Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     {$IFDEF DEBUG}
     TFirebaseHelpers.Log('FirebaseAuthentication.ChangeProfileSynchronous ' +
       Info.CommaText);
@@ -1119,6 +1131,7 @@ begin
     Response := Request.SendRequestSynchronous(['accounts:update'],
       rmPost, Data, Params, tmNoToken);
     Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     result := TFirebaseUser.Create(Response.GetContentAsJSONObj);
     {$IFDEF DEBUG}
     TFirebaseHelpers.Log(
@@ -1150,6 +1163,7 @@ begin
       Params, tmNoToken);
     if not Response.StatusOk then
       Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     {$IFDEF DEBUG}
     TFirebaseHelpers.Log('FirebaseAuthentication.DeleteCurrentUserSynchronous ' +
       Response.ContentAsString);
@@ -1222,6 +1236,7 @@ begin
     Params.Add('key', [ApiKey]);
     Response := Request.SendRequestSynchronous(['getAccountInfo'], rmPost, Data,
       Params, tmNoToken);
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     if not Response.StatusOk then
       Response.CheckForJSONObj
     else begin
@@ -1260,6 +1275,7 @@ var
   c: integer;
 begin
   try
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     if not Response.StatusOk then
       Response.CheckForJSONObj
     else if assigned(Response.OnSuccess.OnGetUserData) then
@@ -1342,6 +1358,7 @@ var
 begin
   try
     Response.CheckForJSONObj;
+    fLastUTCServerTime := Response.GetServerTime(tzUTC);
     NewToken := Response.GetContentAsJSONObj;
     fCSForToken.Acquire;
     try
@@ -1412,6 +1429,7 @@ begin
       Response := Request.SendRequestSynchronous([], rmPost, Data, Params,
         tmNoToken);
       Response.CheckForJSONObj;
+      fLastUTCServerTime := Response.GetServerTime(tzUTC);
       NewToken := Response.GetContentAsJSONObj;
       try
         fAuthenticated := true;
@@ -1490,6 +1508,11 @@ begin
   finally
     fCSForToken.Release;
   end;
+end;
+
+function TFirebaseAuthentication.GetLastUTCServerTime: TDateTime;
+begin
+  result := fLastUTCServerTime;
 end;
 
 function TFirebaseAuthentication.Token: string;
