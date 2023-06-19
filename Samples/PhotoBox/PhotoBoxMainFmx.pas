@@ -117,6 +117,26 @@ uses
   System.IniFiles, System.IOUtils, System.Math, System.StrUtils,
   FB4D.Helpers, FB4D.Firestore;
 
+// Install the following Firestore Rule:
+// rules_version = '2';
+// service cloud.firestore {
+//   match /databases/{database}/documents {
+//    match /photos/{photoID} {
+//      allow read:
+//        if (request.auth.uid != null) &&
+//        	 (request.auth.uid == resource.data.createdBy);
+//      allow write:
+//        if (request.auth.uid != null) &&
+//        	 (request.auth.uid == request.resource.data.createdBy); }}}
+
+// Install the following Storage Rule:
+// rules_version = '2';
+// service firebase.storage {
+//   match /b/{bucket}/o {
+//     match /photos/{userID}/{photoID} {
+//       allow read, write:
+//         if request.auth.uid == userID;}}}
+
 resourcestring
   rsNoItemSelected = 'First, select an item in the list box';
   rsListenerError = 'Database listener error: %s (%s)';

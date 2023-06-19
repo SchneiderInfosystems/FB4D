@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -553,7 +553,8 @@ procedure TfmxChatMain.btnPushMessageClick(Sender: TObject);
 var
   Doc: IFirestoreDocument;
 begin
-  Doc := TFirestoreDocument.Create(TFirebaseHelpers.CreateAutoID);
+  Doc := TFirestoreDocument.Create(
+    [cCollectionID, TFirebaseHelpers.CreateAutoID], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString('Message', edtMessage.Text));
   Doc.AddOrUpdateField(TJSONObject.SetString('Sender', fUserName));
   Doc.AddOrUpdateField(TJSONObject.SetString('UID', fUID));
@@ -572,7 +573,8 @@ var
   Doc: IFirestoreDocument;
 begin
   Assert(not fEditDocID.IsEmpty, 'No doc ID to patch');
-  Doc := TFirestoreDocument.Create(fEditDocID);
+  Doc := TFirestoreDocument.Create([cCollectionID, fEditDocID],
+    fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString('Message', edtMessage.Text));
   Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('Edited', now));
   fConfig.Database.PatchDocument([cCollectionID, fEditDocID], Doc,

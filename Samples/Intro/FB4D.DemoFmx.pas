@@ -178,8 +178,8 @@ type
     trbMinTestInt: TTrackBar;
     lblMinTestInt: TLabel;
     btnLinkEMailPwd: TButton;
-    btnStartTransReadOnly: TButton;
-    btnStopTrans: TButton;
+    btnStartWriteTransaction: TButton;
+    btnStopReadTrans: TButton;
     chbLimitTo10Docs: TCheckBox;
     chbUsePageToken: TCheckBox;
     tbFSListener: TTabItem;
@@ -263,6 +263,8 @@ type
     popMLList: TPopupMenu;
     mniMLListExport: TMenuItem;
     pathAnotateFile: TPath;
+    btnStartReadTransaction: TButton;
+    btnCommitWriteTrans: TButton;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -314,8 +316,8 @@ type
     procedure btnRunQueryClick(Sender: TObject);
     procedure trbMinTestIntChange(Sender: TObject);
     procedure btnLinkEMailPwdClick(Sender: TObject);
-    procedure btnStartTransReadOnlyClick(Sender: TObject);
-    procedure btnStopTransClick(Sender: TObject);
+    procedure btnStartWriteTransactionClick(Sender: TObject);
+    procedure btnStopReadTransClick(Sender: TObject);
     procedure edtDocumentChangeTracking(Sender: TObject);
     procedure btnStartFSListenerClick(Sender: TObject);
     procedure btnStopFSListenerClick(Sender: TObject);
@@ -334,11 +336,14 @@ type
       const Item: TListBoxItem);
     procedure mniMLListExportClick(Sender: TObject);
     procedure rctBackgroundMLResized(Sender: TObject);
+    procedure btnStartReadTransactionClick(Sender: TObject);
+    procedure btnCommitWriteTransClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     fStorageObject: IStorageObject;
     fDatabase: IFirestoreDatabase;
-    fTransaction: TTransaction;
+    fReadTransaction: TFirestoreReadTransaction;
+    fWriteTransaction: IFirestoreWriteTransaction;
     fRealTimeDB: IRealTimeDB;
     fFirebaseEvent, fFirebaseEvent2: IFirebaseEvent;
     fDownloadStream: TFileStream;
@@ -1188,7 +1193,8 @@ begin
   begin
     fDatabase := TFirestoreDatabase.Create(edtProjectID.Text, fAuth);
     edtProjectID.enabled := false;
-    fTransaction := '';
+    fReadTransaction := '';
+    fWriteTransaction := nil;
   end;
   result := true;
 end;
@@ -1228,8 +1234,8 @@ begin
     exit;
   if not CheckFirestoreFields(false) then
     exit;
-  if not fTransaction.IsEmpty then
-    Query := TQueryParams.CreateQueryParams.AddTransaction(fTransaction)
+  if not fReadTransaction.IsEmpty then
+    Query := TQueryParams.CreateQueryParams.AddTransaction(fReadTransaction)
   else
     Query := nil;
   if chbLimitTo10Docs.IsChecked then
@@ -1342,10 +1348,11 @@ begin
     exit;
   if not CheckFirestoreFields(true) then
     exit;
-  Doc := TFirestoreDocument.Create(edtDocument.Text);
+  Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text],
+    edtProjectID.Text);
   case cboDemoDocType.ItemIndex of
     0: Doc.AddOrUpdateField(TJSONObject.SetString('TestField',
-         'Now try to create a complex document 😀'));
+         'Now try to create a simple document 😀 at ' + TimeToStr(now)));
     1: begin
          Doc.AddOrUpdateField(TJSONObject.SetString('MyString',
            'This demonstrates a complex document that contains all supported data types'));
@@ -1405,14 +1412,19 @@ begin
          btnRunQuery.Enabled := true;
        end;
   end;
-  // Log.d(Doc.AsJSON.ToJSON);
-  if not chbUseChildDoc.IsChecked then
-    fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text],
-      Doc, nil, OnFirestoreInsertOrUpdate, OnFirestoreError)
-  else
-    fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text,
-      edtChildCollection.Text, edtChildDocument.Text], Doc, nil,
-      OnFirestoreInsertOrUpdate, OnFirestoreError);
+  if assigned(fWriteTransaction) then
+  begin
+    fWriteTransaction.UpdateDoc(Doc, Doc.AllFields);
+  end else begin
+    // Log.d(Doc.AsJSON.ToJSON);
+    if not chbUseChildDoc.IsChecked then
+      fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text],
+        Doc, nil, OnFirestoreInsertOrUpdate, OnFirestoreError)
+    else
+      fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text,
+        edtChildCollection.Text, edtChildDocument.Text], Doc, nil,
+        OnFirestoreInsertOrUpdate, OnFirestoreError);
+  end;
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreInsertOrUpdate(const Info: string;
@@ -1448,7 +1460,8 @@ begin
     exit;
   if not CheckFirestoreFields(true) then
     exit;
-  Doc := TFirestoreDocument.Create(edtDocument.Text);
+  Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text],
+    edtProjectID.Text);
   Doc.AddOrUpdateField(TJSONObject.SetString('patchedField',
     'This field is added while patch'));
   if cboDemoDocType.ItemIndex > 0 then
@@ -1517,7 +1530,7 @@ procedure TfmxFirebaseDemo.ShowDocument(Doc: IFirestoreDocument);
       fftDouble:
         result := FieldVal.GetDoubleValue.ToString;
       fftTimeStamp:
-        result := DateTimeToStr(FieldVal.GetTimeStampValue);
+        result := DateTimeToStr(FieldVal.GetTimeStampValue(tzLocalTime));
       fftGeoPoint:
         result := Format('[%2.10f°N, %2.10f°E]',
           [FieldVal.GetGeoPoint.Latitude,
@@ -1562,9 +1575,9 @@ begin
   begin
     memFirestore.Lines.Add('Document name: ' + Doc.DocumentName(true));
     memFirestore.Lines.Add('  Created    : ' + DateTimeToStr(
-      TFirebaseHelpers.ConvertToLocalDateTime(doc.createTime)));
+      doc.createTime(tzLocalTime)));
     memFirestore.Lines.Add('  Updated    : ' + DateTimeToStr(
-      TFirebaseHelpers.ConvertToLocalDateTime(doc.updateTime)));
+      doc.updateTime(tzLocalTime)));
     // Log.d(Doc.AsJSON.ToJSON);
     for c := 0 to Doc.CountFields - 1 do
     begin
@@ -1613,8 +1626,8 @@ begin
     exit;
   if not CheckFirestoreFields(false) then
     exit;
-  if not fTransaction.IsEmpty then
-    Query := TQueryParams.CreateQueryParams.AddTransaction(fTransaction)
+  if not fReadTransaction.IsEmpty then
+    Query := TQueryParams.CreateQueryParams.AddTransaction(fReadTransaction)
   else
     Query := nil;
   // the following structured query expects a db built with 'Docs for Run Query'
@@ -1647,27 +1660,63 @@ begin
       OnFirestoreGet, OnFirestoreError, Query);
 end;
 
-procedure TfmxFirebaseDemo.btnStartTransReadOnlyClick(Sender: TObject);
+procedure TfmxFirebaseDemo.btnStartWriteTransactionClick(Sender: TObject);
+begin
+  if not CheckAndCreateFirestoreDBClass(memFirestore) then
+    exit;
+  fWriteTransaction := fDatabase.BeginWriteTransaction;
+  btnStartWriteTransaction.Visible := false;
+  btnStartReadTransaction.Visible := false;
+  btnCommitWriteTrans.Visible := true;
+  btnStopReadTrans.Visible := false;
+end;
+
+procedure TfmxFirebaseDemo.btnStartReadTransactionClick(Sender: TObject);
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   try
-    fTransaction := fDatabase.BeginReadOnlyTransactionSynchronous;
-    memFirestore.Lines.Add('Read only transaction started');
+    fReadTransaction := fDatabase.BeginReadTransactionSynchronous;
+    memFirestore.Lines.Add('Read transaction started: ' + fReadTransaction);
   except
     on e: EFirebaseResponse do
-      memFirestore.Lines.Add('Transaction failed: ' + e.Message);
+      memFirestore.Lines.Add('Read transaction failed: ' + e.Message);
   end;
-  btnStartTransReadOnly.Visible := false;
-  btnStopTrans.Visible := true;
+  btnStartWriteTransaction.Visible := false;
+  btnStartReadTransaction.Visible := false;
+  btnCommitWriteTrans.Visible := false;
+  btnStopReadTrans.Visible := true;
 end;
 
-procedure TfmxFirebaseDemo.btnStopTransClick(Sender: TObject);
+procedure TfmxFirebaseDemo.btnStopReadTransClick(Sender: TObject);
 begin
-  fTransaction := '';
-  btnStopTrans.Visible := false;
-  btnStartTransReadOnly.Visible := true;
+  Assert(not fReadTransaction.IsEmpty, 'Missing read transaction');
+  fReadTransaction := '';
+  btnStopReadTrans.Visible := false;
+  btnCommitWriteTrans.Visible := false;
+  btnStartWriteTransaction.Visible := true;
+  btnStartReadTransaction.Visible := true;
 end;
+
+procedure TfmxFirebaseDemo.btnCommitWriteTransClick(Sender: TObject);
+var
+  Commit: IFirestoreCommitTransaction;
+begin
+  Assert(assigned(fWriteTransaction), 'Missing write transaction');
+  try
+    Commit := fDatabase.CommitWriteTransactionSynchronous(fWriteTransaction);
+    memFirestore.Lines.Add('Write transaction comitted at ' +
+      DateTimeToStr(Commit.CommitTime));
+  except
+    on e: EFirebaseResponse do
+      memFirestore.Lines.Add('Commit write transaction failed: ' + e.Message);
+  end;
+  btnStopReadTrans.Visible := false;
+  btnCommitWriteTrans.Visible := false;
+  btnStartWriteTransaction.Visible := true;
+  btnStartReadTransaction.Visible := true;
+end;
+
 {$ENDREGION}
 
 {$REGION 'Firestore Listener'}

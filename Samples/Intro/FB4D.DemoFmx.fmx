@@ -36,6 +36,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     Size.Height = 750.000000000000000000
     Size.PlatformDefault = False
     TabIndex = 0
+    TabOrder = 1
     TabPosition = PlatformDefault
     OnChange = TabControlChange
     Sizes = (
@@ -1339,26 +1340,26 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Text = 'Min testInt Val: 50'
         TabOrder = 14
       end
-      object btnStartTransReadOnly: TButton
-        Position.X = 808.000000000000000000
-        Position.Y = 100.000000000000000000
-        Size.Width = 161.000000000000000000
+      object btnStartWriteTransaction: TButton
+        Position.X = 777.000000000000000000
+        Position.Y = 97.000000000000000000
+        Size.Width = 104.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 17
+        Text = 'Write Transaction'
+        OnClick = btnStartWriteTransactionClick
+      end
+      object btnStopReadTrans: TButton
+        Position.X = 777.000000000000000000
+        Position.Y = 97.000000000000000000
+        Size.Width = 191.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 16
-        Text = 'Start Transaction Read Only'
-        OnClick = btnStartTransReadOnlyClick
-      end
-      object btnStopTrans: TButton
-        Position.X = 512.000000000000000000
-        Position.Y = 60.000000000000000000
-        Size.Width = 161.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 15
-        Text = 'Stop Transaction'
+        Text = 'Stop Read Transaction'
         Visible = False
-        OnClick = btnStopTransClick
+        OnClick = btnStopReadTransClick
       end
       object chbLimitTo10Docs: TCheckBox
         Position.X = 304.000000000000000000
@@ -1366,7 +1367,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 153.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 17
+        TabOrder = 18
         Text = 'Limit to 10 documents'
       end
       object chbUsePageToken: TCheckBox
@@ -1375,8 +1376,26 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 145.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 18
+        TabOrder = 19
         Text = 'Get next page'
+      end
+      object btnStartReadTransaction: TButton
+        Position.X = 889.000000000000000000
+        Position.Y = 97.000000000000000000
+        TabOrder = 20
+        Text = 'Read Trans'
+        OnClick = btnStartReadTransactionClick
+      end
+      object btnCommitWriteTrans: TButton
+        Position.X = 777.000000000000000000
+        Position.Y = 97.000000000000000000
+        Size.Width = 191.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 15
+        Text = 'Commit Write Transaction'
+        Visible = False
+        OnClick = btnCommitWriteTransClick
       end
     end
     object tbFSListener: TTabItem

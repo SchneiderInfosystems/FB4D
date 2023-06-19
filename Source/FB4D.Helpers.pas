@@ -156,10 +156,11 @@ type
     class function SetDoubleValue(Val: double): TJSONObject;
     class function SetDouble(const VarName: string; Val: double): TJSONPair;
     // TimeStamp
-    function GetTimeStampValue: TDateTime; overload;
-    function GetTimeStampValue(const Name: string): TDateTime; overload;
-    function GetTimeStampValueDef(const Name: string;
-      Default: TDateTime = 0): TDateTime;
+    function GetTimeStampValue(TimeZone: TTimeZone = tzUTC): TDateTime; overload;
+    function GetTimeStampValue(const Name: string;
+      TimeZone: TTimeZone = tzUTC): TDateTime; overload;
+    function GetTimeStampValueDef(const Name: string; Default: TDateTime = 0;
+      TimeZone: TTimeZone = tzUTC): TDateTime;
     class function SetTimeStampValue(Val: TDateTime): TJSONObject;
     class function SetTimeStamp(const VarName: string;
       Val: TDateTime): TJSONPair;
@@ -221,7 +222,8 @@ type
     function AddOrderByType(const TypeName: string): TQueryParams;
     function AddLimitToFirst(LimitToFirst: integer): TQueryParams;
     function AddLimitToLast(LimitToLast: integer): TQueryParams;
-    function AddTransaction(const Transaction: string): TQueryParams;
+    function AddTransaction(
+      Transaction: TFirestoreReadTransaction): TQueryParams;
     function AddPageSize(PageSize: integer): TQueryParams;
     function AddPageToken(const PageToken: string): TQueryParams;
   end;
@@ -1337,31 +1339,41 @@ begin
     result := Default;
 end;
 
-function TJSONHelpers.GetTimeStampValue: TDateTime;
+function TJSONHelpers.GetTimeStampValue(
+  TimeZone: FB4D.Interfaces.TTimeZone): TDateTime;
 begin
   result := GetValue<TDateTime>('timestampValue');
+  if TimeZone = tzLocalTime then
+    result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
-function TJSONHelpers.GetTimeStampValue(const Name: string): TDateTime;
+function TJSONHelpers.GetTimeStampValue(const Name: string;
+  TimeZone: FB4D.Interfaces.TTimeZone): TDateTime;
 var
   Val: TJSONValue;
 begin
   Val := GetValue(Name);
   if assigned(Val) then
-    result := (Val as TJSONObject).GetTimeStampValue
-  else
+  begin
+    result := (Val as TJSONObject).GetTimeStampValue;
+    if TimeZone = tzLocalTime then
+      result := TFirebaseHelpers.ConvertToLocalDateTime(result);
+  end else
     raise EJSONException.CreateFmt(SValueNotFound, [Name]);
 end;
 
 function TJSONHelpers.GetTimeStampValueDef(const Name: string;
-  Default: TDateTime): TDateTime;
+  Default: TDateTime; TimeZone: FB4D.Interfaces.TTimeZone): TDateTime;
 var
   Val: TJSONValue;
 begin
   Val := GetValue(Name);
   if assigned(Val) then
-    result := (Val as TJSONObject).GetTimeStampValue
-  else
+  begin
+    result := (Val as TJSONObject).GetTimeStampValue;
+    if TimeZone = tzLocalTime then
+      result := TFirebaseHelpers.ConvertToLocalDateTime(result);
+  end else
     result := Default;
 end;
 
@@ -1824,7 +1836,7 @@ begin
 end;
 
 function TQueryParamsHelper.AddTransaction(
-  const Transaction: string): TQueryParams;
+  Transaction: TFirestoreReadTransaction): TQueryParams;
 begin
   if not Transaction.IsEmpty then
     Add(cFirestoreTransaction, [Transaction]);

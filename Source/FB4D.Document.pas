@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -47,22 +47,24 @@ type
     function FieldIndByName(const FieldName: string): integer;
     function ConvertRefPath(const Reference: string): string;
   public
-    class function CreateCursor: IFirestoreDocument;
-    constructor Create(const Name: string);
+    class function CreateCursor(const ProjectID: string): IFirestoreDocument;
+    constructor Create(DocumentPath: TRequestResourceParam;
+      const ProjectID: string; const Database: string = cDefaultDatabaseID);
     constructor CreateFromJSONObj(Response: IFirebaseResponse); overload;
     constructor CreateFromJSONObj(JSONObj: TJSONObject); overload;
     destructor Destroy; override;
     function DocumentName(FullPath: boolean): string;
     function DocumentFullPath: TRequestResourceParam;
     function DocumentPathWithinDatabase: TRequestResourceParam;
-    function CreateTime: TDateTime;
-    function UpdateTime: TDatetime;
+    function CreateTime(TimeZone: TTimeZone = tzUTC): TDateTime;
+    function UpdateTime(TimeZone: TTimeZone = tzUTC): TDatetime;
     function CountFields: integer;
     function FieldName(Ind: integer): string;
     function FieldByName(const FieldName: string): TJSONObject;
     function FieldValue(Ind: integer): TJSONObject;
     function FieldType(Ind: integer): TFirestoreFieldType;
     function FieldTypeByName(const FieldName: string): TFirestoreFieldType;
+    function AllFields: TStringDynArray;
     function GetValue(Ind: integer): TJSONValue; overload;
     function GetValue(const FieldName: string): TJSONValue; overload;
     function GetStringValue(const FieldName: string): string;
@@ -76,9 +78,10 @@ type
     function GetDoubleValue(const FieldName: string): double;
     function GetDoubleValueDef(const FieldName: string;
       Default: double): double;
-    function GetTimeStampValue(const FieldName: string): TDateTime;
+    function GetTimeStampValue(const FieldName: string;
+      TimeZone: TTimeZone = tzUTC): TDateTime;
     function GetTimeStampValueDef(const FieldName: string;
-      Default: TDateTime): TDateTime;
+      Default: TDateTime; TimeZone: TTimeZone = tzUTC): TDateTime;
     function GetBoolValue(const FieldName: string): boolean;
     function GetBoolValueDef(const FieldName: string;
       Default: boolean): boolean;
@@ -383,18 +386,21 @@ end;
 
 { TFirestoreDocument }
 
-constructor TFirestoreDocument.Create(const Name: string);
+constructor TFirestoreDocument.Create(DocumentPath: TRequestResourceParam;
+  const ProjectID, Database: string);
 begin
   inherited Create;
-  fDocumentName := Name;
+  fDocumentName := Format('projects/%s/databases/%s/documents/%s',
+    [ProjectID, Database, TFirebaseHelpers.EncodeResourceParams(DocumentPath)]);
   fJSONObj := TJSONObject.Create;
-  fJSONObj.AddPair('name', Name);
+  fJSONObj.AddPair('name', fDocumentName);
   SetLength(fFields, 0);
 end;
 
-class function TFirestoreDocument.CreateCursor: IFirestoreDocument;
+class function TFirestoreDocument.CreateCursor(
+  const ProjectID: string): IFirestoreDocument;
 begin
-  result := TFirestoreDocument.Create('CursorDoc');
+  result := TFirestoreDocument.Create(['CursorDoc'], ProjectID);
 end;
 
 constructor TFirestoreDocument.CreateFromJSONObj(JSONObj: TJSONObject);
@@ -409,13 +415,9 @@ begin
   if not fJSONObj.TryGetValue('name', fDocumentName) then
     raise EStorageObject.Create(rsJSONFieldNameMissing);
   if not fJSONObj.TryGetValue('createTime', fCreated) then
-    raise EStorageObject.Create(rsJSONFieldCreateTimeMissing)
-  else
-    fCreated := TFirebaseHelpers.ConvertToLocalDateTime(fCreated);
+    raise EStorageObject.Create(rsJSONFieldCreateTimeMissing);
   if not fJSONObj.TryGetValue('updateTime', fUpdated) then
-    raise EStorageObject.Create(rsJSONFieldUpdateTimeMissing)
-  else
-    fUpdated := TFirebaseHelpers.ConvertToLocalDateTime(fUpdated);
+    raise EStorageObject.Create(rsJSONFieldUpdateTimeMissing);
   if fJSONObj.TryGetValue('fields', obj) then
   begin
     SetLength(fFields, obj.Count);
@@ -591,6 +593,15 @@ begin
   raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
 end;
 
+function TFirestoreDocument.AllFields: TStringDynArray;
+var
+  c: integer;
+begin
+  SetLength(result, CountFields);
+  for c := 0 to CountFields - 1 do
+    result[c] := fFields[c].Name;
+end;
+
 class function TFirestoreDocument.GetFieldType(
   const FieldType: string): TFirestoreFieldType;
 begin
@@ -746,27 +757,34 @@ begin
     result := Default;
 end;
 
-function TFirestoreDocument.GetTimeStampValue(
-  const FieldName: string): TDateTime;
+function TFirestoreDocument.GetTimeStampValue(const FieldName: string;
+  TimeZone: TTimeZone): TDateTime;
 var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
   if assigned(Val) then
-    result := Val.GetValue<TDateTime>('timestampValue')
-  else
+  begin
+    result := Val.GetValue<TDateTime>('timestampValue');
+    if TimeZone = tzLocalTime then
+      result := TFirebaseHelpers.ConvertToLocalDateTime(result);
+  end else
     raise EFirestoreDocument.CreateFmt(rsFieldNoFound, [FieldName]);
 end;
 
 function TFirestoreDocument.GetTimeStampValueDef(const FieldName: string;
-  Default: TDateTime): TDateTime;
+  Default: TDateTime; TimeZone: TTimeZone): TDateTime;
 var
   Val: TJSONValue;
 begin
   Val := FieldByName(FieldName);
   if not assigned(Val) then
     result := Default
-  else if not Val.TryGetValue<TDateTime>('timestampValue', result) then
+  else if Val.TryGetValue<TDateTime>('timestampValue', result) then
+  begin
+    if TimeZone = tzLocalTime then
+      result := TFirebaseHelpers.ConvertToLocalDateTime(result);
+  end else
     result := Default;
 end;
 
@@ -1106,14 +1124,18 @@ begin
     result[c] := Obj2.Pairs[c].JsonValue as TJSONObject;
 end;
 
-function TFirestoreDocument.CreateTime: TDateTime;
+function TFirestoreDocument.CreateTime(TimeZone: TTimeZone): TDateTime;
 begin
   result := fCreated;
+  if TimeZone = tzLocalTime then
+    result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
-function TFirestoreDocument.UpdateTime: TDatetime;
+function TFirestoreDocument.UpdateTime(TimeZone: TTimeZone): TDatetime;
 begin
   result := fUpdated;
+  if TimeZone = tzLocalTime then
+    result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
 function TFirestoreDocument.Clone: IFirestoreDocument;

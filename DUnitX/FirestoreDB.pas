@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -323,10 +323,10 @@ const
 var
   Doc1, Doc2: IFirestoreDocument;
 begin
-  Doc1 := TFirestoreDocument.Create(Doc1Name);
+  Doc1 := TFirestoreDocument.Create([cDBPath, Doc1Name], fConfig.ProjectID);
   Doc1.AddOrUpdateField(TJSONObject.SetString('TestField', 'Alpha 😀'));
 
-  Doc2 := TFirestoreDocument.Create(Doc2Name);
+  Doc2 := TFirestoreDocument.Create([cDBPath, Doc2Name], fConfig.ProjectID);
   Doc2.AddOrUpdateField(TJSONObject.SetString('TestField2', 'Beta 👨'));
 
   fConfig.Database.InsertOrUpdateDocument([cDBPath, Doc1Name], Doc1, nil, OnDoc, OnError);
@@ -361,11 +361,11 @@ begin
   Status('OnDocDeleted check passed for empty query');
 
   fCallBack := 0;
-  Doc := TFirestoreDocument.Create(DocID);
+  Doc := TFirestoreDocument.Create([cDBPath, DocID], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString));
   Doc.AddOrUpdateField(TJSONObject.SetInteger(cTestF2, cTestInt));
   fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
-  while fCallBack < 2 do
+  while fCallBack < 3 do
     WaitAndCheckTimeout('InsertOrUpdateDocument');
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDoc.DocumentName(false), DocID, 'DocID');
@@ -378,7 +378,7 @@ begin
   Status('OnDocChanged check passed');
 
   fCallBack := 0;
-  Doc := TFirestoreDocument.Create(DocID);
+  Doc := TFirestoreDocument.Create([cDBPath, DocID], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString2));
   fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
 

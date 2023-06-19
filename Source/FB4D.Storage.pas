@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -131,8 +131,8 @@ type
     function ContentType: string;
     function Size: Int64;
     function Bucket: string;
-    function createTime: TDateTime;
-    function updateTime: TDatetime;
+    function createTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
+    function updateTime(TimeZone: TTimeZone = tzLocalTime): TDatetime;
     function DownloadToken: string;
     function DownloadUrl: string;
     function MD5HashCode: string;
@@ -801,19 +801,19 @@ begin
   inherited;
 end;
 
-function TStorageObject.createTime: TDateTime;
+function TStorageObject.createTime(TimeZone: TTimeZone): TDateTime;
 begin
   if not fJSONObj.TryGetValue('timeCreated', result) then
     raise EStorageObject.Create('JSON field timeCreated missing')
-  else
+  else if TimeZone = tzLocalTime then
     result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
-function TStorageObject.updateTime: TDatetime;
+function TStorageObject.updateTime(TimeZone: TTimeZone): TDatetime;
 begin
   if not fJSONObj.TryGetValue('updated', result) then
     raise EStorageObject.Create('JSON field updated missing')
-  else
+  else if TimeZone = tzLocalTime then
     result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 

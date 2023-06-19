@@ -280,7 +280,8 @@ begin
       if not Application.Terminated then
         Item.TagString := fDocID;
     end);
-  result := TFirestoreDocument.Create(fDocID);
+  result := TFirestoreDocument.Create([cCollectionID, fDocID],
+    fConfig.ProjectID);
   result.AddOrUpdateField(TJSONObject.SetString('fileName', Item.Text));
   SetLength(Arr, fPhotoInterpretation.Labels.Count);
   for c := 0 to length(Arr) - 1 do

@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -112,8 +112,21 @@ type
     Document: IFirestoreDocument) of object;
   TOnDocuments = procedure(const Info: string;
     Documents: IFirestoreDocuments) of object;
-  TTransaction = string; // A base64 encoded ID
-  TOnBeginTransaction = procedure(Transaction: TTransaction) of object;
+  TFirestoreReadTransaction = string; // A base64 encoded ID
+  IFirestoreWriteTransaction = interface
+    procedure UpdateDoc(Document: IFirestoreDocument;
+      UpdateMask: TStringDynArray);
+    function GetWritesObjArray: TJSONArray;
+  end;
+  TOnBeginReadTransaction = procedure(Transaction: TFirestoreReadTransaction)
+    of object;
+  IFirestoreCommitTransaction = interface
+    function CommitTime(TimeZone: TTimeZone = tzUTC): TDateTime;
+    function NoUpdates: cardinal;
+    function UpdateTime(Index: cardinal; TimeZone: TTimeZone = tzUTC): TDateTime;
+  end;
+  TOnCommitWriteTransaction = procedure(Transaction: IFirestoreCommitTransaction)
+    of object;
 
   TObjectName = string;
   TOnStorage = procedure(Obj: IStorageObject) of object;
@@ -134,8 +147,9 @@ type
     type TOnSuccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
       oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
       oscRTDBDelete, oscRTDBServerVariable, oscDocument, oscDocuments,
-      oscBeginTransaction, oscStorage, oscStorageDeprecated, oscStorageUpload,
-      oscStorageGetAndDown, oscDelStorage, oscFunctionSuccess, oscVisionML);
+      oscBeginReadTransaction, oscCommitWriteTransaction, oscStorage,
+      oscStorageDeprecated, oscStorageUpload, oscStorageGetAndDown,
+      oscDelStorage, oscFunctionSuccess, oscVisionML);
     constructor Create(OnResp: TOnFirebaseResp);
     constructor CreateUser(OnUserResp: TOnUserResponse);
     constructor CreateFetchProviders(OnFetchProvidersResp: TOnFetchProviders);
@@ -149,8 +163,10 @@ type
       OnRTDBServerVariableResp: TOnRTDBServerVariable);
     constructor CreateFirestoreDoc(OnDocumentResp: TOnDocument);
     constructor CreateFirestoreDocs(OnDocumentsResp: TOnDocuments);
-    constructor CreateFirestoreTransaction(
-      OnBeginTransactionResp: TOnBeginTransaction);
+    constructor CreateFirestoreReadTransaction(
+      OnBeginReadTransactionResp: TOnBeginReadTransaction);
+    constructor CreateFirestoreCommitWriteTransaction(
+      OnCommitTransaction: TOnCommitWriteTransaction);
     constructor CreateStorage(OnStorageResp: TOnStorage);
     constructor CreateStorageDeprecated(OnStorageResp: TOnStorageDeprecated);
     constructor CreateStorageGetAndDownload(OnStorageResp: TOnStorage;
@@ -172,7 +188,9 @@ type
       oscRTDBServerVariable: (OnRTDBServerVariable: TOnRTDBServerVariable);
       oscDocument: (OnDocument: TOnDocument);
       oscDocuments: (OnDocuments: TOnDocuments);
-      oscBeginTransaction: (OnBeginTransaction: TOnBeginTransaction);
+      oscBeginReadTransaction: (OnBeginReadTransaction: TOnBeginReadTransaction);
+      oscCommitWriteTransaction:
+        (OnCommitWriteTransaction: TOnCommitWriteTransaction);
       oscStorage: (OnStorage: TOnStorage);
       oscStorageDeprecated: (OnStorageDeprecated: TOnStorageDeprecated);
       oscStorageGetAndDown:
@@ -199,7 +217,8 @@ type
       OnRTDBServerVariable: TOnRTDBServerVariable;
       OnDocument: TOnDocument;
       OnDocuments: TOnDocuments;
-      OnBeginTransaction: TOnBeginTransaction;
+      OnBeginReadTransaction: TOnBeginReadTransaction;
+      OnCommitWriteTransaction: TOnCommitWriteTransaction;
       OnStorage: TOnStorage;
       OnStorageDeprecated: TOnStorageDeprecated;
       OnStorageGetAndDown: TOnStorage;
@@ -268,13 +287,12 @@ type
     procedure StopListening(const NodeName: string;
       MaxTimeOutInMS: cardinal = 500); overload; deprecated;
     function GetResourceParams: TRequestResourceParam;
-    function GetLastReceivedMsg: TDateTime;
+    function GetLastReceivedMsg: TDateTime; // Local time
     function IsStopped: boolean;
   end;
 
   TOnReceiveEvent = procedure(const Event: string;
     Params: TRequestResourceParam; JSONObj: TJSONObject) of object;
-  TOnServerTimeStamp = procedure(ServerTime: TDateTime) of object;
   TOnStopListenEvent = TNotifyEvent;
   TOnAuthRevokedEvent = procedure(TokenRenewPassed: boolean) of object;
   TOnConnectionStateChange = procedure(ListenerConnected: boolean) of object;
@@ -336,14 +354,15 @@ type
     function DocumentName(FullPath: boolean): string;
     function DocumentFullPath: TRequestResourceParam;
     function DocumentPathWithinDatabase: TRequestResourceParam;
-    function CreateTime: TDateTime;
-    function UpdateTime: TDatetime;
+    function CreateTime(TimeZone: TTimeZone = tzUTC): TDateTime;
+    function UpdateTime(TimeZone: TTimeZone = tzUTC): TDatetime;
     function CountFields: integer;
     function FieldName(Ind: integer): string;
     function FieldByName(const FieldName: string): TJSONObject;
     function FieldValue(Ind: integer): TJSONObject;
     function FieldType(Ind: integer): TFirestoreFieldType;
     function FieldTypeByName(const FieldName: string): TFirestoreFieldType;
+    function AllFields: TStringDynArray;
     function GetValue(Ind: integer): TJSONValue; overload;
     function GetValue(const FieldName: string): TJSONValue; overload;
     function GetStringValue(const FieldName: string): string;
@@ -360,9 +379,10 @@ type
     function GetBoolValue(const FieldName: string): boolean;
     function GetBoolValueDef(const FieldName: string;
       Default: boolean): boolean;
-    function GetTimeStampValue(const FieldName: string): TDateTime;
+    function GetTimeStampValue(const FieldName: string;
+      TimeZone: TTimeZone = tzUTC): TDateTime;
     function GetTimeStampValueDef(const FieldName: string;
-      Default: TDateTime): TDateTime;
+      Default: TDateTime; TimeZone: TTimeZone = tzUTC): TDateTime;
     function GetGeoPoint(const FieldName: string): TLocationCoord2D;
     function GetReference(const FieldName: string): string;
     function GetBytes(const FieldName: string): TBytes;
@@ -440,7 +460,9 @@ type
   TOnChangedDocument = procedure(ChangedDocument: IFirestoreDocument) of object;
   TOnDeletedDocument = procedure(const DeleteDocumentPath: string;
     TimeStamp: TDateTime) of object;
+
   EFirestoreListener = class(Exception);
+  EFirestoreDatabase = class(Exception);
 
   IFirestoreDatabase = interface(IInterface)
     procedure RunQuery(StructuredQuery: IStructuredQuery;
@@ -497,11 +519,18 @@ type
       OnConnectionStateChange: TOnConnectionStateChange = nil;
       DoNotSynchronizeEvents: boolean = false);
     procedure StopListener(RemoveAllSubscription: boolean = true);
-    function GetTimeStampOfLastAccess: TDateTime;
+    function GetTimeStampOfLastAccess: TDateTime; // local time
     // Transaction
-    procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
+    procedure BeginReadTransaction(
+      OnBeginReadTransaction: TOnBeginReadTransaction;
       OnRequestError: TOnRequestError);
-    function BeginReadOnlyTransactionSynchronous: TTransaction;
+    function BeginReadTransactionSynchronous: TFirestoreReadTransaction;
+    function BeginWriteTransaction: IFirestoreWriteTransaction;
+    function CommitWriteTransactionSynchronous(
+      Transaction: IFirestoreWriteTransaction): IFirestoreCommitTransaction;
+    procedure CommitWriteTransaction(Transaction: IFirestoreWriteTransaction;
+      OnCommitWriteTransaction: TOnCommitWriteTransaction;
+      OnRequestError: TOnRequestError);
   end;
 
 {$IFDEF TOKENJWT}
@@ -555,9 +584,9 @@ type
     function IsDisabled: TThreeStateBoolean;
     function IsNewSignupUser: boolean;
     function IsLastLoginAtAvailable: boolean;
-    function LastLoginAt: TDateTime;
+    function LastLoginAt(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     function IsCreatedAtAvailable: boolean;
-    function CreatedAt: TDateTime;
+    function CreatedAt(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     // Provider User Info
     function ProviderCount: integer;
     function Provider(ProviderNo: integer): TProviderInfo;
@@ -575,7 +604,7 @@ type
     function ClaimFieldNames: TStrings;
     function ClaimField(const FieldName: string): TJSONValue;
 {$ENDIF}
-    function ExpiresAt: TDateTime;
+    function ExpiresAt: TDateTime; // local time
     function RefreshToken: string;
   end;
   EFirebaseAuthentication = class(Exception);
@@ -668,11 +697,11 @@ type
 {$IFDEF TOKENJWT}
     function TokenJWT: ITokenJWT;
 {$ENDIF}
-    function TokenExpiryDT: TDateTime;
+    function TokenExpiryDT: TDateTime; // local time
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
-    function GetLastUTCServerTime: TDateTime;
+    function GetLastUTCServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
   end;
 
   EFirebaseFunctions = class(Exception);
@@ -705,8 +734,8 @@ type
     function ContentType: string;
     function Size: Int64;
     function Bucket: string;
-    function createTime: TDateTime;
-    function updateTime: TDatetime;
+    function createTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
+    function updateTime(TimeZone: TTimeZone = tzLocalTime): TDatetime;
     function DownloadUrl: string;
     function DownloadToken: string;
     function MD5HashCode: string;
@@ -962,12 +991,20 @@ begin
   OnDocuments := OnDocumentsResp;
 end;
 
-constructor TOnSuccess.CreateFirestoreTransaction(
-  OnBeginTransactionResp: TOnBeginTransaction);
+constructor TOnSuccess.CreateFirestoreReadTransaction(
+  OnBeginReadTransactionResp: TOnBeginReadTransaction);
 begin
   Create(nil);
-  OnSuccessCase := oscBeginTransaction;
-  OnBeginTransaction := OnBeginTransactionResp;
+  OnSuccessCase := oscBeginReadTransaction;
+  OnBeginReadTransaction := OnBeginReadTransactionResp;
+end;
+
+constructor TOnSuccess.CreateFirestoreCommitWriteTransaction(
+  OnCommitTransaction: TOnCommitWriteTransaction);
+begin
+  Create(nil);
+  OnSuccessCase := oscCommitWriteTransaction;
+  OnCommitTransaction := OnCommitTransaction;
 end;
 
 constructor TOnSuccess.CreateStorage(OnStorageResp: TOnStorage);

@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -160,7 +160,7 @@ type
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
-    function GetLastUTCServerTime: TDateTime;
+    function GetLastUTCServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     property ApiKey: string read fApiKey;
   end;
 
@@ -198,9 +198,9 @@ type
     function IsDisabled: TThreeStateBoolean;
     function IsNewSignupUser: boolean;
     function IsLastLoginAtAvailable: boolean;
-    function LastLoginAt: TDateTime;
+    function LastLoginAt(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     function IsCreatedAtAvailable: boolean;
-    function CreatedAt: TDateTime;
+    function CreatedAt(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     // Provider User Info
     function ProviderCount: integer;
     function Provider(ProviderNo: integer): TProviderInfo;
@@ -218,7 +218,7 @@ type
     function ClaimFieldNames: TStrings;
     function ClaimField(const FieldName: string): TJSONValue;
     {$ENDIF}
-    function ExpiresAt: TDateTime;
+    function ExpiresAt: TDateTime; // local time
     function RefreshToken: string;
   end;
 
@@ -1510,9 +1510,12 @@ begin
   end;
 end;
 
-function TFirebaseAuthentication.GetLastUTCServerTime: TDateTime;
+function TFirebaseAuthentication.GetLastUTCServerTime(
+  TimeZone: TTimeZone): TDateTime;
 begin
   result := fLastUTCServerTime;
+  if TimeZone = tzLocalTime then
+    result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
 function TFirebaseAuthentication.Token: string;
@@ -1705,13 +1708,20 @@ begin
   result := fJSONResp.GetValue('createdAt') <> nil;
 end;
 
-function TFirebaseUser.CreatedAt: TDateTime;
+function TFirebaseUser.CreatedAt(TimeZone: TTimeZone): TDateTime;
 var
   dt: Int64;
 begin
   if not fJSONResp.TryGetValue('createdAt', dt) then
     raise EFirebaseUser.Create('createdAt not found');
-  result := TFirebaseHelpers.ConvertTimeStampToLocalDateTime(dt);
+  case TimeZone of
+    tzLocalTime:
+      result := TFirebaseHelpers.ConvertTimeStampToLocalDateTime(dt);
+    tzUTC:
+      result := TFirebaseHelpers.ConvertTimeStampToUTCDateTime(dt);
+    else
+      raise EFirebaseUser.Create('Invalid timezone');
+  end;
 end;
 
 function TFirebaseUser.IsLastLoginAtAvailable: boolean;
@@ -1730,13 +1740,20 @@ begin
     result := String.EndsText(cSignupNewUser, Kind);
 end;
 
-function TFirebaseUser.LastLoginAt: TDateTime;
+function TFirebaseUser.LastLoginAt(TimeZone: TTimeZone): TDateTime;
 var
   dt: Int64;
 begin
   if not fJSONResp.TryGetValue('lastLoginAt', dt) then
     raise EFirebaseUser.Create('lastLoginAt not found');
-  result := TFirebaseHelpers.ConvertTimeStampToLocalDateTime(dt);
+  case TimeZone of
+    tzLocalTime:
+      result := TFirebaseHelpers.ConvertTimeStampToLocalDateTime(dt);
+    tzUTC:
+      result := TFirebaseHelpers.ConvertTimeStampToUTCDateTime(dt);
+    else
+      raise EFirebaseUser.Create('Invalid timezone');
+  end;
 end;
 
 function TFirebaseUser.IsPhotoURLAvailable: boolean;

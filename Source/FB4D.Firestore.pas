@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -54,7 +54,9 @@ type
       Response: IFirebaseResponse);
     procedure OnDeleteResponse(const RequestID: string;
       Response: IFirebaseResponse);
-    procedure BeginReadOnlyTransactionResp(const RequestID: string;
+    procedure BeginReadTransactionResp(const RequestID: string;
+      Response: IFirebaseResponse);
+    procedure CommitWriteTransactionResp(const RequestID: string;
       Response: IFirebaseResponse);
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
@@ -116,9 +118,16 @@ type
     procedure StopListener(RemoveAllSubscription: boolean = true);
     function GetTimeStampOfLastAccess: TDateTime;
     // Transaction
-    procedure BeginReadOnlyTransaction(OnBeginTransaction: TOnBeginTransaction;
+    procedure BeginReadTransaction(
+      OnBeginReadTransaction: TOnBeginReadTransaction;
       OnRequestError: TOnRequestError);
-    function BeginReadOnlyTransactionSynchronous: TTransaction;
+    function BeginReadTransactionSynchronous: TFirestoreReadTransaction;
+    function BeginWriteTransaction: IFirestoreWriteTransaction;
+    function CommitWriteTransactionSynchronous(
+      Transaction: IFirestoreWriteTransaction): IFirestoreCommitTransaction;
+    procedure CommitWriteTransaction(Transaction: IFirestoreWriteTransaction;
+      OnCommitWriteTransaction: TOnCommitWriteTransaction;
+      OnRequestError: TOnRequestError);
     property ProjectID: string read fProjectID;
     property DatabaseID: string read fDatabaseID;
   end;
@@ -177,7 +186,8 @@ type
     class function BooleanFieldFilter(const WhereFieldPath: string;
       WhereOperator: TWhereOperator; WhereValue: boolean): IQueryFilter;
     class function TimestampFieldFilter(const WhereFieldPath: string;
-      WhereOperator: TWhereOperator; WhereValue: TDateTime): IQueryFilter; static;
+      WhereOperator: TWhereOperator; WhereValue: TDateTime): IQueryFilter;
+      static;
     constructor Create(const Where, Value: string; Op: TWhereOperator);
     procedure AddPair(const Str: string; Val: TJSONValue); overload;
     procedure AddPair(const Str, Val: string); overload;
@@ -185,6 +195,29 @@ type
     function GetInfo: string;
   end;
 
+  TFirestoreWriteTransaction = class(TInterfacedObject,
+    IFirestoreWriteTransaction)
+  private
+    fWritesObjArray: TJSONArray;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure UpdateDoc(Document: IFirestoreDocument;
+      UpdateMask: TStringDynArray);
+    function GetWritesObjArray: TJSONArray;
+  end;
+
+  TFirestoreCommitTransaction = class(TInterfacedObject,
+    IFirestoreCommitTransaction)
+  private
+    fUpdateTime: array of TDateTime;
+    fCommitTime: TDateTime;
+  public
+    constructor Create(Response: IFirebaseResponse);
+    function CommitTime(TimeZone: TTimeZone = tzUTC): TDateTime;
+    function NoUpdates: cardinal;
+    function UpdateTime(Index: cardinal; TimeZone: TTimeZone = tzUTC): TDateTime;
+  end;
 implementation
 
 uses
@@ -671,8 +704,10 @@ begin
   result := Request.SendRequestSynchronous(Params, rmDELETE, nil, QueryParams);
 end;
 
-procedure TFirestoreDatabase.BeginReadOnlyTransaction(
-  OnBeginTransaction: TOnBeginTransaction; OnRequestError: TOnRequestError);
+{$REGION 'Transactions'}
+procedure TFirestoreDatabase.BeginReadTransaction(
+  OnBeginReadTransaction: TOnBeginReadTransaction;
+  OnRequestError: TOnRequestError);
 var
   Request: IFirebaseRequest;
   Data: TJSONObject;
@@ -680,14 +715,14 @@ begin
   Assert(assigned(fAuth), 'Authentication is required');
   Request := TFirebaseRequest.Create(BaseURI + METHODE_BEGINTRANS,
     rsBeginTrans, fAuth);
-  Data := TJSONObject.Create(TJSONPair.Create('options', TJSONObject.Create(
-    TJSONPair.Create('readOnly', TJSONObject.Create))));
+  Data := TJSONObject.Create(TJSONPair.Create('options',
+    TJSONObject.Create(TJSONPair.Create('readOnly', TJSONObject.Create))));
   Request.SendRequest(nil, rmPOST, Data, nil, tmBearer,
-    BeginReadOnlyTransactionResp, OnRequestError,
-    TOnSuccess.CreateFirestoreTransaction(OnBeginTransaction));
+    BeginReadTransactionResp, OnRequestError,
+    TOnSuccess.CreateFirestoreReadTransaction(OnBeginReadTransaction));
 end;
 
-procedure TFirestoreDatabase.BeginReadOnlyTransactionResp(
+procedure TFirestoreDatabase.BeginReadTransactionResp(
   const RequestID: string; Response: IFirebaseResponse);
 var
   Res: TJSONObject;
@@ -697,8 +732,8 @@ begin
     Response.CheckForJSONObj;
     Res := Response.GetContentAsJSONObj;
     try
-      if assigned(Response.OnSuccess.OnBeginTransaction) then
-        Response.OnSuccess.OnBeginTransaction(
+      if assigned(Response.OnSuccess.OnBeginReadTransaction) then
+        Response.OnSuccess.OnBeginReadTransaction(
           Res.GetValue<string>('transaction'));
     finally
       Res.Free;
@@ -716,18 +751,18 @@ begin
   end;
 end;
 
-function TFirestoreDatabase.BeginReadOnlyTransactionSynchronous: TTransaction;
+function TFirestoreDatabase.BeginReadTransactionSynchronous:
+  TFirestoreReadTransaction;
 var
   Request: IFirebaseRequest;
   Response: IFirebaseResponse;
   Data, Res: TJSONObject;
 begin
   Assert(assigned(fAuth), 'Authentication is required');
-  result := '';
   Request := TFirebaseRequest.Create(BaseURI + METHODE_BEGINTRANS,
     rsBeginTrans, fAuth);
-  Data := TJSONObject.Create(TJSONPair.Create('options', TJSONObject.Create(
-    TJSONPair.Create('readOnly', TJSONObject.Create))));
+  Data := TJSONObject.Create(TJSONPair.Create('options',
+    TJSONObject.Create(TJSONPair.Create('readOnly', TJSONObject.Create))));
   try
     Response := Request.SendRequestSynchronous(nil, rmPOST, Data, nil);
     fLastReceivedMsg := now;
@@ -745,6 +780,91 @@ begin
     Data.Free;
   end;
 end;
+
+function TFirestoreDatabase.BeginWriteTransaction: IFirestoreWriteTransaction;
+begin
+  result := TFirestoreWriteTransaction.Create;
+end;
+
+function TFirestoreDatabase.CommitWriteTransactionSynchronous(
+  Transaction: IFirestoreWriteTransaction): IFirestoreCommitTransaction;
+var
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+  Data, Res: TJSONObject;
+begin
+  Assert(assigned(fAuth), 'Authentication is required');
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
+    rsCommitTrans, fAuth);
+  Data := TJSONObject.Create;
+  Data.AddPair('writes', Transaction.GetWritesObjArray);
+  try
+    Response := Request.SendRequestSynchronous(nil, rmPOST, Data, nil);
+    fLastReceivedMsg := now;
+    if Response.StatusOk then
+    begin
+      Res := Response.GetContentAsJSONObj;
+      try
+        result := TFirestoreCommitTransaction.Create(Response);
+      finally
+        Res.Free;
+      end;
+    end else
+      raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
+  finally
+    Data.Free;
+  end;
+end;
+
+procedure TFirestoreDatabase.CommitWriteTransaction(
+  Transaction: IFirestoreWriteTransaction;
+  OnCommitWriteTransaction: TOnCommitWriteTransaction;
+  OnRequestError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+  Data: TJSONObject;
+begin
+  Assert(assigned(fAuth), 'Authentication is required');
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
+    rsCommitTrans, fAuth);
+  Data := TJSONObject.Create;
+  Data.AddPair('writes', Transaction.GetWritesObjArray);
+  Request.SendRequest(nil, rmPOST, Data, nil, tmBearer,
+    CommitWriteTransactionResp, OnRequestError,
+    TOnSuccess.CreateFirestoreCommitWriteTransaction(OnCommitWriteTransaction));
+end;
+
+procedure TFirestoreDatabase.CommitWriteTransactionResp(const RequestID: string;
+  Response: IFirebaseResponse);
+var
+  Res: TJSONObject;
+begin
+  try
+    fLastReceivedMsg := now;
+    Response.CheckForJSONObj;
+    Res := Response.GetContentAsJSONObj;
+    try
+      if assigned(Response.OnSuccess.OnCommitWriteTransaction) then
+        Response.OnSuccess.OnCommitWriteTransaction(
+          TFirestoreCommitTransaction.Create(Response));
+    finally
+      Res.Free;
+    end;
+  except
+    on e: Exception do
+    begin
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
+      else
+        TFirebaseHelpers.LogFmt(rsFBFailureIn,
+          ['FirestoreDatabase.CommitWriteTransactionResp', RequestID,
+           e.Message]);
+    end;
+  end;
+end;
+
+//  https://stackoverflow.com/questions/57779415/cloud-firestore-rest-api-add-server-timestamp
+{$ENDREGION}
 
 {$REGION 'Listener subscription'}
 function TFirestoreDatabase.SubscribeDocument(DocPath: TRequestResourceParam;
@@ -792,6 +912,7 @@ begin
   if not RemoveAllSubscription then
     fListener.RestoreClonedTargets(RestoredTargets);
 end;
+{$ENDREGION}
 
 function TFirestoreDatabase.GetTimeStampOfLastAccess: TDateTime;
 begin
@@ -800,7 +921,6 @@ begin
   else
     result := fListener.LastReceivedMsg;
 end;
-{$ENDREGION}
 
 { TStructuredQuery }
 
@@ -1141,6 +1261,90 @@ end;
 function TQueryFilter.GetInfo: string;
 begin
   result := fInfo;
+end;
+
+{ TFirestoreWriteTransaction }
+
+constructor TFirestoreWriteTransaction.Create;
+begin
+  FreeAndNil(fWritesObjArray);
+  fWritesObjArray := TJSONArray.Create;
+end;
+
+destructor TFirestoreWriteTransaction.Destroy;
+begin
+  FreeAndNil(fWritesObjArray);
+  inherited;
+end;
+
+function TFirestoreWriteTransaction.GetWritesObjArray: TJSONArray;
+begin
+  result := fWritesObjArray.Clone as TJSONArray;
+end;
+
+procedure TFirestoreWriteTransaction.UpdateDoc(Document: IFirestoreDocument;
+  UpdateMask: TStringDynArray);
+var
+  Obj: TJSONObject;
+  Arr: TJSONArray;
+  Mask: string;
+begin
+  Obj := TJSONObject.Create;
+  if length(UpdateMask) > 0 then
+  begin
+    Arr := TJSONArray.Create;
+    for Mask in UpdateMask do
+      Arr.Add(Mask);
+    Obj.AddPair('updateMask',
+      TJSONObject.Create(TJSONPair.Create('fieldPaths', Arr)));
+  end;
+  Obj.AddPair('update', TJSONObject.ParseJSONValue(Document.AsJSON.ToJSON));
+  // Document need to be cloned here;
+  fWritesObjArray.Add(Obj);
+end;
+
+{ TFirestoreCommitTransaction }
+
+constructor TFirestoreCommitTransaction.Create(Response: IFirebaseResponse);
+var
+  Res: TJSONObject;
+  WRes: TJSONValue;
+  Arr: TJSONArray;
+  c: integer;
+begin
+  Res := Response.GetContentAsJSONObj;
+  WRes := Res.FindValue('writeResults');
+  if not assigned(WRes) then
+    raise EFirestoreDatabase.Create('JSON field writeResults missing');
+  Arr := WRes as TJSONArray;
+  SetLength(fUpdateTime, Arr.Count);
+  for c := 0 to Arr.Count - 1 do
+    if not (Arr.Items[c] as TJSONObject).TryGetValue('updateTime',
+       fUpdateTime[c]) then
+      raise EFirestoreDatabase.Create('JSON field updateTime missing');
+  if not Res.TryGetValue('commitTime', fCommitTime) then
+  else
+    raise EFirestoreDatabase.Create('JSON field commitTime missing');
+end;
+
+function TFirestoreCommitTransaction.NoUpdates: cardinal;
+begin
+  result := length(fUpdateTime);
+end;
+
+function TFirestoreCommitTransaction.UpdateTime(Index: cardinal;
+  TimeZone: TTimeZone): TDateTime;
+begin
+  result := fUpdateTime[Index];
+  if TimeZone = tzLocalTime then
+    result := TFirebaseHelpers.ConvertToLocalDateTime(result);
+end;
+
+function TFirestoreCommitTransaction.CommitTime(TimeZone: TTimeZone): TDateTime;
+begin
+  result := fCommitTime;
+  if TimeZone = tzLocalTime then
+    result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
 end.
