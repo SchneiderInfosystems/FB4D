@@ -14,6 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
+- June 2023: Firestore database supports write transactions
 - October 2022: Interface for ML Vision service added
 - October 2021: Prepared for Delphi Alexandria
 - April 7, 2021: Revised RT DB Listener
@@ -26,7 +27,7 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
 
-The sample projects are developed and prepared for **Delphi 11.0 Alexandria**.
+The sample projects are developed and prepared for **Delphi 11.3 Alexandria**.
 
 #### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are no longer supported because of an issue in the RTL. 
 
