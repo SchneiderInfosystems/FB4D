@@ -202,7 +202,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure UpdateDoc(Document: IFirestoreDocument;
+    procedure UpdateDoc(Document: IFirestoreDocument);
+    procedure PatchDoc(Document: IFirestoreDocument;
       UpdateMask: TStringDynArray);
     function GetWritesObjArray: TJSONArray;
   end;
@@ -797,7 +798,8 @@ begin
   Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
     rsCommitTrans, fAuth);
   Data := TJSONObject.Create;
-  Data.AddPair('writes', Transaction.GetWritesObjArray);
+  Data.AddPair('writes',
+    (Transaction as TFirestoreWriteTransaction).GetWritesObjArray);
   try
     Response := Request.SendRequestSynchronous(nil, rmPOST, Data, nil);
     fLastReceivedMsg := now;
@@ -828,7 +830,8 @@ begin
   Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
     rsCommitTrans, fAuth);
   Data := TJSONObject.Create;
-  Data.AddPair('writes', Transaction.GetWritesObjArray);
+  Data.AddPair('writes',
+    (Transaction as TFirestoreWriteTransaction).GetWritesObjArray);
   Request.SendRequest(nil, rmPOST, Data, nil, tmBearer,
     CommitWriteTransactionResp, OnRequestError,
     TOnSuccess.CreateFirestoreCommitWriteTransaction(OnCommitWriteTransaction));
@@ -862,8 +865,6 @@ begin
     end;
   end;
 end;
-
-//  https://stackoverflow.com/questions/57779415/cloud-firestore-rest-api-add-server-timestamp
 {$ENDREGION}
 
 {$REGION 'Listener subscription'}
@@ -1282,7 +1283,7 @@ begin
   result := fWritesObjArray.Clone as TJSONArray;
 end;
 
-procedure TFirestoreWriteTransaction.UpdateDoc(Document: IFirestoreDocument;
+procedure TFirestoreWriteTransaction.PatchDoc(Document: IFirestoreDocument;
   UpdateMask: TStringDynArray);
 var
   Obj: TJSONObject;
@@ -1303,6 +1304,16 @@ begin
   fWritesObjArray.Add(Obj);
 end;
 
+procedure TFirestoreWriteTransaction.UpdateDoc(Document: IFirestoreDocument);
+var
+  Obj: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('update', TJSONObject.ParseJSONValue(Document.AsJSON.ToJSON));
+  // Document need to be cloned here;
+  fWritesObjArray.Add(Obj);
+end;
+
 { TFirestoreCommitTransaction }
 
 constructor TFirestoreCommitTransaction.Create(Response: IFirebaseResponse);
@@ -1313,18 +1324,21 @@ var
   c: integer;
 begin
   Res := Response.GetContentAsJSONObj;
-  WRes := Res.FindValue('writeResults');
-  if not assigned(WRes) then
-    raise EFirestoreDatabase.Create('JSON field writeResults missing');
-  Arr := WRes as TJSONArray;
-  SetLength(fUpdateTime, Arr.Count);
-  for c := 0 to Arr.Count - 1 do
-    if not (Arr.Items[c] as TJSONObject).TryGetValue('updateTime',
-       fUpdateTime[c]) then
-      raise EFirestoreDatabase.Create('JSON field updateTime missing');
-  if not Res.TryGetValue('commitTime', fCommitTime) then
-  else
-    raise EFirestoreDatabase.Create('JSON field commitTime missing');
+  try
+    WRes := Res.FindValue('writeResults');
+    if not assigned(WRes) then
+      raise EFirestoreDatabase.Create('JSON field writeResults missing');
+    Arr := WRes as TJSONArray;
+    SetLength(fUpdateTime, Arr.Count);
+    for c := 0 to Arr.Count - 1 do
+      if not (Arr.Items[c] as TJSONObject).TryGetValue('updateTime',
+         fUpdateTime[c]) then
+        raise EFirestoreDatabase.Create('JSON field updateTime missing');
+    if not Res.TryGetValue('commitTime', fCommitTime) then
+      raise EFirestoreDatabase.Create('JSON field commitTime missing');
+  finally
+    Res.Free;
+  end;
 end;
 
 function TFirestoreCommitTransaction.NoUpdates: cardinal;

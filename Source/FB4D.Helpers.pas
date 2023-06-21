@@ -113,6 +113,7 @@ type
   TFirestorePath = class
     class function TrimStartAndEndPathDelimiters(const Path: string): string;
     class function ConvertToDocPath(const Path: string): TRequestResourceParam;
+    class function GetDocPath(Params: TRequestResourceParam): string;
     class function ContainsPathDelim(const Path: string): boolean;
     class function ExtractLastCollection(const Path: string): string;
     class function DocPathWithoutLastCollection(
@@ -173,7 +174,8 @@ type
     function GetReference(const Name: string): string; overload;
     function GetReferenceDef(const Name: string;
       const Default: string = ''): string;
-    class function SetReferenceValue(const ProjectID, Ref: string): TJSONObject;
+    class function SetReferenceValue(const ProjectID, Ref: string;
+      const Database: string = cDefaultDatabaseID): TJSONObject;
     class function SetReference(const Name, ProjectID, Ref: string): TJSONPair;
     // GeoPoint
     function GetGeoPoint: TLocationCoord2D; overload;
@@ -1180,6 +1182,15 @@ begin
     result := TrimmedPath.Substring(c + 1);
 end;
 
+class function TFirestorePath.GetDocPath(Params: TRequestResourceParam): string;
+var
+  i: integer;
+begin
+  result := '';
+  for i := low(Params) to high(Params) do
+    result := result + '/' + Params[i];
+end;
+
 class function TFirestorePath.DocPathWithoutLastCollection(
   const Path: string): TRequestResourceParam;
 var
@@ -1523,15 +1534,17 @@ begin
 end;
 
 class function TJSONHelpers.SetReferenceValue(const ProjectID,
-  Ref: string): TJSONObject;
+  Ref: string; const Database: string): TJSONObject;
 
   function ConvertRefPath(const ProjectID, Reference: string): string;
+  var
+    RefWithPath: string;
   begin
-    result := 'projects/' + ProjectID + '/databases/(default)/documents';
-    if Reference.StartsWith('/') then
-      result := result + Reference
-    else
-      result := result + '/' + Reference;
+    RefWithPath := Reference;
+    if not RefWithPath.StartsWith('/') then
+      RefWithPath := '/' + RefWithPath;
+    result := System.SysUtils.Format(cFirestoreDocumentPath,
+      [ProjectID, Database, RefWithPath]);
   end;
 
 begin

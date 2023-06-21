@@ -160,7 +160,8 @@ begin
   inherited Create(true);
   Assert(assigned(Auth), 'Authentication not initalized');
   fAuth := Auth;
-  fDatabase := 'projects/' + ProjectID + '/databases/' + DatabaseID;
+  fDatabase := System.SysUtils.Format(cFirestoreDocumentPath,
+    [ProjectID, DatabaseID, '']);
   fTargets := TTargets.Create;
   {$IFDEF MSWINDOWS}
   EventName := 'FB4DFSListenerGetFini';

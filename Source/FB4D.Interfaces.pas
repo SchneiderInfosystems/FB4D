@@ -113,11 +113,6 @@ type
   TOnDocuments = procedure(const Info: string;
     Documents: IFirestoreDocuments) of object;
   TFirestoreReadTransaction = string; // A base64 encoded ID
-  IFirestoreWriteTransaction = interface
-    procedure UpdateDoc(Document: IFirestoreDocument;
-      UpdateMask: TStringDynArray);
-    function GetWritesObjArray: TJSONArray;
-  end;
   TOnBeginReadTransaction = procedure(Transaction: TFirestoreReadTransaction)
     of object;
   IFirestoreCommitTransaction = interface
@@ -461,6 +456,12 @@ type
   TOnDeletedDocument = procedure(const DeleteDocumentPath: string;
     TimeStamp: TDateTime) of object;
 
+  IFirestoreWriteTransaction = interface
+    procedure UpdateDoc(Document: IFirestoreDocument);
+    procedure PatchDoc(Document: IFirestoreDocument;
+      UpdateMask: TStringDynArray);
+  end;
+
   EFirestoreListener = class(Exception);
   EFirestoreDatabase = class(Exception);
 
@@ -701,7 +702,7 @@ type
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
-    function GetLastUTCServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
+    function GetLastServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
   end;
 
   EFirebaseFunctions = class(Exception);
@@ -856,6 +857,8 @@ type
   end;
 
 const
+  cFirestoreDocumentPath = 'projects/%s/databases/%s/documents%s';
+
   // Params at TQueryParams
   cGetQueryParamOrderBy = 'orderBy';
   cGetQueryParamLimitToFirst = 'limitToFirst';

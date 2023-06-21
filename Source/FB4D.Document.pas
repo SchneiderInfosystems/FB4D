@@ -390,7 +390,7 @@ constructor TFirestoreDocument.Create(DocumentPath: TRequestResourceParam;
   const ProjectID, Database: string);
 begin
   inherited Create;
-  fDocumentName := Format('projects/%s/databases/%s/documents/%s',
+  fDocumentName := Format(cFirestoreDocumentPath,
     [ProjectID, Database, TFirebaseHelpers.EncodeResourceParams(DocumentPath)]);
   fJSONObj := TJSONObject.Create;
   fJSONObj.AddPair('name', fDocumentName);
