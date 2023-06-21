@@ -160,7 +160,7 @@ type
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
-    function GetLastUTCServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
+    function GetLastServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     property ApiKey: string read fApiKey;
   end;
 
@@ -1510,7 +1510,7 @@ begin
   end;
 end;
 
-function TFirebaseAuthentication.GetLastUTCServerTime(
+function TFirebaseAuthentication.GetLastServerTime(
   TimeZone: TTimeZone): TDateTime;
 begin
   result := fLastUTCServerTime;
