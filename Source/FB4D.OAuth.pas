@@ -115,8 +115,16 @@ var
 begin
   jws := fContext.GetJOSEObject<TJWS>;
   PublicKey := GetPublicKey(GetHeader.JSON.GetValue('kid').Value);
+  {$IFDEF IOS}
+  result := false;
+  // Unfortunately, this function is no longer available for iOS platform
+  // For details check the following discussions
+  // https://github.com/SchneiderInfosystems/FB4D/discussions/163
+  // https://github.com/paolo-rossi/delphi-jose-jwt/issues/51
+  {$ELSE}
   jws.SetKeyFromCert(PublicKey);
   result := jws.VerifySignature;
+  {$ENDIF}
 end;
 
 end.
