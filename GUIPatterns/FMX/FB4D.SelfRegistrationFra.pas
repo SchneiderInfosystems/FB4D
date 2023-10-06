@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -130,6 +130,17 @@ uses
   FB4D.Helpers;
 
 {$R *.fmx}
+
+// Install the following Storage Rule when using method RequestProfileImg:
+// rules_version = '2';
+// service firebase.storage {
+//   match /b/{bucket}/o {
+//     match /userProfiles/{userID} {
+//       allow read: if request.auth != null;
+//       allow write: if request.auth.uid == userID;
+//     }
+//   }
+// }
 
 resourcestring
   rsEnterEMail = 'Enter your e-mail address for sign-in or registration';

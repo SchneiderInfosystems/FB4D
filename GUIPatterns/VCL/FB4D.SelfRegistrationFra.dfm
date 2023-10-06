@@ -2,30 +2,33 @@ object FraSelfRegistration: TFraSelfRegistration
   Left = 0
   Top = 0
   Width = 669
-  Height = 450
+  Height = 615
   Align = alClient
   TabOrder = 0
-  PixelsPerInch = 96
   object pnlStatus: TPanel
     Left = 0
-    Top = 274
+    Top = 497
     Width = 669
-    Height = 176
+    Height = 118
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitTop = 274
+    ExplicitHeight = 176
     object lblStatus: TLabel
       AlignWithMargins = True
       Left = 10
       Top = 10
-      Width = 4
-      Height = 20
+      Width = 649
+      Height = 98
       Margins.Left = 10
       Margins.Top = 10
       Margins.Right = 10
       Margins.Bottom = 10
       Align = alClient
       Alignment = taCenter
+      ExplicitWidth = 3
+      ExplicitHeight = 15
     end
   end
   object gdpAcitivityInd: TGridPanel
@@ -60,13 +63,11 @@ object FraSelfRegistration: TFraSelfRegistration
       669
       64)
     object AniIndicator: TActivityIndicator
-      Left = 336
-      Top = 16
+      Left = 328
+      Top = 8
       Anchors = []
       IndicatorSize = aisLarge
       IndicatorType = aitSectorRing
-      ExplicitLeft = 327
-      ExplicitTop = 8
     end
   end
   object pnlCheckRegistered: TPanel
@@ -84,10 +85,10 @@ object FraSelfRegistration: TFraSelfRegistration
       Left = 24
       Top = 32
       Width = 617
-      Height = 21
+      Height = 23
       Anchors = [akLeft, akTop, akRight]
-      EditLabel.Width = 243
-      EditLabel.Height = 20
+      EditLabel.Width = 192
+      EditLabel.Height = 15
       EditLabel.Caption = 'Enter e-mail for registration or login:'
       TabOrder = 0
       Text = ''
@@ -119,10 +120,10 @@ object FraSelfRegistration: TFraSelfRegistration
       Left = 24
       Top = 32
       Width = 617
-      Height = 21
+      Height = 23
       Anchors = [akLeft, akTop, akRight]
-      EditLabel.Width = 104
-      EditLabel.Height = 20
+      EditLabel.Width = 83
+      EditLabel.Height = 15
       EditLabel.Caption = 'Enter password:'
       PasswordChar = '*'
       TabOrder = 0
@@ -158,5 +159,61 @@ object FraSelfRegistration: TFraSelfRegistration
       TabOrder = 3
       OnClick = btnResetPwdClick
     end
+  end
+  object pnlDisplayName: TPanel
+    Left = 0
+    Top = 274
+    Width = 669
+    Height = 223
+    Align = alTop
+    BevelOuter = bvNone
+    TabOrder = 4
+    ExplicitTop = 271
+    DesignSize = (
+      669
+      223)
+    object imgProfile: TImage
+      Left = 271
+      Top = 101
+      Width = 105
+      Height = 105
+      Center = True
+    end
+    object edtDisplayName: TLabeledEdit
+      Left = 24
+      Top = 32
+      Width = 617
+      Height = 23
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 74
+      EditLabel.Height = 15
+      EditLabel.Caption = 'Display name:'
+      PasswordChar = '*'
+      TabOrder = 0
+      Text = ''
+    end
+    object btnRegisterDisplayName: TButton
+      Left = 424
+      Top = 67
+      Width = 217
+      Height = 25
+      Caption = 'Register Display Name'
+      TabOrder = 1
+      OnClick = btnRegisterDisplayNameClick
+    end
+    object btnLoadProfile: TButton
+      Left = 424
+      Top = 184
+      Width = 217
+      Height = 25
+      Caption = 'Load Profile'
+      TabOrder = 2
+      OnClick = btnLoadProfileClick
+    end
+  end
+  object OpenPictureDialog: TOpenPictureDialog
+    Filter = 'JPEG Image File (*.jpg)|*.jpg|JPEG Image File (*.jpeg)|*.jpeg'
+    Left = 456
+    Top = 402
   end
 end

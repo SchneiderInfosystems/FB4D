@@ -153,6 +153,7 @@ procedure TfrmMain.SaveToken;
 var
   IniFile: TIniFile;
 begin
+  Assert(assigned(fConfig), 'Config missing');
   IniFile := TIniFile.Create(GetSettingFilename);
   try
     if fConfig.Auth.Authenticated then
