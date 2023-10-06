@@ -48,6 +48,13 @@ type
     function ConvertRefPath(const Reference: string): string;
   public
     class function CreateCursor(const ProjectID: string): IFirestoreDocument;
+    class function GetDocFullPath(
+      const ProjectID: string;
+      const Database: string = cDefaultDatabaseID;
+      DocumentPath: TRequestResourceParam = []): TRequestResourceParam; overload;
+    class function GetDocFullPath(DocumentPath: TRequestResourceParam;
+      const ProjectID: string;
+      const Database: string = cDefaultDatabaseID): string; overload;
     constructor Create(DocumentPath: TRequestResourceParam;
       const ProjectID: string; const Database: string = cDefaultDatabaseID);
     constructor CreateFromJSONObj(Response: IFirebaseResponse); overload;
@@ -386,12 +393,34 @@ end;
 
 { TFirestoreDocument }
 
+class function TFirestoreDocument.GetDocFullPath(
+  DocumentPath: TRequestResourceParam; const ProjectID,
+  Database: string): string;
+begin
+  result := Format(cFirestoreDocumentPath,
+    [ProjectID, Database, TFirebaseHelpers.EncodeResourceParams(DocumentPath)]);
+end;
+
+class function TFirestoreDocument.GetDocFullPath(const ProjectID,
+  Database: string; DocumentPath: TRequestResourceParam): TRequestResourceParam;
+var
+  c, c0: integer;
+begin
+  result := ['projects', ProjectID, 'databases', Database, 'documents'];
+  if length(DocumentPath) > 0 then
+  begin
+    c0 := length(result);
+    SetLength(result, c0 + length(DocumentPath));
+    for c := 0 to length(DocumentPath) - 1 do
+      result[c0 + c] := DocumentPath[c];
+  end;
+end;
+
 constructor TFirestoreDocument.Create(DocumentPath: TRequestResourceParam;
   const ProjectID, Database: string);
 begin
   inherited Create;
-  fDocumentName := Format(cFirestoreDocumentPath,
-    [ProjectID, Database, TFirebaseHelpers.EncodeResourceParams(DocumentPath)]);
+  fDocumentName := GetDocFullPath(DocumentPath, ProjectID, Database);
   fJSONObj := TJSONObject.Create;
   fJSONObj.AddPair('name', fDocumentName);
   SetLength(fFields, 0);
