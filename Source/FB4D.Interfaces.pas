@@ -457,9 +457,11 @@ type
     TimeStamp: TDateTime) of object;
 
   IFirestoreWriteTransaction = interface
+    function NumberOfTransactions: cardinal;
     procedure UpdateDoc(Document: IFirestoreDocument);
     procedure PatchDoc(Document: IFirestoreDocument;
       UpdateMask: TStringDynArray);
+    procedure DeleteDoc(const DocumentFullPath: string);
   end;
 
   EFirestoreListener = class(Exception);

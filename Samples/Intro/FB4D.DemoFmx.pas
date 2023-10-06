@@ -1319,12 +1319,30 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.btnDeleteDocClick(Sender: TObject);
+var
+  DocFullPath: string;
 begin
   if not CheckAndCreateFirestoreDBClass(memFirestore) then
     exit;
   if not CheckFirestoreFields(true) then
     exit;
-  if not chbUseChildDoc.IsChecked then
+  if assigned(fWriteTransaction) then
+  begin
+    if not chbUseChildDoc.IsChecked then
+      DocFullPath := TFirestoreDocument.GetDocFullPath(
+        [edtCollection.Text, edtDocument.Text],
+        edtProjectID.Text)
+    else
+      DocFullPath := TFirestoreDocument.GetDocFullPath(
+        [edtCollection.Text, edtDocument.Text,
+         edtChildCollection.Text, edtChildDocument.Text],
+        edtProjectID.Text);
+    fWriteTransaction.DeleteDoc(DocFullPath);
+    memFirestore.Lines.Add(Format(
+      'DeleteDoc %s on write transaction - use Commit Write to store data',
+      [DocFullPath]));
+  end
+  else if not chbUseChildDoc.IsChecked then
     fDatabase.Delete([edtCollection.Text, edtDocument.Text], nil,
       OnFirestoreDeleted, OnFirestoreError)
   else
@@ -1348,8 +1366,13 @@ begin
     exit;
   if not CheckFirestoreFields(true) then
     exit;
-  Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text],
-    edtProjectID.Text);
+  if not chbUseChildDoc.IsChecked then
+    Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text],
+      edtProjectID.Text)
+  else
+    Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text,
+      edtChildCollection.Text, edtChildDocument.Text],
+      edtProjectID.Text);
   case cboDemoDocType.ItemIndex of
     0: Doc.AddOrUpdateField(TJSONObject.SetString('TestField',
          'Now try to create a simple document 😀 at ' + TimeToStr(now)));
@@ -1417,17 +1440,11 @@ begin
     fWriteTransaction.UpdateDoc(Doc);
     memFirestore.Lines.Add(Format(
       'UpdateDoc %s on write transaction - use Commit Write to store data',
-      [TFirestorePath.GetDocPath(Doc.DocumentFullPath)]));
-  end else begin
+      [TFirestorePath.GetDocPath(Doc.DocumentPathWithinDatabase)]));
+  end else
     // Log.d(Doc.AsJSON.ToJSON);
-    if not chbUseChildDoc.IsChecked then
-      fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text],
-        Doc, nil, OnFirestoreInsertOrUpdate, OnFirestoreError)
-    else
-      fDatabase.InsertOrUpdateDocument([edtCollection.Text, edtDocument.Text,
-        edtChildCollection.Text, edtChildDocument.Text], Doc, nil,
-        OnFirestoreInsertOrUpdate, OnFirestoreError);
-  end;
+    fDatabase.InsertOrUpdateDocument(Doc.DocumentPathWithinDatabase, Doc, nil,
+      OnFirestoreInsertOrUpdate, OnFirestoreError);
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreInsertOrUpdate(const Info: string;
@@ -1465,8 +1482,13 @@ begin
     exit;
   if not CheckFirestoreFields(true) then
     exit;
-  Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text],
-    edtProjectID.Text);
+  if not chbUseChildDoc.IsChecked then
+    Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text],
+      edtProjectID.Text)
+  else
+    Doc := TFirestoreDocument.Create([edtCollection.Text, edtDocument.Text,
+      edtChildCollection.Text, edtChildDocument.Text],
+      edtProjectID.Text);
   Doc.AddOrUpdateField(TJSONObject.SetString('patchedField',
     'This field is added while patch'));
   if cboDemoDocType.ItemIndex = 0 then
@@ -1482,14 +1504,9 @@ begin
     memFirestore.Lines.Add(Format(
       'PatchDoc %s on write transaction - use Commit Write to store data',
       [TFirestorePath.GetDocPath(Doc.DocumentFullPath)]));
-  end
-  else if not chbUseChildDoc.IsChecked then
-    fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text], Doc,
-      UpdateMask, OnFirestoreInsertOrUpdate, OnFirestoreError)
-  else
-    fDatabase.PatchDocument([edtCollection.Text, edtDocument.Text,
-      edtChildCollection.Text, edtChildDocument.Text], Doc,
-      UpdateMask, OnFirestoreInsertOrUpdate, OnFirestoreError);
+  end else
+    fDatabase.PatchDocument(Doc.DocumentPathWithinDatabase, Doc, UpdateMask,
+      OnFirestoreInsertOrUpdate, OnFirestoreError);
 end;
 
 procedure TfmxFirebaseDemo.ShowDocument(Doc: IFirestoreDocument);
@@ -1709,15 +1726,18 @@ var
   Commit: IFirestoreCommitTransaction;
 begin
   Assert(assigned(fWriteTransaction), 'Missing write transaction');
-  try
-    Commit := fDatabase.CommitWriteTransactionSynchronous(fWriteTransaction);
-    memFirestore.Lines.Add('Write transaction comitted at ' +
-      DateTimeToStr(Commit.CommitTime));
-    fWriteTransaction := nil;
-  except
-    on e: EFirebaseResponse do
-      memFirestore.Lines.Add('Commit write transaction failed: ' + e.Message);
-  end;
+  if fWriteTransaction.NumberOfTransactions = 0 then
+    memFirestore.Lines.Add('No insert/update, patch, or delete action to commit')
+  else
+    try
+      Commit := fDatabase.CommitWriteTransactionSynchronous(fWriteTransaction);
+      memFirestore.Lines.Add('Write transaction comitted at ' +
+        DateTimeToStr(Commit.CommitTime));
+    except
+      on e: EFirebaseResponse do
+        memFirestore.Lines.Add('Commit write transaction failed: ' + e.Message);
+    end;
+  fWriteTransaction := nil;
   btnStopReadTrans.Visible := false;
   btnCommitWriteTrans.Visible := false;
   btnStartWriteTransaction.Visible := true;
