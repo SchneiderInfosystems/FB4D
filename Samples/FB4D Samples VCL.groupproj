@@ -3,6 +3,9 @@
         <ProjectGuid>{C3A65292-9E18-49D9-A926-FB6DA127732A}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
+        <Projects Include="AuthSelfReg_VCL\Auth_SelfReg_VCL.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj">
             <Dependencies/>
         </Projects>
@@ -14,6 +17,15 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
+    <Target Name="Auth_SelfReg_VCL">
+        <MSBuild Projects="AuthSelfReg_VCL\Auth_SelfReg_VCL.dproj"/>
+    </Target>
+    <Target Name="Auth_SelfReg_VCL:Clean">
+        <MSBuild Projects="AuthSelfReg_VCL\Auth_SelfReg_VCL.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Auth_SelfReg_VCL:Make">
+        <MSBuild Projects="AuthSelfReg_VCL\Auth_SelfReg_VCL.dproj" Targets="Make"/>
+    </Target>
     <Target Name="RTDB_PerUserReadWrite_VCL">
         <MSBuild Projects="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj"/>
     </Target>
@@ -24,13 +36,13 @@
         <MSBuild Projects="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="RTDB_PerUserReadWrite_VCL"/>
+        <CallTarget Targets="Auth_SelfReg_VCL;RTDB_PerUserReadWrite_VCL"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="RTDB_PerUserReadWrite_VCL:Clean"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Clean;RTDB_PerUserReadWrite_VCL:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="RTDB_PerUserReadWrite_VCL:Make"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Make;RTDB_PerUserReadWrite_VCL:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
