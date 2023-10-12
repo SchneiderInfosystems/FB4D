@@ -371,7 +371,7 @@ end;
 
 procedure TFraSelfRegistration.OnTokenRefresh(TokenRefreshed: boolean);
 begin
-  fTokenRefreshed := true;
+  fTokenRefreshed := TokenRefreshed;
   if TokenRefreshed then
     fAuth.GetUserData(OnGetUserData, OnUserError)
   else

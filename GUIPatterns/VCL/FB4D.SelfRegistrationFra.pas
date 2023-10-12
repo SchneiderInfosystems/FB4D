@@ -162,7 +162,7 @@ resourcestring
 constructor TFraSelfRegistration.Create(AOwner: TComponent);
 begin
   inherited;
-  edtDisplayName.Visible := false;
+  pnlDisplayName.Visible := false;
   btnRegisterDisplayName.Visible := false;
   imgProfile.Visible := false;
   fProfileURL := '';
@@ -227,26 +227,26 @@ end;
 procedure TFraSelfRegistration.StartEMailEntering;
 begin
   fInfo := '';
-  edtEMail.Visible := true;
-  btnCheckEMail.Visible := true;
+  pnlCheckRegistered.Visible := true;
   btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
+  btnCheckEMail.Visible := true;
   lblStatus.Caption := rsEnterEMail;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
-  edtPassword.Visible := false;
-  edtDisplayName.Visible := false;
+  pnlPassword.Visible := false;
+  pnlDisplayName.Visible := false;
+  edtDisplayName.Text := '';
   btnRegisterDisplayName.Visible := false;
   imgProfile.Visible := false;
-  edtEMail.SetFocus;
 end;
 
 procedure TFraSelfRegistration.edtEMailChange(Sender: TObject);
 begin
-  if edtPassword.Visible then
+  if pnlPassword.Visible then
   begin
     lblStatus.Caption := rsEnterEMail;
-    edtPassword.Visible := false;
+    pnlPassword.Visible := false;
     btnCheckEMail.Visible := true;
     btnSignUp.Visible := false;
     btnSignIn.Visible := false;
@@ -281,8 +281,9 @@ begin
     btnResetPwd.Visible := true;
     btnResetPwd.Enabled := true;
     lblStatus.Caption := rsEnterPassword;
+    pnlCheckRegistered.visible := false;
+    pnlPassword.visible := true;
     edtPassword.Text := '';
-    edtPassword.Visible := true;
     edtPassword.SetFocus;
     btnCheckEMail.Visible := false;
   end
@@ -293,8 +294,9 @@ begin
     btnSignIn.Visible := false;
     btnResetPwd.Visible := false;
     lblStatus.Caption := rsSetupPassword;
+    pnlCheckRegistered.visible := false;
+    pnlPassword.visible := true;
     edtPassword.Text := '';
-    edtPassword.Visible := true;
     edtPassword.SetFocus;
     btnCheckEMail.Visible := false;
   end else begin
@@ -308,6 +310,7 @@ begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
   lblStatus.Caption := Info + ': ' + ErrMsg;
+  btnCheckEMail.visible := true;
   btnCheckEMail.Enabled := true;
 end;
 
@@ -360,19 +363,19 @@ begin
   Assert(assigned(fAuth), 'Auth is not initialized');
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
-  edtEMail.Visible := false;
-  btnCheckEMail.Visible := false;
+  pnlCheckRegistered.visible := false;
   lblStatus.Caption := rsWait;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
-  edtPassword.Visible := false;
+  pnlPassword.Visible := false;
   fReqInfo := 'AfterTokenRefresh';
   fAuth.RefreshToken(LastToken, OnTokenRefresh, OnUserError);
 end;
 
 procedure TFraSelfRegistration.OnTokenRefresh(TokenRefreshed: boolean);
 begin
+  fTokenRefreshed := TokenRefreshed;
   if TokenRefreshed then
     fAuth.GetUserData(OnGetUserData, OnUserError)
   else
@@ -435,8 +438,8 @@ begin
   end;
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
-  edtEMail.Visible := false;
-  edtPassword.Visible := false;
+  pnlCheckRegistered.visible := false;
+  pnlPassword.Visible := false;
   btnSignIn.Visible := false;
   btnSignUp.Visible := false;
   btnResetPwd.Visible := false;
@@ -452,7 +455,7 @@ begin
     not User.DisplayName.IsEmpty then
   begin
     lblStatus.visible := false;
-    edtDisplayName.Visible := true;
+    pnlDisplayName.Visible := true;
     edtDisplayName.Text := User.DisplayName;
     btnRegisterDisplayName.Visible := true;
   end;
@@ -465,6 +468,8 @@ begin
   else if fRegisterProfileImg and
     (not User.IsPhotoURLAvailable or User.PhotoURL.IsEmpty) then
   begin
+    pnlDisplayName.Visible := true;
+    btnLoadProfile.visible := true;
     imgProfile.Visible := true;
     WaitForDisplayNameOrProfile := true;
   end;
@@ -472,10 +477,11 @@ begin
     (not User.IsDisplayNameAvailable or User.DisplayName.IsEmpty) then
   begin
     lblStatus.visible := false;
-    edtDisplayName.Visible := true;
-    edtDisplayName.SetFocus;
+    pnlDisplayName.Visible := true;
     btnRegisterDisplayName.Visible := true;
+    edtDisplayName.SetFocus;
     imgProfile.Visible := fRegisterProfileImg;
+    btnLoadProfile.Visible := fRegisterProfileImg;
     WaitForDisplayNameOrProfile := true;
   end;
   if assigned(fOnUserLogin) and not WaitForDisplayNameOrProfile then
@@ -509,7 +515,8 @@ end;
 
 procedure TFraSelfRegistration.btnRegisterDisplayNameClick(Sender: TObject);
 begin
-  edtDisplayName.Visible := false;
+  if fRegisterProfileImg then
+    pnlDisplayName.Visible := false;
   btnRegisterDisplayName.Visible := false;
   lblStatus.Caption :=
     Format(rsWriteProfileData, [edtDisplayName.EditLabel.Caption]);
@@ -537,36 +544,26 @@ end;
 procedure TFraSelfRegistration.btnLoadProfileClick(Sender: TObject);
 var
   Bmp: TJPEGImage;
-  Siz: integer;
-  SrcRct, DstRct: TRect;
-  Ofs: integer;
+  BmpConvert: TBitmap;
+  DstRct: TRect;
 begin
+  OpenPictureDialog.Filter := GraphicFilter(TJPEGImage);
   if OpenPictureDialog.Execute(Handle) then
   begin
     Bmp := TJPEGImage.Create;
     fProfileImg := TJPEGImage.Create;
+    BmpConvert := TBitmap.Create;
     FreeAndNil(fProfileLoadStream);
     fProfileLoadStream := TMemoryStream.Create;
     try
       Bmp.LoadFromFile(OpenPictureDialog.FileName);
-      // Crop square image from center
-      if Bmp.Width > Bmp.Height then
-      begin
-        Siz := Bmp.Height;
-        Ofs := (Bmp.Width - Siz) div 2;
-        SrcRct := Rect(Ofs, 0, Ofs + Siz, Siz);
-      end else begin
-        Siz := Bmp.Width;
-        Ofs := (Bmp.Height - Siz) div 2;
-        SrcRct := Rect(0, Ofs, Siz, Ofs + Siz);
-      end;
-      fProfileImg.Width := fProfileImgSize;
-      fProfileImg.Height := fProfileImgSize;
+      BmpConvert.SetSize(fProfileImgSize, fProfileImgSize);
       DstRct := Rect(0, 0, fProfileImgSize, fProfileImgSize);
-      fProfileImg.Canvas.StretchDraw(SrcRct, Bmp);
+      BmpConvert.Canvas.StretchDraw(DstRct, Bmp);
+      fProfileImg.Assign(BmpConvert);
       imgProfile.Picture.Bitmap.Assign(fProfileImg);
       fStorage := fOnGetStorage;
-      imgProfile.Picture.SaveToStream(fProfileLoadStream);
+      fProfileImg.SaveToStream(fProfileLoadStream);
       fProfileLoadStream.Position := 0;
       fStorage.UploadFromStream(fProfileLoadStream,
         fStoragePath + '/' + fUser.UID, TRESTContentType.ctIMAGE_JPEG,
@@ -575,6 +572,7 @@ begin
       AniIndicator.Enabled := true;
       AniIndicator.Visible := true;
     finally
+      BmpConvert.Free;
       Bmp.Free;
     end;
   end;
@@ -594,14 +592,22 @@ begin
   AniIndicator.Visible := false;
   fProfileURL := DownloadURL;
   fProfileImg := TJPEGImage.Create;
-  fProfileImg.LoadFromStream(fProfileLoadStream);
-  imgProfile.Picture.Assign(fProfileImg);
+  try
+    fProfileImg.LoadFromStream(fProfileLoadStream);
+    imgProfile.Picture.Assign(fProfileImg);
+  except
+    on e: EInvalidGraphic do
+    begin
+      lblStatus.Caption := Format(rsProfileLoadErr, [e.Message]);
+      lblStatus.visible := true;
+      exit;
+    end;
+  end;
   FreeAndNil(fProfileLoadStream);
-  if assigned(fOnGetStorage) then
-    fOnGetStorage(); // Side effect disable Bucket edit box
   if assigned(fOnUserLogin) and fTokenRefreshed then
   begin
     lblStatus.Caption := rsLoggedIn;
+    lblStatus.visible := true;
     TThread.CreateAnonymousThread(
       procedure
       begin
@@ -627,8 +633,7 @@ end;
 
 procedure TFraSelfRegistration.InformDelayedStart(const Msg: string);
 begin
-  edtDisplayName.Visible := false;
-  btnRegisterDisplayName.Visible := false;
+  pnlDisplayName.Visible := false;
   imgProfile.Visible := false;
   AniIndicator.Visible := true;
   AniIndicator.Enabled := true;

@@ -13,8 +13,6 @@ object FraSelfRegistration: TFraSelfRegistration
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = 274
-    ExplicitHeight = 176
     object lblStatus: TLabel
       AlignWithMargins = True
       Left = 10
@@ -168,7 +166,6 @@ object FraSelfRegistration: TFraSelfRegistration
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 4
-    ExplicitTop = 271
     DesignSize = (
       669
       223)
@@ -177,7 +174,9 @@ object FraSelfRegistration: TFraSelfRegistration
       Top = 101
       Width = 105
       Height = 105
+      Anchors = [akTop, akRight]
       Center = True
+      Stretch = True
     end
     object edtDisplayName: TLabeledEdit
       Left = 24
@@ -188,7 +187,6 @@ object FraSelfRegistration: TFraSelfRegistration
       EditLabel.Width = 74
       EditLabel.Height = 15
       EditLabel.Caption = 'Display name:'
-      PasswordChar = '*'
       TabOrder = 0
       Text = ''
     end
@@ -197,6 +195,7 @@ object FraSelfRegistration: TFraSelfRegistration
       Top = 67
       Width = 217
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Register Display Name'
       TabOrder = 1
       OnClick = btnRegisterDisplayNameClick
@@ -206,6 +205,7 @@ object FraSelfRegistration: TFraSelfRegistration
       Top = 184
       Width = 217
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Load Profile'
       TabOrder = 2
       OnClick = btnLoadProfileClick
