@@ -6,7 +6,7 @@ The library builds on the _Firebase REST-API_ and provides all functionality wit
 
 ### Wiki
 
-This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki). Six example applications and a [Getting-Started](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D) on the wiki will help you to start working with the library. For more detailed questions, the [interface reference](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Interface-Reference) will provide the answers you need.
+This project offers a [wiki](https://github.com/SchneiderInfosystems/FB4D/wiki). Six cross platform example applications based on Firemonky and two VCL sample applications and a [Getting-Started](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D) on the wiki will help you to start working with the library. For more detailed questions, the [interface reference](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Interface-Reference) will provide the answers you need.
 
 You can find more learning videos on the following [YouTube channel](https://www.youtube.com/channel/UC3qSIUzdGqoZA8hcA31X0Og).
 
@@ -14,6 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
+- October 2023: Firestore database write transaction supports delete document too. The new Auth_SelfReg_VCL demo application explains all options of the self registration workflow.
 - June 2023: Firestore database supports write transactions
 - October 2022: Interface for ML Vision service added
 - October 2021: Prepared for Delphi Alexandria
