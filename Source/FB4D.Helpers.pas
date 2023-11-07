@@ -68,7 +68,8 @@ type
     // FBID is based on charset of cBase64: Helpers and converter to GUID
     // PUSHID is based on charset of cPushID64: Supports chronological sorting
     type TIDKind = (FBID {random 22 Chars},
-                    PUSHID {timestamp and random: total 20 Chars});
+                    PUSHID {timestamp and random: total 20 Chars},
+                    FSID {random 20 Chars});
     class function CreateAutoID(IDKind: TIDKind = FBID): string;
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
@@ -548,11 +549,24 @@ begin
 end;
 
 class function TFirebaseHelpers.CreateAutoID(IDKind: TIDKind = FBID): string;
+
+  function ShortenIDTo20Chars(const ID: string): string;
+  begin
+    result := ReplaceStr(ID, '_', '');
+    result := ReplaceStr(ID, '-', '');
+    if result.Length > 20 then
+      result := result.Substring(0, 20);
+    while result.Length < 20 do
+      result := result + cBase64[Random(62)];
+  end;
+
 begin
   // use OS to generate a random number
   case IDKind of
     FBID:
       result := ConvertGUIDtoFBID(TGuid.NewGuid);
+    FSID:
+      result := ShortenIDTo20Chars(ConvertGUIDtoFBID(TGuid.NewGuid));
     PUSHID:
       result := ConvertTimeStampAndRandomPatternToPUSHID(now,
         THashMD5.GetHashBytes(GuidToString(TGUID.NewGuid)));
