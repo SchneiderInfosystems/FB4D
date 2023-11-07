@@ -562,9 +562,8 @@ begin
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log('Doc: ' + Doc.AsJSON.ToJSON);
   {$ENDIF}
-  fConfig.Database.InsertOrUpdateDocument(
-    [cCollectionID, Doc.DocumentName(false)], Doc, nil,
-    OnDocWrite, OnDocWriteError);
+  fConfig.Database.InsertOrUpdateDocument(Doc, nil, OnDocWrite,
+    OnDocWriteError);
   btnPushMessage.Enabled := false;
 end;
 

@@ -468,6 +468,8 @@ type
   EFirestoreDatabase = class(Exception);
 
   IFirestoreDatabase = interface(IInterface)
+    function GetProjectID: string;
+    function GetDatabaseID: string;
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil); overload;
@@ -493,10 +495,17 @@ type
       QueryParams: TQueryParams = nil): IFirestoreDocument;
     procedure InsertOrUpdateDocument(DocumentPath: TRequestResourceParam;
       Document: IFirestoreDocument; QueryParams: TQueryParams;
-      OnDocument: TOnDocument; OnRequestError: TOnRequestError);
+      OnDocument: TOnDocument; OnRequestError: TOnRequestError); overload;
+      deprecated 'Use method without DocumentPath and overtake full path in document';
+    procedure InsertOrUpdateDocument(Document: IFirestoreDocument;
+      QueryParams: TQueryParams; OnDocument: TOnDocument;
+      OnRequestError: TOnRequestError); overload;
     function InsertOrUpdateDocumentSynchronous(
       DocumentPath: TRequestResourceParam; Document: IFirestoreDocument;
-      QueryParams: TQueryParams = nil): IFirestoreDocument;
+      QueryParams: TQueryParams = nil): IFirestoreDocument; overload;
+      deprecated 'Use method without DocumentPath and overtake full path in document';
+    function InsertOrUpdateDocumentSynchronous(Document: IFirestoreDocument;
+      QueryParams: TQueryParams = nil): IFirestoreDocument; overload;
     procedure PatchDocument(DocumentPath: TRequestResourceParam;
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError;
@@ -534,6 +543,8 @@ type
     procedure CommitWriteTransaction(Transaction: IFirestoreWriteTransaction;
       OnCommitWriteTransaction: TOnCommitWriteTransaction;
       OnRequestError: TOnRequestError);
+    property ProjectID: string read GetProjectID;
+    property DatabaseID: string read GetDatabaseID;
   end;
 
 {$IFDEF TOKENJWT}

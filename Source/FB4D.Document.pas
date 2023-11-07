@@ -57,6 +57,9 @@ type
       const Database: string = cDefaultDatabaseID): string; overload;
     constructor Create(DocumentPath: TRequestResourceParam;
       const ProjectID: string; const Database: string = cDefaultDatabaseID);
+      overload;
+    constructor Create(DocumentPath: TRequestResourceParam;
+      Firestore: IFirestoreDatabase); overload;
     constructor CreateFromJSONObj(Response: IFirebaseResponse); overload;
     constructor CreateFromJSONObj(JSONObj: TJSONObject); overload;
     destructor Destroy; override;
@@ -424,6 +427,12 @@ begin
   fJSONObj := TJSONObject.Create;
   fJSONObj.AddPair('name', fDocumentName);
   SetLength(fFields, 0);
+end;
+
+constructor TFirestoreDocument.Create(DocumentPath: TRequestResourceParam;
+  Firestore: IFirestoreDatabase);
+begin
+  Create(DocumentPath, Firestore.ProjectID, Firestore.DatabaseID);
 end;
 
 class function TFirestoreDocument.CreateCursor(

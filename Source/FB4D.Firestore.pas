@@ -62,6 +62,8 @@ type
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
       const DatabaseID: string = cDefaultDatabaseID);
     destructor Destroy; override;
+    function GetProjectID: string;
+    function GetDatabaseID: string;
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil); overload;
@@ -87,10 +89,15 @@ type
       QueryParams: TQueryParams = nil): IFirestoreDocument;
     procedure InsertOrUpdateDocument(DocumentPath: TRequestResourceParam;
       Document: IFirestoreDocument; QueryParams: TQueryParams;
-      OnDocument: TOnDocument; OnRequestError: TOnRequestError);
+      OnDocument: TOnDocument; OnRequestError: TOnRequestError); overload;
+    procedure InsertOrUpdateDocument(Document: IFirestoreDocument;
+      QueryParams: TQueryParams; OnDocument: TOnDocument;
+      OnRequestError: TOnRequestError); overload;
     function InsertOrUpdateDocumentSynchronous(
       DocumentPath: TRequestResourceParam; Document: IFirestoreDocument;
-      QueryParams: TQueryParams = nil): IFirestoreDocument;
+      QueryParams: TQueryParams = nil): IFirestoreDocument; overload;
+    function InsertOrUpdateDocumentSynchronous(Document: IFirestoreDocument;
+      QueryParams: TQueryParams = nil): IFirestoreDocument; overload;
     procedure PatchDocument(DocumentPath: TRequestResourceParam;
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError;
@@ -128,8 +135,6 @@ type
     procedure CommitWriteTransaction(Transaction: IFirestoreWriteTransaction;
       OnCommitWriteTransaction: TOnCommitWriteTransaction;
       OnRequestError: TOnRequestError);
-    property ProjectID: string read fProjectID;
-    property DatabaseID: string read fDatabaseID;
   end;
 
   TStructuredQuery = class(TInterfacedObject, IStructuredQuery)
@@ -455,6 +460,16 @@ begin
     result := false;
 end;
 
+function TFirestoreDatabase.GetDatabaseID: string;
+begin
+  result := fDatabaseID;
+end;
+
+function TFirestoreDatabase.GetProjectID: string;
+begin
+  result := fProjectID;
+end;
+
 procedure TFirestoreDatabase.CreateDocument(DocumentPath: TRequestResourceParam;
   QueryParams: TQueryParams; OnDocument: TOnDocument;
   OnRequestError: TOnRequestError);
@@ -537,6 +552,27 @@ begin
     OnRequestError, TOnSuccess.CreateFirestoreDoc(OnDocument));
 end;
 
+procedure TFirestoreDatabase.InsertOrUpdateDocument(
+  Document: IFirestoreDocument; QueryParams: TQueryParams;
+  OnDocument: TOnDocument; OnRequestError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+begin
+  Request := TFirebaseRequest.Create(GOOGLE_FIRESTORE_API_URL,
+    rsInsertOrUpdateDoc + TFirebaseHelpers.ArrStrToCommaStr(
+      Document.DocumentPathWithinDatabase),
+    fAuth);
+{$IFDEF DEBUG}
+  TFirebaseHelpers.Log('FirestoreDatabase.InsertOrUpdateDocument ' +
+    Document.AsJSON.ToJSON);
+{$ENDIF}
+  Request.SendRequest(
+    TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID,
+      Document.DocumentPathWithinDatabase),
+    rmPatch, Document.AsJSON, QueryParams, tmBearer, OnInsertOrUpdateResponse,
+    OnRequestError, TOnSuccess.CreateFirestoreDoc(OnDocument));
+end;
+
 procedure TFirestoreDatabase.OnInsertOrUpdateResponse(const RequestID: string;
   Response: IFirebaseResponse);
 var
@@ -580,6 +616,31 @@ begin
 {$ENDIF}
   Response := Request.SendRequestSynchronous(
     TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID, DocumentPath),
+    rmPatch, Document.AsJSON, QueryParams);
+  fLastReceivedMsg := now;
+  if not Response.StatusNotFound then
+  begin
+    Response.CheckForJSONObj;
+    result := TFirestoreDocument.CreateFromJSONObj(Response);
+  end else
+    raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
+end;
+
+function TFirestoreDatabase.InsertOrUpdateDocumentSynchronous(
+  Document: IFirestoreDocument; QueryParams: TQueryParams): IFirestoreDocument;
+var
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+begin
+  result := nil;
+  Request := TFirebaseRequest.Create(GOOGLE_FIRESTORE_API_URL, '', fAuth);
+{$IFDEF DEBUG}
+  TFirebaseHelpers.Log('FirestoreDatabase.InsertOrUpdateDocumentSynchronous ' +
+    Document.AsJSON.ToJSON);
+{$ENDIF}
+  Response := Request.SendRequestSynchronous(
+    TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID,
+      Document.DocumentPathWithinDatabase),
     rmPatch, Document.AsJSON, QueryParams);
   fLastReceivedMsg := now;
   if not Response.StatusNotFound then

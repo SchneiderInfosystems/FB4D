@@ -1443,8 +1443,8 @@ begin
       [TFirestorePath.GetDocPath(Doc.DocumentPathWithinDatabase)]));
   end else
     // Log.d(Doc.AsJSON.ToJSON);
-    fDatabase.InsertOrUpdateDocument(Doc.DocumentPathWithinDatabase, Doc, nil,
-      OnFirestoreInsertOrUpdate, OnFirestoreError);
+    fDatabase.InsertOrUpdateDocument(Doc, nil, OnFirestoreInsertOrUpdate,
+      OnFirestoreError);
 end;
 
 procedure TfmxFirebaseDemo.OnFirestoreInsertOrUpdate(const Info: string;
