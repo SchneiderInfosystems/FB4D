@@ -101,10 +101,16 @@ type
     procedure PatchDocument(DocumentPath: TRequestResourceParam;
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError;
-      Mask: TStringDynArray = []);
+      Mask: TStringDynArray = []); overload;
+    procedure PatchDocument(DocumentPart: IFirestoreDocument;
+      UpdateMask: TStringDynArray; OnDocument: TOnDocument;
+      OnRequestError: TOnRequestError; Mask: TStringDynArray = []); overload;
     function PatchDocumentSynchronous(DocumentPath: TRequestResourceParam;
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
-      Mask: TStringDynArray = []): IFirestoreDocument;
+      Mask: TStringDynArray = []): IFirestoreDocument; overload;
+    function PatchDocumentSynchronous(DocumentPart: IFirestoreDocument;
+      UpdateMask: TStringDynArray;
+      Mask: TStringDynArray = []): IFirestoreDocument; overload;
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDeleteResp: TOnFirebaseResp; OnRequestError: TOnRequestError);
     function DeleteSynchronous(Params: TRequestResourceParam;
@@ -559,9 +565,7 @@ var
   Request: IFirebaseRequest;
 begin
   Request := TFirebaseRequest.Create(GOOGLE_FIRESTORE_API_URL,
-    rsInsertOrUpdateDoc + TFirebaseHelpers.ArrStrToCommaStr(
-      Document.DocumentPathWithinDatabase),
-    fAuth);
+    rsInsertOrUpdateDoc + Document.DocumentName(true), fAuth);
 {$IFDEF DEBUG}
   TFirebaseHelpers.Log('FirestoreDatabase.InsertOrUpdateDocument ' +
     Document.AsJSON.ToJSON);
@@ -680,6 +684,35 @@ begin
   end;
 end;
 
+procedure TFirestoreDatabase.PatchDocument(DocumentPart: IFirestoreDocument;
+  UpdateMask: TStringDynArray; OnDocument: TOnDocument;
+  OnRequestError: TOnRequestError; Mask: TStringDynArray = []);
+var
+  Request: IFirebaseRequest;
+  QueryParams: TQueryParams;
+begin
+  Request := TFirebaseRequest.Create(GOOGLE_FIRESTORE_API_URL, rsPatchDoc +
+    DocumentPart.DocumentName(true), fAuth);
+{$IFDEF DEBUG}
+  TFirebaseHelpers.Log('FirestoreDatabase.PatchDocument ' +
+    DocumentPart.AsJSON.ToJSON);
+{$ENDIF}
+  QueryParams := TQueryParams.Create;
+  try
+    if length(UpdateMask) > 0 then
+      QueryParams.Add('updateMask.fieldPaths', UpdateMask);
+    if length(Mask) > 0 then
+      QueryParams.Add('mask.fieldPaths', Mask);
+    Request.SendRequest(
+      TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID,
+        DocumentPart.DocumentPathWithinDatabase),
+      rmPatch, DocumentPart.AsJSON, QueryParams, tmBearer, OnPatchResponse,
+      OnRequestError, TOnSuccess.CreateFirestoreDoc(OnDocument));
+  finally
+    QueryParams.Free;
+  end;
+end;
+
 procedure TFirestoreDatabase.OnPatchResponse(const RequestID: string;
   Response: IFirebaseResponse);
 var
@@ -729,6 +762,42 @@ begin
       QueryParams.Add('mask.fieldPaths', Mask);
     Response := Request.SendRequestSynchronous(
       TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID, DocumentPath),
+      rmPatch, DocumentPart.AsJSON, QueryParams);
+  finally
+    QueryParams.Free;
+  end;
+  fLastReceivedMsg := now;
+  if not Response.StatusNotFound then
+  begin
+    Response.CheckForJSONObj;
+    result := TFirestoreDocument.CreateFromJSONObj(Response);
+  end else
+    raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
+end;
+
+function TFirestoreDatabase.PatchDocumentSynchronous(
+  DocumentPart: IFirestoreDocument; UpdateMask,
+  Mask: TStringDynArray): IFirestoreDocument;
+var
+  Request: IFirebaseRequest;
+  QueryParams: TQueryParams;
+  Response: IFirebaseResponse;
+begin
+  result := nil;
+  Request := TFirebaseRequest.Create(GOOGLE_FIRESTORE_API_URL, '', fAuth);
+{$IFDEF DEBUG}
+  TFirebaseHelpers.Log('FirestoreDatabase.PatchDocumentSynchronous ' +
+    DocumentPart.AsJSON.ToJSON);
+{$ENDIF}
+  QueryParams := TQueryParams.Create;
+  try
+    if length(UpdateMask) > 0 then
+      QueryParams.Add('updateMask.fieldPaths', UpdateMask);
+    if length(Mask) > 0 then
+      QueryParams.Add('mask.fieldPaths', Mask);
+    Response := Request.SendRequestSynchronous(
+      TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID,
+        DocumentPart.DocumentPathWithinDatabase),
       rmPatch, DocumentPart.AsJSON, QueryParams);
   finally
     QueryParams.Free;

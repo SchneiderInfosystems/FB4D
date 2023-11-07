@@ -576,8 +576,8 @@ begin
     fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString('Message', edtMessage.Text));
   Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('Edited', now));
-  fConfig.Database.PatchDocument([cCollectionID, fEditDocID], Doc,
-    ['Message', 'Edited'], OnDocWrite, OnDocWriteError);
+  fConfig.Database.PatchDocument(Doc, ['Message', 'Edited'], OnDocWrite,
+    OnDocWriteError);
   btnEditMessage.Enabled := false;
   btnDeleteMessage.Enabled := false;
 end;

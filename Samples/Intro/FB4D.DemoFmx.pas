@@ -1505,8 +1505,8 @@ begin
       'PatchDoc %s on write transaction - use Commit Write to store data',
       [TFirestorePath.GetDocPath(Doc.DocumentFullPath)]));
   end else
-    fDatabase.PatchDocument(Doc.DocumentPathWithinDatabase, Doc, UpdateMask,
-      OnFirestoreInsertOrUpdate, OnFirestoreError);
+    fDatabase.PatchDocument(Doc, UpdateMask, OnFirestoreInsertOrUpdate,
+      OnFirestoreError);
 end;
 
 procedure TfmxFirebaseDemo.ShowDocument(Doc: IFirestoreDocument);
