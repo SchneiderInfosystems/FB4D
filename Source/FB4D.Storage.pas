@@ -157,6 +157,7 @@ uses
 
 const
   GOOGLE_STORAGE = 'https://firebasestorage.googleapis.com/v0/b/%s/o';
+  BUCKET_PREFIX = 'gs://';
 
 { TFirestoreStorage }
 
@@ -176,7 +177,10 @@ constructor TFirebaseStorage.Create(const BucketName: string;
   end;
 
 begin
-  fBucket := ExcludeTrailingSlash(BucketName);
+  if BucketName.StartsWith(BUCKET_PREFIX) then
+    fBucket := ExcludeTrailingSlash(BucketName.Substring(BUCKET_PREFIX.Length))
+  else
+    fBucket := ExcludeTrailingSlash(BucketName);
   fAuth := Auth;
   fStorageObjs := TDictionary<TObjectName, IStorageObject>.Create;
   fCSForStorageObjs := TCriticalSection.Create;
