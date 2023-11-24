@@ -168,7 +168,9 @@ begin
   EventName := '';
   {$ENDIF}
   fGetFinishedEvent := TEvent.Create(nil, false, false, EventName);
+  {$IFNDEF CONSOLE}
   OnTerminate := OnEndThread;
+  {$ENDIF}
   FreeOnTerminate := false;
   {$IFNDEF LINUX64}
   NameThreadForDebugging('FB4D.FSListenerThread', ThreadID);
