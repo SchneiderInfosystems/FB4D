@@ -120,7 +120,9 @@ begin
   EventName := '';
   {$ENDIF}
   fGetFinishedEvent := TEvent.Create(nil, false, false, EventName);
+  {$IFNDEF CONSOLE}
   OnTerminate := OnEndThread;
+  {$ENDIF}
   FreeOnTerminate := false;
   inc(FNoOfConcurrentThreads);
   {$IFNDEF LINUX64}
