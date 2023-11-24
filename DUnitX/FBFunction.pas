@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -48,7 +48,6 @@ type
     [TearDown]
     procedure TearDown;
   published
-    [TestCase]
     procedure CallSynchFuncDoTest;
     procedure CallAsynchFuncDoTest;
     procedure CallSynchFuncDoTest2;

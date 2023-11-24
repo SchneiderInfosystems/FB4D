@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -36,7 +36,6 @@ type
   UT_FBHelpers = class(TObject)
   private
   published
-    [TestCase]
     procedure ConvertGUIDtoFBIDtoGUID;
     procedure DecodeTimeFromPushID;
   end;

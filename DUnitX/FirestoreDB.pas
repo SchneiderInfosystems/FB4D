@@ -64,7 +64,6 @@ type
     [TearDown]
     procedure TearDown;
   published
-    [TestCase]
     procedure CreateUpdateGetDocumentSynchronous;
     procedure CreateUpdateGetDocument;
     procedure ConcurrentUpdateDocuments;
