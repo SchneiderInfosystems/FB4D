@@ -5,6 +5,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
   Caption = 'Firebase Lib Demo'
   ClientHeight = 800
   ClientWidth = 996
+  Constraints.MinHeight = 500.000000000000000000
+  Constraints.MinWidth = 1000.000000000000000000
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -60,6 +62,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = True
       Size.Width = 98.000000000000000000
       Size.Height = 26.000000000000000000
@@ -78,6 +81,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 10
         Text = 'Anonymous Login'
+        TextSettings.Trimming = None
         OnClick = btnLoginClick
       end
       object Label5: TLabel
@@ -86,6 +90,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 41.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
+        TextSettings.Trimming = None
         Text = 'Token'
         TabOrder = 13
       end
@@ -105,6 +110,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 33.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
+        TextSettings.Trimming = None
         Text = 'UID'
         TabOrder = 11
       end
@@ -120,6 +126,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object Label1: TLabel
         Position.X = 16.000000000000000000
         Position.Y = 16.000000000000000000
+        TextSettings.Trimming = None
         Text = 'User email adress'
         TabOrder = 3
       end
@@ -138,6 +145,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object Label2: TLabel
         Position.X = 328.000000000000000000
         Position.Y = 16.000000000000000000
+        TextSettings.Trimming = None
         Text = 'Password'
         TabOrder = 4
       end
@@ -160,6 +168,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Position.Y = 40.000000000000000000
         TabOrder = 18
         Text = 'Refresh'
+        TextSettings.Trimming = None
         Visible = False
         OnClick = btnRefreshClick
       end
@@ -171,6 +180,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Trailing
+        TextSettings.Trimming = None
         Text = 'expires at ...'
         TabOrder = 12
       end
@@ -183,6 +193,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 19
         Text = 'Sign up new user'
+        TextSettings.Trimming = None
         OnClick = btnSignUpNewUserClick
       end
       object btnPasswordReset: TButton
@@ -195,6 +206,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 20
         Text = 'Reset Password'
+        TextSettings.Trimming = None
         OnClick = btnPasswordResetClick
       end
       object TabControlUser: TTabControl
@@ -216,6 +228,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = True
           Size.Width = 82.000000000000000000
           Size.Height = 26.000000000000000000
@@ -246,6 +259,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Position.Y = 22.000000000000000000
             TabOrder = 1
             Text = 'User Data'
+            TextSettings.Trimming = None
             OnClick = btnGetUserDataClick
           end
         end
@@ -253,6 +267,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = False
           Size.Width = 125.000000000000000000
           Size.Height = 26.000000000000000000
@@ -307,6 +322,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 7
             Text = 'Change Display Name'
+            TextSettings.Trimming = None
             OnClick = btnChangeClick
           end
           object btnChangeEMail: TButton
@@ -318,6 +334,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 6
             Text = 'Change EMail Address'
+            TextSettings.Trimming = None
             OnClick = btnChangeEMailClick
           end
           object edtChangePassword: TEdit
@@ -348,6 +365,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 5
             Text = 'Change Password'
+            TextSettings.Trimming = None
             OnClick = btnChangePwdClick
           end
           object edtChangePhotoURL: TEdit
@@ -377,6 +395,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 4
             Text = 'Change Photo URL'
+            TextSettings.Trimming = None
             OnClick = btnChangePhotoURLClick
           end
           object btnDeleteUserAccount: TButton
@@ -387,6 +406,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 8
             Text = 'Delete Signed-In User Account'
+            TextSettings.Trimming = None
             OnClick = btnDeleteUserAccountClick
           end
           object btnSendEMailVerification: TButton
@@ -397,6 +417,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 9
             Text = 'Send EMail Verification'
+            TextSettings.Trimming = None
             OnClick = btnSendEMailVerificationClick
           end
         end
@@ -409,6 +430,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 22
         Text = 'Link EMail/Pwd'
+        TextSettings.Trimming = None
         Visible = False
         OnClick = btnLinkEMailPwdClick
       end
@@ -417,6 +439,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 90.000000000000000000
       Size.Height = 26.000000000000000000
@@ -456,6 +479,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
           TextSettings.HorzAlign = Trailing
+          TextSettings.Trimming = None
           Text = 'Database Path:'
           TabOrder = 0
         end
@@ -487,6 +511,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = False
           Size.Width = 39.000000000000000000
           Size.Height = 26.000000000000000000
@@ -504,6 +529,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 0
             Text = 'Get Asynchrous'
+            TextSettings.Trimming = None
             OnClick = btnGetRTClick
           end
           object btnGetRTSynch: TButton
@@ -514,6 +540,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 1
             Text = ' Get Synchronous'
+            TextSettings.Trimming = None
             OnClick = btnGetRTSynchClick
           end
           object Label13: TLabel
@@ -524,6 +551,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
+            TextSettings.Trimming = None
             Text = 
               'Application Note:'#13#13'Get retrieves an database node. If the node c' +
               'onsists more than one value you get the entire node as JSON Obje' +
@@ -544,6 +572,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           object Label14: TLabel
             Position.X = 184.000000000000000000
             Position.Y = 14.000000000000000000
+            TextSettings.Trimming = None
             Text = 'Options'
             TabOrder = 5
           end
@@ -579,6 +608,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'OrderBy;'
               TabOrder = 0
             end
@@ -600,6 +630,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Limit to first'
               TabOrder = 0
             end
@@ -621,6 +652,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Limit to last'
               TabOrder = 0
             end
@@ -630,6 +662,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = True
           Size.Width = 38.000000000000000000
           Size.Height = 26.000000000000000000
@@ -647,6 +680,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 1
             Text = 'Put Node Synchronous '
+            TextSettings.Trimming = None
             OnClick = btnPutRTSynchClick
           end
           object edtPutKeyName: TEdit
@@ -665,6 +699,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Key:'
               TabOrder = 0
             end
@@ -685,6 +720,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Value:'
               TabOrder = 0
             end
@@ -711,6 +747,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 6
             Text = 'Add or Update Node'
+            TextSettings.Trimming = None
             OnClick = btnAddUpdateNodeClick
           end
           object btnClearNode: TButton
@@ -721,6 +758,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 7
             Text = 'Clear Node'
+            TextSettings.Trimming = None
             OnClick = btnClearNodeClick
           end
           object btnPutRTAsynch: TButton
@@ -731,6 +769,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 0
             Text = 'Put Node Asynchronous '
+            TextSettings.Trimming = None
             OnClick = btnPutRTAsynchClick
           end
           object aniPutRT: TAniIndicator
@@ -745,6 +784,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
+            TextSettings.Trimming = None
             Text = 
               'Application Note:'#13#13'Write or replace data to a defined database p' +
               'ath.'
@@ -755,6 +795,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = False
           Size.Width = 50.000000000000000000
           Size.Height = 26.000000000000000000
@@ -772,6 +813,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 6
             Text = 'Patch Synchronous'
+            TextSettings.Trimming = None
             OnClick = btnPatchRTSynchClick
           end
           object Label19: TLabel
@@ -782,6 +824,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
+            TextSettings.Trimming = None
             Text = 
               'Application Note:'#13#13'Update some of the keys for a defined path wi' +
               'thout replacing all of the data.'
@@ -803,6 +846,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Key:'
               TabOrder = 0
             end
@@ -823,6 +867,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Value:'
               TabOrder = 0
             end
@@ -835,6 +880,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 5
             Text = 'Patch Asynchronous'
+            TextSettings.Trimming = None
             OnClick = btnPatchRTAsynchClick
           end
           object aniPatchRT: TAniIndicator
@@ -846,6 +892,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = False
           Size.Width = 43.000000000000000000
           Size.Height = 26.000000000000000000
@@ -863,6 +910,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 4
             Text = 'Post Synchronous'
+            TextSettings.Trimming = None
             OnClick = btnPostRTSynchClick
           end
           object Label22: TLabel
@@ -873,6 +921,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
+            TextSettings.Trimming = None
             Text = 
               'Application Note:'#13#13'Add to a list of data in our Firebase databas' +
               'e. Every time we send a POST request, the Firebase client genera' +
@@ -895,6 +944,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Key:'
               TabOrder = 0
             end
@@ -915,6 +965,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Size.Height = 17.000000000000000000
               Size.PlatformDefault = False
               TextSettings.HorzAlign = Trailing
+              TextSettings.Trimming = None
               Text = 'Value:'
               TabOrder = 0
             end
@@ -931,6 +982,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 3
             Text = 'Post Asynchronous'
+            TextSettings.Trimming = None
             OnClick = btnPostRTAsynchClick
           end
         end
@@ -938,6 +990,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = False
           Size.Width = 54.000000000000000000
           Size.Height = 26.000000000000000000
@@ -955,6 +1008,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 1
             Text = 'Delete Synchronous'
+            TextSettings.Trimming = None
             OnClick = btnDelRTSynchClick
           end
           object Label25: TLabel
@@ -965,6 +1019,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 153.000000000000000000
             Size.PlatformDefault = False
             TextSettings.VertAlign = Leading
+            TextSettings.Trimming = None
             Text = 
               'Application Note:'#13#13'Remove data from the specified Firebase datab' +
               'ase reference.'
@@ -978,6 +1033,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 0
             Text = 'Delete Asynchronous'
+            TextSettings.Trimming = None
             OnClick = btnDelRTAsynchClick
           end
           object aniDeleteRT: TAniIndicator
@@ -989,6 +1045,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           CustomIcon = <
             item
             end>
+          TextSettings.Trimming = None
           IsSelected = False
           Size.Width = 104.000000000000000000
           Size.Height = 26.000000000000000000
@@ -1006,6 +1063,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.PlatformDefault = False
             TabOrder = 7
             Text = 'Get Server Time Stamp'
+            TextSettings.Trimming = None
             OnClick = btnGetServerTimeStampClick
           end
         end
@@ -1038,6 +1096,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 134.000000000000000000
       Size.Height = 26.000000000000000000
@@ -1055,6 +1114,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 1
         Text = 'Start Listener'
+        TextSettings.Trimming = None
         OnClick = btnNotifyEventClick
       end
       object memScans: TMemo
@@ -1078,6 +1138,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 4
         Text = 'Stop Listener'
+        TextSettings.Trimming = None
         OnClick = btnStopEventClick
       end
       object edtRTDBEventPath: TEdit
@@ -1086,7 +1147,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 8
         Position.X = 124.000000000000000000
         Position.Y = 31.000000000000000000
-        Size.Width = 826.000000000000000000
+        Size.Width = 533.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextPrompt = 'Database path separated by /'
@@ -1096,6 +1157,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.Width = 81.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
+          TextSettings.Trimming = None
           Text = 'Database Path:'
           TabOrder = 0
         end
@@ -1108,36 +1170,39 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
         TextSettings.Font.Size = 10.000000000000000000
+        TextSettings.Trimming = None
         Text = 'Enter Firebase URL in Real Time DB tab'
         TabOrder = 13
       end
       object btnStart2ndListener: TButton
-        Anchors = [akTop, akBottom]
-        Position.X = 673.489196777343800000
-        Position.Y = 61.000000000000000000
+        Anchors = [akTop, akRight]
+        Position.X = 672.000000000000000000
+        Position.Y = 62.000000000000000000
         Size.Width = 137.000000000000000000
-        Size.Height = 20.000000000000000000
+        Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         Text = 'Start 2nd Listener'
+        TextSettings.Trimming = None
         OnClick = btnStart2ndListenerClick
       end
       object btnStopEvent2: TButton
         Anchors = [akTop, akRight]
         Position.X = 831.000000000000000000
-        Position.Y = 61.000000000000000000
+        Position.Y = 62.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 3
         Text = 'Stop 2nd Listener'
+        TextSettings.Trimming = None
         OnClick = btnStopEvent2Click
       end
       object edtRTDBEvent2Path: TEdit
         Touch.InteractiveGestures = [LongTap, DoubleTap]
         Anchors = [akTop, akRight]
         TabOrder = 12
-        Position.X = 674.000000000000000000
+        Position.X = 672.000000000000000000
         Position.Y = 31.000000000000000000
         Size.Width = 278.000000000000000000
         Size.Height = 22.000000000000000000
@@ -1149,6 +1214,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 66.000000000000000000
       Size.Height = 26.000000000000000000
@@ -1166,6 +1232,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 2
         Text = 'Get Document'
+        TextSettings.Trimming = None
         OnClick = btnGetClick
       end
       object edtCollection: TEdit
@@ -1182,6 +1249,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.Width = 72.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
+          TextSettings.Trimming = None
           Text = 'Collection:'
           TabOrder = 0
         end
@@ -1201,6 +1269,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.Width = 72.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
+          TextSettings.Trimming = None
           Text = 'Document:'
           TabOrder = 0
         end
@@ -1226,6 +1295,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 0
         Text = 'Create Document'
+        TextSettings.Trimming = None
         OnClick = btnCreateDocumentClick
       end
       object btnInsertOrUpdateDocument: TButton
@@ -1236,6 +1306,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 1
         Text = 'Insert / Update Doc'
+        TextSettings.Trimming = None
         OnClick = btnInsertOrUpdateDocumentClick
       end
       object btnDeleteDoc: TButton
@@ -1246,6 +1317,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 4
         Text = 'Delete Document'
+        TextSettings.Trimming = None
         OnClick = btnDeleteDocClick
       end
       object btnPatchDoc: TButton
@@ -1256,6 +1328,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 3
         Text = 'PatchDocument'
+        TextSettings.Trimming = None
         OnClick = btnPatchDocClick
       end
       object chbUseChildDoc: TCheckBox
@@ -1279,6 +1352,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         object Label27: TLabel
           Position.X = -127.000000000000000000
           Position.Y = 3.000000000000000000
+          TextSettings.Trimming = None
           Text = 'Child Collection:'
           TabOrder = 0
         end
@@ -1294,6 +1368,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         object Label28: TLabel
           Position.X = -127.000000000000000000
           Position.Y = 3.000000000000000000
+          TextSettings.Trimming = None
           Text = 'Child Document:'
           TabOrder = 0
         end
@@ -1307,6 +1382,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 11
         Text = 'Run Query'
+        TextSettings.Trimming = None
         OnClick = btnRunQueryClick
       end
       object cboDemoDocType: TComboBox
@@ -1337,6 +1413,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object lblMinTestInt: TLabel
         Position.X = 848.000000000000000000
         Position.Y = 56.000000000000000000
+        TextSettings.Trimming = None
         Text = 'Min testInt Val: 50'
         TabOrder = 14
       end
@@ -1348,6 +1425,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 17
         Text = 'Write Transaction'
+        TextSettings.Trimming = None
         OnClick = btnStartWriteTransactionClick
       end
       object btnStopReadTrans: TButton
@@ -1358,6 +1436,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 16
         Text = 'Stop Read Transaction'
+        TextSettings.Trimming = None
         Visible = False
         OnClick = btnStopReadTransClick
       end
@@ -1384,6 +1463,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Position.Y = 97.000000000000000000
         TabOrder = 20
         Text = 'Read Trans'
+        TextSettings.Trimming = None
         OnClick = btnStartReadTransactionClick
       end
       object btnCommitWriteTrans: TButton
@@ -1394,6 +1474,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 15
         Text = 'Commit Write Transaction'
+        TextSettings.Trimming = None
         Visible = False
         OnClick = btnCommitWriteTransClick
       end
@@ -1402,6 +1483,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 110.000000000000000000
       Size.Height = 26.000000000000000000
@@ -1419,6 +1501,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 0
         Text = 'Start Listener'
+        TextSettings.Trimming = None
         OnClick = btnStartFSListenerClick
       end
       object btnStopFSListener: TButton
@@ -1430,6 +1513,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 2
         Text = 'Stop Listener'
+        TextSettings.Trimming = None
         OnClick = btnStopFSListenerClick
       end
       object memScanFS: TMemo
@@ -1473,6 +1557,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 17.000000000000000000
             Size.PlatformDefault = False
             TextSettings.HorzAlign = Trailing
+            TextSettings.Trimming = None
             Text = 'Collection:'
             TabOrder = 0
           end
@@ -1514,6 +1599,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 17.000000000000000000
             Size.PlatformDefault = False
             TextSettings.HorzAlign = Trailing
+            TextSettings.Trimming = None
             Text = 'Doc Path:'
             TabOrder = 0
           end
@@ -1524,6 +1610,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 61.000000000000000000
       Size.Height = 26.000000000000000000
@@ -1536,6 +1623,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object Label9: TLabel
         Position.X = 24.000000000000000000
         Position.Y = 22.000000000000000000
+        TextSettings.Trimming = None
         Text = 'Storage Bucket:'
         TabOrder = 0
       end
@@ -1557,11 +1645,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 3
         Text = 'Get Synchronous'
+        TextSettings.Trimming = None
         OnClick = btnGetStorageSynchClick
       end
       object Label10: TLabel
         Position.X = 24.000000000000000000
         Position.Y = 78.000000000000000000
+        TextSettings.Trimming = None
         Text = 'Object'
         TabOrder = 4
       end
@@ -1587,6 +1677,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 9
         Text = 'Download Asynchronous'
+        TextSettings.Trimming = None
         OnClick = btnDownloadAsyncClick
       end
       object btnUploadSynch: TButton
@@ -1597,11 +1688,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 11
         Text = 'Upload Synchronous'
+        TextSettings.Trimming = None
         OnClick = btnUploadSynchClick
       end
       object Label11: TLabel
         Position.X = 408.000000000000000000
         Position.Y = 78.000000000000000000
+        TextSettings.Trimming = None
         Text = 'Folder'
         TabOrder = 12
       end
@@ -1614,6 +1707,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 7
         Text = 'Delete Synchronous'
+        TextSettings.Trimming = None
         OnClick = btnDeleteSyncClick
       end
       object edtStorageObject: TEdit
@@ -1645,6 +1739,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 10
         Text = 'Upload Asynchronous'
+        TextSettings.Trimming = None
         OnClick = btnUploadAsynchClick
       end
       object btnGetStorageAsynch: TButton
@@ -1655,6 +1750,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 2
         Text = 'Get Asynchronous'
+        TextSettings.Trimming = None
         OnClick = btnGetStorageAsynchClick
       end
       object btnDownloadSync: TButton
@@ -1666,6 +1762,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 8
         Text = 'Download Synchronous'
+        TextSettings.Trimming = None
         OnClick = btnDownloadSyncClick
       end
       object btnDeleteAsync: TButton
@@ -1677,6 +1774,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 6
         Text = 'Delete Asynchronous'
+        TextSettings.Trimming = None
         OnClick = btnDeleteAsyncClick
       end
     end
@@ -1684,6 +1782,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 71.000000000000000000
       Size.Height = 26.000000000000000000
@@ -1703,6 +1802,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         object lblFunctionName: TLabel
           Position.Y = -27.000000000000000000
+          TextSettings.Trimming = None
           Text = 'Function name:'
           TabOrder = 0
         end
@@ -1715,6 +1815,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 2
         Text = 'Call Function Synchronous'
+        TextSettings.Trimming = None
         OnClick = btnCallFunctionSynchronousClick
       end
       object memFunctionResp: TMemo
@@ -1740,6 +1841,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         object Label32: TLabel
           Position.Y = -19.000000000000000000
+          TextSettings.Trimming = None
           Text = 'Parameter 1 - Name:'
           TabOrder = 0
         end
@@ -1753,6 +1855,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.PlatformDefault = False
           object Label33: TLabel
             Position.Y = -19.000000000000000000
+            TextSettings.Trimming = None
             Text = 'Parameter 1 - Value:'
             TabOrder = 0
           end
@@ -1774,6 +1877,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object Label31: TLabel
         Position.X = 272.000000000000000000
         Position.Y = 22.000000000000000000
+        TextSettings.Trimming = None
         Text = 'No of parameters:'
         TabOrder = 9
       end
@@ -1787,6 +1891,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         object Label34: TLabel
           Position.Y = -19.000000000000000000
+          TextSettings.Trimming = None
           Text = 'Parameter 2 - Name:'
           TabOrder = 0
         end
@@ -1800,6 +1905,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.PlatformDefault = False
           object Label35: TLabel
             Position.Y = -19.000000000000000000
+            TextSettings.Trimming = None
             Text = 'Parameter 2 - Value:'
             TabOrder = 0
           end
@@ -1815,6 +1921,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         object Label36: TLabel
           Position.Y = -19.000000000000000000
+          TextSettings.Trimming = None
           Text = 'Parameter 3 - Name:'
           TabOrder = 0
         end
@@ -1828,6 +1935,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.PlatformDefault = False
           object Label37: TLabel
             Position.Y = -19.000000000000000000
+            TextSettings.Trimming = None
             Text = 'Parameter 3 - Value:'
             TabOrder = 0
           end
@@ -1843,6 +1951,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         object Label38: TLabel
           Position.Y = -19.000000000000000000
+          TextSettings.Trimming = None
           Text = 'Parameter 4 - Name:'
           TabOrder = 0
         end
@@ -1856,6 +1965,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.PlatformDefault = False
           object Label39: TLabel
             Position.Y = -19.000000000000000000
+            TextSettings.Trimming = None
             Text = 'Parameter 4 - Value:'
             TabOrder = 0
           end
@@ -1869,6 +1979,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 1
         Text = 'Call Function Asynchronous'
+        TextSettings.Trimming = None
         OnClick = btnCallFunctionAsynchronousClick
       end
     end
@@ -1876,6 +1987,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 69.000000000000000000
       Size.Height = 26.000000000000000000
@@ -1894,6 +2006,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 1
         Text = 'Annotate from Storage'
+        TextSettings.Trimming = None
         OnClick = btnVisionMLAnotateStorageClick
       end
       object edtRefStorage: TEdit
@@ -1928,6 +2041,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 7
         Text = 'Upload File'
+        TextSettings.Trimming = None
         OnClick = bntLoadMLClick
       end
       object edtAnotateFileType: TEdit
@@ -1945,6 +2059,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 0
         Text = 'Annotate from File'
+        TextSettings.Trimming = None
         OnClick = btnVisionMLAnotateFileClick
       end
       object lstFeatures: TListBox
@@ -1956,7 +2071,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         TabOrder = 9
         Columns = 3
         DisableFocusEffect = True
-        ItemIndex = 7
+        ItemIndex = 2
         DefaultItemStyles.ItemStyle = ''
         DefaultItemStyles.GroupHeaderStyle = ''
         DefaultItemStyles.GroupFooterStyle = ''
@@ -1983,6 +2098,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end
         object lbiTextDetection: TListBoxItem
           IsChecked = True
+          IsSelected = True
           Position.Y = 35.333332061767580000
           Size.Width = 229.000000000000000000
           Size.Height = 17.666666030883790000
@@ -2025,7 +2141,6 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Text = 'Landmark Detection'
         end
         object lbiWebDetection: TListBoxItem
-          IsSelected = True
           Position.X = 458.000000000000000000
           Position.Y = 17.666666030883790000
           Size.Width = 229.000000000000000000
@@ -2107,6 +2222,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       object Label40: TLabel
         Position.X = 16.000000000000000000
         Position.Y = 129.000000000000000000
+        TextSettings.Trimming = None
         Text = 'ML Vision Features'
         TabOrder = 12
       end
@@ -2179,6 +2295,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         TabOrder = 6
         Text = 'Clear File'
+        TextSettings.Trimming = None
         OnClick = btnClearMLClick
       end
       object layResult: TLayout
