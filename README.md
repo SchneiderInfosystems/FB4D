@@ -14,6 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
+- December 2023: The Object to Document mapper makes it possible to quickly save your own document in the Firestore database by deriving a separate class from TFirestoreDocument and adding member variables.
 - October 2023: Firestore database write transaction supports delete document too. The new Auth_SelfReg_VCL demo application explains all options of the self registration workflow.
 - June 2023: Firestore database supports write transactions
 - October 2022: Interface for ML Vision service added
@@ -28,9 +29,9 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
 
-The sample projects are developed and prepared for **Delphi 11.3 Alexandria**.
-
 #### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are no longer supported because of an issue in the RTL. 
+
+The sample projects are developed and prepared for **Delphi 12.0 Athens**.
 
 Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
 

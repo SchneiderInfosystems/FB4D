@@ -9,6 +9,9 @@
         <Projects Include="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="FSObj2Doc\FSObj2Doc.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +38,23 @@
     <Target Name="RTDB_PerUserReadWrite_VCL:Make">
         <MSBuild Projects="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj" Targets="Make"/>
     </Target>
+    <Target Name="FSObj2Doc">
+        <MSBuild Projects="FSObj2Doc\FSObj2Doc.dproj"/>
+    </Target>
+    <Target Name="FSObj2Doc:Clean">
+        <MSBuild Projects="FSObj2Doc\FSObj2Doc.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FSObj2Doc:Make">
+        <MSBuild Projects="FSObj2Doc\FSObj2Doc.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Auth_SelfReg_VCL;RTDB_PerUserReadWrite_VCL"/>
+        <CallTarget Targets="Auth_SelfReg_VCL;RTDB_PerUserReadWrite_VCL;FSObj2Doc"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Auth_SelfReg_VCL:Clean;RTDB_PerUserReadWrite_VCL:Clean"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Clean;RTDB_PerUserReadWrite_VCL:Clean;FSObj2Doc:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Auth_SelfReg_VCL:Make;RTDB_PerUserReadWrite_VCL:Make"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Make;RTDB_PerUserReadWrite_VCL:Make;FSObj2Doc:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
