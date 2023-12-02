@@ -271,7 +271,6 @@ constructor TFirestoreDatabase.Create(const ProjectID: string;
   Auth: IFirebaseAuthentication; const DatabaseID: string);
 begin
   inherited Create;
-  Assert(assigned(Auth), 'Authentication not initalized');
   fProjectID := ProjectID;
   fAuth := Auth;
   fDatabaseID := DatabaseID;

@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2022 Christoph Schneider                                 }
+{  Copyright (c) 2018-2023 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -158,7 +158,6 @@ var
   EventName: string;
 begin
   inherited Create(true);
-  Assert(assigned(Auth), 'Authentication not initalized');
   fAuth := Auth;
   fDatabase := 'projects/' + ProjectID + '/databases/' + DatabaseID;
   fTargets := TTargets.Create;
