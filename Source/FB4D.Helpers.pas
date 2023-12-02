@@ -50,6 +50,7 @@ type
     class function ConvertRFC5322ToLocalDateTime(DateTime: string): TDateTime;
     class function ConvertTimeStampToLocalDateTime(Timestamp: Int64): TDateTime;
     class function ConvertToLocalDateTime(DateTimeStampUTC: TDateTime): TDateTime;
+    class function ConvertToUTCDateTime(DateTimeStampLocal: TDateTime): TDateTime;
     // Query parameter helpers
     class function EncodeQueryParams(QueryParams: TQueryParams): string;
     class function EncodeQueryParamsWithToken(QueryParams: TQueryParams;
@@ -163,9 +164,10 @@ type
       TimeZone: TTimeZone = tzUTC): TDateTime; overload;
     function GetTimeStampValueDef(const Name: string; Default: TDateTime = 0;
       TimeZone: TTimeZone = tzUTC): TDateTime;
-    class function SetTimeStampValue(Val: TDateTime): TJSONObject;
+    class function SetTimeStampValue(Val: TDateTime;
+      TimeZone: FB4D.Interfaces.TTimeZone = tzUTC): TJSONObject;
     class function SetTimeStamp(const VarName: string;
-      Val: TDateTime): TJSONPair;
+      Val: TDateTime; TimeZone: FB4D.Interfaces.TTimeZone = tzUTC): TJSONPair;
     // Null
     class function SetNullValue: TJSONObject;
     class function SetNull(const VarName: string): TJSONPair;
@@ -308,6 +310,12 @@ class function TFirebaseHelpers.ConvertToLocalDateTime(
   DateTimeStampUTC: TDateTime): TDateTime;
 begin
   result := TTimeZone.Local.ToLocalTime(DateTimeStampUTC);
+end;
+
+class function TFirebaseHelpers.ConvertToUTCDateTime(
+  DateTimeStampLocal: TDateTime): TDateTime;
+begin
+  result := TTimeZone.Local.ToUniversalTime(DateTimeStampLocal);
 end;
 
 class function TFirebaseHelpers.EncodeQueryParams(
@@ -1493,16 +1501,19 @@ begin
   result := TJSONPair.Create(VarName, SetBooleanValue(Val));
 end;
 
-class function TJSONHelpers.SetTimeStampValue(Val: TDateTime): TJSONObject;
+class function TJSONHelpers.SetTimeStampValue(Val: TDateTime;
+  TimeZone: FB4D.Interfaces.TTimeZone): TJSONObject;
 begin
+  if TimeZone = tzLocalTime then
+    Val := TFirebaseHelpers.ConvertToUTCDateTime(Val);
   result := TJSONObject.Create(TJSONPair.Create('timestampValue',
     TJSONString.Create(TFirebaseHelpers.CodeRFC3339DateTime(Val))));
 end;
 
 class function TJSONHelpers.SetTimeStamp(const VarName: string;
-  Val: TDateTime): TJSONPair;
+  Val: TDateTime; TimeZone: FB4D.Interfaces.TTimeZone): TJSONPair;
 begin
-  result := TJSONPair.Create(VarName, SetTimeStampValue(Val));
+  result := TJSONPair.Create(VarName, SetTimeStampValue(Val, TimeZone));
 end;
 
 class function TJSONHelpers.SetNullValue: TJSONObject;
