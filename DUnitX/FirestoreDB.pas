@@ -68,6 +68,7 @@ type
     procedure CreateUpdateGetDocument;
     procedure ConcurrentUpdateDocuments;
     procedure FirestoreListenerForSingleDocument;
+    procedure Object2DocumentMapper;
   end;
 
 implementation
@@ -85,13 +86,22 @@ const
   cDBPath = 'TestNode';
   cTestF1 = 'TestField1';
   cTestF2 = 'testField2';
+  cDoc2Obj = 'Doc2Obj';
 
 { UT_FirestoreDB }
 
 procedure UT_FirestoreDB.Setup;
 begin
   fConfig := TFirebaseConfiguration.Create(cApiKey, cProjectID, cBucket);
-  fConfig.Auth.SignUpWithEmailAndPasswordSynchronous(cEmail, cPassword);
+  try
+    fConfig.Auth.SignUpWithEmailAndPasswordSynchronous(cEmail, cPassword);
+  except
+    on e: EFirebaseResponse do
+    begin
+      fConfig.Auth.SignInWithEmailAndPasswordSynchronous(cEMail, cPassword);
+      Status('Account already exists');
+    end;
+  end;
   fErrMsg := '';
   fReqID := '';
   fInfo := '';
@@ -214,7 +224,7 @@ begin
     TJSONObject.SetNull('Item4.4')]));
   Status('Document created: ' + fDoc.CountFields.ToString + ' fields');
 
-  Doc := fConfig.Database.InsertOrUpdateDocumentSynchronous([cDBPath, DocName], fDoc);
+  Doc := fConfig.Database.InsertOrUpdateDocumentSynchronous(fDoc);
   Status('InsertOrUpdateDocument passed');
   Assert.AreEqual(fDoc.CountFields, Doc.CountFields, 'Doc field count not as expected');
   Assert.AreEqual(Doc.FieldByName('Item1').GetStringValue, 'TestVal1', 'Item1 does not match');
@@ -246,7 +256,7 @@ begin
   Assert.AreEqual(Doc.FieldByName('Item4').GetMapItem('Item4.3').GetGeoPoint.Latitude, -1.6423, 0.000001, 'Item4.3.Lat value does not match');
   Assert.AreEqual(Doc.FieldByName('Item4').GetMapItem('Item4.3').GetGeoPoint.Longitude, 6.8954, 0.000001, 'Item4.3.Long value does not match');
   Assert.IsTrue(Doc.FieldByName('Item4').GetMapItem('Item4.4').IsNull, 'Item4.4 value does not match');
-  Status('Document check 2 passed');
+  Status('Document check 2 passed: ' + fDoc.DocumentName(true) + ' created ' + DateTimeToStr(fDoc.CreateTime));
 end;
 
 procedure UT_FirestoreDB.CreateUpdateGetDocument;
@@ -279,7 +289,7 @@ begin
 
   fDoc := nil;
   fCallBack := 0;
-  fConfig.Database.InsertOrUpdateDocument([cDBPath, DocName], Doc, nil, OnDoc, OnError);
+  fConfig.Database.InsertOrUpdateDocument(Doc, nil, OnDoc, OnError);
   while fCallBack < 1 do
     WaitAndCheckTimeout('InsertOrUpdateDocument');
   Status('InsertOrUpdateDocument passed: ' + fInfo);
@@ -328,8 +338,8 @@ begin
   Doc2 := TFirestoreDocument.Create([cDBPath, Doc2Name], fConfig.ProjectID);
   Doc2.AddOrUpdateField(TJSONObject.SetString('TestField2', 'Beta 👨'));
 
-  fConfig.Database.InsertOrUpdateDocument([cDBPath, Doc1Name], Doc1, nil, OnDoc, OnError);
-  fConfig.Database.InsertOrUpdateDocument([cDBPath, Doc2Name], Doc2, nil, OnDoc2, OnError);
+  fConfig.Database.InsertOrUpdateDocument(Doc1, nil, OnDoc, OnError);
+  fConfig.Database.InsertOrUpdateDocument(Doc2, nil, OnDoc2, OnError);
   while fCallBack < 2 do
     WaitAndCheckTimeout('InsertOrUpdateDocument-2');
   Status('InsertOrUpdateDocument passed: ' + fInfo);
@@ -363,7 +373,7 @@ begin
   Doc := TFirestoreDocument.Create([cDBPath, DocID], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString));
   Doc.AddOrUpdateField(TJSONObject.SetInteger(cTestF2, cTestInt));
-  fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
+  fConfig.Database.InsertOrUpdateDocument(Doc, nil, OnDoc, OnError);
   while fCallBack < 3 do
     WaitAndCheckTimeout('InsertOrUpdateDocument');
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
@@ -379,7 +389,7 @@ begin
   fCallBack := 0;
   Doc := TFirestoreDocument.Create([cDBPath, DocID], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString2));
-  fConfig.Database.InsertOrUpdateDocument([cDBPath, DocID], Doc, nil, OnDoc, OnError);
+  fConfig.Database.InsertOrUpdateDocument(Doc, nil, OnDoc, OnError);
 
   while fCallBack < 2 do
     WaitAndCheckTimeout('InsertOrUpdateDocument-2');
@@ -412,6 +422,141 @@ begin
   Status('Listener stopped properly');
 end;
 
+type
+  {$TYPEINFO ON}
+  TMySet = set of Byte;
+  TMyEnum = (_Alpha, _Beta, _Gamma);
+  TArrDouble = array[0..1] of double;
+  TArrRec = array[0..1] of record
+    ErrorTS: TDateTime;
+    ErrNo: integer;
+    ErrMsg: string;
+    StateOk: boolean;
+  end;
+  TRec = record
+    First: string;
+    Second: integer;
+    Third: extended;
+  end;
+  TMyFSDoc = class(TFirestoreDocument)
+  public
+    DocTitle: string;
+    Msg: AnsiString;
+    Flag: Boolean;
+    Ch: Char;
+    CreationDateTime: TDateTime;
+    TestInt: integer;
+    LargeNumber: Int64;
+    B: Byte;
+    MyEnum: TMyEnum;
+    MySet, MySet2: TMySet;
+    CArrDouble: TArrDouble; // array[0..1] of double;
+    DArrInt: array of integer;
+    DArrStr: array of string;
+    DArrTime: array of TDateTime;
+    Rec: TRec;
+//    record
+//      First: string;
+//      Second: integer;
+//      Third: extended;
+//    end;
+    ArrRec: TArrRec;
+  end;
+
+procedure UT_FirestoreDB.Object2DocumentMapper;
+const
+  sTitle = 'Object to Document';
+  saMessage = '''
+    I hope that this new approach will make the use of FB4D.Firestore
+    extremely easy compared to the access via field getter and setter
+    methods.
+    ''';
+var
+  DocPath: TRequestResourceParam;
+  Doc, Doc2: TMyFSDoc;
+  DocI: IFirestoreDocument;
+  i, j: integer;
+begin
+  DocPath := [cDoc2Obj, TFirebaseHelpers.CreateAutoID(FSID)];
+  Doc := TMyFSDoc.Create(DocPath, fConfig.Database);
+  Doc.DocTitle := sTitle;
+  Doc.Msg := saMessage;
+  Doc.Flag := false;
+  Doc.Ch := '@';
+  Doc.CreationDateTime := now;
+  Doc.TestInt := 4711;
+  Doc.LargeNumber := 100_200_300;
+  Doc.B := random(255);
+  Doc.MyEnum := _Beta;
+  Doc.MySet := [1, 3, 65, 128, 255];
+  Doc.MySet2 := [];
+  Doc.CArrDouble[0] := 1.0;
+  Doc.CArrDouble[1] := 2.0;
+  SetLength(Doc.DArrInt, 3);
+  Doc.DArrInt[0] := 11; Doc.DArrInt[1] := 33; Doc.DArrInt[2] := 35;
+  SetLength(Doc.DArrStr, 6);
+  Doc.DArrStr[0] := '1st'; Doc.DArrStr[1] := '2nd'; Doc.DArrStr[2] := '3rd';
+  Doc.DArrStr[3] := '4th'; Doc.DArrStr[4] := '5th'; Doc.DArrStr[5] := '6th';
+  SetLength(Doc.DArrTime, 2);
+  Doc.DArrTime[0] := now; Doc.DArrTime[1] := trunc(Now) + 1;
+  Doc.Rec.First := 'Test Record';
+  Doc.Rec.Second := 5511;
+  Doc.Rec.Third := 3.1415;
+  Doc.ArrRec[0].ErrorTS := now - 1;
+  Doc.ArrRec[0].ErrNo := 27;
+  Doc.ArrRec[0].ErrMsg := 'Check the device';
+  Doc.ArrRec[0].StateOk := false;
+  Doc.ArrRec[1].ErrorTS := now - 0.5;
+  Doc.ArrRec[1].ErrNo := 28;
+  Doc.ArrRec[1].ErrMsg := 'Check the server';
+  Doc.ArrRec[1].StateOk := true;
+  fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc.SaveObjectToDocument);
+  Status('Document saved ' + Doc.DocumentName(false));
+  try
+    i := 0;
+    for DocI in fConfig.Database.GetSynchronous(DocPath) do
+    begin
+      Doc2 := TMyFSDoc.LoadObjectFromDocument(DocI);
+      Status('Document loaded ' + Doc2.DocumentName(false));
+      Assert.AreEqual(Doc.DocTitle, Doc2.DocTitle, 'Wrong DocTitle');
+      Assert.AreEqual(Doc.Msg, Doc2.Msg, 'Wrong Msg');
+      Assert.AreEqual(Doc.Flag, Doc2.Flag, 'Wrong Flag');
+      Assert.AreEqual(Doc.Ch, Doc2.Ch, 'Wrong Ch');
+      Assert.AreEqual(DateTimeToStr(Doc.CreationDateTime), DateTimeToStr(Doc2.CreationDateTime), 'Wrong CreationDateTime');
+      Assert.AreEqual(Doc.TestInt, Doc2.TestInt, 'Wrong TestInt');
+      Assert.AreEqual(Doc.LargeNumber, Doc2.LargeNumber, 'Wrong LargeNumber');
+      Assert.AreEqual(Doc.B, Doc2.B, 'Wrong B');
+      Assert.AreEqual(Doc.MyEnum, Doc2.MyEnum, 'Wrong MyEnum');
+      Assert.AreEqual(Doc.MySet, Doc2.MySet, 'Wrong MySet');
+      Assert.AreEqual(Doc.MySet2, Doc2.MySet2, 'Wrong MySet2');
+      Assert.AreEqual(Doc.CArrDouble[0], Doc2.CArrDouble[0], 'Wrong CArrDouble[0]');
+      Assert.AreEqual(Doc.CArrDouble[1], Doc2.CArrDouble[1], 'Wrong CArrDouble[1]');
+      Assert.AreEqual(length(Doc.DArrInt), length(Doc2.DArrInt), 'Wrong DArrInt.length');
+      for j := 0 to length(Doc.DArrInt) - 1 do
+        Assert.AreEqual(Doc.DArrInt[j], Doc2.DArrInt[j], 'Wrong DArrInt[' + j.ToString + ']');
+      Assert.AreEqual(length(Doc.DArrStr), length(Doc2.DArrStr), 'Wrong DArrStr.length');
+      for j := 0 to length(Doc.DArrStr) - 1 do
+        Assert.AreEqual(Doc.DArrStr[j], Doc2.DArrStr[j], 'Wrong DArrStr[' + j.ToString + ']');
+      Assert.AreEqual(length(Doc.DArrTime), length(Doc2.DArrTime), 'Wrong DArrTime.length');
+      for j := 0 to length(Doc.DArrTime) - 1 do
+        Assert.AreEqual(DateTimeToStr(Doc.DArrTime[j]), DateTimeToStr(Doc2.DArrTime[j]), 'Wrong DArrTime[' + j.ToString + ']');
+      Assert.AreEqual(Doc.ArrRec[0].ErrMsg, Doc2.ArrRec[0].ErrMsg, 'Wrong Doc.ArrRec[0].ErrMsg');
+      Assert.AreEqual(Doc.ArrRec[0].ErrNo, Doc2.ArrRec[0].ErrNo, 'Wrong Doc.ArrRec[0].ErrNo');
+      Assert.AreEqual(DateTimeToStr(Doc.ArrRec[0].ErrorTS), DateTimeToStr(Doc2.ArrRec[0].ErrorTS), 'Wrong Doc.ArrRec[1].ErrMsg');
+      Assert.AreEqual(Doc.ArrRec[0].StateOk, Doc2.ArrRec[0].StateOk, 'Wrong Doc.ArrRec[0].StateOk');
+      Assert.AreEqual(Doc.ArrRec[1].ErrMsg, Doc2.ArrRec[1].ErrMsg, 'Wrong Doc.ArrRec[1].ErrMsg');
+      Assert.AreEqual(Doc.ArrRec[1].ErrNo, Doc2.ArrRec[1].ErrNo, 'Wrong Doc.ArrRec[1].ErrNo');
+      Assert.AreEqual(DateTimeToStr(Doc.ArrRec[1].ErrorTS), DateTimeToStr(Doc2.ArrRec[1].ErrorTS), 'Wrong Doc.ArrRec[1].ErrMsg');
+      Assert.AreEqual(Doc.ArrRec[1].StateOk, Doc2.ArrRec[1].StateOk, 'Wrong Doc.ArrRec[0].StateOk');
+      Status('Document check passed ' + Doc2.DocumentName(false));
+      inc(i);
+    end;
+    Assert.AreEqual(i, 1, 'Wrong document count');
+  finally
+    fConfig.Database.DeleteSynchronous(DocPath);
+    Status('Document deleted ' + Doc.DocumentName(false));
+  end;
+end;
 
 
 initialization
