@@ -200,6 +200,7 @@ type
     function GetMapItem(const Name: string): TJSONObject; overload;
     function GetMapItem(const Name: string; Ind: integer): TJSONPair; overload;
     function GetMapValue(const Name: string; Ind: integer): TJSONObject;
+    function GetMapValues: TJSONObject;
     class function SetMapValue(MapVars: TFirestoreMap): TJSONObject;
     class function SetMap(const VarName: string;
       MapVars: TFirestoreMap): TJSONPair;
@@ -209,9 +210,11 @@ type
     function GetArrayItem(Ind: integer): TJSONObject; overload;
     function GetArrayItem(const Name: string; Ind: integer): TJSONObject;
       overload;
+    function GetArrayValues: TJSONObjects;
     function GetStringArray: TStringDynArray;
     class function SetArray(const VarName: string;
       FSArr: TFirestoreArr): TJSONPair;
+    class function SetArrayValue(FSArr: TFirestoreArr): TJSONObject;
     class function SetStringArray(const VarName: string;
       Strings: TStringDynArray): TJSONPair; overload;
     class function SetStringArray(const VarName: string;
@@ -258,6 +261,8 @@ uses
   IdGlobalProtocols;
 
 resourcestring
+  rsArrFieldNotJSONObj = 'Arrayfield[%d] does not contain a JSONObject';
+  rsArrFieldNotTypeValue = 'Arrayfield[%d] does not contain type-value pair';
   rsArrayItemOutOfBounds = 'Array item %d out of bounds';
   rsInvalidArrayItem = 'Invalid array item %d';
   rsMapItemOutOfBounds = 'Map item %d out of bounds';
@@ -1684,6 +1689,11 @@ begin
   result := GetMapItem(Name, Ind).JsonValue as TJSONObject;
 end;
 
+function TJSONHelpers.GetMapValues: TJSONObject;
+begin
+  result := GetValue<TJSONObject>('mapValue');
+end;
+
 class function TJSONHelpers.SetMapValue(MapVars: TFirestoreMap): TJSONObject;
 var
   Map: TJSONObject;
@@ -1702,21 +1712,20 @@ begin
   result := TJSONPair.Create(VarName, SetMapValue(MapVars));
 end;
 
+class function TJSONHelpers.SetArrayValue(FSArr: TFirestoreArr): TJSONObject;
+var
+  Arr: TJSONArray;
+  c: integer;
+begin
+  Arr := TJSONArray.Create;
+  for c := 0 to length(FSArr) - 1 do
+    Arr.AddElement(FSArr[c]);
+  result := TJSONObject.Create(TJSONPair.Create('arrayValue',
+    TJSONObject.Create(TJSONPair.Create('values', Arr))));
+end;
+
 class function TJSONHelpers.SetArray(const VarName: string;
   FSArr: TFirestoreArr): TJSONPair;
-
-  function SetArrayValue(FSArr: TFirestoreArr): TJSONObject;
-  var
-    Arr: TJSONArray;
-    c: integer;
-  begin
-    Arr := TJSONArray.Create;
-    for c := 0 to length(FSArr) - 1 do
-      Arr.AddElement(FSArr[c]);
-    result := TJSONObject.Create(TJSONPair.Create('arrayValue',
-      TJSONObject.Create(TJSONPair.Create('values', Arr))));
-  end;
-
 begin
   result := TJSONPair.Create(VarName, SetArrayValue(FSArr));
 end;
@@ -1777,6 +1786,30 @@ begin
     result := (Val as TJSONObject).GetArraySize
   else
     result := 0;
+end;
+
+function TJSONHelpers.GetArrayValues: TJSONObjects;
+var
+  Obj: TJSONObject;
+  Arr: TJSONArray;
+  c: integer;
+begin
+  Obj := GetValue<TJSONObject>('arrayValue');
+  if not assigned(Obj) then
+    exit(nil);
+  Arr := Obj.GetValue('values') as TJSONArray;
+  if not assigned(Arr) then
+    exit(nil);
+  SetLength(result, Arr.Count);
+  for c := 0 to Arr.Count - 1 do
+  begin
+    if not(Arr.Items[c] is TJSONObject) then
+      raise EFirestoreDocument.CreateFmt(rsArrFieldNotJSONObj, [c]);
+    Obj := Arr.Items[c] as TJSONObject;
+    if Obj.Count <> 1 then
+      raise EFirestoreDocument.CreateFmt(rsArrFieldNotTypeValue, [c]);
+    result[c] := Obj;
+  end;
 end;
 
 function TJSONHelpers.GetArrayItem(Ind: integer): TJSONObject;

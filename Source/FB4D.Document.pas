@@ -27,10 +27,11 @@ interface
 
 uses
   System.Types, System.Classes, System.JSON, System.SysUtils, System.StrUtils,
+  System.Rtti, System.TypInfo,
 {$IFNDEF LINUX64}
   System.Sensors,
 {$ENDIF}
-  FB4D.Interfaces, FB4D.Response, FB4D.Request;
+  FB4D.Interfaces, FB4D.Response, FB4D.Request, FB4D.Helpers;
 
 {$WARN DUPLICATE_CTOR_DTOR OFF}
 
@@ -46,7 +47,26 @@ type
     end;
     function FieldIndByName(const FieldName: string): integer;
     function ConvertRefPath(const Reference: string): string;
+    function ArrayToFSArr(R: TRTTIType; V: TValue;
+      const FName: string): TFirestoreArr;
+    function DynArrToFSArr(R: TRTTIType; V: TValue;
+      const FName: string): TFirestoreArr;
+    function EnumToI64(V: TValue; const FName: string): Int64;
+    function FloatToObj(R: TRTTIType; V: TValue): TJSONObject;
+    function MapToFSMap(DAT: TRttiRecordType; V: TValue): TFirestoreMap;
+    function SetToStr(V: TValue): string;
     procedure LoadObjectFromDoc;
+    function AnsiCharToVal(TypeInfo: PTypeInfo; const s: string): TValue;
+    function AnsiStringToVal(TypeInfo: PTypeInfo; const s: string): TValue;
+    function ArrayToVal(F: TRTTIField; Arr: TJSONObjects): TValue;
+    function CharToVal(TypeInfo: PTypeInfo; const s: string): TValue;
+    function DynArrayToVal(F: TRTTIField; Arr: TJSONObjects): TValue;
+    function EnumToVal(TypeInfo: PTypeInfo; I: Int64): TValue;
+    function FloatToVal(RType: TRTTIType; Obj: TJSONObject): TValue;
+    function RecordToVal(DAT: TRttiRecordType; const FName: string;
+      Map: TJSONObject): TValue;
+    function SetToVal(TypeInfo: PTypeInfo; const s: string): TValue;
+    function WideStringToVal(TypeInfo: PTypeInfo; const s: string): TValue;
   public
     class function CreateCursor(const ProjectID: string): IFirestoreDocument;
     class function GetDocFullPath(
@@ -179,8 +199,7 @@ type
 implementation
 
 uses
-  System.Generics.Collections, System.NetEncoding, System.Rtti, System.TypInfo,
-  FB4D.Helpers;
+  System.Generics.Collections, System.NetEncoding;
 
 resourcestring
   rsInvalidDocNotOneNode = 'Invalid document - not one node only';
@@ -1205,222 +1224,207 @@ begin
 end;
 
 {$REGION 'Object to Document Mapper'}
+function TFirestoreDocument.SetToStr(V: TValue): string;
+var
+  Buffer: set of Byte;
+  TD: PTypeData;
+  i: integer;
+begin
+  V.ExtractRawData(@Buffer);
+  TD := V.TypeInfo.TypeData.CompType^.TypeData;
+  result := '';
+  for i := TD.MinValue to TD.MaxValue do
+    if i in Buffer then
+      result := result + i.ToString + ',';
+  if result.EndsWith(',') then
+    result := result.Remove(result.Length -1);
+end;
+
+function TFirestoreDocument.EnumToI64(V: TValue; const FName: string): Int64;
+const
+  sMethodName = 'TFirestoreDocument.EnumToI64';
+begin
+  if not V.TryAsOrdinal(result) then
+    raise Exception.CreateFmt('%s: Field value not accessible in %s',
+      [FName, sMethodName]);
+end;
+
+function TFirestoreDocument.FloatToObj(R: TRTTIType; V: TValue): TJSONObject;
+begin
+  if SameText(R.Name, 'TDateTime') then
+    result := TJSONObject.SetTimeStampValue(V.AsExtended)
+  else
+    result := TJSONObject.SetDoubleValue(V.AsExtended);
+end;
+
+function TFirestoreDocument.MapToFSMap(DAT: TRttiRecordType;
+  V: TValue): TFirestoreMap;
+const
+  sMethodName = 'TFirestoreDocument.MapToFSMap';
+var
+  Fields: TArray<TRttiField>;
+  i: integer;
+  VE: TValue;
+  Buffer: TBytes;
+begin
+  Fields := DAT.GetDeclaredFields;
+  SetLength(Result, length(Fields));
+  SetLength(Buffer, V.DataSize);
+  V.ExtractRawData(Buffer);
+  for i := 0 to length(Fields) - 1 do
+  begin
+    VE := Fields[i].GetValue(Buffer);
+    case Fields[i].FieldType.TypeKind of
+      tkChar,
+      tkWChar,
+      tkString,
+      tkLString,
+      tkWString,
+      tkUString:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          TJSONObject.SetStringValue(VE.AsString));
+      tkInteger:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          TJSONObject.SetIntegerValue(VE.AsInteger));
+      tkInt64:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          TJSONObject.SetInt64Value(VE.AsInt64));
+      tkEnumeration:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          TJSONObject.SetInt64Value(EnumToI64(VE, Fields[i].Name)));
+      tkFloat:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          FloatToObj(Fields[i].FieldType, VE));
+      tkSet:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          TJSONObject.SetStringValue(SetToStr(VE)));
+      tkArray:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          TJSONObject.SetArrayValue(ArrayToFSArr(Fields[i].FieldType, VE,
+            Fields[i].Name)));
+      tkDynArray:
+        result[i] := TJSONPair.Create(Fields[i].Name,
+          TJSONObject.SetArrayValue(DynArrToFSArr(Fields[i].FieldType, VE,
+            Fields[i].Name)));
+      tkRecord:
+         result[i] := TJSONPair.Create(Fields[i].Name,
+           TJSONObject.SetMapValue(MapToFSMap(
+             Fields[i].FieldType as TRttiRecordType, VE)));
+      else
+        raise Exception.CreateFmt(
+          '%s: record sub type %s not yet supported in %s',
+          [Fields[i].Name,
+           TRttiEnumerationType.GetName(Fields[i].FieldType.TypeKind),
+           sMethodName]);
+    end;
+  end;
+end;
+
+function TFirestoreDocument.DynArrToFSArr(R: TRTTIType; V: TValue;
+  const FName: string): TFirestoreArr;
+const
+  sMethodName = 'TFirestoreDocument.DynArrToFSArr';
+var
+  DAT: TRttiDynamicArrayType;
+  i: integer;
+  VE: TValue;
+begin
+  DAT := R as TRttiDynamicArrayType;
+  Assert(assigned(DAT.ElementType), Format(
+    '%s: Element type missing in %s.DynArrToFSArr', [FName, sMethodName]));
+  SetLength(result, V.GetArrayLength);
+  for i := 0 to V.GetArrayLength - 1 do
+  begin
+    VE := V.GetArrayElement(i);
+    case DAT.ElementType.TypeKind of
+      tkChar,
+      tkWChar,
+      tkString,
+      tkLString,
+      tkWString,
+      tkUString:
+        result[i] := TJSONObject.SetStringValue(VE.AsString);
+      tkInteger:
+        result[i] := TJSONObject.SetIntegerValue(VE.AsInteger);
+      tkInt64:
+        result[i] := TJSONObject.SetInt64Value(VE.AsInt64);
+      tkEnumeration:
+        result[i] := TJSONObject.SetInt64Value(EnumToI64(VE, FName));
+      tkFloat:
+        result[i] := FloatToObj(DAT.ElementType, VE);
+      tkSet:
+        result[i] := TJSONObject.SetStringValue(SetToStr(VE));
+      tkArray,
+      tkDynArray:
+        raise Exception.CreateFmt(
+          '%s: array of array not supported by Firestore', [FName]);
+      tkRecord:
+        result[i] := TJSONObject.SetMapValue(MapToFSMap(
+          DAT.ElementType as TRttiRecordType, VE));
+      else
+        raise Exception.CreateFmt(
+          '%s: array type %s not yet supported in %s',
+          [FName,
+           TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
+           sMethodName]);
+    end;
+  end;
+end;
+
+function TFirestoreDocument.ArrayToFSArr(R: TRTTIType; V: TValue;
+  const FName: string): TFirestoreArr;
+const
+  sMethodName = 'TFirestoreDocument.ArrayToFSArr';
+var
+  DAT: TRttiArrayType;
+  i: integer;
+  VE: TValue;
+begin
+  DAT := R as TRttiArrayType;
+  Assert(assigned(DAT.ElementType), Format(
+    '%s: Element type missing in %s.ArrayToFSAss', [FName, sMethodName]));
+  SetLength(result, V.GetArrayLength);
+  for i := 0 to V.GetArrayLength - 1 do
+  begin
+    VE := V.GetArrayElement(i);
+    case DAT.ElementType.TypeKind of
+      tkChar,
+      tkWChar,
+      tkString,
+      tkLString,
+      tkWString,
+      tkUString:
+        result[i] := TJSONObject.SetStringValue(VE.AsString);
+      tkInteger:
+        result[i] := TJSONObject.SetIntegerValue(VE.AsInteger);
+      tkInt64:
+        result[i] := TJSONObject.SetInt64Value(VE.AsInt64);
+      tkEnumeration:
+        result[i] := TJSONObject.SetInt64Value(EnumToI64(VE, FName));
+      tkFloat:
+        result[i] := FloatToObj(DAT.ElementType, VE);
+      tkSet:
+        result[i] := TJSONObject.SetStringValue(SetToStr(VE));
+      tkArray,
+      tkDynArray:
+        raise Exception.CreateFmt(
+          '%s: array of array not supported by Firestore', [FName]);
+      tkRecord:
+        result[i] := TJSONObject.SetMapValue(MapToFSMap(
+          DAT.ElementType as TRttiRecordType, VE));
+      else
+        raise Exception.CreateFmt(
+          '%s: array type %s not yet supported in %s',
+          [FName,
+           TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
+           sMethodName]);
+    end;
+  end;
+end;
+
 function TFirestoreDocument.SaveObjectToDocument: IFirestoreDocument;
 const
   sMethodName = 'TFirestoreDocument.SaveObjectToDocument';
-
-  function SetToStr(V: TValue): string;
-  var
-    Buffer: set of Byte;
-    TD: PTypeData;
-    i: integer;
-  begin
-    V.ExtractRawData(@Buffer);
-    TD := V.TypeInfo.TypeData.CompType^.TypeData;
-    result := '';
-    for i := TD.MinValue to TD.MaxValue do
-      if i in Buffer then
-        result := result + i.ToString + ',';
-    if result.EndsWith(',') then
-      result := result.Remove(result.Length -1);
-  end;
-
-  function EnumToI64(V: TValue; const FName: string): Int64;
-  begin
-    if not V.TryAsOrdinal(result) then
-      raise Exception.CreateFmt('%s: Field value not accessible in %s.EnumToI64',
-        [FName, sMethodName]);
-  end;
-
-  function DynArrToFSArr(F: TRTTIField): TFirestoreArr;
-  var
-    DAT: TRttiDynamicArrayType;
-    i: integer;
-    V, VE: TValue;
-  begin
-    DAT := F.FieldType as TRttiDynamicArrayType;
-    Assert(assigned(DAT.ElementType), Format(
-      '%s: Element type missing in %s.DynArrToFSArr', [F.Name, sMethodName]));
-    V := F.GetValue(self);
-    SetLength(result, V.GetArrayLength);
-    for i := 0 to V.GetArrayLength - 1 do
-    begin
-      VE := V.GetArrayElement(i);
-      case DAT.ElementType.TypeKind of
-        tkChar,
-        tkWChar,
-        tkString,
-        tkLString,
-        tkWString,
-        tkUString:
-          result[i] := TJSONObject.SetStringValue(VE.AsString);
-        tkInteger:
-          result[i] := TJSONObject.SetIntegerValue(VE.AsInteger);
-        tkInt64:
-          result[i] := TJSONObject.SetInt64Value(VE.AsInt64);
-        tkEnumeration:
-          result[i] := TJSONObject.SetInt64Value(EnumToI64(VE, F.Name));
-        tkFloat:
-          if SameText(DAT.ElementType.Name, 'TDateTime') then
-            result[i] := TJSONObject.SetTimeStampValue(VE.AsExtended)
-          else
-            result[i] := TJSONObject.SetDoubleValue(VE.AsExtended);
-        tkSet:
-          result[i] := TJSONObject.SetStringValue(SetToStr(VE));
-        else
-          raise Exception.CreateFmt(
-            '%s: array type %s not yet supported in %s',
-            [F.Name,
-             TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
-             sMethodName]);
-      end;
-    end;
-  end;
-
-  function MapToFSMap(F: TRTTIField): TFirestoreMap;
-  var
-    DAT: TRttiRecordType;
-    Fields: TArray<TRttiField>;
-    i: integer;
-    V, VE: TValue;
-    Buffer: TBytes;
-  begin
-    DAT := F.FieldType as TRttiRecordType;
-    Fields := DAT.GetDeclaredFields;
-    SetLength(Result, length(Fields));
-    V := F.GetValue(self);
-    SetLength(Buffer, V.DataSize);
-    V.ExtractRawData(Buffer);
-    for i := 0 to length(Fields) - 1 do
-    begin
-      VE := Fields[i].GetValue(Buffer);
-      case Fields[i].FieldType.TypeKind of
-        tkChar,
-        tkWChar,
-        tkString,
-        tkLString,
-        tkWString,
-        tkUString:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetStringValue(VE.AsString));
-        tkInteger:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetIntegerValue(VE.AsInteger));
-        tkInt64:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetInt64Value(VE.AsInt64));
-        tkEnumeration:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetInt64Value(EnumToI64(VE, Fields[i].Name)));
-        tkFloat:
-          if SameText(Fields[i].FieldType.Name, 'TDateTime') then
-            result[i] := TJSONPair.Create(Fields[i].Name,
-              TJSONObject.SetTimeStampValue(VE.AsExtended))
-          else
-            result[i] := TJSONPair.Create(Fields[i].Name,
-              TJSONObject.SetDoubleValue(VE.AsExtended));
-        tkSet:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetStringValue(SetToStr(VE)));
-      end;
-    end;
-  end;
-
-  function MapToFSMap2(DAT: TRttiRecordType; V: TValue): TFirestoreMap;
-  var
-    Fields: TArray<TRttiField>;
-    i: integer;
-    VE: TValue;
-    Buffer: TBytes;
-  begin
-    Fields := DAT.GetDeclaredFields;
-    SetLength(Result, length(Fields));
-    SetLength(Buffer, V.DataSize);
-    V.ExtractRawData(Buffer);
-    for i := 0 to length(Fields) - 1 do
-    begin
-      VE := Fields[i].GetValue(Buffer);
-      case Fields[i].FieldType.TypeKind of
-        tkChar,
-        tkWChar,
-        tkString,
-        tkLString,
-        tkWString,
-        tkUString:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetStringValue(VE.AsString));
-        tkInteger:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetIntegerValue(VE.AsInteger));
-        tkInt64:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetInt64Value(VE.AsInt64));
-        tkEnumeration:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetInt64Value(EnumToI64(VE, Fields[i].Name)));
-        tkFloat:
-          if SameText(Fields[i].FieldType.Name, 'TDateTime') then
-            result[i] := TJSONPair.Create(Fields[i].Name,
-              TJSONObject.SetTimeStampValue(VE.AsExtended))
-          else
-            result[i] := TJSONPair.Create(Fields[i].Name,
-              TJSONObject.SetDoubleValue(VE.AsExtended));
-        tkSet:
-          result[i] := TJSONPair.Create(Fields[i].Name,
-            TJSONObject.SetStringValue(SetToStr(VE)));
-      end;
-    end;
-  end;
-
-
-  function ArrayToFSAss(F: TRTTIField): TFirestoreArr;
-  var
-    DAT: TRttiArrayType;
-    i: integer;
-    V, VE: TValue;
-  begin
-    DAT := F.FieldType as TRttiArrayType;
-    Assert(assigned(DAT.ElementType), Format(
-      '%s: Element type missing in %s.ArrayToFSAss', [F.Name, sMethodName]));
-    V := F.GetValue(self);
-    SetLength(result, V.GetArrayLength);
-    for i := 0 to V.GetArrayLength - 1 do
-    begin
-      VE := V.GetArrayElement(i);
-      case DAT.ElementType.TypeKind of
-        tkChar,
-        tkWChar,
-        tkString,
-        tkLString,
-        tkWString,
-        tkUString:
-          result[i] := TJSONObject.SetStringValue(VE.AsString);
-        tkInteger:
-          result[i] := TJSONObject.SetIntegerValue(VE.AsInteger);
-        tkInt64:
-          result[i] := TJSONObject.SetInt64Value(VE.AsInt64);
-        tkEnumeration:
-          result[i] := TJSONObject.SetInt64Value(EnumToI64(VE, F.Name));
-        tkFloat:
-          if SameText(DAT.ElementType.Name, 'TDateTime') then
-            result[i] := TJSONObject.SetTimeStampValue(VE.AsExtended)
-          else
-            result[i] := TJSONObject.SetDoubleValue(VE.AsExtended);
-        tkSet:
-          result[i] := TJSONObject.SetStringValue(SetToStr(VE));
-        tkRecord:
-          result[i] := TJSONObject.SetMapValue(MapToFSMap2(
-            DAT.ElementType as TRttiRecordType, VE));
-        else
-          raise Exception.CreateFmt(
-            '%s: array type %s not yet supported in %s',
-            [F.Name,
-             TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
-             sMethodName]);
-      end;
-    end;
-  end;
-
 var
   Ctx: TRTTIContext;
   T: TRTTIType;
@@ -1451,14 +1455,7 @@ begin
             AddOrUpdate(F.Name,
               TJSONObject.SetStringValue(F.GetValue(self).AsString));
           tkFloat:
-            if SameText(F.DataType.Name, 'TDateTime') then
-              AddOrUpdate(F.Name,
-                TJSONObject.SetTimeStampValue(
-                  TDateTime(F.GetValue(self).AsExtended)))
-            else
-              AddOrUpdate(F.Name,
-                TJSONObject.SetDoubleValue(double(
-                  F.GetValue(self).AsExtended)));
+            AddOrUpdate(F.Name, FloatToObj(F.DataType, F.GetValue(self)));
           tkSet:
             AddOrUpdate(F.Name,
               TJSONObject.SetStringValue(SetToStr(F.GetValue(self))));
@@ -1472,11 +1469,14 @@ begin
             AddOrUpdate(F.Name,
               TJSONObject.SetInt64Value(F.GetValue(self).AsInt64));
           tkDynArray:
-            AddOrUpdate(TJSONObject.SetArray(F.Name, DynArrToFSArr(F)));
+            AddOrUpdate(TJSONObject.SetArray(F.Name,
+              DynArrToFSArr(F.FieldType, F.GetValue(self), F.Name)));
           tkArray:
-            AddOrUpdate(TJSONObject.SetArray(F.Name, ArrayToFSAss(F)));
+            AddOrUpdate(TJSONObject.SetArray(F.Name,
+              ArrayToFSArr(F.FieldType, F.GetValue(self), F.Name)));
           tkRecord:
-            AddOrUpdate(TJSONObject.SetMap(F.Name, MapToFSMap(F)));
+            AddOrUpdate(TJSONObject.SetMap(F.Name, MapToFSMap(
+              F.FieldType as TRttiRecordType, F.GetValue(self))));
           tkUnknown,
           tkClassRef,
           tkPointer,
@@ -1492,227 +1492,251 @@ begin
         end;
       end;
     end;
+    {$IFDEF DEBUG}
+    var s: string;
+    for s in SplitString(fJSONObj.Format, #13) do
+      TFirebaseHelpers.Log('  ' + s);
+    {$ENDIF}
     result := self;
   finally
     Ctx.Free;
   end;
 end;
 
+function TFirestoreDocument.CharToVal(TypeInfo: PTypeInfo;
+  const s: string): TValue;
+var
+  c: Char;
+begin
+  if s > '' then
+    c := s[1]
+  else
+    c := #0;
+  TValue.Make(@c, TypeInfo, result);
+end;
+
+function TFirestoreDocument.AnsiCharToVal(TypeInfo: PTypeInfo;
+  const s: string): TValue;
+var
+  c: AnsiChar;
+begin
+  if s > '' then
+    c := AnsiChar(s[1])
+  else
+    c := #0;
+  TValue.Make(@c, TypeInfo, result);
+end;
+
+function TFirestoreDocument.AnsiStringToVal(TypeInfo: PTypeInfo;
+  const s: string): TValue;
+var
+  a: AnsiString;
+begin
+  a := AnsiString(s);
+  TValue.Make(@a, TypeInfo, result);
+end;
+
+function TFirestoreDocument.WideStringToVal(TypeInfo: PTypeInfo;
+  const s: string): TValue;
+var
+  w: WideString;
+begin
+  w := WideString(s);
+  TValue.Make(@w, TypeInfo, result);
+end;
+
+function TFirestoreDocument.FloatToVal(RType: TRTTIType;
+  Obj: TJSONObject): TValue;
+begin
+  if SameText(RType.Name, 'TDateTime') then
+    result := Obj.GetTimeStampValue(tzLocalTime)
+  else if RType.RttiDataSize <= 11 then
+    result := Obj.GetDoubleValue
+  else
+    result := extended(Obj.GetDoubleValue);
+end;
+
+function TFirestoreDocument.EnumToVal(TypeInfo: PTypeInfo; I: Int64): TValue;
+begin
+  TValue.Make(i, TypeInfo, result);
+end;
+
+function TFirestoreDocument.SetToVal(TypeInfo: PTypeInfo;
+  const s: string): TValue;
+var
+  Buffer: set of Byte;
+  sl: TStringDynArray;
+  si: string;
+begin
+  sl := SplitString(s, ',');
+  Buffer := [];
+  for si in sl do
+    Buffer := Buffer + [StrToIntDef(si, 0)];
+  TValue.Make(@Buffer, TypeInfo, result);
+end;
+
+function TFirestoreDocument.RecordToVal(DAT: TRttiRecordType;
+  const FName: string; Map: TJSONObject): TValue;
+const
+  sMethodName = 'TFirestoreDocument.RecordToVal';
+var
+  Fields: TArray<TRttiField>;
+  i: integer;
+  Obj: TJSONObject;
+  VE: TValue;
+  Buffer: TBytes;
+begin
+  Fields := DAT.GetDeclaredFields;
+  SetLength(Buffer, DAT.TypeSize);
+  if Map.GetMapSize < length(Fields) then
+    raise Exception.CreateFmt(
+      '%s: record %s to less fields in the Firestore %d, (expected: %d)',
+         [sMethodName, FName, Map.GetMapSize, length(Fields)]);
+
+  for i := 0 to length(Fields) - 1 do
+  begin
+    Obj := Map.GetMapItem(Fields[i].Name);
+    case Fields[i].FieldType.TypeKind of
+      tkChar:
+        VE := AnsiCharToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+      tkWChar:
+        VE := CharToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+      tkLString,
+      tkString:
+        VE := AnsiStringToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+      tkWString:
+        VE := WideStringToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+      tkUString:
+        VE := Obj.GetStringValue;
+      tkInteger:
+        VE := Obj.GetIntegerValue;
+      tkInt64:
+        VE := Obj.GetInt64Value;
+      tkEnumeration:
+        VE := EnumToVal(Fields[i].FieldType.Handle, Obj.GetInt64Value);
+      tkFloat:
+        VE := FloatToVal(Fields[i].FieldType, Obj);
+      tkSet:
+        VE := SetToVal(DAT.Handle, Obj.GetStringValue);
+      tkArray:
+        VE := ArrayToVal(Fields[i], Obj.GetArrayValues);
+      tkDynArray:
+        VE := DynArrayToVal(Fields[i], Obj.GetArrayValues);
+      tkRecord:
+        VE := RecordToVal(Fields[i].FieldType as TRttiRecordType,
+          Fields[i].Name, Obj.GetMapValues);
+      else
+        raise Exception.CreateFmt(
+          '%s.%s: record type %s not yet supported in %s',
+          [FName, Fields[i].Name,
+           TRttiEnumerationType.GetName(Fields[i].FieldType.TypeKind),
+           sMethodName]);
+    end;
+    VE. ExtractRawData(
+      pointer(NativeInt(@Buffer[0]) + NativeInt(Fields[i].Offset)));
+  end;
+  TValue.Make(Buffer, DAT.Handle, result);
+end;
+
+function TFirestoreDocument.DynArrayToVal(F: TRTTIField;
+  Arr: TJSONObjects): TValue;
+const
+  sMethodName = 'TFirestoreDocument.DynArrayToVal';
+var
+  DAT: TRttiDynamicArrayType;
+  i: integer;
+  VA: array of TValue;
+begin
+  DAT := F.FieldType as TRttiDynamicArrayType;
+  SetLength(VA, length(Arr));
+  for i := 0 to length(Arr) - 1 do
+  begin
+    case DAT.ElementType.TypeKind of
+      tkChar:
+        VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValue);
+      tkWChar:
+        VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValue);
+      tkLString,
+      tkString:
+        VA[i] := String(AnsiString(Arr[i].GetStringValue));
+      tkWString:
+        VA[i] := WideString(Arr[i].GetStringValue);
+      tkUString:
+        VA[i] := Arr[i].GetStringValue;
+      tkInteger:
+        VA[i] := Arr[i].GetIntegerValue;
+      tkInt64:
+        VA[i] := Arr[i].GetInt64Value;
+      tkEnumeration:
+        VA[i] := EnumToVal(DAT.Handle, Arr[i].GetInt64Value);
+      tkFloat:
+        VA[i] := FloatToVal(DAT.ElementType, Arr[i]);
+      tkSet:
+        VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValue);
+      tkRecord:
+        VA[i] := RecordToVal(DAT.ElementType as TRttiRecordType, F.Name,
+          Arr[i]);
+     else
+       raise Exception.CreateFmt(
+         '%s: dynarray type %s not yet supported in %s',
+         [F.Name, TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
+          sMethodName]);
+   end;
+  end;
+  result := TValue.FromArray(F.FieldType.Handle, VA);
+end;
+
+function TFirestoreDocument.ArrayToVal(F: TRTTIField;
+  Arr: TJSONObjects): TValue;
+const
+  sMethodName = 'TFirestoreDocument.ArrayToVal';
+var
+  DAT: TRttiArrayType;
+  i: integer;
+  VA: array of TValue;
+begin
+  DAT := F.FieldType as TRttiArrayType;
+  SetLength(VA, length(Arr));
+  for i := 0 to length(Arr) - 1 do
+  begin
+    case DAT.ElementType.TypeKind of
+      tkChar:
+        VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValue);
+      tkWChar:
+        VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValue);
+      tkLString,
+      tkString:
+        VA[i] := String(AnsiString(Arr[i].GetStringValue));
+      tkWString:
+        VA[i] := WideString(Arr[i].GetStringValue);
+      tkUString:
+        VA[i] := Arr[i].GetStringValue;
+      tkInteger:
+        VA[i] := Arr[i].GetIntegerValue;
+      tkInt64:
+        VA[i] := Arr[i].GetInt64Value;
+      tkEnumeration:
+        VA[i] := EnumToVal(DAT.Handle, Arr[i].GetInt64Value);
+      tkFloat:
+        VA[i] := FloatToVal(DAT.ElementType, Arr[i]);
+      tkSet:
+        VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValue);
+      tkRecord:
+        VA[i] := RecordToVal(DAT.ElementType as TRttiRecordType, F.Name,
+          Arr[i]);
+     else
+       raise Exception.CreateFmt(
+         '%s: array type %s not yet supported in %s',
+         [F.Name, TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
+          sMethodName]);
+   end;
+  end;
+  result := TValue.FromArray(F.FieldType.Handle, VA);
+end;
+
 procedure TFirestoreDocument.LoadObjectFromDoc;
 const
   sMethodName = 'TFirestoreDocument.LoadObjectFromDoc';
-
-  function CharToVal(TypeInfo: PTypeInfo; s: string): TValue;
-  var
-    c: Char;
-  begin
-    if s > '' then
-      c := s[1]
-    else
-      c := #0;
-    TValue.Make(@c, TypeInfo, result);
-  end;
-
-  function AnsiCharToVal(TypeInfo: PTypeInfo; s: string): TValue;
-  var
-    c: AnsiChar;
-  begin
-    if s > '' then
-      c := AnsiChar(s[1])
-    else
-      c := #0;
-    TValue.Make(@c, TypeInfo, result);
-  end;
-
-  function AnsiStringToVal(TypeInfo: PTypeInfo; s: string): TValue;
-  var
-    a: AnsiString;
-  begin
-    a := AnsiString(s);
-    TValue.Make(@a, TypeInfo, result);
-  end;
-
-  function WideStringToVal(TypeInfo: PTypeInfo; s: string): TValue;
-  var
-    w: WideString;
-  begin
-    w := WideString(s);
-    TValue.Make(@w, TypeInfo, result);
-  end;
-
-  function EnumToVal(TypeInfo: PTypeInfo; I: Int64): TValue;
-  begin
-    TValue.Make(i, TypeInfo, result);
-  end;
-
-  function SetToVal(TypeInfo: PTypeInfo; s: string): TValue;
-  var
-    Buffer: set of Byte;
-    sl: TStringDynArray;
-    si: string;
-  begin
-    sl := SplitString(s, ',');
-    Buffer := [];
-    for si in sl do
-      Buffer := Buffer + [StrToIntDef(si, 0)];
-    TValue.Make(@Buffer, TypeInfo, result);
-  end;
-
-  function RecordToVal(DAT: TRttiRecordType; const FName: string;
-    Map: TJSONObject): TValue;
-  var
-    Fields: TArray<TRttiField>;
-    i: integer;
-    Obj: TJSONObject;
-    VE: TValue;
-    Buffer: TBytes;
-    P: Pointer;
-  begin
-    Fields := DAT.GetDeclaredFields;
-    SetLength(Buffer, DAT.TypeSize);
-    P := @Buffer[0];
-    if Map.GetMapSize < length(Fields) then
-      raise Exception.CreateFmt(
-        '%s: record %s to less fields in the Firestore %d, (expected: %d)',
-           [sMethodName, FName, Map.GetMapSize, length(Fields)]);
-
-    for i := 0 to length(Fields) - 1 do
-    begin
-      Obj := Map.GetMapItem(Fields[i].Name);
-      case Fields[i].FieldType.TypeKind of
-        tkChar:
-          VE := AnsiCharToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
-        tkWChar:
-          VE := CharToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
-        tkLString,
-        tkString:
-          VE := String(AnsiString(Obj.GetStringValue));
-        tkWString:
-          VE := WideString(Obj.GetStringValue);
-        tkUString:
-          VE := Obj.GetStringValue;
-        tkInteger:
-          VE := Obj.GetIntegerValue;
-        tkInt64:
-          VE := Obj.GetInt64Value;
-        tkEnumeration:
-          VE := EnumToVal(Fields[i].FieldType.Handle, Obj.GetInt64Value);
-        tkFloat:
-          if SameText(Fields[i].FieldType.Name, 'TDateTime') then
-            VE := Obj.GetTimeStampValue(tzLocalTime)
-          else
-            VE := Obj.GetDoubleValue;
-        tkSet:
-          VE := SetToVal(DAT.Handle, Obj.GetStringValue);
-       else
-         raise Exception.CreateFmt(
-           '%s.%s: record type %s not yet supported in %s',
-           [FName, Fields[i].Name,
-            TRttiEnumerationType.GetName(Fields[i].FieldType.TypeKind),
-            sMethodName]);
-      end;
-      VE. ExtractRawData(P);
-      Inc(PByte(P), VE.DataSize);
-    end;
-    TValue.Make(Buffer, DAT.Handle, result);
-  end;
-
-  function DynArrayToVal(F: TRTTIField; Arr: TJSONObjects): TValue;
-  var
-    DAT: TRttiDynamicArrayType;
-    i: integer;
-    VA: array of TValue;
-  begin
-    DAT := F.FieldType as TRttiDynamicArrayType;
-    SetLength(VA, length(Arr));
-    for i := 0 to length(Arr) - 1 do
-    begin
-      case DAT.ElementType.TypeKind of
-        tkChar:
-          VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValue);
-        tkWChar:
-          VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValue);
-        tkLString,
-        tkString:
-          VA[i] := String(AnsiString(Arr[i].GetStringValue));
-        tkWString:
-          VA[i] := WideString(Arr[i].GetStringValue);
-        tkUString:
-          VA[i] := Arr[i].GetStringValue;
-        tkInteger:
-          VA[i] := Arr[i].GetIntegerValue;
-        tkInt64:
-          VA[i] := Arr[i].GetInt64Value;
-        tkEnumeration:
-          VA[i] := EnumToVal(DAT.Handle, Arr[i].GetInt64Value);
-        tkFloat:
-         if SameText(DAT.ElementType.Name, 'TDateTime') then
-           VA[i] := Arr[i].GetTimeStampValue(tzLocalTime)
-         else
-           VA[i] := Arr[i].GetDoubleValue;
-        tkSet:
-          VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValue);
-        tkRecord:
-          VA[i] := RecordToVal(DAT.ElementType as TRttiRecordType, F.Name,
-            Arr[i]);
-       else
-         raise Exception.CreateFmt(
-           '%s: dynarray type %s not yet supported in %s',
-           [F.Name, TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
-            sMethodName]);
-     end;
-    end;
-    result := TValue.FromArray(F.FieldType.Handle, VA);
-  end;
-
-  function ArrayToVal(F: TRTTIField; Arr: TJSONObjects): TValue;
-  var
-    DAT: TRttiArrayType;
-    i: integer;
-    VA: array of TValue;
-  begin
-    DAT := F.FieldType as TRttiArrayType;
-    SetLength(VA, length(Arr));
-    for i := 0 to length(Arr) - 1 do
-    begin
-      case DAT.ElementType.TypeKind of
-        tkChar:
-          VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValue);
-        tkWChar:
-          VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValue);
-        tkLString,
-        tkString:
-          VA[i] := String(AnsiString(Arr[i].GetStringValue));
-        tkWString:
-          VA[i] := WideString(Arr[i].GetStringValue);
-        tkUString:
-          VA[i] := Arr[i].GetStringValue;
-        tkInteger:
-          VA[i] := Arr[i].GetIntegerValue;
-        tkInt64:
-          VA[i] := Arr[i].GetInt64Value;
-        tkEnumeration:
-          VA[i] := EnumToVal(DAT.Handle, Arr[i].GetInt64Value);
-        tkFloat:
-          if SameText(DAT.ElementType.Name, 'TDateTime') then
-            VA[i] := Arr[i].GetTimeStampValue(tzLocalTime)
-          else
-            VA[i] := Arr[i].GetDoubleValue;
-        tkSet:
-          VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValue);
-        tkRecord:
-          VA[i] := RecordToVal(DAT.ElementType as TRttiRecordType, F.Name,
-            Arr[i]);
-       else
-         raise Exception.CreateFmt(
-           '%s: array type %s not yet supported in %s',
-           [F.Name, TRttiEnumerationType.GetName(DAT.ElementType.TypeKind),
-            sMethodName]);
-     end;
-    end;
-    result := TValue.FromArray(F.FieldType.Handle, VA);
-  end;
-
 var
   Ctx: TRTTIContext;
   T: TRTTIType;
@@ -1754,10 +1778,7 @@ begin
           tkInt64:
             F.SetValue(self, GetInt64ValueDef(F.Name, 0));
           tkFloat:
-            if SameText(F.DataType.Name, 'TDateTime') then
-              F.SetValue(self, GetTimeStampValueDef(F.Name, 0, tzLocalTime))
-            else
-              F.SetValue(self, GetDoubleValueDef(F.Name, 0));
+            F.SetValue(self, FloatToVal(F.FieldType, FieldByName(F.Name)));
           tkEnumeration:
             F.SetValue(self,
               EnumToVal(F.FieldType.Handle, GetInt64ValueDef(F.Name, 0)));
