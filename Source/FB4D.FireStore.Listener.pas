@@ -788,7 +788,8 @@ begin
         DataStr, TRESTContentType.ctTEXT_PLAIN, QueryParams, tmBearer);
       if Response.StatusOk then
       begin
-        fLastTokenRefreshCount := fAuth.GetTokenRefreshCount;
+        if assigned(fAuth) then
+          fLastTokenRefreshCount := fAuth.GetTokenRefreshCount;
         result := FetchSIDFromResponse(Response);
       end else
         ReportErrorInThread(Format(rsEvtStartFailed, [Response.StatusText]));
