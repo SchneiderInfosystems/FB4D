@@ -56,7 +56,7 @@ type
     procedure OnDocChanged(ChangedDocument: IFirestoreDocument);
     procedure OnDocDeleted(const DeleteDocumentPath: string;
       TimeStamp: TDateTime);
-    procedure OnDocDel(const RequestID: string; Response: IFirebaseResponse);
+    procedure OnDocDel(const DeleteDocumentPath: string; TimeStamp: TDateTime);
     procedure OnStop(Sender: TObject);
   public
     [Setup]
@@ -162,10 +162,10 @@ begin
   inc(fCallBack);
 end;
 
-procedure UT_FirestoreDB.OnDocDel(const RequestID: string;
-  Response: IFirebaseResponse);
+procedure UT_FirestoreDB.OnDocDel(const DeleteDocumentPath: string;
+  TimeStamp: TDateTime);
 begin
-  fInfo2 := RequestID;
+  fInfo2 := DeleteDocumentPath;
   inc(fCallBack);
 end;
 

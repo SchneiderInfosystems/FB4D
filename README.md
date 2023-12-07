@@ -14,7 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
-- December 2023: The Object to Document Mapper lets you quickly sync your Pascal objects to the Firestore database by deriving your own class from TFirestoreDocument and adding member variables. All member variables are automatically written to the document and read from the document.
+- December 2023: The Object to Document Mapper lets you quickly sync your Pascal objects to the Firestore database by deriving your own class from _TFirestoreDocument_ and adding member variables. All member variables are automatically written to the document and read from the document.
 - October 2023: Firestore database write transaction supports delete document too. The new Auth_SelfReg_VCL demo application explains all options of the self registration workflow.
 - June 2023: Firestore database supports write transactions
 - October 2022: Interface for ML Vision service added
@@ -29,9 +29,9 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
 
-#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are no longer supported because of an issue in the RTL. 
-
 The sample projects are developed and prepared for **Delphi 12.0 Athens**.
+
+#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier version are no longer supported because of an issue in the RTL. 
 
 Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
 
@@ -51,7 +51,7 @@ AnnotateFile is limited to pdf only, as the gif and tif image format is not yet 
 
 There are no restrictions when using Delphi 11 Alexandria.
 
-For older versions up to 10.4.2, you must note the following RSP: Due to a bug in the Linux RTL, all HTTP requests that transfer data to the server by using the _Patch_ method are currently not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. [For more information see RSP-33177](https://quality.embarcadero.com/browse/RSP-33177).
+For older versions up to 10.4.2, you must note the following RSP: Due to a bug in the Linux RTL, all HTTP requests that transfer data to the server by using the _Patch_ method are not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. [For more information see RSP-33177](https://quality.embarcadero.com/browse/RSP-33177).
 
 ### Submodules
 
