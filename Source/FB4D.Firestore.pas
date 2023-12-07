@@ -54,6 +54,8 @@ type
       Response: IFirebaseResponse);
     procedure OnDeleteResponse(const RequestID: string;
       Response: IFirebaseResponse);
+    procedure OnDeleteResponse2(const RequestID: string;
+      Response: IFirebaseResponse);
     procedure BeginReadTransactionResp(const RequestID: string;
       Response: IFirebaseResponse);
     procedure CommitWriteTransactionResp(const RequestID: string;
@@ -112,7 +114,10 @@ type
       UpdateMask: TStringDynArray;
       Mask: TStringDynArray = []): IFirestoreDocument; overload;
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
-      OnDeleteResp: TOnFirebaseResp; OnRequestError: TOnRequestError);
+      OnDeleteResp: TOnFirebaseResp; OnRequestError: TOnRequestError); overload;
+    procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
+      OnDeletedDoc: TOnDeletedDocument; OnError: TOnRequestError);
+      overload;
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
     // Listener subscription
@@ -832,6 +837,42 @@ begin
     Response.CheckForJSONObj;
     if assigned(Response.OnSuccess.OnResponse) then
       Response.OnSuccess.OnResponse(RequestID, Response);
+  except
+    on e: Exception do
+    begin
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, e.Message)
+      else
+        TFirebaseHelpers.LogFmt(rsFBFailureIn,
+          ['FirestoreDatabase.OnDeleteResponse', RequestID, e.Message]);
+    end;
+  end;
+end;
+
+procedure TFirestoreDatabase.Delete(Params: TRequestResourceParam;
+  QueryParams: TQueryParams; OnDeletedDoc: TOnDeletedDocument;
+  OnError: TOnRequestError);
+var
+  DBPath: TRequestResourceParam;
+  Request: IFirebaseRequest;
+begin
+  DBPath := TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID, Params);
+  Request := TFirebaseRequest.Create(GOOGLE_FIRESTORE_API_URL,
+    TFirestorePath.GetDocPath(DBPath), fAuth);
+  Request.SendRequest(DBPath, rmDELETE, nil, QueryParams, tmBearer,
+    OnDeleteResponse2, OnError,
+    TOnSuccess.CreateFirestoreDocDelete(OnDeletedDoc));
+end;
+
+procedure TFirestoreDatabase.OnDeleteResponse2(const RequestID: string;
+  Response: IFirebaseResponse);
+begin
+  try
+    fLastReceivedMsg := now;
+    Response.CheckForJSONObj;
+    if assigned(Response.OnSuccess.OnDocumentDeleted) then
+      Response.OnSuccess.OnDocumentDeleted(RequestID,
+        Response.GetServerTime(tzLocalTime));
   except
     on e: Exception do
     begin

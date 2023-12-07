@@ -112,6 +112,9 @@ type
     Document: IFirestoreDocument) of object;
   TOnDocuments = procedure(const Info: string;
     Documents: IFirestoreDocuments) of object;
+  TOnChangedDocument = procedure(ChangedDocument: IFirestoreDocument) of object;
+  TOnDeletedDocument = procedure(const DeleteDocumentPath: string;
+    TimeStamp: TDateTime) of object;
   TFirestoreReadTransaction = string; // A base64 encoded ID
   TOnBeginReadTransaction = procedure(Transaction: TFirestoreReadTransaction)
     of object;
@@ -142,8 +145,8 @@ type
     type TOnSuccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
       oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
       oscRTDBDelete, oscRTDBServerVariable, oscDocument, oscDocuments,
-      oscBeginReadTransaction, oscCommitWriteTransaction, oscStorage,
-      oscStorageDeprecated, oscStorageUpload, oscStorageGetAndDown,
+      oscDocumentDeleted, oscBeginReadTransaction, oscCommitWriteTransaction,
+      oscStorage, oscStorageDeprecated, oscStorageUpload, oscStorageGetAndDown,
       oscDelStorage, oscFunctionSuccess, oscVisionML);
     constructor Create(OnResp: TOnFirebaseResp);
     constructor CreateUser(OnUserResp: TOnUserResponse);
@@ -158,6 +161,8 @@ type
       OnRTDBServerVariableResp: TOnRTDBServerVariable);
     constructor CreateFirestoreDoc(OnDocumentResp: TOnDocument);
     constructor CreateFirestoreDocs(OnDocumentsResp: TOnDocuments);
+    constructor CreateFirestoreDocDelete(
+      OnDocumentDeleteResp: TOnDeletedDocument);
     constructor CreateFirestoreReadTransaction(
       OnBeginReadTransactionResp: TOnBeginReadTransaction);
     constructor CreateFirestoreCommitWriteTransaction(
@@ -183,6 +188,7 @@ type
       oscRTDBServerVariable: (OnRTDBServerVariable: TOnRTDBServerVariable);
       oscDocument: (OnDocument: TOnDocument);
       oscDocuments: (OnDocuments: TOnDocuments);
+      oscDocumentDeleted: (OnDocumentDeleted: TOnDeletedDocument);
       oscBeginReadTransaction: (OnBeginReadTransaction: TOnBeginReadTransaction);
       oscCommitWriteTransaction:
         (OnCommitWriteTransaction: TOnCommitWriteTransaction);
@@ -212,6 +218,7 @@ type
       OnRTDBServerVariable: TOnRTDBServerVariable;
       OnDocument: TOnDocument;
       OnDocuments: TOnDocuments;
+      OnDocumentDeleted: TOnDeletedDocument;
       OnBeginReadTransaction: TOnBeginReadTransaction;
       OnCommitWriteTransaction: TOnCommitWriteTransaction;
       OnStorage: TOnStorage;
@@ -452,10 +459,6 @@ type
     function HasEndAt: boolean;
   end;
 
-  TOnChangedDocument = procedure(ChangedDocument: IFirestoreDocument) of object;
-  TOnDeletedDocument = procedure(const DeleteDocumentPath: string;
-    TimeStamp: TDateTime) of object;
-
   IFirestoreWriteTransaction = interface
     function NumberOfTransactions: cardinal;
     procedure UpdateDoc(Document: IFirestoreDocument);
@@ -523,6 +526,11 @@ type
       Mask: TStringDynArray = []): IFirestoreDocument; overload;
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDeleteResponse: TOnFirebaseResp; OnRequestError: TOnRequestError);
+      overload;
+      deprecated 'Use method with TOnDeletedDocument call back method';
+    procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
+      OnDeletedDoc: TOnDeletedDocument; OnError: TOnRequestError);
+      overload;
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
     // Listener subscription
@@ -1013,6 +1021,14 @@ begin
   Create(nil);
   OnSuccessCase := oscDocuments;
   OnDocuments := OnDocumentsResp;
+end;
+
+constructor TOnSuccess.CreateFirestoreDocDelete(
+  OnDocumentDeleteResp: TOnDeletedDocument);
+begin
+  Create(nil);
+  OnSuccessCase := oscDocumentDeleted;
+  OnDocumentDeleted := OnDocumentDeleteResp;
 end;
 
 constructor TOnSuccess.CreateFirestoreReadTransaction(
