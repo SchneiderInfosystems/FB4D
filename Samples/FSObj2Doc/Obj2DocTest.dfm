@@ -19,7 +19,7 @@ object frmObj2Doc: TfrmObj2Doc
   object lblGetResult: TLabel
     Left = 279
     Top = 424
-    Width = 135
+    Width = 3
     Height = 15
   end
   object Label4: TLabel
@@ -36,7 +36,7 @@ object frmObj2Doc: TfrmObj2Doc
     Height = 15
   end
   object btnAddUpdateDoc: TButton
-    Left = 433
+    Left = 262
     Top = 103
     Width = 152
     Height = 25
@@ -47,7 +47,7 @@ object frmObj2Doc: TfrmObj2Doc
   object edtDocID: TLabeledEdit
     Left = 18
     Top = 104
-    Width = 396
+    Width = 223
     Height = 23
     EditLabel.Width = 318
     EditLabel.Height = 15
@@ -60,7 +60,7 @@ object frmObj2Doc: TfrmObj2Doc
     Top = 448
     Width = 152
     Height = 25
-    Caption = 'Get All Documents'
+    Caption = 'Get Documents'
     TabOrder = 2
     OnClick = btnGetDocsClick
   end
@@ -84,6 +84,7 @@ object frmObj2Doc: TfrmObj2Doc
     EditLabel.Caption = 'Firebase Project ID'
     TabOrder = 4
     Text = ''
+    ExplicitWidth = 396
   end
   object GroupBox1: TGroupBox
     Left = 18
@@ -130,7 +131,7 @@ object frmObj2Doc: TfrmObj2Doc
     object lblCreationDate: TLabel
       Left = 512
       Top = 19
-      Width = 189
+      Width = 3
       Height = 15
     end
     object cboEnum: TComboBox
@@ -241,5 +242,23 @@ object frmObj2Doc: TfrmObj2Doc
       TabOrder = 10
       Value = 0
     end
+  end
+  object btnInstallListener: TButton
+    Left = 591
+    Top = 448
+    Width = 135
+    Height = 25
+    Caption = 'Install Listener'
+    TabOrder = 6
+    OnClick = btnInstallListenerClick
+  end
+  object btnDeleteDoc: TButton
+    Left = 420
+    Top = 103
+    Width = 146
+    Height = 25
+    Caption = 'Delete Document'
+    TabOrder = 7
+    OnClick = btnDeleteDocClick
   end
 end

@@ -60,17 +60,25 @@ type
     GroupBox1: TGroupBox;
     Label4: TLabel;
     lblUpdateInsertResult: TLabel;
+    btnInstallListener: TButton;
+    btnDeleteDoc: TButton;
     procedure btnAddUpdateDocClick(Sender: TObject);
     procedure btnGetDocsClick(Sender: TObject);
     procedure lstDocIDClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btnInstallListenerClick(Sender: TObject);
+    procedure btnDeleteDocClick(Sender: TObject);
   private
     fDatabase: IFirestoreDatabase;
+    fLastDeletedDocID: string;
     function GetDatabase: IFirestoreDatabase;
     procedure ClearDocIdList;
     procedure OnDocument(const Info: string; Document: IFirestoreDocument);
     procedure OnDocuments(const Info: string; Documents: IFirestoreDocuments);
+    procedure OnChangedDocument(ChangedDoc: IFirestoreDocument);
+    procedure OnDeletedDocument(const DeletedDocPath: string; TS: TDateTime);
+    procedure OnStopListening(sender: TObject);
     procedure OnError(const RequestID, ErrMsg: string);
     function GetSettingFileName: string;
     procedure SaveSettings;
@@ -108,6 +116,9 @@ type
   TMyEnum = (_Alpha, _Beta, _Gamma);
   TMyFSDoc = class(TFirestoreDocument)
   public
+    // The class TMyFSDoc contains member variables for
+    // synchronization from and to the Firestore.
+    // Replace these members with specific fields required in your project
     DocTitle: string;
     Msg: AnsiString;
     Ch: Char;
@@ -115,8 +126,8 @@ type
     TestInt: integer;
     LargeNumber: Int64;
     B: Byte;
-    MyEnum: TMyEnum; // Define the types not here: (_Alpha, _Beta, _Gamma)
-    MySet, MySet2: TMySet;
+    MyEnum: TMyEnum; // Don't define ad-hoc the type here because of limitation in RTTI
+    MySet: TMySet;
     MyArr: array of integer;
     MyArrStr: array of string;
     MyArrTime: array of TDateTime;
@@ -191,7 +202,6 @@ begin
   lblByte.Caption := Doc.B.ToString;
   Doc.MyEnum := TMyEnum(cboEnum.ItemIndex);
   Doc.MySet := [1, 3, 65, 128, 255];
-  Doc.MySet2 := [];
   SetLength(Doc.MyArr, 3);
   Doc.MyArr[0] := 11; Doc.MyArr[1] := 33; Doc.MyArr[2] := 35;
   if edtArrStr0.Text > '' then
@@ -224,8 +234,16 @@ begin
   Doc.MyArrTime[0] := now; Doc.MyArrTime[1] := trunc(Now) + 1;
   lblMyArrTime.Caption := '0: ' + DateTimeToStr(Doc.MyArrTime[0]) +
     ' 1: ' + DateTimeToStr(Doc.MyArrTime[1]);
-  fDatabase.InsertOrUpdateDocument(Doc.SaveObjectToDocument, nil, OnDocument,
+  GetDatabase.InsertOrUpdateDocument(Doc.SaveObjectToDocument, nil, OnDocument,
     OnError);
+end;
+
+procedure TfrmObj2Doc.btnDeleteDocClick(Sender: TObject);
+begin
+  if edtDocID.Text > '' then
+    GetDatabase.Delete([cDocs, edtDocID.Text], nil, OnDeletedDocument, OnError)
+  else
+    lblGetResult.Caption := 'No document ID to delete';
 end;
 
 procedure TfrmObj2Doc.btnGetDocsClick(Sender: TObject);
@@ -253,6 +271,57 @@ begin
       lstDocID.AddItem(Doc.DocumentName(false),
         TMyFSDoc.LoadObjectFromDocument(Doc));
   end;
+end;
+
+procedure TfrmObj2Doc.btnInstallListenerClick(Sender: TObject);
+begin
+  GetDatabase.SubscribeQuery(TStructuredQuery.CreateForCollection(cDocs),
+    OnChangedDocument, OnDeletedDocument);
+  GetDatabase.StartListener(OnStopListening, OnError);
+  btnInstallListener.Enabled := false;
+  btnGetDocs.Enabled := false;
+end;
+
+procedure TfrmObj2Doc.OnChangedDocument(ChangedDoc: IFirestoreDocument);
+var
+  ind: integer;
+begin
+  ind := lstDocID.Items.IndexOfName(ChangedDoc.DocumentName(false));
+  if ind >= 0 then
+  begin
+    (lstDocID.Items.Objects[ind] as TMyFSDoc).Free;
+    lstDocID.Items.Objects[ind] := TMyFSDoc.LoadObjectFromDocument(ChangedDoc);
+    if ind = lstDocID.ItemIndex then
+      lstDocIDClick(nil);
+  end else
+    lstDocID.AddItem(ChangedDoc.DocumentName(false),
+      TMyFSDoc.LoadObjectFromDocument(ChangedDoc));
+end;
+
+procedure TfrmObj2Doc.OnDeletedDocument(const DeletedDocPath: string;
+  TS: TDateTime);
+var
+  DocID: string;
+  ind: integer;
+begin
+  DocID := TFirestorePath.ExtractLastCollection(DeletedDocPath);
+  if fLastDeletedDocID = DocID then
+    exit; // because OnDeletedDocument is called twice if listener is active
+  fLastDeletedDocID := DocID;
+  ind := lstDocID.Items.IndexOf(DocID);
+  if ind >= 0 then
+  begin
+    (lstDocID.Items.Objects[ind] as TMyFSDoc).Free;
+    lstDocID.Items.Delete(ind);
+    lblGetResult.Caption := 'Document ' + DocID + ' deleted';
+  end else
+    lblGetResult.Caption := 'Document ' + DocID + ' not found';
+end;
+
+procedure TfrmObj2Doc.OnStopListening(sender: TObject);
+begin
+  btnInstallListener.Enabled := true;
+  btnGetDocs.Enabled := true;
 end;
 
 procedure TfrmObj2Doc.ClearDocIdList;
