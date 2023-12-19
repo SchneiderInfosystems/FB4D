@@ -1455,7 +1455,7 @@ begin
             AddOrUpdate(F.Name,
               TJSONObject.SetStringValue(F.GetValue(self).AsString));
           tkFloat:
-            AddOrUpdate(F.Name, FloatToObj(F.DataType, F.GetValue(self)));
+            AddOrUpdate(F.Name, FloatToObj(F.FieldType, F.GetValue(self)));
           tkSet:
             AddOrUpdate(F.Name,
               TJSONObject.SetStringValue(SetToStr(F.GetValue(self))));
