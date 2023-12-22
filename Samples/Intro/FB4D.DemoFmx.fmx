@@ -557,12 +557,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               'onsists more than one value you get the entire node as JSON Obje' +
               'ct. If the node is just a single value the function Get returns ' +
               'a JSON Value.'#13'GetSynchronous send the request in the main thread' +
-              '. For modern OS (Android/iOS) you must not block the main thread' +
-              '. That is why the GetAsynchronous calls the request in a backgro' +
-              'und thread. On the otherside within a service or if you already ' +
-              'have implemented a background thread in your application for the' +
-              ' entire Firebase communication the usage of synchronous calls le' +
-              'ads to simpler implementation.'
+              '. For GUI Application you should not block the main thread while' +
+              ' the DB request. That is why the GetAsynchronous calls the reque' +
+              'st in a background thread. On the otherside within a service or ' +
+              'if you already have implemented a background thread in your appl' +
+              'ication for the entire Firebase communication the usage of synch' +
+              'ronous calls leads to simpler implementation.'
             TabOrder = 2
           end
           object aniGetRT: TAniIndicator
@@ -576,7 +576,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Text = 'Options'
             TabOrder = 5
           end
-          object edtColumName: TEdit
+          object edtColumnName: TEdit
             Touch.InteractiveGestures = [LongTap, DoubleTap]
             TabOrder = 4
             Position.X = 344.000000000000000000
@@ -584,16 +584,18 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Width = 81.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
-            TextPrompt = 'Enter a key'
+            TextPrompt = 'Enter column'
             Visible = False
           end
           object cboOrderBy: TComboBox
             Items.Strings = (
               ''
               'column'
+              'equal'
               'key'
               'value'
-              'priority')
+              'priority'
+              '')
             Position.X = 256.000000000000000000
             Position.Y = 38.000000000000000000
             Size.Width = 81.000000000000000000
@@ -617,8 +619,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Touch.InteractiveGestures = [LongTap, DoubleTap]
             TabOrder = 8
             Cursor = crIBeam
-            Position.X = 288.000000000000000000
-            Position.Y = 70.000000000000000000
+            Position.X = 285.000000000000000000
+            Position.Y = 94.000000000000000000
             Size.Width = 81.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
@@ -639,8 +641,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Touch.InteractiveGestures = [LongTap, DoubleTap]
             TabOrder = 7
             Cursor = crIBeam
-            Position.X = 288.000000000000000000
-            Position.Y = 102.000000000000000000
+            Position.X = 285.000000000000000000
+            Position.Y = 126.000000000000000000
             Size.Width = 81.000000000000000000
             Size.Height = 22.000000000000000000
             Size.PlatformDefault = False
@@ -656,6 +658,29 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Text = 'Limit to last'
               TabOrder = 0
             end
+          end
+          object edtColumnValue: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            TabOrder = 9
+            Position.X = 344.000000000000000000
+            Position.Y = 64.000000000000000000
+            Size.Width = 81.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            TextPrompt = 'Enter value'
+            Visible = False
+          end
+          object lblEqualTo: TLabel
+            Position.X = 215.000000000000000000
+            Position.Y = 64.000000000000000000
+            Size.Width = 121.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            TextSettings.Trimming = None
+            Text = 'Equal to'
+            Visible = False
+            TabOrder = 10
           end
         end
         object tabPut: TTabItem

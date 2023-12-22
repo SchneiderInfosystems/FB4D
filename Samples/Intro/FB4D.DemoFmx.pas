@@ -129,7 +129,7 @@ type
     btnPutRTAsynch: TButton;
     aniPutRT: TAniIndicator;
     Label14: TLabel;
-    edtColumName: TEdit;
+    edtColumnName: TEdit;
     Label15: TLabel;
     cboOrderBy: TComboBox;
     spbLimitToFirst: TSpinBox;
@@ -265,6 +265,8 @@ type
     pathAnotateFile: TPath;
     btnStartReadTransaction: TButton;
     btnCommitWriteTrans: TButton;
+    edtColumnValue: TEdit;
+    lblEqualTo: TLabel;
     procedure btnLoginClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
     procedure timRefreshTimer(Sender: TObject);
@@ -1861,9 +1863,7 @@ const
 
 function TfmxFirebaseDemo.CheckAndCreateRealTimeDBClass(Log: TMemo): boolean;
 begin
-  if not CheckSignedIn(Log) then
-    exit(false)
-  else if edtFirebaseURL.Text.IsEmpty then
+  if edtFirebaseURL.Text.IsEmpty then
   begin
     Log.Lines.Add('Please enter your Firebase URL first');
     Log.GoToTextEnd;
@@ -1890,7 +1890,9 @@ end;
 
 procedure TfmxFirebaseDemo.cboOrderByChange(Sender: TObject);
 begin
-  edtColumName.Visible := cboOrderBy.ItemIndex = 1;
+  edtColumnName.Visible := cboOrderBy.ItemIndex in [1, 2];
+  edtColumnValue.Visible := cboOrderBy.ItemIndex = 2;
+  lblEqualTo.Visible := cboOrderBy.ItemIndex = 2;
 end;
 
 procedure TfmxFirebaseDemo.spbLimitToFirstChange(Sender: TObject);
@@ -1906,9 +1908,13 @@ end;
 function TfmxFirebaseDemo.GetOptions: TQueryParams;
 begin
   result := nil;
-  if (cboOrderBy.ItemIndex = 1) and (not edtColumName.Text.IsEmpty) then
-    result := TQueryParams.CreateQueryParams.AddOrderBy(edtColumName.Text)
-  else if cboOrderBy.ItemIndex > 1 then
+  if (cboOrderBy.ItemIndex = 1) and (not edtColumnName.Text.IsEmpty) then
+    result := TQueryParams.CreateQueryParams.AddOrderBy(edtColumnName.Text)
+  else if (cboOrderBy.ItemIndex = 2) and (not edtColumnName.Text.IsEmpty) and
+          (not edtColumnValue.Text.IsEmpty) then
+    result := TQueryParams.CreateQueryParams.AddOrderByAndEqualTo(
+      edtColumnName.Text, StrToFloat(edtColumnValue.Text))
+  else if cboOrderBy.ItemIndex > 2 then
     result := TQueryParams.CreateQueryParams.AddOrderByType(
       cboOrderBy.Items[cboOrderBy.ItemIndex]);
   if spbLimitToFirst.Value > 0 then
