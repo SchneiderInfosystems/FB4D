@@ -142,7 +142,6 @@ constructor TRealTimeDB.Create(const ProjectID: string;
   Auth: IFirebaseAuthentication);
 begin
   inherited Create;
-  Assert(assigned(Auth), 'Authentication not initalized');
   fBaseURL := Format(GOOGLE_FIREBASE, [ProjectID]);
   fAuth := Auth;
 end;
@@ -150,7 +149,6 @@ end;
 constructor TRealTimeDB.CreateByURL(const FirebaseURL: string;
   Auth: IFirebaseAuthentication);
 begin
-  Assert(assigned(Auth), 'Authentication not initalized');
   fBaseURL := FirebaseURL;
   fAuth := Auth;
 end;
