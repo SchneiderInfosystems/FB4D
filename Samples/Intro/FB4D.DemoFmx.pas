@@ -1913,7 +1913,7 @@ begin
   else if (cboOrderBy.ItemIndex = 2) and (not edtColumnName.Text.IsEmpty) and
           (not edtColumnValue.Text.IsEmpty) then
     result := TQueryParams.CreateQueryParams.AddOrderByAndEqualTo(
-      edtColumnName.Text, StrToFloat(edtColumnValue.Text))
+      edtColumnName.Text, edtColumnValue.Text)
   else if cboOrderBy.ItemIndex > 2 then
     result := TQueryParams.CreateQueryParams.AddOrderByType(
       cboOrderBy.Items[cboOrderBy.ItemIndex]);
