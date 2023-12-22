@@ -1439,7 +1439,7 @@ begin
       IsInheritedClass := not(
         (F.Parent.Name = 'TFirestoreDocument') or
         (F.Parent.Name = 'TInterfacedObject') or
-        (F.Parent.Name = 'TInterfacedObject'));
+        (F.Parent.Name = 'TObject'));
       if IsInheritedClass then
       begin
         if not assigned(F.FieldType) then
@@ -1751,7 +1751,7 @@ begin
       IsInheritedClass := not(
         (F.Parent.Name = 'TFirestoreDocument') or
         (F.Parent.Name = 'TInterfacedObject') or
-        (F.Parent.Name = 'TInterfacedObject'));
+        (F.Parent.Name = 'TObject'));
       if IsInheritedClass then
       begin
         if not assigned(F.FieldType) then
