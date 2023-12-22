@@ -230,6 +230,12 @@ type
     function AddOrderByType(const TypeName: string): TQueryParams;
     function AddLimitToFirst(LimitToFirst: integer): TQueryParams;
     function AddLimitToLast(LimitToLast: integer): TQueryParams;
+    function AddOrderByAndEqualTo(const FieldName,
+      FilterValue: string): TQueryParams; overload;
+    function AddOrderByAndEqualTo(const FieldName: string;
+      FilterValue: integer): TQueryParams; overload;
+    function AddOrderByAndEqualTo(const FieldName: string;
+      FilterValue: extended): TQueryParams; overload;
     function AddTransaction(
       Transaction: TFirestoreReadTransaction): TQueryParams;
     function AddPageSize(PageSize: integer): TQueryParams;
@@ -1890,6 +1896,39 @@ const
 begin
   if not TypeName.IsEmpty then
     Add(cGetQueryParamOrderBy, [Format(sQuery, [TypeName])]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddOrderByAndEqualTo(const FieldName,
+  FilterValue: string): TQueryParams;
+begin
+  if not FieldName.IsEmpty then
+    Add(cGetQueryParamOrderBy,
+      ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
+  Add(cGetQueryParamEqualTo,
+    ['"' + StringReplace(FilterValue, '"', '""', [rfReplaceAll]) + '"']);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddOrderByAndEqualTo(const FieldName: string;
+  FilterValue: integer): TQueryParams;
+begin
+  if not FieldName.IsEmpty then
+    Add(cGetQueryParamOrderBy,
+      ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
+  Add(cGetQueryParamEqualTo,
+    [FilterValue.ToString]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddOrderByAndEqualTo(const FieldName: string;
+  FilterValue: extended): TQueryParams;
+begin
+  if not FieldName.IsEmpty then
+    Add(cGetQueryParamOrderBy,
+      ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
+  Add(cGetQueryParamEqualTo,
+    [FilterValue.ToString]);
   result := self;
 end;
 
