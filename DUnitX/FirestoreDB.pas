@@ -40,6 +40,8 @@ type
     fReqID: string;
     fInfo, fInfo2: string;
     fCallBack: integer;
+    fDocChanged: boolean;
+    fDocDeleted: boolean;
     fStopped: boolean;
     fDoc, fDoc2: IFirestoreDocument;
     fChangedDocName: string;
@@ -107,6 +109,8 @@ begin
   fReqID := '';
   fInfo := '';
   fCallBack := 0;
+  fDocChanged := false;
+  fDocDeleted := false;
   fDoc := nil;
   fDoc2 := nil;
   fChangedDocName := '';
@@ -155,6 +159,7 @@ end;
 
 procedure UT_FirestoreDB.OnDocChanged(ChangedDocument: IFirestoreDocument);
 begin
+  fDocChanged := true;
   fChangedDocName := ChangedDocument.DocumentName(false);
   fChangedDocC := ChangedDocument.CountFields;
   fChangedDocF1 := ChangedDocument.GetStringValue(cTestF1);
@@ -165,6 +170,7 @@ end;
 procedure UT_FirestoreDB.OnDocDel(const DeleteDocumentPath: string;
   TimeStamp: TDateTime);
 begin
+  fDocDeleted := true;
   fInfo2 := DeleteDocumentPath;
   inc(fCallBack);
 end;
@@ -375,7 +381,7 @@ begin
   Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString));
   Doc.AddOrUpdateField(TJSONObject.SetInteger(cTestF2, cTestInt));
   fConfig.Database.InsertOrUpdateDocument(Doc, nil, OnDoc, OnError);
-  while fCallBack < 3 do
+  while not fDocChanged do
     WaitAndCheckTimeout('InsertOrUpdateDocument');
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.AreEqual(fDoc.DocumentName(false), DocID, 'DocID');
@@ -388,11 +394,12 @@ begin
   Status('OnDocChanged check passed');
 
   fCallBack := 0;
+  fDocChanged := false;
   Doc := TFirestoreDocument.Create([cDBPath, DocID], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetString(cTestF1, cTestString2));
   fConfig.Database.InsertOrUpdateDocument(Doc, nil, OnDoc, OnError);
 
-  while fCallBack < 2 do
+  while not fDocChanged do
     WaitAndCheckTimeout('InsertOrUpdateDocument-2');
 
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
@@ -407,9 +414,10 @@ begin
 
   fCallBack := 0;
   fDeletedDoc := '';
+  fDocDeleted := false;
   fConfig.Database.Delete([cDBPath, DocID], nil, OnDocDel, onError);
 
-  while fCallBack < 2 do
+  while not fDocDeleted or fDeletedDoc.IsEmpty do
     WaitAndCheckTimeout('Delete');
 
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
