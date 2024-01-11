@@ -34,7 +34,7 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
   FMX.Edit, FMX.ScrollBox, FMX.Memo, FMX.Controls.Presentation, FMX.StdCtrls,
   FMX.TabControl, FMX.DateTimeCtrls, FMX.ListBox, FMX.Layouts, FMX.EditBox,
-  FMX.SpinBox, FMX.Memo.Types, FMX.Menus, FMX.ExtCtrls,
+  FMX.SpinBox, FMX.Memo.Types, FMX.Menus, FMX.ExtCtrls, FMX.DialogService,
   FB4D.Interfaces, FB4D.RealTimeDB;
 
 type
@@ -383,8 +383,8 @@ type
     procedure OnFirestoreCreate(const Info: string; Doc: IFirestoreDocument);
     procedure OnFirestoreInsertOrUpdate(const Info: string;
       Doc: IFirestoreDocument);
-    procedure OnFirestoreDeleted(const RequestID: string;
-      Response: IFirebaseResponse);
+    procedure OnFirestoreDeleted(const DeleteDocumentPath: string;
+      TimeStamp: TDateTime);
     procedure OnFSChangedDocInCollection(Doc: IFirestoreDocument);
     procedure OnFSChangedDoc(Doc: IFirestoreDocument);
     procedure OnFSDeletedDocCollection(const DelDocPath: string; TS: TDateTime);
@@ -848,6 +848,10 @@ end;
 
 procedure TfmxFirebaseDemo.btnGetUserDataClick(Sender: TObject);
 begin
+  if not CheckAndCreateAuthenticationClass then
+    exit;
+  if not CheckSignedIn(memUser) then
+    exit;
   memUser.Lines.Clear;
   fAuth.GetUserData(OnGetUserData, OnUserError);
 end;
@@ -904,7 +908,22 @@ end;
 
 procedure TfmxFirebaseDemo.btnDeleteUserAccountClick(Sender: TObject);
 begin
-  fAuth.DeleteCurrentUser(OnUserResp, OnUserError);
+  TabControlUser.ActiveTab := tabInfo;
+  if not CheckAndCreateAuthenticationClass then
+    exit;
+  if not CheckSignedIn(memUser) then
+    exit;
+  memUser.Lines.Clear;
+  TDialogService.MessageDialog('Do you realy wan''t delete the signed-in user?',
+    TMsgDlgType.mtConfirmation, [TMsgDlgBtn.mbYes, TMsgDlgBtn.mbNo],
+    TMsgDlgBtn.mbYes, 0,
+    procedure(const AResult: TModalResult)
+    begin
+      if AResult = mrYes then
+        fAuth.DeleteCurrentUser(OnUserResp, OnUserError)
+      else
+        memUser.Lines.Add('Delete aborted by user');
+    end);
 end;
 
 procedure TfmxFirebaseDemo.btnSendEMailVerificationClick(Sender: TObject);
@@ -1353,11 +1372,12 @@ begin
       OnFirestoreDeleted, OnFirestoreError)
 end;
 
-procedure TfmxFirebaseDemo.OnFirestoreDeleted(const RequestID: string;
-  Response: IFirebaseResponse);
+procedure TfmxFirebaseDemo.OnFirestoreDeleted(const DeleteDocumentPath: string;
+  TimeStamp: TDateTime);
 begin
   memFirestore.Lines.Clear;
-  memFirestore.Lines.Add('Document deleted: ' + RequestID);
+  memFirestore.Lines.Add('Document deleted: ' + DeleteDocumentPath +
+    ' at ' + DateToStr(TimeStamp));
 end;
 
 procedure TfmxFirebaseDemo.btnInsertOrUpdateDocumentClick(Sender: TObject);
