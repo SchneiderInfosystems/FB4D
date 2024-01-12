@@ -83,6 +83,8 @@ type
     fProfileURL: string;
     fProfileImg: TJPEGImage;
     fDefaultProfileImg: TJPEGImage;
+    procedure InternalInit(const LastRefreshToken, LastEMail: string;
+      AutoCheckEMail: boolean);
     procedure StartTokenReferesh(const LastToken: string);
     procedure OnFetchProviders(const EMail: string; IsRegistered: boolean;
       Providers: TStrings);
@@ -108,16 +110,19 @@ type
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
       RequireVerificatedEMail: boolean = false;
-      RegisterDisplayName: boolean = false);
+      RegisterDisplayName: boolean = false;
+      AutoCheckEMail: boolean = true);
     procedure InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
       RequireVerificatedEMail: boolean = false;
-      RegisterDisplayName: boolean = false);
+      RegisterDisplayName: boolean = false;
+      AutoCheckEMail: boolean = true);
     procedure RequestProfileImg(OnGetStorage: TOnGetStorage;
       const StoragePath: string = cDefaultStoragePathForProfileImg;
       ProfileImgSize: integer = cDefaultProfileImgSize);
     procedure StartEMailEntering;
+    procedure StartEMailChecking;
     procedure InformDelayedStart(const Msg: string);
     procedure StopDelayedStart;
     function GetEMail: string;
@@ -132,6 +137,9 @@ uses
   FB4D.Helpers;
 
 {$R *.dfm}
+
+// Under Authentication Settings > UserAction EMail enumeration protection must
+// be disabled otherwise a registered email cannot be detected properly
 
 // Install the following Storage Rule when using method RequestProfileImg:
 // rules_version = '2';
@@ -183,36 +191,42 @@ end;
 
 procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
-  AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName: boolean);
+  AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName,
+  AutoCheckEMail: boolean);
 begin
   fAuth := Auth;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := nil;
-  edtEMail.Text := LastEMail;
   fAllowSelfRegistration := AllowSelfRegistration;
   fRequireVerificatedEMail := RequireVerificatedEMail;
   fRegisterDisplayName := RegisterDisplayName;
-  if LastRefreshToken.IsEmpty then
-    StartEMailEntering
-  else
-    StartTokenReferesh(LastRefreshToken);
+  InternalInit(LastRefreshToken, LastEMail, AutoCheckEMail);
 end;
 
 procedure TFraSelfRegistration.InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
-  AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName: boolean);
+  AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName,
+  AutoCheckEMail: boolean);
 begin
   fAuth := nil;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := OnGetAuth;
-  edtEMail.Text := LastEMail;
   fAllowSelfRegistration := AllowSelfRegistration;
   fRequireVerificatedEMail := RequireVerificatedEMail;
   fRegisterDisplayName := RegisterDisplayName;
-  if LastRefreshToken.IsEmpty then
-    StartEMailEntering
+  InternalInit(LastRefreshToken, LastEMail, AutoCheckEMail);
+end;
+
+procedure TFraSelfRegistration.InternalInit(const LastRefreshToken,
+  LastEMail: string; AutoCheckEMail: boolean);
+begin
+  edtEMail.Text := LastEMail;
+  if not LastRefreshToken.IsEmpty then
+    StartTokenReferesh(LastRefreshToken)
+  else if AutoCheckEMail and TFirebaseHelpers.IsEMailAdress(LastEMail) then
+    StartEMailChecking
   else
-    StartTokenReferesh(LastRefreshToken);
+    StartEMailEntering;
 end;
 
 procedure TFraSelfRegistration.RequestProfileImg(OnGetStorage: TOnGetStorage;
@@ -230,7 +244,6 @@ begin
   pnlCheckRegistered.Visible := true;
   btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
   btnCheckEMail.Visible := true;
-  lblStatus.Caption := rsEnterEMail;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
@@ -239,6 +252,30 @@ begin
   edtDisplayName.Text := '';
   btnRegisterDisplayName.Visible := false;
   imgProfile.Visible := false;
+  lblStatus.Caption := rsEnterEMail;
+end;
+
+procedure TFraSelfRegistration.StartEMailChecking;
+begin
+  fInfo := '';
+  pnlCheckRegistered.Visible := true;
+  if not assigned(fAuth) and assigned(fOnGetAuth) then
+    fAuth := fOnGetAuth;
+  Assert(assigned(fAuth), 'Auth is not initialized');
+  fAuth.FetchProvidersForEMail(trim(edtEmail.Text), OnFetchProviders,
+    OnFetchProvidersError);
+  btnCheckEMail.Enabled := false;
+  btnSignIn.Visible := false;
+  btnResetPwd.Visible := false;
+  btnSignUp.Visible := false;
+  pnlPassword.Visible := false;
+  pnlDisplayName.Visible := false;
+  edtDisplayName.Text := '';
+  btnRegisterDisplayName.Visible := false;
+  imgProfile.Visible := false;
+  AniIndicator.Enabled := true;
+  AniIndicator.Visible := true;
+  lblStatus.Caption := rsWait;
 end;
 
 procedure TFraSelfRegistration.edtEMailChange(Sender: TObject);
@@ -257,15 +294,7 @@ end;
 
 procedure TFraSelfRegistration.btnCheckEMailClick(Sender: TObject);
 begin
-  if not assigned(fAuth) and assigned(fOnGetAuth) then
-    fAuth := fOnGetAuth;
-  Assert(assigned(fAuth), 'Auth is not initialized');
-  fAuth.FetchProvidersForEMail(trim(edtEmail.Text), OnFetchProviders,
-    OnFetchProvidersError);
-  AniIndicator.Enabled := true;
-  AniIndicator.Visible := true;
-  btnCheckEMail.Enabled := false;
-  lblStatus.Caption := rsWait;
+  StartEMailChecking;
 end;
 
 procedure TFraSelfRegistration.OnFetchProviders(const EMail: string;
@@ -281,7 +310,8 @@ begin
     btnResetPwd.Visible := true;
     btnResetPwd.Enabled := true;
     lblStatus.Caption := rsEnterPassword;
-    pnlCheckRegistered.visible := false;
+    pnlCheckRegistered.visible := Height >= gdpAcitivityInd.Height +
+      pnlCheckRegistered.Height + pnlCheckRegistered.Height;
     pnlPassword.visible := true;
     edtPassword.Text := '';
     edtPassword.SetFocus;
@@ -294,7 +324,8 @@ begin
     btnSignIn.Visible := false;
     btnResetPwd.Visible := false;
     lblStatus.Caption := rsSetupPassword;
-    pnlCheckRegistered.visible := false;
+    pnlCheckRegistered.visible := Height >= gdpAcitivityInd.Height +
+      pnlCheckRegistered.Height + pnlCheckRegistered.Height;
     pnlPassword.visible := true;
     edtPassword.Text := '';
     edtPassword.SetFocus;

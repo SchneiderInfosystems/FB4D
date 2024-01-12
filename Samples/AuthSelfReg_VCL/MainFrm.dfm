@@ -40,11 +40,14 @@ object frmMain: TfrmMain
         ExplicitHeight = 442
         inherited pnlStatus: TPanel
           Width = 628
-          StyleElements = [seFont, seClient, seBorder]
+          Height = 224
           ExplicitWidth = 628
+          ExplicitHeight = 224
           inherited lblStatus: TLabel
             Width = 608
-            StyleElements = [seFont, seClient, seBorder]
+            Height = 204
+            GlowSize = 5
+            WordWrap = True
           end
         end
         inherited gdpAcitivityInd: TGridPanel
@@ -55,8 +58,7 @@ object frmMain: TfrmMain
               Control = FraSelfRegistration.AniIndicator
               Row = 0
             end>
-          StyleElements = [seFont, seClient, seBorder]
-          ExplicitWidth = 628
+          ExplicitWidth = 626
           inherited AniIndicator: TActivityIndicator
             Left = 306
             ExplicitLeft = 306
@@ -64,60 +66,63 @@ object frmMain: TfrmMain
         end
         inherited pnlCheckRegistered: TPanel
           Width = 628
-          StyleElements = [seFont, seClient, seBorder]
-          ExplicitWidth = 628
+          ExplicitWidth = 626
           inherited edtEMail: TLabeledEdit
             Width = 576
-            StyleElements = [seFont, seClient, seBorder]
-            ExplicitWidth = 576
+            EditLabel.ExplicitLeft = 0
+            EditLabel.ExplicitTop = -18
+            EditLabel.ExplicitWidth = 46
+            ExplicitWidth = 574
           end
           inherited btnCheckEMail: TButton
             Left = 463
-            ExplicitLeft = 463
+            ExplicitLeft = 461
           end
         end
         inherited pnlPassword: TPanel
           Width = 628
-          StyleElements = [seFont, seClient, seBorder]
-          ExplicitWidth = 628
+          ExplicitWidth = 626
           inherited edtPassword: TLabeledEdit
             Width = 576
-            StyleElements = [seFont, seClient, seBorder]
-            ExplicitWidth = 576
+            EditLabel.ExplicitLeft = 0
+            EditLabel.ExplicitTop = -18
+            EditLabel.ExplicitWidth = 67
+            ExplicitWidth = 574
           end
           inherited btnSignIn: TButton
             Left = 463
-            ExplicitLeft = 463
+            ExplicitLeft = 461
           end
           inherited btnSignUp: TButton
             Left = 463
-            ExplicitLeft = 463
+            ExplicitLeft = 461
           end
           inherited btnResetPwd: TButton
             Left = 327
-            ExplicitLeft = 327
+            ExplicitLeft = 325
           end
         end
         inherited pnlDisplayName: TPanel
           Width = 628
-          StyleElements = [seFont, seClient, seBorder]
-          ExplicitWidth = 628
+          ExplicitWidth = 626
           inherited imgProfile: TImage
             Left = 230
             ExplicitLeft = 230
           end
           inherited edtDisplayName: TLabeledEdit
             Width = 576
-            StyleElements = [seFont, seClient, seBorder]
-            ExplicitWidth = 576
+            EditLabel.ExplicitLeft = 0
+            EditLabel.ExplicitTop = -18
+            EditLabel.ExplicitWidth = 87
+            ExplicitWidth = 574
           end
           inherited btnRegisterDisplayName: TButton
             Left = 383
-            ExplicitLeft = 383
+            ExplicitLeft = 381
           end
           inherited btnLoadProfile: TButton
             Left = 383
-            ExplicitLeft = 383
+            ExplicitLeft = 381
           end
         end
       end
@@ -139,7 +144,6 @@ object frmMain: TfrmMain
       Caption = 'CardFirebaseSettings'
       CardIndex = 1
       TabOrder = 1
-      ExplicitLeft = 40
       DesignSize = (
         628
         442)
