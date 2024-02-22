@@ -75,7 +75,7 @@ type
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
     class function ConvertTimeStampAndRandomPatternToPUSHID(timestamp: TDateTime;
-      Random: TBytes): string;
+      Random: TBytes; TimeIsUTC: boolean = false): string;
     class function DecodeTimeStampFromPUSHID(const PUSHID: string;
       ConvertToLocalTime: boolean = true): TDateTime;
 
@@ -665,13 +665,13 @@ begin
 end;
 
 class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToPUSHID(
-  timestamp: TDateTime; Random: TBytes): string;
+  timestamp: TDateTime; Random: TBytes; TimeIsUTC: boolean): string;
 var
   tsi: int64;
   c: integer;
 begin
   Assert(length(Random) >= 12, 'Too short random pattern');
-  tsi := System.DateUtils.DateTimeToUnix(timestamp, false) * 1000;
+  tsi := System.DateUtils.DateTimeToUnix(timestamp, TimeIsUTC) * 1000;
   result := '';
   for c := 1 to 8 do
   begin

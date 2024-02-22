@@ -38,6 +38,7 @@ type
   published
     procedure ConvertGUIDtoFBIDtoGUID;
     procedure DecodeTimeFromPushID;
+    procedure ConvertTimeStampAndRandomPatternToPushID;
   end;
 
 implementation
@@ -101,6 +102,41 @@ begin
  diff := d2 - d;
  Assert.IsTrue(Diff = 0, 'Timestamp difference');
  Status('PushID: ' + ID + ' was generated at UTC: ' + DateTimeToStr(d2));
+end;
+
+procedure UT_FBHelpers.ConvertTimeStampAndRandomPatternToPushID;
+const
+  LCID_USA = 1033;
+  DateStart = '1/1/1970 00:00:00';
+  DateUnixEnd = '1/19/2038 03:14:07';
+  DateEnd = '12/31/2999 23:59:59'; // Hope this program can then be replaced ;)
+var
+  ID: string;
+  r: TBytes;
+  c: integer;
+  dIn, dOut: TDateTime;
+begin
+  SetLength(r, 12);
+  for c := low(r) to High(r) do
+    r[c] := 0;
+  dIn := StrToDateTime(DateStart, TFormatSettings.Create(LCID_USA));
+  ID := TFirebaseHelpers.ConvertTimeStampAndRandomPatternToPUSHID(dIn, r, true);
+  Status('First Push ID: ' + ID + ' (' + DateStart + ')');
+  dOut := TFirebaseHelpers.DecodeTimeStampFromPUSHID(ID, false);
+  Assert.AreEqual(dIn, dOut, 'First Push ID failed');
+  dIn := StrToDateTime(DateUnixEnd, TFormatSettings.Create(LCID_USA));
+  ID := TFirebaseHelpers.ConvertTimeStampAndRandomPatternToPUSHID(dIn, r, true);
+  Status('EndOfUnixDate Push ID: ' + ID + ' (' + DateUnixEnd + ')');
+  dOut := TFirebaseHelpers.DecodeTimeStampFromPUSHID(ID, false);
+  Assert.AreEqual(dIn, dOut, 'EndOfUnixDate Push ID failed');
+  dIn := StrToDateTime(DateEnd, TFormatSettings.Create(LCID_USA));
+  ID := TFirebaseHelpers.ConvertTimeStampAndRandomPatternToPUSHID(dIn, r, true);
+  Status('Last Push ID: ' + ID + ' (' + DateEnd + ')');
+  dOut := TFirebaseHelpers.DecodeTimeStampFromPUSHID(ID, false);
+  Assert.AreEqual(dIn, dOut, 'Last Push ID failed');
+  dOut := TFirebaseHelpers.DecodeTimeStampFromPUSHID('-zzzzzzzzzzzzzzzzzzz',
+    false);
+  Status('Last ID starting with "-" character ' + DateTimeToStr(dOut));
 end;
 
 initialization
