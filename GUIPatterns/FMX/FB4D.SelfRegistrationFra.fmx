@@ -19,6 +19,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.PlatformDefault = False
     TabOrder = 3
     Text = 'Check Email Address'
+    TextSettings.Trimming = None
     OnClick = btnCheckEMailClick
   end
   object btnResetPwd: TButton
@@ -29,6 +30,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.PlatformDefault = False
     TabOrder = 7
     Text = 'Reset password'
+    TextSettings.Trimming = None
     OnClick = btnResetPwdClick
   end
   object btnSignIn: TButton
@@ -40,6 +42,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.PlatformDefault = False
     TabOrder = 4
     Text = 'Sign-In'
+    TextSettings.Trimming = None
     OnClick = btnSignInClick
   end
   object btnSignUp: TButton
@@ -51,6 +54,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.PlatformDefault = False
     TabOrder = 5
     Text = 'Sign-Up'
+    TextSettings.Trimming = None
     OnClick = btnSignUpClick
   end
   object edtEMail: TEdit
@@ -98,6 +102,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.Height = 40.000000000000000000
     Size.PlatformDefault = False
     TextSettings.HorzAlign = Center
+    TextSettings.Trimming = None
     TabOrder = 9
   end
   object btnRegisterDisplayName: TButton
@@ -109,6 +114,7 @@ object FraSelfRegistration: TFraSelfRegistration
     Size.PlatformDefault = False
     TabOrder = 6
     Text = 'Register Display Name'
+    TextSettings.Trimming = None
     OnClick = btnRegisterDisplayNameClick
   end
   object edtDisplayName: TEdit
@@ -265,6 +271,7 @@ object FraSelfRegistration: TFraSelfRegistration
       Size.PlatformDefault = False
       TabOrder = 0
       Text = 'Load Profile'
+      TextSettings.Trimming = None
       OnClick = btnLoadProfileClick
     end
   end
