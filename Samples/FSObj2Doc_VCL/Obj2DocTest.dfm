@@ -76,7 +76,7 @@ object frmObj2Doc: TfrmObj2Doc
   object edtProjectID: TLabeledEdit
     Left = 16
     Top = 32
-    Width = 398
+    Width = 396
     Height = 23
     Anchors = [akLeft, akTop, akRight]
     EditLabel.Width = 97
@@ -84,7 +84,7 @@ object frmObj2Doc: TfrmObj2Doc
     EditLabel.Caption = 'Firebase Project ID'
     TabOrder = 4
     Text = ''
-    ExplicitWidth = 396
+    ExplicitWidth = 394
   end
   object GroupBox1: TGroupBox
     Left = 18

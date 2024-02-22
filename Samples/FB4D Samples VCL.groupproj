@@ -9,7 +9,7 @@
         <Projects Include="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="FSObj2Doc\FSObj2Doc.dproj">
+        <Projects Include="FSObj2Doc_VCL\FSObj2Doc_VCL.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -38,23 +38,23 @@
     <Target Name="RTDB_PerUserReadWrite_VCL:Make">
         <MSBuild Projects="RTDB_PerUserReadWrite_VCL\RTDB_PerUserReadWrite_VCL.dproj" Targets="Make"/>
     </Target>
-    <Target Name="FSObj2Doc">
-        <MSBuild Projects="FSObj2Doc\FSObj2Doc.dproj"/>
+    <Target Name="FSObj2Doc_VCL">
+        <MSBuild Projects="FSObj2Doc_VCL\FSObj2Doc_VCL.dproj"/>
     </Target>
-    <Target Name="FSObj2Doc:Clean">
-        <MSBuild Projects="FSObj2Doc\FSObj2Doc.dproj" Targets="Clean"/>
+    <Target Name="FSObj2Doc_VCL:Clean">
+        <MSBuild Projects="FSObj2Doc_VCL\FSObj2Doc_VCL.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="FSObj2Doc:Make">
-        <MSBuild Projects="FSObj2Doc\FSObj2Doc.dproj" Targets="Make"/>
+    <Target Name="FSObj2Doc_VCL:Make">
+        <MSBuild Projects="FSObj2Doc_VCL\FSObj2Doc_VCL.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="Auth_SelfReg_VCL;RTDB_PerUserReadWrite_VCL;FSObj2Doc"/>
+        <CallTarget Targets="Auth_SelfReg_VCL;RTDB_PerUserReadWrite_VCL;FSObj2Doc_VCL"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Auth_SelfReg_VCL:Clean;RTDB_PerUserReadWrite_VCL:Clean;FSObj2Doc:Clean"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Clean;RTDB_PerUserReadWrite_VCL:Clean;FSObj2Doc_VCL:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Auth_SelfReg_VCL:Make;RTDB_PerUserReadWrite_VCL:Make;FSObj2Doc:Make"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Make;RTDB_PerUserReadWrite_VCL:Make;FSObj2Doc_VCL:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

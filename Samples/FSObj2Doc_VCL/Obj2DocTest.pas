@@ -189,53 +189,57 @@ begin
   if edtDocID.Text = '' then
     edtDocID.Text := TFirebaseHelpers.CreateAutoID(FSID);
   Doc := TMyFSDoc.Create([cDocs, edtDocID.Text], GetDatabase);
-  Doc.DocTitle := edtDocTitle.Text;
-  Doc.Msg := AnsiString(edtMsg.Text);
-  if edtCh.Text > '' then
-    Doc.Ch := edtCh.Text[1]
-  else
-    Doc.Ch := '?';
-  Doc.CreationDateTime := now;
-  Doc.TestInt := integer(edtTestInt.Value);
-  Doc.LargeNumber := StrToInt64Def(edtLargeNumber.Text, -1);
-  Doc.B := random(255);
-  lblByte.Caption := Doc.B.ToString;
-  Doc.MyEnum := TMyEnum(cboEnum.ItemIndex);
-  Doc.MySet := [1, 3, 65, 128, 255];
-  SetLength(Doc.MyArr, 3);
-  Doc.MyArr[0] := 11; Doc.MyArr[1] := 33; Doc.MyArr[2] := 35;
-  if edtArrStr0.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, 1);
-    Doc.MyArrStr[0] := edtArrStr0.Text;
-  end else
-    SetLength(Doc.MyArrStr, 0);
-  if edtArrStr1.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr1.Text;
+  try
+    Doc.DocTitle := edtDocTitle.Text;
+    Doc.Msg := AnsiString(edtMsg.Text);
+    if edtCh.Text > '' then
+      Doc.Ch := edtCh.Text[1]
+    else
+      Doc.Ch := '?';
+    Doc.CreationDateTime := now;
+    Doc.TestInt := integer(edtTestInt.Value);
+    Doc.LargeNumber := StrToInt64Def(edtLargeNumber.Text, -1);
+    Doc.B := random(255);
+    lblByte.Caption := Doc.B.ToString;
+    Doc.MyEnum := TMyEnum(cboEnum.ItemIndex);
+    Doc.MySet := [1, 3, 65, 128, 255];
+    SetLength(Doc.MyArr, 3);
+    Doc.MyArr[0] := 11; Doc.MyArr[1] := 33; Doc.MyArr[2] := 35;
+    if edtArrStr0.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, 1);
+      Doc.MyArrStr[0] := edtArrStr0.Text;
+    end else
+      SetLength(Doc.MyArrStr, 0);
+    if edtArrStr1.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr1.Text;
+    end;
+    if edtArrStr2.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr2.Text;
+    end;
+    if edtArrStr3.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr3.Text;
+    end;
+    if edtArrStr4.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr4.Text;
+    end;
+    SetLength(Doc.MyArrTime, 2);
+    Doc.MyArrTime[0] := now; Doc.MyArrTime[1] := trunc(Now) + 1;
+    lblMyArrTime.Caption := '0: ' + DateTimeToStr(Doc.MyArrTime[0]) +
+      ' 1: ' + DateTimeToStr(Doc.MyArrTime[1]);
+    GetDatabase.InsertOrUpdateDocument(Doc.SaveObjectToDocument, nil, OnDocument,
+      OnError);
+  finally
+    Doc.Free;
   end;
-  if edtArrStr2.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr2.Text;
-  end;
-  if edtArrStr3.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr3.Text;
-  end;
-  if edtArrStr4.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr4.Text;
-  end;
-  SetLength(Doc.MyArrTime, 2);
-  Doc.MyArrTime[0] := now; Doc.MyArrTime[1] := trunc(Now) + 1;
-  lblMyArrTime.Caption := '0: ' + DateTimeToStr(Doc.MyArrTime[0]) +
-    ' 1: ' + DateTimeToStr(Doc.MyArrTime[1]);
-  GetDatabase.InsertOrUpdateDocument(Doc.SaveObjectToDocument, nil, OnDocument,
-    OnError);
 end;
 
 procedure TfrmObj2Doc.btnDeleteDocClick(Sender: TObject);
