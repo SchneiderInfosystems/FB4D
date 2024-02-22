@@ -81,8 +81,10 @@ object FraSelfRegistration: TFraSelfRegistration
     Align = Center
     TabOrder = 2
     Password = True
+    Padding.Right = -30.000000000000000000
+    Margins.Right = 30.000000000000000000
     Margins.Bottom = 30.000000000000000000
-    Size.Width = 377.000000000000000000
+    Size.Width = 347.000000000000000000
     Size.Height = 32.000000000000000000
     Size.PlatformDefault = False
     TextPrompt = 'Enter your password'
@@ -93,6 +95,44 @@ object FraSelfRegistration: TFraSelfRegistration
       Size.PlatformDefault = False
       Text = 'Password'
       TextSettings.HorzAlign = Trailing
+    end
+    object imgShowPwd: TImage
+      MultiResBitmap.Width = 18
+      MultiResBitmap = <
+        item
+          Width = 18
+          Height = 18
+          PNG = {
+            89504E470D0A1A0A0000000D494844520000001200000012080600000056CE8E
+            570000000473424954080808087C0864880000013349444154388DE5D3BF2B46
+            711406F08FB7D7E2CD20F1475814CAC6402C529441316120FE023F567F008BC9
+            6030189464A294B292490C92180C587807AF1FC33D97EBCDAF9953B7EE39E7F9
+            3EF7F93EE75CFE6C547CD3ABC7206A222FE210DB78FA0D791B5651C2CB27CF15
+            867F225908F02926D08826B4C4FB148E03B38EC26724CB217926F2069C64945C
+            A2A7EC835BC8654946A3311679152E82A80B9338C775F46031CECCA624D501D8
+            C9107706A83D53EB8D5A77E479ECE301353954C65D5F328752B9CF99DA5D59AF
+            2499E4879809A291C80BA172576272735CF31E758149ED98CF12E5B08947F445
+            AD4732EAD4EC220624BB371D6A8FBC7BF61605AC85E425C9D4F2E8C7385A252B
+            918E7F4FE2EF973194517283039CF9B89073CA76E8AB5F248F0E8937CDA8C52D
+            56B011AAFF4BBC0295E65264C7EACDEE0000000049454E44AE426082}
+          FileName = 
+            'C:\Users\Christoph\Documents\Project\triHow\triHow_Desktop\TriHo' +
+            'wManager\resource\outline_remove_red_eye_black_18dp.png'
+        end>
+      Align = MostRight
+      Cursor = crHandPoint
+      Padding.Right = -30.000000000000000000
+      Margins.Top = 2.000000000000000000
+      Margins.Right = 2.000000000000000000
+      Margins.Bottom = 2.000000000000000000
+      Position.X = 351.000000000000000000
+      Position.Y = 2.000000000000000000
+      Size.Width = 24.000000000000000000
+      Size.Height = 28.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = imgShowPwdMouseDown
+      OnMouseUp = imgShowPwdMouseUp
+      OnMouseLeave = imgShowPwdMouseLeave
     end
   end
   object lblStatus: TLabel
