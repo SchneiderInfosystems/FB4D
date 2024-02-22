@@ -473,6 +473,7 @@ type
   IFirestoreDatabase = interface(IInterface)
     function GetProjectID: string;
     function GetDatabaseID: string;
+
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil); overload;
@@ -485,17 +486,20 @@ type
     function RunQuerySynchronous(DocumentPath: TRequestResourceParam;
       StructuredQuery: IStructuredQuery;
       QueryParams: TQueryParams = nil): IFirestoreDocuments; overload;
+
     procedure Get(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirestoreDocuments;
     function GetAndAddSynchronous(var Docs: IFirestoreDocuments;
       Params: TRequestResourceParam; QueryParams: TQueryParams = nil): boolean;
+
     procedure CreateDocument(DocumentPath: TRequestResourceParam;
       QueryParams: TQueryParams; OnDocument: TOnDocument;
       OnRequestError: TOnRequestError);
     function CreateDocumentSynchronous(DocumentPath: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirestoreDocument;
+
     procedure InsertOrUpdateDocument(DocumentPath: TRequestResourceParam;
       Document: IFirestoreDocument; QueryParams: TQueryParams;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError); overload;
@@ -509,6 +513,7 @@ type
       deprecated 'Use method without DocumentPath and overtake full path in document';
     function InsertOrUpdateDocumentSynchronous(Document: IFirestoreDocument;
       QueryParams: TQueryParams = nil): IFirestoreDocument; overload;
+
     procedure PatchDocument(DocumentPath: TRequestResourceParam;
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError;
@@ -524,15 +529,20 @@ type
     function PatchDocumentSynchronous(DocumentPart: IFirestoreDocument;
       UpdateMask: TStringDynArray;
       Mask: TStringDynArray = []): IFirestoreDocument; overload;
+
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDeleteResponse: TOnFirebaseResp; OnRequestError: TOnRequestError);
       overload;
       deprecated 'Use method with TOnDeletedDocument call back method';
+    // QueryParams: can contain as precondition a JSON object with one field
+    // named either as "exists" or "updateTime". Read more at:
+    // https://firebase.google.com/docs/firestore/reference/rest/v1/Precondition
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDeletedDoc: TOnDeletedDocument; OnError: TOnRequestError);
       overload;
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
+
     // Listener subscription
     function SubscribeDocument(DocumentPath: TRequestResourceParam;
       OnChangedDoc: TOnChangedDocument;
@@ -548,6 +558,7 @@ type
       DoNotSynchronizeEvents: boolean = false);
     procedure StopListener(RemoveAllSubscription: boolean = true);
     function GetTimeStampOfLastAccess: TDateTime; // local time
+
     // Transaction
     procedure BeginReadTransaction(
       OnBeginReadTransaction: TOnBeginReadTransaction;
@@ -559,6 +570,7 @@ type
     procedure CommitWriteTransaction(Transaction: IFirestoreWriteTransaction;
       OnCommitWriteTransaction: TOnCommitWriteTransaction;
       OnRequestError: TOnRequestError);
+
     property ProjectID: string read GetProjectID;
     property DatabaseID: string read GetDatabaseID;
   end;
