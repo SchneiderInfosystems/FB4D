@@ -650,6 +650,8 @@ begin
     fConfig.Database.DeleteSynchronous(DocPath);
     Status('Document deleted ' + Doc.DocumentName(false));
   end;
+  FreeAndNil(Doc);
+  FreeAndNil(Doc2);
 end;
 
 

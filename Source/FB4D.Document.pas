@@ -209,7 +209,7 @@ resourcestring
   rsInvalidDocumentPath =
     'Invalid document path "%s", expected "projects/*/database/*/documents"';
   rsDocIndexOutOfBound = 'Index out of bound for document list';
-  rsInvalidDocNodeCountLess3 = 'Invalid document - node count less 3';
+  rsInvalidDocNodeCountLess2 = 'Invalid document - node count less 2';
   rsJSONFieldNameMissing = 'JSON field name missing';
   rsJSONFieldCreateTimeMissing = 'JSON field createTime missing';
   rsJSONFieldUpdateTimeMissing = 'JSON field updateTime missing';
@@ -473,14 +473,14 @@ var
 begin
   inherited Create;
   fJSONObj := JSONObj.Clone as TJSONObject;
-  if fJSONObj.Count < 3 then
-    raise EFirestoreDocument.Create(rsInvalidDocNodeCountLess3);
+  if fJSONObj.Count < 2 then
+    raise EFirestoreDocument.Create(rsInvalidDocNodeCountLess2);
   if not fJSONObj.TryGetValue('name', fDocumentName) then
     raise EStorageObject.Create(rsJSONFieldNameMissing);
   if not fJSONObj.TryGetValue('createTime', fCreated) then
-    raise EStorageObject.Create(rsJSONFieldCreateTimeMissing);
+    fCreated := 0;
   if not fJSONObj.TryGetValue('updateTime', fUpdated) then
-    raise EStorageObject.Create(rsJSONFieldUpdateTimeMissing);
+    fUpdated := 0;
   if fJSONObj.TryGetValue('fields', obj) then
   begin
     SetLength(fFields, obj.Count);
@@ -1201,14 +1201,14 @@ end;
 function TFirestoreDocument.CreateTime(TimeZone: TTimeZone): TDateTime;
 begin
   result := fCreated;
-  if TimeZone = tzLocalTime then
+  if (result > 0) and (TimeZone = tzLocalTime) then
     result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
 function TFirestoreDocument.UpdateTime(TimeZone: TTimeZone): TDatetime;
 begin
   result := fUpdated;
-  if TimeZone = tzLocalTime then
+  if (result > 0) and (TimeZone = tzLocalTime) then
     result := TFirebaseHelpers.ConvertToLocalDateTime(result);
 end;
 
@@ -1497,7 +1497,8 @@ begin
     for s in SplitString(fJSONObj.Format, #13) do
       TFirebaseHelpers.Log('  ' + s);
     {$ENDIF}
-    result := self;
+    // requires here a clone otherwise the called document will be released to early!
+    result := self.Clone;
   finally
     Ctx.Free;
   end;
