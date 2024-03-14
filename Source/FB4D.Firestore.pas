@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2023 Christoph Schneider                                 }
+{  Copyright (c) 2018-2024 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -253,7 +253,8 @@ const
   METHODE_ROLLBACK = ':rollback';
   FILTER_OERATION: array [TWhereOperator] of string = ('OPERATOR_UNSPECIFIED',
     'LESS_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN',
-    'GREATER_THAN_OR_EQUAL', 'EQUAL', 'ARRAY_CONTAINS');
+    'GREATER_THAN_OR_EQUAL', 'EQUAL', 'NOT_EQUAL', 'ARRAY_CONTAINS',
+    'IN', 'ARRAY_CONTAINS_ANY', 'NOT_IN');
   COMPOSITEFILTER_OPERATION: array [TCompostiteOperation] of string = (
     'OPERATOR_UNSPECIFIED', 'AND');
   ORDER_DIRECTION: array [TOrderDirection] of string = ('DIRECTION_UNSPECIFIED',
@@ -1434,8 +1435,30 @@ end;
 constructor TQueryFilter.Create(const Where, Value: string; Op: TWhereOperator);
 const
   cWhereOperationStr: array [TWhereOperator] of string =
-    ('?', '<', '≤', '>', '≥', '=', #2208);
-  // Attention U+2208 (Element of) is not yet in all MS fonts
+    // woUnspecific
+    ('?',
+    // woLessThan
+     '<',
+    // woLessThanOrEqual
+    '≤',
+    // woGreaterThan
+    '>',
+    // woGreaterThanOrEqual
+    '≥',
+    // woEqual
+    '=',
+    // woNotEqual
+    '≠',
+    // woArrayContains
+    #$2208, // Attention U+2208 (Element of) is not yet in all MS fonts
+    // woInArray
+    #$220B, // Attention U+220B (contains as member) is not yet in all MS fonts
+    // woArrayContainsAny
+    #$2258, // Attention U+220C (corresponds to) is not yet in all MS fonts
+    // woNotInArray
+    #$220C // Attention U+220C (does not contain as member) is not yet in all MS fonts
+    );
+
 begin
   inherited Create;
   fFilter := TJSONObject.Create;

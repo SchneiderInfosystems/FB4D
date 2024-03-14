@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2023 Christoph Schneider                                 }
+{  Copyright (c) 2018-2024 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -424,7 +424,8 @@ type
   end;
 
   TWhereOperator = (woUnspecific, woLessThan, woLessThanOrEqual,
-    woGreaterThan, woGreaterThanOrEqual, woEqual, woArrayContains);
+    woGreaterThan, woGreaterThanOrEqual, woEqual, woNotEqual, woArrayContains,
+    woInArray, woArrayContainsAny, woNotInArray);
   IQueryFilter = interface(IInterface)
     procedure AddPair(const Str: string; Val: TJSONValue); overload;
     procedure AddPair(const Str, Val: string); overload;
