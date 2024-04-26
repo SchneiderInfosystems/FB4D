@@ -671,7 +671,8 @@ var
   c: integer;
 begin
   Assert(length(Random) >= 12, 'Too short random pattern');
-  tsi := System.DateUtils.DateTimeToUnix(timestamp, TimeIsUTC) * 1000;
+  tsi := System.DateUtils.DateTimeToUnix(timestamp, TimeIsUTC) * 1000 +
+    System.DateUtils.MilliSecondOf(timestamp);
   result := '';
   for c := 1 to 8 do
   begin
