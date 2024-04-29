@@ -56,6 +56,7 @@ type
     class function EncodeQueryParamsWithToken(QueryParams: TQueryParams;
       const EncodedToken: string): string;
     // Request parameter helpers
+    class function EncodeResourceParam(Param: string): string;
     class function EncodeResourceParams(Params: TRequestResourceParam): string;
     class function AddParamToResParams(Params: TRequestResourceParam;
       const Param: string): TRequestResourceParam;
@@ -362,8 +363,7 @@ begin
           TNetEncoding.URL.Encode(ParVal);
 end;
 
-class function TFirebaseHelpers.EncodeResourceParams(
-  Params: TRequestResourceParam): string;
+class function TFirebaseHelpers.EncodeResourceParam(Param: string): string;
 const
   PathUnsafeChars: TURLEncoding.TUnsafeChars =
     [Ord('"'), Ord('<'), Ord('>'), Ord('^'), Ord('`'), Ord('{'), Ord('}'),
@@ -371,13 +371,18 @@ const
   Option: TURLEncoding.TEncodeOptions =
     [TURLEncoding.TEncodeOption.SpacesAsPlus,
      TURLEncoding.TEncodeOption.EncodePercent];
+begin
+  result := TNetEncoding.URL.Encode(Param, PathUnsafeChars, Option);
+end;
+
+class function TFirebaseHelpers.EncodeResourceParams(
+  Params: TRequestResourceParam): string;
 var
   i: integer;
 begin
   result := '';
   for i := low(Params) to high(Params) do
-    result := result + '/' + TNetEncoding.URL.Encode(Params[i], PathUnsafeChars,
-      Option);
+    result := result + '/' + EncodeResourceParam(Params[i]);
 end;
 
 class function TFirebaseHelpers.EncodeToken(const Token: string): string;

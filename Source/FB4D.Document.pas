@@ -440,7 +440,7 @@ begin
     c0 := length(result);
     SetLength(result, c0 + length(DocumentPath));
     for c := 0 to length(DocumentPath) - 1 do
-      result[c0 + c] := DocumentPath[c];
+      result[c0 + c] := TFirebaseHelpers.EncodeResourceParam(DocumentPath[c]);
   end;
 end;
 
