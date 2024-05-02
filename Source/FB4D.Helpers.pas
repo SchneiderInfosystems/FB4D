@@ -285,7 +285,7 @@ begin
   UTC := TTimeZone.Local.ToUniversalTime(DateTimeStamp);
   // Format RFC3339
   result := FormatDateTime('yyyy-mm-dd', UTC) + 'T' +
-    FormatDateTime('hh:mm:ss', UTC) + 'Z';
+    FormatDateTime('hh:mm:ss.zzz', UTC) + 'Z';
 end;
 
 class function TFirebaseHelpers.DecodeRFC3339DateTime(
@@ -701,6 +701,7 @@ begin
   result := UnixToDateTime(tsi div 1000);
   if ConvertToLocalTime then
     result := TTimeZone.Local.ToLocalTime(result);
+  result := result + (tsi mod 1000) / 24 / 3600 / 1000;
 end;
 
 {$IF Defined(FMX) OR Defined(FGX)}
