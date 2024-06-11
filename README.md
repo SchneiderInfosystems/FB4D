@@ -14,7 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
-- June 2024: Add TOTDMapperOptions to control the behavior of the Object-To-Doc-Mapper
+- June 2024: Add _TOTDMapperOptions_ to control the behavior of the Object-To-Doc-Mapper
 - December 2023: The Object to Document Mapper lets you quickly sync your Pascal objects to the Firestore database by deriving your own class from _TFirestoreDocument_ and adding member variables. All member variables are automatically written to the document and read from the document. The sample application FSObj2Doc demonstrates the functionality
 - October 2023: Firestore database write transaction supports delete document too. The new Auth_SelfReg_VCL demo application explains all options of the self registration workflow.
 - June 2023: Firestore database supports write transactions
