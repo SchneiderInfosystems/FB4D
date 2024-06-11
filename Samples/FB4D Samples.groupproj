@@ -21,6 +21,9 @@
         <Projects Include="PhotoBox\PhotoBox.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="FSObject2Doc\FSObj2Doc.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -83,14 +86,23 @@
     <Target Name="PhotoBox:Make">
         <MSBuild Projects="PhotoBox\PhotoBox.dproj" Targets="Make"/>
     </Target>
+    <Target Name="FSObj2Doc">
+        <MSBuild Projects="FSObject2Doc\FSObj2Doc.dproj"/>
+    </Target>
+    <Target Name="FSObj2Doc:Clean">
+        <MSBuild Projects="FSObject2Doc\FSObj2Doc.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FSObj2Doc:Make">
+        <MSBuild Projects="FSObject2Doc\FSObj2Doc.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard;FSSimpleChat;PhotoBox"/>
+        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard;FSSimpleChat;PhotoBox;FSObj2Doc"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean;FSSimpleChat:Clean;PhotoBox:Clean"/>
+        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean;FSSimpleChat:Clean;PhotoBox:Clean;FSObj2Doc:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make;FSSimpleChat:Make;PhotoBox:Make"/>
+        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make;FSSimpleChat:Make;PhotoBox:Make;FSObj2Doc:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

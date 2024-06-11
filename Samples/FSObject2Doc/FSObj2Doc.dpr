@@ -21,39 +21,17 @@
 {                                                                              }
 {******************************************************************************}
 
-program FB4D.IntegrationTests;
+program FSObj2Doc;
 
-// Console Tester not support because a windows event handler is required for
-// aysnchrouns functions
-
-{$STRONGLINKTYPES ON}
 uses
-  System.SysUtils,
-  {$IFDEF TESTINSIGHT}
-  TestInsight.DUnitX,
-  {$ENDIF }
-  DUnitX.Loggers.GUI.VCL,
-  DUnitX.Loggers.Xml.NUnit,
-  DUnitX.TestFramework,
-  Config in 'Config.pas',
-  RealTimeDB in 'RealTimeDB.pas',
-  FBFunction in 'FBFunction.pas',
-  FirestoreDB in 'FirestoreDB.pas',
-  Authentication in 'Authentication.pas',
-  FBHelpers in 'FBHelpers.pas',
-  Storage in 'Storage.pas',
-  Consts in 'Consts.pas';
+  System.StartUpCopy,
+  FMX.Forms,
+  Obj2DocTest in 'Obj2DocTest.pas' {fmxObj2Doc};
+
+{$R *.res}
 
 begin
-{$IFDEF TESTINSIGHT}
-  TestInsight.DUnitX.RunRegisteredTests;
-  exit;
-{$ENDIF}
-  try
-    TDUnitX.CheckCommandLine;
-    DUnitX.Loggers.GUI.VCL.Run;
-  except
-    on E: Exception do
-      System.Writeln(E.ClassName, ': ', E.Message);
-  end;
+  Application.Initialize;
+  Application.CreateForm(TfmxObj2Doc, fmxObj2Doc);
+  Application.Run;
 end.

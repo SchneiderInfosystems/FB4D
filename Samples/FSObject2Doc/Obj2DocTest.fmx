@@ -1,0 +1,198 @@
+object fmxObj2Doc: TfmxObj2Doc
+  Left = 0
+  Top = 0
+  Caption = 'Demo Object to Document Wrapper'
+  ClientHeight = 576
+  ClientWidth = 500
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnClose = FormClose
+  DesignerMasterStyle = 0
+  object edtMyStringField: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 0
+    Text = 'MyTest'
+    Position.X = 40.000000000000000000
+    Position.Y = 202.000000000000000000
+  end
+  object Label1: TLabel
+    Position.X = 40.000000000000000000
+    Position.Y = 177.000000000000000000
+    Text = 'MyStringField'
+    TabOrder = 1
+  end
+  object Label2: TLabel
+    Position.X = 216.000000000000000000
+    Position.Y = 178.000000000000000000
+    Text = 'MyIntField'
+    TabOrder = 2
+  end
+  object edtMyIntField: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 3
+    KeyboardType = DecimalNumberPad
+    Text = '4711'
+    Position.X = 216.000000000000000000
+    Position.Y = 203.000000000000000000
+  end
+  object btnWriteDoc: TButton
+    Enabled = False
+    Position.X = 40.000000000000000000
+    Position.Y = 288.000000000000000000
+    Size.Width = 113.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    Text = 'Write Document'
+    TextSettings.Trimming = None
+    OnClick = btnWriteDocClick
+  end
+  object edtCollection: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 6
+    Text = 'MyCol'
+    Position.X = 40.000000000000000000
+    Position.Y = 128.000000000000000000
+  end
+  object edtDocId: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 7
+    Text = 'DocId'
+    Position.X = 216.000000000000000000
+    Position.Y = 128.000000000000000000
+  end
+  object Label3: TLabel
+    Position.X = 40.000000000000000000
+    Position.Y = 103.000000000000000000
+    Text = 'Collection'
+    TabOrder = 8
+  end
+  object Label4: TLabel
+    Position.X = 216.000000000000000000
+    Position.Y = 103.000000000000000000
+    Text = 'Document ID'
+    TabOrder = 9
+  end
+  object Label5: TLabel
+    Position.X = 40.000000000000000000
+    Position.Y = 8.000000000000000000
+    Text = 'Project ID'
+    TabOrder = 10
+  end
+  object edtProjectID: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akLeft, akTop, akRight]
+    TabOrder = 11
+    Position.X = 40.000000000000000000
+    Position.Y = 33.000000000000000000
+    Size.Width = 433.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object btnCreateDB: TButton
+    Position.X = 40.000000000000000000
+    Position.Y = 64.000000000000000000
+    Size.Width = 276.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 12
+    Text = 'Get DB Service'
+    TextSettings.Trimming = None
+    OnClick = btnCreateDBClick
+  end
+  object btnReadDoc: TButton
+    Enabled = False
+    Position.X = 216.000000000000000000
+    Position.Y = 288.000000000000000000
+    Size.Width = 113.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'Read Document'
+    TextSettings.Trimming = None
+    OnClick = btnReadDocClick
+  end
+  object GroupBox1: TGroupBox
+    Anchors = [akLeft, akTop, akRight]
+    Position.X = 24.000000000000000000
+    Position.Y = 329.000000000000000000
+    Size.Width = 468.000000000000000000
+    Size.Height = 232.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Object to Document Mapper Options'
+    TabOrder = 13
+    object chbSupressSaveDefVal: TCheckBox
+      Anchors = [akLeft, akTop, akRight]
+      Position.X = 16.000000000000000000
+      Position.Y = 25.000000000000000000
+      Size.Width = 433.000000000000000000
+      Size.Height = 32.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 38
+      Text = 
+        'Suppresses saving at default values (e.g. for empty strings or 0' +
+        ' for numbers) '
+    end
+    object chbEliminateFieldPrefixF: TCheckBox
+      Anchors = [akLeft, akTop, akRight]
+      Position.X = 16.000000000000000000
+      Position.Y = 196.000000000000000000
+      Size.Width = 433.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 39
+      Text = 'Eliminate F as field prefixes '
+    end
+    object chbSupressSavePrivateFields: TCheckBox
+      Anchors = [akLeft, akTop, akRight]
+      Position.X = 16.000000000000000000
+      Position.Y = 73.000000000000000000
+      Size.Width = 433.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 43
+      Text = 'Supress saving of private fields'
+    end
+    object chbSupressSaveProtectedFields: TCheckBox
+      Anchors = [akLeft, akTop, akRight]
+      Position.X = 16.000000000000000000
+      Position.Y = 100.000000000000000000
+      Size.Width = 433.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 42
+      Text = 'Supress saving of protected fields'
+    end
+    object chbSupressSavePublishedFields: TCheckBox
+      Anchors = [akLeft, akTop, akRight]
+      Position.X = 16.000000000000000000
+      Position.Y = 154.000000000000000000
+      Size.Width = 433.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 41
+      Text = 'Supress saving of published fields'
+    end
+    object chbSupressSavePublicFields: TCheckBox
+      Anchors = [akLeft, akTop, akRight]
+      Position.X = 16.000000000000000000
+      Position.Y = 127.000000000000000000
+      Size.Width = 433.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 40
+      Text = 'Supress saving of public fields'
+    end
+  end
+  object chbMyPrivateFlag: TCheckBox
+    Position.X = 353.000000000000000000
+    Position.Y = 205.000000000000000000
+    Size.Width = 104.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 15
+    Text = 'MyPrivateFlag'
+  end
+end

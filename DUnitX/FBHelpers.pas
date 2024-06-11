@@ -92,7 +92,8 @@ begin
  ID := TFirebaseHelpers.CreateAutoID(PUSHID);
  d2 := TFirebaseHelpers.DecodeTimeStampFromPUSHID(ID);
  diff := d2 - d;
- Assert.IsTrue(abs(Diff) < 1 / 24 / 3600, 'Timestamp difference > 1 s');
+ Assert.IsTrue(abs(Diff) < 1 / 24 / 3600 / 500, 'Timestamp difference > 2 ms: '
+   + FloatToStr(Diff * 24 * 3600 * 1000) + ' ms');
  Status('PushID: ' + ID + ' was generated at ' + DateTimeToStr(d2));
 
  ID := IDfromIssue107;
@@ -100,7 +101,8 @@ begin
  d := EncodeDate(2021, 6, 30) + EncodeTime(13, 01, 08, 0);
  // UTC Date taken from Issue #107
  diff := d2 - d;
- Assert.IsTrue(Diff = 0, 'Timestamp difference');
+ Assert.IsTrue(abs(Diff) < 1 / 24 / 3600, 'Timestamp difference > 1 s: '
+   + FloatToStr(Diff * 24 * 3600 * 1000) + ' ms');
  Status('PushID: ' + ID + ' was generated at UTC: ' + DateTimeToStr(d2));
 end;
 

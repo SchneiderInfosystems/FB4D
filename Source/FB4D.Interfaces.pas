@@ -352,6 +352,15 @@ type
   TFirestoreFieldType = (fftNull, fftBoolean, fftInteger, fftDouble,
     fftTimeStamp, fftString, fftBytes, fftReference, fftGeoPoint, fftArray,
     fftMap);
+  TOTDMapperOption = (
+    omSupressSaveDefVal, // Don't save empty string, integer with value 0, etc..
+    omSupressSavePrivateFields,   // Don't save private fields
+    omSupressSaveProtectedFields, // Don't save protected fields
+    omSupressSavePublicFields,    // Don't save public fields
+    omSupressSavePublishedFields, // Don't save published fields
+    omEliminateFieldPrefixF,      // Eliminate F and f as field prefix
+    omSaveEnumAsString);          // Convert Enum to string instead of ord number
+  TOTDMapperOptions = Set of TOTDMapperOption;
   IFirestoreDocument = interface(IInterface)
     function DocumentName(FullPath: boolean): string;
     function DocumentFullPath: TRequestResourceParam;
@@ -410,6 +419,8 @@ type
       Val: TJSONValue): IFirestoreDocument; overload;
     function AsJSON: TJSONObject;
     function Clone: IFirestoreDocument;
+    function SaveObjectToDocument(
+      Options: TOTDMapperOptions = []): IFirestoreDocument;
     property Fields[Index: integer]: TJSONObject read FieldValue;
   end;
 
