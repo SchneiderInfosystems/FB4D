@@ -107,7 +107,7 @@ object frmObj2Doc: TfrmObj2Doc
     Margins.Top = 4
     Margins.Right = 4
     Margins.Bottom = 4
-    Anchors = [akLeft, akTop, akBottom]
+    Anchors = [akLeft, akTop, akRight, akBottom]
     ItemHeight = 20
     TabOrder = 3
     OnClick = lstDocIDClick
