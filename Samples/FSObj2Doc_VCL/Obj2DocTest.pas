@@ -106,7 +106,7 @@ implementation
 
 uses
   System.IniFiles, System.IOUtils,
-  FB4D.Firestore, FB4D.Document, FB4D.Helpers;
+  FB4D.Firestore, FB4D.Document, FB4D.Helpers, FB4D.Configuration;
 
 const
   cDocs = 'Docs';
@@ -175,6 +175,7 @@ begin
   finally
     IniFile.Free;
   end;
+  Caption := Caption + ' [' + TFirebaseConfiguration.GetLibVersionInfo + ']';
 end;
 
 function TfrmObj2Doc.GetSettingFileName: string;
@@ -374,7 +375,7 @@ begin
       lstDocIDClick(nil);
   end else
     lstDocID.AddItem(ChangedDoc.DocumentName(false),
-      TMyFSDoc.LoadObjectFromDocument(ChangedDoc));
+      TMyFSDoc.LoadObjectFromDocument(ChangedDoc, GetOptions));
 end;
 
 procedure TfrmObj2Doc.OnDeletedDocument(const DeletedDocPath: string;

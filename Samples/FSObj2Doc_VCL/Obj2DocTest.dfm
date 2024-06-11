@@ -85,7 +85,7 @@ object frmObj2Doc: TfrmObj2Doc
     Text = ''
   end
   object btnGetDocs: TButton
-    Left = 676
+    Left = 1084
     Top = 700
     Width = 238
     Height = 39
@@ -93,6 +93,7 @@ object frmObj2Doc: TfrmObj2Doc
     Margins.Top = 4
     Margins.Right = 4
     Margins.Bottom = 4
+    Anchors = [akTop, akRight]
     Caption = 'Get Documents'
     TabOrder = 2
     OnClick = btnGetDocsClick
@@ -100,12 +101,13 @@ object frmObj2Doc: TfrmObj2Doc
   object lstDocID: TListBox
     Left = 29
     Top = 700
-    Width = 619
+    Width = 1047
     Height = 370
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
     Margins.Bottom = 4
+    Anchors = [akLeft, akTop, akBottom]
     ItemHeight = 20
     TabOrder = 3
     OnClick = lstDocIDClick
@@ -187,7 +189,7 @@ object frmObj2Doc: TfrmObj2Doc
     end
     object lblMyArrTime: TLabel
       Left = 140
-      Top = 293
+      Top = 366
       Width = 90
       Height = 20
       Margins.Left = 4
@@ -225,7 +227,7 @@ object frmObj2Doc: TfrmObj2Doc
         'Gamma')
     end
     object edtArrStr0: TEdit
-      Left = 124
+      Left = 126
       Top = 295
       Width = 189
       Height = 28
@@ -420,14 +422,15 @@ object frmObj2Doc: TfrmObj2Doc
     end
   end
   object btnInstallListener: TButton
-    Left = 924
-    Top = 700
-    Width = 211
+    Left = 1084
+    Top = 747
+    Width = 238
     Height = 39
     Margins.Left = 4
     Margins.Top = 4
     Margins.Right = 4
     Margins.Bottom = 4
+    Anchors = [akTop, akRight]
     Caption = 'Install Listener'
     TabOrder = 6
     OnClick = btnInstallListenerClick
