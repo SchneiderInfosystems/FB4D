@@ -222,8 +222,26 @@ type
     procedure UpdateDoc(Document: IFirestoreDocument);
     procedure PatchDoc(Document: IFirestoreDocument;
       UpdateMask: TStringDynArray);
+    procedure TransformDoc(const FullDocumentName: string;
+      Transform: IFirestoreDocTransform);
     procedure DeleteDoc(const DocumentFullPath: string);
     function GetWritesObjArray: TJSONArray;
+  end;
+
+  TFirestoreDocTransform = class(TInterfacedObject, IFirestoreDocTransform)
+  private
+    fFieldTransforms: TJSONArray;
+    function AsJSON(const DocumentFullName: string): string;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function SetServerTime(const FieldName: string): IFirestoreDocTransform;
+    function Increment(const FieldName: string;
+      Value: TJSONObject): IFirestoreDocTransform;
+    function Maximum(const FieldName: string;
+      Value: TJSONObject): IFirestoreDocTransform;
+    function Minimum(const FieldName: string;
+      Value: TJSONObject): IFirestoreDocTransform;
   end;
 
   TFirestoreCommitTransaction = class(TInterfacedObject,
@@ -237,6 +255,7 @@ type
     function NoUpdates: cardinal;
     function UpdateTime(Index: cardinal; TimeZone: TTimeZone = tzUTC): TDateTime;
   end;
+
 implementation
 
 uses
@@ -992,15 +1011,13 @@ var
 begin
   Assert(assigned(fAuth), 'Authentication is required');
   Assert(Transaction.NumberOfTransactions > 0, 'No transactions');
-  Request := TFirebaseRequest.Create(
-    GOOGLE_FIRESTORE_API_URL + METHODE_COMMITTRANS, rsCommitTrans, fAuth);
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
+    rsCommitTrans, fAuth);
   Data := TJSONObject.Create;
   Data.AddPair('writes',
     (Transaction as TFirestoreWriteTransaction).GetWritesObjArray);
   try
-    Response := Request.SendRequestSynchronous(
-      TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID), rmPOST, Data,
-      nil);
+    Response := Request.SendRequestSynchronous([], rmPOST, Data, nil);
     fLastReceivedMsg := now;
     if Response.StatusOk then
     begin
@@ -1026,13 +1043,13 @@ var
   Data: TJSONObject;
 begin
   Assert(assigned(fAuth), 'Authentication is required');
-  Request := TFirebaseRequest.Create(
-    GOOGLE_FIRESTORE_API_URL + METHODE_COMMITTRANS, rsCommitTrans, fAuth);
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
+    rsCommitTrans, fAuth);
   Data := TJSONObject.Create;
   Data.AddPair('writes',
     (Transaction as TFirestoreWriteTransaction).GetWritesObjArray);
-  Request.SendRequest(TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID),
-    rmPOST, Data, nil, tmBearer, CommitWriteTransactionResp, OnRequestError,
+  Request.SendRequest([], rmPOST, Data, nil, tmBearer,
+    CommitWriteTransactionResp, OnRequestError,
     TOnSuccess.CreateFirestoreCommitWriteTransaction(OnCommitWriteTransaction));
 end;
 
@@ -1540,6 +1557,18 @@ begin
   fWritesObjArray.Add(Obj);
 end;
 
+procedure TFirestoreWriteTransaction.TransformDoc(const FullDocumentName: string;
+  Transform: IFirestoreDocTransform);
+var
+  Obj: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('transform', TJSONObject.ParseJSONValue(
+    TFirestoreDocTransform(Transform).AsJSON(FullDocumentName)));
+  // Document need to be cloned here;
+  fWritesObjArray.Add(Obj);
+end;
+
 procedure TFirestoreWriteTransaction.DeleteDoc(const DocumentFullPath: string);
 begin
   fWritesObjArray.Add(TJSONObject.Create(TJSONPair.Create('delete',
@@ -1591,6 +1620,82 @@ begin
   result := fCommitTime;
   if TimeZone = tzLocalTime then
     result := TFirebaseHelpers.ConvertToLocalDateTime(result);
+end;
+
+{ TFirestoreDocTransform }
+
+constructor TFirestoreDocTransform.Create;
+begin
+  fFieldTransforms := TJSONArray.Create;
+end;
+
+destructor TFirestoreDocTransform.Destroy;
+begin
+  fFieldTransforms.Free;
+  inherited;
+end;
+
+function TFirestoreDocTransform.SetServerTime(
+  const FieldName: string): IFirestoreDocTransform;
+var
+  Obj: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('fieldPath', FieldName);
+  Obj.AddPair('setToServerValue', 'REQUEST_TIME');
+  fFieldTransforms.Add(Obj);
+  result := self;
+end;
+
+function TFirestoreDocTransform.Increment(const FieldName: string;
+  Value: TJSONObject): IFirestoreDocTransform;
+var
+  Obj: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('fieldPath', FieldName);
+  Obj.AddPair('increment', Value);
+  fFieldTransforms.Add(Obj);
+  result := self;
+end;
+
+function TFirestoreDocTransform.Maximum(const FieldName: string;
+  Value: TJSONObject): IFirestoreDocTransform;
+var
+  Obj: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('fieldPath', FieldName);
+  Obj.AddPair('maximum', Value);
+  fFieldTransforms.Add(Obj);
+  result := self;
+end;
+
+function TFirestoreDocTransform.Minimum(const FieldName: string;
+  Value: TJSONObject): IFirestoreDocTransform;
+var
+  Obj: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('fieldPath', FieldName);
+  Obj.AddPair('minimum', Value);
+  fFieldTransforms.Add(Obj);
+  result := self;
+end;
+
+function TFirestoreDocTransform.AsJSON(const DocumentFullName: string): string;
+var
+  Obj: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  try
+    Obj.AddPair('document', DocumentFullName);
+    if fFieldTransforms.Count > 0 then
+      Obj.AddPair('fieldTransforms', fFieldTransforms.Clone as TJSONArray);
+    result := Obj.ToJSON;
+  finally
+    Obj.Free;
+  end;
 end;
 
 end.

@@ -471,11 +471,23 @@ type
     function HasEndAt: boolean;
   end;
 
+  IFirestoreDocTransform = interface
+    function SetServerTime(const FieldName: string): IFirestoreDocTransform;
+    function Increment(const FieldName: string;
+      Value: TJSONObject): IFirestoreDocTransform;
+    function Maximum(const FieldName: string;
+      Value: TJSONObject): IFirestoreDocTransform;
+    function Minimum(const FieldName: string;
+      Value: TJSONObject): IFirestoreDocTransform;
+  end;
+
   IFirestoreWriteTransaction = interface
     function NumberOfTransactions: cardinal;
     procedure UpdateDoc(Document: IFirestoreDocument);
     procedure PatchDoc(Document: IFirestoreDocument;
       UpdateMask: TStringDynArray);
+    procedure TransformDoc(const FullDocumentName: string;
+      Transform: IFirestoreDocTransform);
     procedure DeleteDoc(const DocumentFullPath: string);
   end;
 

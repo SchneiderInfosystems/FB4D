@@ -1401,10 +1401,10 @@ begin
     1: begin
          Doc.AddOrUpdateField(TJSONObject.SetString('MyString',
            'This demonstrates a complex document that contains all supported data types'));
-         Doc.AddOrUpdateField(TJSONObject.SetInteger('MyInt', 123));
-         Doc.AddOrUpdateField(TJSONObject.SetDouble('MyReal', 1.54));
+         Doc.AddOrUpdateField(TJSONObject.SetInteger('MyInt', 123)); // Will be overwritten with Inc(2) later by TransformDoc
+         Doc.AddOrUpdateField(TJSONObject.SetDouble('MyReal', 1.54)); // Will be overwritten with Max(1.54, 3.14) later by TransformDoc
          Doc.AddOrUpdateField(TJSONObject.SetBoolean('MyBool', true));
-         Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('MyTime', now));
+         Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('MyTime', now + 0.5)); // Will be overwritten with ServerTime later by TransformDoc
          Doc.AddOrUpdateField(TJSONObject.SetNull('MyNull'));
          Doc.AddOrUpdateField(TJSONObject.SetReference('MyRef', edtProjectID.Text,
            edtCollection.Text + '/' + edtDocument.Text));
@@ -1463,6 +1463,16 @@ begin
     memFirestore.Lines.Add(Format(
       'UpdateDoc %s on write transaction - use Commit Write to store data',
       [TFirestorePath.GetDocPath(Doc.DocumentPathWithinDatabase)]));
+    if cboDemoDocType.ItemIndex = 1 then
+    begin
+      fWriteTransaction.TransformDoc(Doc.DocumentName(true),
+        TFirestoreDocTransform.Create.
+          SetServerTime('MyTime').
+          Increment('MyInt', TJSONObject.SetIntegerValue(2)).
+          Maximum('MyReal', TJSONObject.SetDoubleValue(3.14)));
+      memFirestore.Lines.Add(
+        'TransformDoc: Demonstrate SetServerTime(MyTime), Inc(MyInt, 2), and Maximum(MyReal, 3.14) by using TransformDoc (for Complex Document only!)');
+    end;
   end else
     // Log.d(Doc.AsJSON.ToJSON);
     fDatabase.InsertOrUpdateDocument(Doc, nil, OnFirestoreInsertOrUpdate,
