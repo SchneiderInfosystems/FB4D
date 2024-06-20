@@ -1651,7 +1651,7 @@ var
 begin
   if omSaveEnumAsString in Options then
   begin
-    s := Obj.GetStringValue;
+    s := Obj.GetStringValueDef;
     i := TypeInfo.TypeData.MinValue;
     for j := TypeInfo.TypeData.MinValue to TypeInfo.TypeData.MaxValue do
     begin
@@ -1663,7 +1663,7 @@ begin
     end;
     TValue.Make(i, TypeInfo, result);
   end else begin
-    i := Obj.GetInt64Value;
+    i := Obj.GetInt64ValueDef;
     TValue.Make(i, TypeInfo, result);
   end;
 end;
@@ -1718,26 +1718,26 @@ begin
     Obj := Map.GetMapItem(Fields[i].Name);
     case Fields[i].FieldType.TypeKind of
       tkChar:
-        VE := AnsiCharToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+        VE := AnsiCharToVal(Fields[i].FieldType.Handle, Obj.GetStringValueDef);
       tkWChar:
-        VE := CharToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+        VE := CharToVal(Fields[i].FieldType.Handle, Obj.GetStringValueDef);
       tkLString,
       tkString:
-        VE := AnsiStringToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+        VE := AnsiStringToVal(Fields[i].FieldType.Handle, Obj.GetStringValueDef);
       tkWString:
-        VE := WideStringToVal(Fields[i].FieldType.Handle, Obj.GetStringValue);
+        VE := WideStringToVal(Fields[i].FieldType.Handle, Obj.GetStringValueDef);
       tkUString:
-        VE := Obj.GetStringValue;
+        VE := Obj.GetStringValueDef;
       tkInteger:
-        VE := Obj.GetIntegerValue;
+        VE := Obj.GetIntegerValueDef;
       tkInt64:
-        VE := Obj.GetInt64Value;
+        VE := Obj.GetInt64ValueDef;
       tkEnumeration:
         VE := EnumToVal(Fields[i].FieldType.Handle, Obj, Options);
       tkFloat:
         VE := FloatToValDef(Fields[i].FieldType, Obj);
       tkSet:
-        VE := SetToVal(DAT.Handle, Obj.GetStringValue, Options);
+        VE := SetToVal(DAT.Handle, Obj.GetStringValueDef, Options);
       tkArray:
         VE := ArrayToVal(Fields[i], Obj.GetArrayValues, Options);
       tkDynArray:
@@ -1773,26 +1773,26 @@ begin
   begin
     case DAT.ElementType.TypeKind of
       tkChar:
-        VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValue);
+        VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValueDef);
       tkWChar:
-        VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValue);
+        VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValueDef);
       tkLString,
       tkString:
-        VA[i] := String(AnsiString(Arr[i].GetStringValue));
+        VA[i] := String(AnsiString(Arr[i].GetStringValueDef));
       tkWString:
-        VA[i] := WideString(Arr[i].GetStringValue);
+        VA[i] := WideString(Arr[i].GetStringValueDef);
       tkUString:
-        VA[i] := Arr[i].GetStringValue;
+        VA[i] := Arr[i].GetStringValueDef;
       tkInteger:
-        VA[i] := Arr[i].GetIntegerValue;
+        VA[i] := Arr[i].GetIntegerValueDef;
       tkInt64:
-        VA[i] := Arr[i].GetInt64Value;
+        VA[i] := Arr[i].GetInt64ValueDef;
       tkEnumeration:
         VA[i] := EnumToVal(DAT.Handle, Arr[i], Options);
       tkFloat:
         VA[i] := FloatToValDef(DAT.ElementType, Arr[i]);
       tkSet:
-        VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValue, Options);
+        VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValueDef, Options);
       tkRecord:
         VA[i] := RecordToVal(DAT.ElementType as TRttiRecordType, F.Name,
           Arr[i], Options);
@@ -1825,26 +1825,26 @@ begin
   begin
     case DAT.ElementType.TypeKind of
       tkChar:
-        VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValue);
+        VA[i] := AnsiCharToVal(DAT.Handle, Arr[i].GetStringValueDef);
       tkWChar:
-        VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValue);
+        VA[i] := CharToVal(DAT.Handle, Arr[i].GetStringValueDef);
       tkLString,
       tkString:
-        VA[i] := String(AnsiString(Arr[i].GetStringValue));
+        VA[i] := String(AnsiString(Arr[i].GetStringValueDef));
       tkWString:
-        VA[i] := WideString(Arr[i].GetStringValue);
+        VA[i] := WideString(Arr[i].GetStringValueDef);
       tkUString:
-        VA[i] := Arr[i].GetStringValue;
+        VA[i] := Arr[i].GetStringValueDef;
       tkInteger:
-        VA[i] := Arr[i].GetIntegerValue;
+        VA[i] := Arr[i].GetIntegerValueDef;
       tkInt64:
-        VA[i] := Arr[i].GetInt64Value;
+        VA[i] := Arr[i].GetInt64ValueDef;
       tkEnumeration:
         VA[i] := EnumToVal(DAT.Handle, Arr[i], Options);
       tkFloat:
         VA[i] := FloatToValDef(DAT.ElementType, Arr[i]);
       tkSet:
-        VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValue, Options);
+        VA[i] := SetToVal(DAT.Handle, Arr[i].GetStringValueDef, Options);
       tkRecord:
         VA[i] := RecordToVal(DAT.ElementType as TRttiRecordType, F.Name, Arr[i],
           Options);
