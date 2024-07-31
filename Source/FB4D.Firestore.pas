@@ -298,7 +298,10 @@ begin
   inherited Create;
   fProjectID := ProjectID;
   fAuth := Auth;
-  fDatabaseID := DatabaseID;
+  if DatabaseID.IsEmpty then
+    fDatabaseID := cDefaultDatabaseID
+  else
+    fDatabaseID := DatabaseID;
   fListener := TFSListenerThread.Create(ProjectID, DatabaseID, Auth);
   fLastReceivedMsg := 0;
 end;
@@ -926,13 +929,12 @@ var
   Request: IFirebaseRequest;
   Data: TJSONObject;
 begin
-  Assert(assigned(fAuth), 'Authentication is required');
-  Request := TFirebaseRequest.Create(
-    GOOGLE_FIRESTORE_API_URL + METHODE_BEGINTRANS, rsBeginTrans, fAuth);
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_BEGINTRANS,
+    rsBeginTrans, fAuth);
   Data := TJSONObject.Create(TJSONPair.Create('options',
     TJSONObject.Create(TJSONPair.Create('readOnly', TJSONObject.Create))));
-  Request.SendRequest(TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID),
-    rmPOST, Data, nil, tmBearer, BeginReadTransactionResp, OnRequestError,
+  Request.SendRequest([], rmPOST, Data, nil, tmBearer, BeginReadTransactionResp,
+    OnRequestError,
     TOnSuccess.CreateFirestoreReadTransaction(OnBeginReadTransaction));
 end;
 
@@ -972,15 +974,12 @@ var
   Response: IFirebaseResponse;
   Data, Res: TJSONObject;
 begin
-  Assert(assigned(fAuth), 'Authentication is required');
-  Request := TFirebaseRequest.Create(
-    GOOGLE_FIRESTORE_API_URL + METHODE_BEGINTRANS, rsBeginTrans, fAuth);
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_BEGINTRANS,
+    rsBeginTrans, fAuth);
   Data := TJSONObject.Create(TJSONPair.Create('options',
     TJSONObject.Create(TJSONPair.Create('readOnly', TJSONObject.Create))));
   try
-    Response := Request.SendRequestSynchronous(
-      TFirestoreDocument.GetDocFullPath(fProjectID, fDatabaseID), rmPOST, Data,
-      nil);
+    Response := Request.SendRequestSynchronous([], rmPOST, Data, nil);
     fLastReceivedMsg := now;
     if Response.StatusOk then
     begin
@@ -1009,7 +1008,6 @@ var
   Response: IFirebaseResponse;
   Data, Res: TJSONObject;
 begin
-  Assert(assigned(fAuth), 'Authentication is required');
   Assert(Transaction.NumberOfTransactions > 0, 'No transactions');
   Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
     rsCommitTrans, fAuth);
@@ -1042,7 +1040,6 @@ var
   Request: IFirebaseRequest;
   Data: TJSONObject;
 begin
-  Assert(assigned(fAuth), 'Authentication is required');
   Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
     rsCommitTrans, fAuth);
   Data := TJSONObject.Create;
