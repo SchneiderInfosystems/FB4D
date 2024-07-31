@@ -46,7 +46,7 @@ type
     procedure OnPutGet(ResourceParams: TRequestResourceParam; Val: TJSONValue);
     procedure OnError(const RequestID, ErrMsg: string);
     procedure OnReceive(const Event: string; Params: TRequestResourceParam; JSONObj: TJSONObject);
-    procedure OnStop(Sender: TObject);
+    procedure OnStop(const RequestID: string);
   public
     [Setup]
     procedure Setup;
@@ -127,7 +127,7 @@ begin
   fCallBack := true;
 end;
 
-procedure UT_RealTimeDB.OnStop(Sender: TObject);
+procedure UT_RealTimeDB.OnStop(const RequestID: string);
 begin
 
 end;

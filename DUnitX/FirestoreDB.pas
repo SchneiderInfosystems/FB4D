@@ -59,7 +59,7 @@ type
     procedure OnDocDeleted(const DeleteDocumentPath: string;
       TimeStamp: TDateTime);
     procedure OnDocDel(const DeleteDocumentPath: string; TimeStamp: TDateTime);
-    procedure OnStop(Sender: TObject);
+    procedure OnStop(const RequestID: string);
   public
     [Setup]
     procedure Setup;
@@ -201,7 +201,7 @@ begin
   inc(fCallBack);
 end;
 
-procedure UT_FirestoreDB.OnStop(Sender: TObject);
+procedure UT_FirestoreDB.OnStop(const RequestID: string);
 begin
   fStopped := true;
   inc(fCallBack);

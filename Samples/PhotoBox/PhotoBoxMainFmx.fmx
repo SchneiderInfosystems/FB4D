@@ -29,6 +29,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
@@ -126,6 +127,11 @@ object fmxMain: TfmxMain
         Size.Width = 640.000000000000000000
         Size.Height = 337.000000000000000000
         Size.PlatformDefault = False
+        inherited edtPassword: TEdit
+          inherited imgShowPwd: TImage
+            MultiResBitmap.Width = 18
+          end
+        end
         inherited shpProfile: TCircle
           Visible = False
         end
@@ -135,6 +141,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = True
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
@@ -158,6 +165,7 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           StyleLookup = 'cameratoolbutton'
           TabOrder = 0
+          TextSettings.Trimming = None
           OnClick = btnCaptureImgClick
         end
         object btnPhotoLib: TButton
@@ -169,6 +177,7 @@ object fmxMain: TfmxMain
           StyleLookup = 'addtoolbutton'
           TabOrder = 4
           Text = 'btnPhotoLib'
+          TextSettings.Trimming = None
           OnClick = btnPhotoLibClick
         end
         object btnHidePreview: TButton
@@ -180,6 +189,7 @@ object fmxMain: TfmxMain
           StyleLookup = 'arrowlefttoolbutton'
           TabOrder = 3
           Text = 'btnPhotoLib'
+          TextSettings.Trimming = None
           OnClick = btnHidePreviewClick
         end
         object btnDelete: TButton
@@ -191,6 +201,7 @@ object fmxMain: TfmxMain
           StyleLookup = 'trashtoolbutton'
           TabOrder = 1
           Text = 'btnPhotoLib'
+          TextSettings.Trimming = None
           OnClick = btnDeleteClick
         end
         object btnDownload: TButton
@@ -202,6 +213,7 @@ object fmxMain: TfmxMain
           StyleLookup = 'organizetoolbutton'
           TabOrder = 2
           Text = 'btnPhotoLib'
+          TextSettings.Trimming = None
           OnClick = btnDownloadClick
         end
       end
@@ -277,6 +289,7 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 0
           Text = 'Sign out'
+          TextSettings.Trimming = None
           OnClick = btnSignOutClick
         end
         object txtLoggedInUser: TText
@@ -291,6 +304,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000

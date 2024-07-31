@@ -28,6 +28,7 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
@@ -42,12 +43,18 @@ object fmxMain: TfmxMain
         Size.Width = 640.000000000000000000
         Size.Height = 480.000000000000000000
         Size.PlatformDefault = False
+        inherited edtPassword: TEdit
+          inherited imgShowPwd: TImage
+            MultiResBitmap.Width = 18
+          end
+        end
       end
     end
     object tabRTDBAccess: TTabItem
       CustomIcon = <
         item
         end>
+      TextSettings.Trimming = None
       IsSelected = True
       Size.Width = 8.000000000000000000
       Size.Height = 8.000000000000000000
@@ -75,6 +82,7 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 0
           Text = 'Sign Out'
+          TextSettings.Trimming = None
           OnClick = btnSignOutClick
         end
         object lblUserInfo: TLabel
@@ -132,6 +140,7 @@ object fmxMain: TfmxMain
         Size.PlatformDefault = False
         TabOrder = 1
         Text = 'Write changed text'
+        TextSettings.Trimming = None
         OnClick = btnWriteClick
       end
     end

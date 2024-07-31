@@ -318,8 +318,7 @@ begin
   // 3rd: Upload storage
   UploadImageToStorage;
   // 4th: Upload document
-  fConfig.Database.InsertOrUpdateDocumentSynchronous(
-    [cCollectionID, Doc.DocumentName(false)], Doc);
+  fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
 end;
 {$ENDREGION}
 

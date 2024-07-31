@@ -97,7 +97,7 @@ type
     procedure OnRecData(const Event: string; Params: TRequestResourceParam;
       JSONObj: TJSONObject);
     procedure OnRecDataError(const Info, ErrMsg: string);
-    procedure OnRecDataStop(Sender: TObject);
+    procedure OnRecDataStop(const RequestId: string);
     procedure OnConnectionStateChange(ListenerConnected: boolean);
     procedure StartListener;
     procedure StopListener;
@@ -448,7 +448,7 @@ begin
   lblStatusRTDB.Text := 'Clipboard error: ' + ErrMsg;
 end;
 
-procedure TfmxMain.OnRecDataStop(Sender: TObject);
+procedure TfmxMain.OnRecDataStop(const RequestId: string);
 begin
   lblStatusRTDB.Text := Format('Clipboard stopped at %s %d',
     [TimeToStr(now), fReceivedUpdates]);

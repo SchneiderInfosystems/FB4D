@@ -15,6 +15,13 @@ inherited fmxMain_Macintosh: TfmxMain_Macintosh
     inherited tabSignIn: TTabItem
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
+      inherited FraSelfRegistration: TFraSelfRegistration
+        inherited edtPassword: TEdit
+          inherited imgShowPwd: TImage
+            MultiResBitmap.Width = 18
+          end
+        end
+      end
     end
     inherited tabClipboard: TTabItem
       ExplicitSize.cx = 8.000000000000000000
@@ -40,7 +47,7 @@ inherited fmxMain_Macintosh: TfmxMain_Macintosh
           649s
           263s)
         inherited tabText: TTabItem
-          Size.Width = 44.000000000000000000
+          Size.Width = 43.000000000000000000
           ExplicitSize.cx = 41.000000000000000000
           ExplicitSize.cy = 26.000000000000000000
           inherited memClipboardText: TMemo

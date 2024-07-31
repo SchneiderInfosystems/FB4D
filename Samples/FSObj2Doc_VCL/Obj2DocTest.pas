@@ -90,7 +90,7 @@ type
     procedure OnDocuments(const Info: string; Documents: IFirestoreDocuments);
     procedure OnChangedDocument(ChangedDoc: IFirestoreDocument);
     procedure OnDeletedDocument(const DeletedDocPath: string; TS: TDateTime);
-    procedure OnStopListening(sender: TObject);
+    procedure OnStopListening(const RequestID: string);
     procedure OnError(const RequestID, ErrMsg: string);
     function GetOptions: TOTDMapperOptions;
     function GetSettingFileName: string;
@@ -398,7 +398,7 @@ begin
     lblGetResult.Caption := 'Document ' + DocID + ' not found';
 end;
 
-procedure TfrmObj2Doc.OnStopListening(sender: TObject);
+procedure TfrmObj2Doc.OnStopListening(const RequestID: string);
 begin
   btnInstallListener.Enabled := true;
   btnGetDocs.Enabled := true;

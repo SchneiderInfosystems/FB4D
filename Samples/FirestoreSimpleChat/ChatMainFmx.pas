@@ -127,12 +127,13 @@ type
     procedure OnDeletedColDocument(const DeleteDocumentPath: string;
       TimeStamp: TDateTime);
     procedure OnListenerError(const RequestID, ErrMsg: string);
-    procedure OnStopListening(Sender: TObject);
+    procedure OnStopListening(const RequestId: string);
     procedure OnConnectionStateChange(ListenerConnected: boolean);
     function SearchItem(const DocId: string): TListViewItem;
     procedure OnDocWrite(const Info: string; Document: IFirestoreDocument);
     procedure OnDocWriteError(const RequestID, ErrMsg: string);
-    procedure OnDocDelete(const RequestID: string; Response: IFirebaseResponse);
+    procedure OnDocDelete(const DeleteDocumentPath: string;
+      TimeStamp: TDateTime);
     procedure OnDocDeleteError(const RequestID, ErrMsg: string);
     function AddProfileImgToImageList(const UID: string; Img: TBitmap): integer;
     procedure DownloadProfileImgAndAddToImageList(const UID: string;
@@ -632,10 +633,10 @@ begin
   ExitEditMode(true);
 end;
 
-procedure TfmxChatMain.OnDocDelete(const RequestID: string;
-  Response: IFirebaseResponse);
+procedure TfmxChatMain.OnDocDelete(const DeleteDocumentPath: string;
+  TimeStamp: TDateTime);
 begin
-  txtUpdate.Text := 'Last message deleted on ' + DateTimeToStr(now);
+  txtUpdate.Text := 'Last message deleted on ' + DateTimeToStr(TimeStamp);
   ExitEditMode(true);
 end;
 
@@ -647,7 +648,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TfmxChatMain.OnStopListening(Sender: TObject);
+procedure TfmxChatMain.OnStopListening(const RequestId: string);
 begin
   txtUpdate.Text := 'Chat listener stopped';
   {$IFDEF DEBUG}

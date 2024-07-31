@@ -65,7 +65,7 @@ type
     procedure OnDBError(const RequestID, ErrMsg: string);
     procedure OnDBWritten(ResourceParams: TRequestResourceParam;
       Val: TJSONValue);
-    procedure OnDBStop(Sender: TObject);
+    procedure OnDBStop(const RequestId: string);
     function DBPath: TRequestResourceParam;
   end;
 
@@ -213,7 +213,7 @@ begin
   lblStatus.Text := 'Firebase RT DB connected';
 end;
 
-procedure TfmxMain.OnDBStop(Sender: TObject);
+procedure TfmxMain.OnDBStop(const RequestId: string);
 begin
   Caption := 'DB Listener was stopped - restart App';
 end;

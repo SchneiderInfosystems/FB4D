@@ -47,7 +47,7 @@ type
       JSONObj: TJSONObject);
     procedure DBError(const RequestID, ErrMsg: string);
     procedure DBWritten(ResourceParams: TRequestResourceParam; Val: TJSONValue);
-    procedure OnDBStop(Sender: TObject);
+    procedure OnDBStop(const RequestId: string);
   end;
 
 var
@@ -85,7 +85,7 @@ begin
   btnWrite.Enabled := false;
 end;
 
-procedure TFmxSimpleReadWrite.OnDBStop(Sender: TObject);
+procedure TFmxSimpleReadWrite.OnDBStop(const RequestId: string);
 begin
   Caption := 'DB Listener was stopped - restart App';
 end;

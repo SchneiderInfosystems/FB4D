@@ -93,13 +93,13 @@ type
     procedure OnDeletedColDocument(const DeleteDocumentPath: string;
       TimeStamp: TDateTime);
     procedure OnListenerError(const RequestID, ErrMsg: string);
-    procedure OnStopListening(Sender: TObject);
+    procedure OnStopListening(const RequestID: string);
     procedure OnUploaded(Item: TListBoxItem);
     procedure OnUploadFailed(Item: TListBoxItem; const Msg: string);
     procedure OnDownloaded(Item: TListBoxItem);
     procedure OnDownloadFailed(Item: TListBoxItem; const Msg: string);
-    procedure OnDocumentDelete(const RequestID: string;
-      Response: IFirebaseResponse);
+    procedure OnDocumentDelete(const DeleteDocumentPath: string;
+      TimeStamp: TDateTime);
     procedure OnPhotoDeleted(const ObjectName: TObjectName);
     procedure OnDeleteFailed(const RequestID, ErrMsg: string);
   public
@@ -469,15 +469,15 @@ begin
   fraCameraCapture.ToastMsg(Format(rsDeletePhotoFailed, [RequestID, ErrMsg]));
 end;
 
-procedure TfmxMain.OnDocumentDelete(const RequestID: string;
-  Response: IFirebaseResponse);
+procedure TfmxMain.OnDocumentDelete(const DeleteDocumentPath: string;
+  TimeStamp: TDateTime);
 var
   StorageObjName: string;
   arr: TStringDynArray;
 begin
-  arr := SplitString(RequestID, ',');
+  arr := SplitString(DeleteDocumentPath, '/');
   Assert(length(arr) = 2,
-    'RequestID does not contain a path with 2 levels in OnDeletePhoto');
+    'DeleteDocumentPath does not contain a path with 2 levels in OnDeletePhoto');
   StorageObjName := TPhotoThread.GetStorageObjName(arr[1], fUID);
   fConfig.Storage.Delete(StorageObjName, OnPhotoDeleted, OnDeleteFailed);
 end;
@@ -493,7 +493,7 @@ begin
   fraCameraCapture.ToastMsg(Format(rsPhotoDeleted, [ObjectName]));
 end;
 
-procedure TfmxMain.OnStopListening(Sender: TObject);
+procedure TfmxMain.OnStopListening(const RequestID: string);
 begin
   if not Application.Terminated then
     fraCameraCapture.ToastMsg(rsListenerStopped);

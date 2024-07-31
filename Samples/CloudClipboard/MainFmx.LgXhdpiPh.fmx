@@ -1,17 +1,17 @@
 inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
-  ClientHeight = 695
-  ClientWidth = 450
+  ClientHeight = 696
+  ClientWidth = 448
   DesignerMasterStyle = 3
   inherited TabControl: TTabControl
-    Size.Width = 450.000000000000000000
-    Size.Height = 695.000000000000000000
+    Size.Width = 448.000000000000000000
+    Size.Height = 696.000000000000000000
     Sizes = (
-      450s
-      695s
-      450s
-      695s
-      450s
-      695s)
+      448s
+      696s
+      448s
+      696s
+      448s
+      696s)
     inherited tabProjectSettings: TTabItem
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
@@ -22,7 +22,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Left = 20.000000000000000000
         Margins.Top = 50.000000000000000000
         Margins.Right = 20.000000000000000000
-        Size.Width = 410.000000000000000000
+        Size.Width = 408.000000000000000000
       end
       inherited edtProjectID: TEdit
         Align = Top
@@ -32,7 +32,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Top = 50.000000000000000000
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 20.000000000000000000
-        Size.Width = 410.000000000000000000
+        Size.Width = 408.000000000000000000
       end
       inherited btnEnteredProjSettings: TButton
         Align = Top
@@ -41,7 +41,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Right = 10.000000000000000000
         Position.X = 10.000000000000000000
         Position.Y = 189.000000000000000000
-        Size.Width = 430.000000000000000000
+        Size.Width = 428.000000000000000000
         Size.Height = 44.000000000000000000
         StyleLookup = ''
         Text = 'Use'
@@ -53,7 +53,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Right = 10.000000000000000000
         Position.X = 10.000000000000000000
         Position.Y = 238.000000000000000000
-        Size.Width = 430.000000000000000000
+        Size.Width = 428.000000000000000000
         Size.Height = 44.000000000000000000
         Size.PlatformDefault = False
       end
@@ -62,8 +62,8 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
       ExplicitSize.cx = 8.000000000000000000
       ExplicitSize.cy = 8.000000000000000000
       inherited FraSelfRegistration: TFraSelfRegistration
-        Size.Width = 450.000000000000000000
-        Size.Height = 645.000000000000000000
+        Size.Width = 448.000000000000000000
+        Size.Height = 646.000000000000000000
         inherited AniIndicator: TAniIndicator
           Margins.Bottom = 450.000000000000000000
         end
@@ -102,6 +102,10 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
             Size.Width = 137.000000000000000000
             TextSettings.HorzAlign = Leading
           end
+          inherited imgShowPwd: TImage
+            MultiResBitmap.Width = 18
+            Position.X = 304.000000000000000000
+          end
         end
         inherited lblStatus: TLabel
           Margins.Top = 350.000000000000000000
@@ -110,7 +114,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         end
       end
       inherited layToolbar: TLayout
-        Size.Width = 450.000000000000000000
+        Size.Width = 448.000000000000000000
         inherited lblVersionInfo: TLabel
           StyledSettings = [Family, Style, FontColor]
           Size.Width = 161.000000000000000000
@@ -154,16 +158,16 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 5.000000000000000000
         Position.X = 20.000000000000000000
-        Position.Y = 634.000000000000000000
-        Size.Width = 410.000000000000000000
+        Position.Y = 635.000000000000000000
+        Size.Width = 408.000000000000000000
         Size.Height = 34.000000000000000000
       end
       inherited lblStatusRTDB: TLabel
         Align = Bottom
         StyledSettings = [Family, Style, FontColor]
         Margins.Bottom = 2.000000000000000000
-        Position.Y = 683.000000000000000000
-        Size.Width = 450.000000000000000000
+        Position.Y = 684.000000000000000000
+        Size.Width = 448.000000000000000000
         Size.Height = 10.000000000000000000
         TextSettings.Font.Size = 10.000000000000000000
       end
@@ -173,8 +177,8 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 5.000000000000000000
         Position.X = 20.000000000000000000
-        Position.Y = 550.000000000000000000
-        Size.Width = 410.000000000000000000
+        Position.Y = 551.000000000000000000
+        Size.Width = 408.000000000000000000
         Size.Height = 37.000000000000000000
       end
       inherited btnToClipboard: TButton
@@ -183,63 +187,63 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         Margins.Right = 20.000000000000000000
         Margins.Bottom = 5.000000000000000000
         Position.X = 20.000000000000000000
-        Position.Y = 592.000000000000000000
-        Size.Width = 410.000000000000000000
+        Position.Y = 593.000000000000000000
+        Size.Width = 408.000000000000000000
         Size.Height = 37.000000000000000000
       end
       inherited TabControlClipboard: TTabControl
         Align = Client
         Margins.Left = 20.000000000000000000
         Margins.Right = 20.000000000000000000
-        Size.Width = 410.000000000000000000
-        Size.Height = 495.000000000000000000
+        Size.Width = 408.000000000000000000
+        Size.Height = 496.000000000000000000
         TabHeight = 49.000000000000000000
         TabIndex = 1
         Sizes = (
-          410s
-          446s
-          410s
-          446s)
+          408s
+          447s
+          408s
+          447s)
         inherited tabText: TTabItem
           IsSelected = False
-          Size.Width = 205.000000000000000000
+          Size.Width = 37.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 649.000000000000000000
           ExplicitSize.cy = 49.000000000000000000
           inherited memClipboardText: TMemo
-            Size.Width = 410.000000000000000000
-            Size.Height = 446.000000000000000000
-            Viewport.Width = 410.000000000000000000
-            Viewport.Height = 446.000000000000000000
+            Size.Width = 408.000000000000000000
+            Size.Height = 447.000000000000000000
+            Viewport.Width = 408.000000000000000000
+            Viewport.Height = 447.000000000000000000
           end
         end
         inherited tabGraphic: TTabItem
           IsSelected = True
-          Size.Width = 205.000000000000000000
+          Size.Width = 59.000000000000000000
           Size.Height = 49.000000000000000000
           ExplicitSize.cx = 325.000000000000000000
           ExplicitSize.cy = 49.000000000000000000
           inherited imgClipboardPict: TImage
-            Size.Width = 408.000000000000000000
-            Size.Height = 444.000000000000000000
+            Size.Width = 406.000000000000000000
+            Size.Height = 445.000000000000000000
           end
         end
       end
       inherited chbTesting: TCheckBox
-        Position.X = -2432.000000000000000000
-        Position.Y = 3004.000000000000000000
+        Position.X = -2684.000000000000000000
+        Position.Y = 3220.000000000000000000
       end
       inherited lblSendStatusRTDB: TLabel
         Align = Bottom
         StyledSettings = [Family, Style, FontColor]
-        Position.Y = 673.000000000000000000
-        Size.Width = 450.000000000000000000
+        Position.Y = 674.000000000000000000
+        Size.Width = 448.000000000000000000
         Size.Height = 10.000000000000000000
         TextSettings.Font.Size = 10.000000000000000000
         TextSettings.VertAlign = Leading
       end
       inherited layUserInfo: TLayout
-        Size.Width = 450.000000000000000000
+        Size.Width = 448.000000000000000000
         inherited btnSignOut: TButton
           Margins.Top = 9.000000000000000000
           Margins.Bottom = 9.000000000000000000
@@ -249,7 +253,7 @@ inherited fmxMain_LgXhdpiPh: TfmxMain_LgXhdpiPh
         end
         inherited lblUserInfo: TLabel
           StyledSettings = [Family, Style, FontColor]
-          Size.Width = 315.000000000000000000
+          Size.Width = 313.000000000000000000
           TextSettings.Font.Size = 10.000000000000000000
         end
         inherited imgCloudOff: TImage
