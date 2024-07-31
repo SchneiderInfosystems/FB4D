@@ -295,12 +295,14 @@ type
 
   TOnReceiveEvent = procedure(const Event: string;
     Params: TRequestResourceParam; JSONObj: TJSONObject) of object;
-  TOnStopListenEvent = TNotifyEvent;
+  TOnStopListenEvent =  procedure(const RequestId: string) of object;
+  TOnStopListenEventDeprecated = TNotifyEvent;
   TOnAuthRevokedEvent = procedure(TokenRenewPassed: boolean) of object;
   TOnConnectionStateChange = procedure(ListenerConnected: boolean) of object;
   ERTDBListener = class(Exception);
 
   IRealTimeDB = interface(IInterface)
+    function GetDatabaseID: string;
     procedure Get(ResourceParams: TRequestResourceParam;
       OnGetValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
@@ -337,7 +339,14 @@ type
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
       OnConnectionStateChange: TOnConnectionStateChange = nil;
-      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent;
+      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent; overload;
+    function ListenForValueEvents(ResourceParams: TRequestResourceParam;
+      ListenEvent: TOnReceiveEvent;
+      OnStopListening: TOnStopListenEventDeprecated;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
+      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent; overload;
+      deprecated 'Use new version with TOnStopListenEvent';
     // To retrieve server variables like timestamp and future variables
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
@@ -554,16 +563,16 @@ type
       UpdateMask: TStringDynArray;
       Mask: TStringDynArray = []): IFirestoreDocument; overload;
 
-    procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
-      OnDeleteResponse: TOnFirebaseResp; OnRequestError: TOnRequestError);
-      overload;
-      deprecated 'Use method with TOnDeletedDocument call back method';
     // QueryParams: can contain as precondition a JSON object with one field
     // named either as "exists" or "updateTime". Read more at:
     // https://firebase.google.com/docs/firestore/reference/rest/v1/Precondition
     procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
       OnDeletedDoc: TOnDeletedDocument; OnError: TOnRequestError);
       overload;
+    procedure Delete(Params: TRequestResourceParam; QueryParams: TQueryParams;
+      OnDeleteResponse: TOnFirebaseResp; OnRequestError: TOnRequestError);
+      overload;
+      deprecated 'Use method with TOnDeletedDocument call back method';
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
 
@@ -579,7 +588,12 @@ type
     procedure StartListener(OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
       OnConnectionStateChange: TOnConnectionStateChange = nil;
-      DoNotSynchronizeEvents: boolean = false);
+      DoNotSynchronizeEvents: boolean = false); overload;
+    procedure StartListener(OnStopListening: TOnStopListenEventDeprecated;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
+      DoNotSynchronizeEvents: boolean = false); overload;
+      deprecated 'Use new version with TOnStopListenEvent';
     procedure StopListener(RemoveAllSubscription: boolean = true);
     function GetTimeStampOfLastAccess: TDateTime; // local time
 

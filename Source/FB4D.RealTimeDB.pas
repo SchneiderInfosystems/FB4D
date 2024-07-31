@@ -79,8 +79,10 @@ type
     procedure OnServerVarResp(const VarName: string;
       Response: IFirebaseResponse);
   public
-    constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication); deprecated;
+    constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication);
+      deprecated 'Use CreateByURL';
     constructor CreateByURL(const FirebaseURL: string; Auth: IFirebaseAuthentication);
+    function GetDatabaseID: string;
     procedure Get(ResourceParams: TRequestResourceParam;
       OnGetValue: TOnRTDBValue; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil);
@@ -114,7 +116,14 @@ type
       ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
       OnConnectionStateChange: TOnConnectionStateChange = nil;
-      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent;
+      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent; overload;
+    function ListenForValueEvents(ResourceParams: TRequestResourceParam;
+      ListenEvent: TOnReceiveEvent;
+      OnStopListening: TOnStopListenEventDeprecated;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
+      DoNotSynchronizeEvents: boolean = false): IFirebaseEvent; overload;
+      { deprecated }
     procedure GetServerVariables(const ServerVarName: string;
       ResourceParams: TRequestResourceParam;
       OnServerVariable: TOnRTDBServerVariable = nil;
@@ -124,7 +133,8 @@ type
   end;
 
 const
-  GOOGLE_FIREBASE = 'https://%s.firebaseio.com';
+  HTTPS = 'https://';
+  GOOGLE_FIREBASE = HTTPS + '%s.firebaseio.com';
 
 implementation
 
@@ -150,7 +160,16 @@ constructor TRealTimeDB.CreateByURL(const FirebaseURL: string;
   Auth: IFirebaseAuthentication);
 begin
   fBaseURL := FirebaseURL;
+  if not fBaseURL.StartsWith(HTTPS, true) then
+    fBaseURL := HTTPS + fBaseURL;
   fAuth := Auth;
+end;
+
+function TRealTimeDB.GetDatabaseID: string;
+begin
+  result := fBaseURL.Substring(HTTPS.Length);
+  if result.IndexOf('.') > 0 then
+    result := result.Substring(0, result.IndexOf('.'));
 end;
 
 function TRealTimeDB.AddJSONExtToRequest(
@@ -492,6 +511,23 @@ end;
 
 function TRealTimeDB.ListenForValueEvents(ResourceParams: TRequestResourceParam;
   ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
+  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+  OnConnectionStateChange: TOnConnectionStateChange;
+  DoNotSynchronizeEvents: boolean): IFirebaseEvent;
+var
+  FirebaseEvent: TFirebaseEvent;
+begin
+  FirebaseEvent := TFirebaseEvent.Create(
+    TRTDBListenerThread.Create(fBaseURL, fAuth));
+  FirebaseEvent.fListener.RegisterEvents(ResourceParams, ListenEvent,
+    OnStopListening, OnError, OnAuthRevoked, OnConnectionStateChange,
+    DoNotSynchronizeEvents);
+  FirebaseEvent.fListener.Start;
+  result := FirebaseEvent;
+end;
+
+function TRealTimeDB.ListenForValueEvents(ResourceParams: TRequestResourceParam;
+  ListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEventDeprecated;
   OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
   OnConnectionStateChange: TOnConnectionStateChange;
   DoNotSynchronizeEvents: boolean): IFirebaseEvent;

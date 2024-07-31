@@ -55,6 +55,7 @@ type
     fReadPos: Int64;
     fOnListenError: TOnRequestError;
     fOnStopListening: TOnStopListenEvent;
+    fOnStopListeningDeprecated: TOnStopListenEventDeprecated;
     fOnListenEvent: TOnReceiveEvent;
     fOnAuthRevoked: TOnAuthRevokedEvent;
     fOnConnectionStateChange: TOnConnectionStateChange;
@@ -80,7 +81,13 @@ type
       OnListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
       OnConnectionStateChange: TOnConnectionStateChange;
-      DoNotSynchronizeEvents: boolean);
+      DoNotSynchronizeEvents: boolean); overload;
+    procedure RegisterEvents(ResParams: TRequestResourceParam;
+      OnListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEventDeprecated;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+      OnConnectionStateChange: TOnConnectionStateChange;
+      DoNotSynchronizeEvents: boolean); overload;
+      // deprecated 'Use new version with TOnStopListenEvent'
     procedure StopListener(TimeOutInMS: integer = cDefTimeOutInMS);
     function IsRunning: boolean;
     property ResParams: TRequestResourceParam read fResParams;
@@ -170,6 +177,26 @@ begin
   fRequestID :=  TFirebaseHelpers.ArrStrToCommaStr(fResParams);
   fOnListenEvent := OnListenEvent;
   fOnStopListening := OnStopListening;
+  fOnStopListeningDeprecated := nil;
+  fOnListenError := OnError;
+  fOnAuthRevoked := OnAuthRevoked;
+  fOnConnectionStateChange := OnConnectionStateChange;
+  fDoNotSynchronizeEvents := DoNotSynchronizeEvents;
+end;
+
+procedure TRTDBListenerThread.RegisterEvents(ResParams: TRequestResourceParam;
+  OnListenEvent: TOnReceiveEvent; OnStopListening: TOnStopListenEventDeprecated;
+  OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+  OnConnectionStateChange: TOnConnectionStateChange;
+  DoNotSynchronizeEvents: boolean); // deprecated
+begin
+  fResParams := ResParams;
+  fURL := fBaseURL + TFirebaseHelpers.EncodeResourceParams(fResParams) +
+    cJSONExt;
+  fRequestID :=  TFirebaseHelpers.ArrStrToCommaStr(fResParams);
+  fOnListenEvent := OnListenEvent;
+  fOnStopListeningDeprecated := OnStopListening;
+  fOnStopListening := nil;
   fOnListenError := OnError;
   fOnAuthRevoked := OnAuthRevoked;
   fOnConnectionStateChange := OnConnectionStateChange;
@@ -200,6 +227,7 @@ end;
 
 procedure TRTDBListenerThread.Execute;
 var
+  URL: string;
   WaitRes: TWaitResult;
   LastWait: TDateTime;
 begin
@@ -230,8 +258,10 @@ begin
                   fOnAuthRevoked(not fRequireTokenRenew);
                 end);
         end;
-        fAsyncResult := fClient.BeginGet(OnEndListenerGet,
-          fURL + TFirebaseHelpers.EncodeToken(fAuth.Token), fStream);
+        URL := fURL;
+        if assigned(fAuth) then
+          URL := URL + TFirebaseHelpers.EncodeToken(fAuth.Token);
+        fAsyncResult := fClient.BeginGet(OnEndListenerGet, URL, fStream);
         repeat
           LastWait := now;
           WaitRes := fGetFinishedEvent.WaitFor(cTimeoutConnectionLost);
@@ -337,12 +367,21 @@ end;
 
 procedure TRTDBListenerThread.OnEndThread(Sender: TObject);
 begin
-  if assigned(fOnStopListening) and not TFirebaseHelpers.AppIsTerminated then
-    TThread.ForceQueue(nil,
-      procedure
-      begin
-        fOnStopListening(Sender);
-      end);
+  if not TFirebaseHelpers.AppIsTerminated then
+  begin
+    if assigned(fOnStopListening) then
+      TThread.ForceQueue(nil,
+        procedure
+        begin
+          fOnStopListening(fRequestID);
+        end)
+    else if assigned(fOnStopListeningDeprecated) then
+      TThread.ForceQueue(nil,
+        procedure
+        begin
+          fOnStopListeningDeprecated(Sender);
+        end)
+  end;
 end;
 
 procedure TRTDBListenerThread.OnRecData(const Sender: TObject; ContentLength,

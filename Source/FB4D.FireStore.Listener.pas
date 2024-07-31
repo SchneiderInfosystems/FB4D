@@ -66,6 +66,7 @@ type
     fReadPos: Int64;
     fMsgSize: integer;
     fOnStopListening: TOnStopListenEvent;
+    fOnStopListeningDeprecated: TOnStopListenEventDeprecated;
     fOnListenError: TOnRequestError;
     fOnAuthRevoked: TOnAuthRevokedEvent;
     fOnConnectionStateChange: TOnConnectionStateChange;
@@ -104,7 +105,12 @@ type
     procedure RegisterEvents(OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
       OnConnectionStateChange: TOnConnectionStateChange;
-      DoNotSynchronizeEvents: boolean);
+      DoNotSynchronizeEvents: boolean); overload;
+    procedure RegisterEvents(OnStopListening: TOnStopListenEventDeprecated;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+      OnConnectionStateChange: TOnConnectionStateChange;
+      DoNotSynchronizeEvents: boolean); overload;
+      // deprecated 'Use new version with TOnStopListenEvent'
     procedure StopListener(TimeOutInMS: integer = cDefTimeOutInMS);
     procedure StopNotStarted;
     function IsRunning: boolean;
@@ -544,6 +550,9 @@ begin
     if not fPartialResp.IsEmpty then
       TFirebaseHelpers.Log('FSListenerThread.Rest line after SearchNextMsg: ' +
         fPartialResp);
+    if not result.IsEmpty then
+      TFirebaseHelpers.Log('FSListenerThread.SearchNextMsg: ' +
+        StringReplace(result, #10, '', [rfReplaceAll]));
     {$ENDIF}
   end else
     result := '';
@@ -985,6 +994,26 @@ begin
   InitListen(NewListener);
   fRequestID := 'FSListener for ' + fTargets.Count.ToString + ' target(s)';
   fOnStopListening := OnStopListening;
+  fOnStopListeningDeprecated := nil;
+  fOnListenError := OnError;
+  fOnAuthRevoked := OnAuthRevoked;
+  fOnConnectionStateChange := OnConnectionStateChange;
+  fDoNotSynchronizeEvents := DoNotSynchronizeEvents;
+end;
+
+procedure TFSListenerThread.RegisterEvents(
+  OnStopListening: TOnStopListenEventDeprecated; OnError: TOnRequestError;
+  OnAuthRevoked: TOnAuthRevokedEvent;
+  OnConnectionStateChange: TOnConnectionStateChange;
+  DoNotSynchronizeEvents: boolean); // deprecated
+begin
+  if IsRunning then
+    raise EFirestoreListener.Create(
+      'RegisterEvents must not be called for started Listener');
+  InitListen(NewListener);
+  fRequestID := 'FSListener for ' + fTargets.Count.ToString + ' target(s)';
+  fOnStopListening := nil;
+  fOnStopListeningDeprecated := OnStopListening;
   fOnListenError := OnError;
   fOnAuthRevoked := OnAuthRevoked;
   fOnConnectionStateChange := OnConnectionStateChange;
@@ -994,6 +1023,8 @@ end;
 procedure TFSListenerThread.OnEndListenerGet(const ASyncResult: IAsyncResult);
 var
   Resp: IHTTPResponse;
+  Msg, MsgDetail: string;
+  c, e: integer;
 begin
   if TFirebaseHelpers.AppIsTerminated then
     exit;
@@ -1011,7 +1042,22 @@ begin
         if not fCloseRequest and
           (Resp.StatusCode < 200) or (Resp.StatusCode >= 300) then
         begin
-          ReportErrorInThread(Resp.StatusText);
+          Msg := Resp.StatusText;
+          MsgDetail := resp.ContentAsString;
+          // Try to fetch more detail information from HTML page in case of error
+          c := Pos('That’s an error.', MsgDetail);
+          if c > 0 then
+          begin
+            MsgDetail := MsgDetail.Substring(c);
+            c := Pos('<p>', MsgDetail);
+            if c > 0 then
+              MsgDetail := MsgDetail.Substring(c + 2);
+            e := Pos('<', MsgDetail);
+            if e > 0 then
+              MsgDetail := MsgDetail.Substring(0, e - 1);
+            Msg := Msg + ', Details: ' + trim(MsgDetail);
+          end;
+          ReportErrorInThread(Msg);
           fCloseRequest := true;
           {$IFDEF ParserLogDetails}
           TFirebaseHelpers.Log('FSListenerThread.OnEndListenerGet Response: ' +
@@ -1059,7 +1105,13 @@ begin
     TThread.ForceQueue(nil,
       procedure
       begin
-        fOnStopListening(Sender);
+        fOnStopListening(fRequestID);
+      end)
+  else if assigned(fOnStopListeningDeprecated) then
+    TThread.ForceQueue(nil,
+      procedure
+      begin
+        fOnStopListeningDeprecated(Sender);
       end);
   if not fStopWaiting and assigned(fOnListenError) then
     fOnListenError(fRequestID, rsUnexpectedThreadEnd);

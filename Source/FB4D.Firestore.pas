@@ -132,7 +132,11 @@ type
     procedure StartListener(OnStopListening: TOnStopListenEvent;
       OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
       OnConnectionStateChange: TOnConnectionStateChange = nil;
-      DoNotSynchronizeEvents: boolean = false);
+      DoNotSynchronizeEvents: boolean = false); overload;
+    procedure StartListener(OnStopListening: TOnStopListenEventDeprecated;
+      OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent = nil;
+      OnConnectionStateChange: TOnConnectionStateChange = nil;
+      DoNotSynchronizeEvents: boolean = false); overload;
     procedure StopListener(RemoveAllSubscription: boolean = true);
     function GetTimeStampOfLastAccess: TDateTime;
     // Transaction
@@ -302,7 +306,7 @@ begin
     fDatabaseID := cDefaultDatabaseID
   else
     fDatabaseID := DatabaseID;
-  fListener := TFSListenerThread.Create(ProjectID, DatabaseID, Auth);
+  fListener := TFSListenerThread.Create(ProjectID, fDatabaseID, Auth);
   fLastReceivedMsg := 0;
 end;
 
@@ -1103,6 +1107,17 @@ end;
 
 procedure TFirestoreDatabase.StartListener(OnStopListening: TOnStopListenEvent;
   OnError: TOnRequestError; OnAuthRevoked: TOnAuthRevokedEvent;
+  OnConnectionStateChange: TOnConnectionStateChange;
+  DoNotSynchronizeEvents: boolean);
+begin
+  fListener.RegisterEvents(OnStopListening, OnError, OnAuthRevoked,
+    OnConnectionStateChange, DoNotSynchronizeEvents);
+  fListener.Start;
+end;
+
+procedure TFirestoreDatabase.StartListener(
+  OnStopListening: TOnStopListenEventDeprecated; OnError: TOnRequestError;
+  OnAuthRevoked: TOnAuthRevokedEvent;
   OnConnectionStateChange: TOnConnectionStateChange;
   DoNotSynchronizeEvents: boolean);
 begin
