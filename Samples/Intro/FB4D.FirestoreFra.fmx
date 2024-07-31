@@ -1,0 +1,761 @@
+object FirestoreFra: TFirestoreFra
+  Align = Client
+  Size.Width = 1036.000000000000000000
+  Size.Height = 728.000000000000000000
+  Size.PlatformDefault = False
+  object chbUseChildDoc: TCheckBox
+    Position.X = 736.000000000000000000
+    Position.Y = 57.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = 'Use Child Document'
+    OnChange = chbUseChildDocChange
+  end
+  object edtChildCollection: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 3
+    Position.X = 112.000000000000000000
+    Position.Y = 84.000000000000000000
+    Size.Width = 225.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object Label27: TLabel
+      Position.X = -111.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 95.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Child Collection:'
+      TabOrder = 0
+    end
+  end
+  object edtChildDocument: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 4
+    Position.X = 456.000000000000000000
+    Position.Y = 84.000000000000000000
+    Size.Width = 225.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object Label28: TLabel
+      Position.X = -111.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 95.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Child Document:'
+      TabOrder = 0
+    end
+  end
+  object edtCollection: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 0
+    Position.X = 112.000000000000000000
+    Position.Y = 54.000000000000000000
+    Size.Width = 225.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object Label4: TLabel
+      Position.X = -111.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 95.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Collection:'
+      TabOrder = 0
+    end
+  end
+  object edtDocument: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 1
+    Position.X = 456.000000000000000000
+    Position.Y = 54.000000000000000000
+    Size.Width = 225.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    OnChangeTracking = edtDocumentChangeTracking
+    object Label7: TLabel
+      Position.X = -111.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 95.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Document:'
+      TabOrder = 0
+    end
+  end
+  object memFirestore: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    PopupMenu = popFSLog
+    Position.X = 17.000000000000000000
+    Position.Y = 257.000000000000000000
+    Size.Width = 1000.000000000000000000
+    Size.Height = 463.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Viewport.Width = 1000.000000000000000000
+    Viewport.Height = 463.000000000000000000
+    object popFSLog: TPopupMenu
+      Left = 97
+      Top = 662
+      object mniClear: TMenuItem
+        Text = 'Clear log'
+        OnClick = mniClearClick
+      end
+    end
+  end
+  object TabControl: TTabControl
+    Anchors = [akLeft, akTop, akRight]
+    Images = imlTabStatus
+    Position.X = 17.000000000000000000
+    Position.Y = 117.000000000000000000
+    Size.Width = 1000.000000000000000000
+    Size.Height = 132.000000000000000000
+    Size.PlatformDefault = False
+    TabIndex = 0
+    TabOrder = 11
+    TabPosition = PlatformDefault
+    Sizes = (
+      1000s
+      106s
+      1000s
+      106s
+      1000s
+      106s
+      1000s
+      106s
+      1000s
+      106s
+      1000s
+      106s
+      1000s
+      106s
+      1000s
+      106s)
+    object tabCreate: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = True
+      Size.Width = 54.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Create'
+      ExplicitSize.cx = 54.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnCreateDocument: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Create Document'
+        TextSettings.Trimming = None
+        OnClick = btnCreateDocumentClick
+      end
+    end
+    object tabInsertOrUpdate: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 100.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Insert / Update'
+      ExplicitSize.cx = 100.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnInsertOrUpdateDocument: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 137.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        Text = 'Insert / Update Doc'
+        TextSettings.Trimming = None
+        OnClick = btnInsertOrUpdateDocumentClick
+      end
+      object cboDemoDocType: TComboBox
+        Items.Strings = (
+          'Simple Document'
+          'Complex Document'
+          'Docs for Run Query')
+        ItemIndex = 0
+        Position.X = 162.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 19
+      end
+    end
+    object tabPatch: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 50.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Patch'
+      ExplicitSize.cx = 50.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnPatchDoc: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 10
+        Text = 'PatchDocument'
+        TextSettings.Trimming = None
+        OnClick = btnPatchDocClick
+      end
+    end
+    object tabDelete: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 54.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Delete'
+      ExplicitSize.cx = 54.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnDeleteDoc: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 11
+        Text = 'Delete Document'
+        TextSettings.Trimming = None
+        OnClick = btnDeleteDocClick
+      end
+    end
+    object tabGet: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 39.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Get'
+      ExplicitSize.cx = 39.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnGet: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 9
+        Text = 'Get Document'
+        TextSettings.Trimming = None
+        OnClick = btnGetClick
+      end
+      object chbUsePageToken: TCheckBox
+        Position.X = 16.000000000000000000
+        Position.Y = 83.000000000000000000
+        Size.Width = 145.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 13
+        Text = 'Get next page'
+      end
+      object chbLimitTo10Docs: TCheckBox
+        Position.X = 16.000000000000000000
+        Position.Y = 56.000000000000000000
+        Size.Width = 153.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 11
+        Text = 'Limit to 10 documents'
+      end
+    end
+    object tabQuery: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 53.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Query'
+      ExplicitSize.cx = 53.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnRunQuery: TButton
+        Enabled = False
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 16
+        Text = 'Run Query'
+        TextSettings.Trimming = None
+        OnClick = btnRunQueryClick
+      end
+      object lblMinTestInt: TLabel
+        Position.X = 145.000000000000000000
+        Position.Y = 58.000000000000000000
+        TextSettings.Trimming = None
+        Text = 'Min testInt Val: 50'
+        TabOrder = 7
+      end
+      object trbMinTestInt: TTrackBar
+        CanParentFocus = True
+        Orientation = Horizontal
+        Position.X = 16.000000000000000000
+        Position.Y = 58.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 5
+        Value = 50.000000000000000000
+        OnChange = trbMinTestIntChange
+      end
+      object Label13: TLabel
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 672.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 313.000000000000000000
+        Size.Height = 57.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.VertAlign = Leading
+        TextSettings.Trimming = None
+        Text = 
+          'Application Note:'#13'Run Query expects documents that were created ' +
+          'with the option "Docs for Run Query"'
+        TabOrder = 2
+      end
+    end
+    object tabListener: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      ImageIndex = 0
+      Size.Width = 78.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Listener'
+      ExplicitSize.cx = 62.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object GroupBox1: TGroupBox
+        Position.X = 18.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 529.000000000000000000
+        Size.Height = 57.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Target 1: Entire Collection'
+        TabOrder = 7
+        object edtCollectionIDForFSListener: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 6
+          Position.X = 80.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 273.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 
+            'Enter ID of collection or for subcollection the document path se' +
+            'parated by /'
+          object Label29: TLabel
+            Position.X = -72.000000000000000000
+            Position.Y = 2.000000000000000000
+            Size.Width = 65.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            TextSettings.Trimming = None
+            Text = 'Collection:'
+            TabOrder = 0
+          end
+        end
+        object chbIncludeDescendants: TCheckBox
+          Anchors = [akTop, akRight]
+          Position.X = 376.000000000000000000
+          Position.Y = 24.000000000000000000
+          Size.Width = 139.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 37
+          Text = 'Include descendants'
+        end
+      end
+      object GroupBox2: TGroupBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 555.000000000000000000
+        Position.Y = 9.000000000000000000
+        Size.Width = 438.000000000000000000
+        Size.Height = 57.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Target 2: Single Document'
+        TabOrder = 6
+        object edtDocPathForFSListener: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 6
+          Position.X = 80.000000000000000000
+          Position.Y = 23.000000000000000000
+          Size.Width = 342.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 'Enter document path separated by /'
+          object Label30: TLabel
+            Position.X = -64.000000000000000000
+            Position.Y = 2.000000000000000000
+            Size.Width = 57.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            TextSettings.Trimming = None
+            Text = 'Doc Path:'
+            TabOrder = 0
+          end
+        end
+      end
+      object btnStopFSListener: TButton
+        Enabled = False
+        Position.X = 175.000000000000000000
+        Position.Y = 73.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Stop Listener'
+        TextSettings.Trimming = None
+        OnClick = btnStopFSListenerClick
+      end
+      object btnStartFSListener: TButton
+        Position.X = 18.000000000000000000
+        Position.Y = 73.000000000000000000
+        Size.Width = 137.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Start Listener'
+        TextSettings.Trimming = None
+        OnClick = btnStartFSListenerClick
+      end
+    end
+    object tabTransactions: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      ImageIndex = 0
+      Size.Width = 102.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Transactions'
+      ExplicitSize.cx = 86.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnCommitWriteTrans: TButton
+        Enabled = False
+        Position.X = 128.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 170.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 22
+        Text = 'Commit Write Transaction'
+        TextSettings.Trimming = None
+        OnClick = btnCommitWriteTransClick
+      end
+      object btnStartReadTransaction: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 62.000000000000000000
+        Size.Width = 104.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 26
+        Text = 'Read Transaction'
+        TextSettings.Trimming = None
+        OnClick = btnStartReadTransactionClick
+      end
+      object btnStartWriteTransaction: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 104.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 24
+        Text = 'Write Transaction'
+        TextSettings.Trimming = None
+        OnClick = btnStartWriteTransactionClick
+      end
+      object btnStopReadTrans: TButton
+        Enabled = False
+        Position.X = 128.000000000000000000
+        Position.Y = 62.000000000000000000
+        Size.Width = 170.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 23
+        Text = 'Stop Read Transaction'
+        TextSettings.Trimming = None
+        OnClick = btnStopReadTransClick
+      end
+      object lblReadTransID: TLabel
+        Position.X = 306.000000000000000000
+        Position.Y = 64.000000000000000000
+        TabOrder = 27
+      end
+    end
+  end
+  object edtDatabaseID: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 5
+    Position.X = 112.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 225.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TextPrompt = 'Enter Database ID or empty for default'
+    Left = 8
+    Top = 147
+    object txtFirebaseURL: TText
+      Position.X = -94.000000000000000000
+      Size.Width = 78.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'Database ID:'
+      TextSettings.HorzAlign = Trailing
+    end
+    object rctFBURLDisabled: TRectangle
+      Align = Client
+      Fill.Color = x0A040404
+      HitTest = False
+      Size.Width = 897.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      Visible = False
+    end
+  end
+  object imlTabStatus: TImageList
+    Source = <
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C08648800000312494441545885ED97CF6B13
+              4114C7BFAD9996CD26ED6C89A6EB22D69A4AF1A4E025E04928FE38785044B127
+              91881E04BD08ED161C0F53F120044F5E44C183A878F15F100C543C8852AB5050
+              B12CEC36DB5D6993B4B366BC74654DB28D1E6C2EFDDEE63BF3781FDE63F6CD02
+              1D56170030C664279233C6BABA3B9138AA4474C118EBDA8CA4D18A77BC025B00
+              5B00898D3639E7BA10221FAE092125D334AD5667A7A7A7B7CFCDCDDD10421C9A
+              9999F9303F3F7F35C67FDC16204CEC38CE1D4A692EF43DCFFB5128149E0E0D0D
+              DD6C04999D9DBD95CBE5AEAC831E08015AF8CBD1B8A61670CE75C77118801761
+              F27ABD2E014055D53EC3300A8EE39438E77A18C318DBA9AAEA19CFF3B0B2B272
+              6D747474DF06FEC4860042883CA5F41200B8AEFB1EC0E944227110C069DFF7EF
+              0100A574B76DDB0F221087755DCF504AA1AAAA353939E9B4F17FEB8F1670CE75
+              DBB6B9A669F07DFF7B369B3D1A29F53BCE79C9B6ED1D9AA69DD334EDB810223F
+              363656AE542AB793C92400C0B2AC0BE3E3E3276CDB7ED8CADF10400891D7346D
+              1400A494771BFB6C9AA6C5187B0EE05CE8198631914C2687D7D6D650A95420A5
+              3C3632320242C8602BBF51B1D79052FAAD954F0829D56AB50A00B8AE3B9CCBE5
+              2E0641F0ACA7A7079452F4F5F55DF73CEF7C9CEF79DEF958807ABDBE2D0E285A
+              8572B9FC0500AAD5EADEA9A9A90542C8A3703F9D4E7F2A168B4FE2FC62B1F824
+              16A0BBBBFB673B00CEB94E29DD0500BDBDBD5FDB9D6FA77FFE120A21F2AAAAA6
+              012093C97CFE6F00AEEB5E8CDEF5883F1C1753AD567F4A29DFFEADDF04400829
+              95CBE5970030303070220882932104E75C678C9D5214E5D63AC82B4248291A6F
+              DB76953166372689F39B004CD3B40607072FD76AB51A004829EF2F2E2EBE2914
+              0ACF3CCFFB08E085A228C9D5D5D5D56C367BB6C55C887B5BC6BE399B5A609AA6
+              954EA787979696E600A0BFBFDF300CE38CAAAAFD00E0FBFEB7542AB5276E28FD
+              AB5A0E23D3342DCEF991F581B43F088294A2280B94D2854C26D33411A5946F97
+              9797CFA652A9D77FE33789312637F3691ECDD7F107C91640C7011AFF8C36FD1F
+              B1E315E8B87E01E6AEA531CB5735C00000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\Off.png'
+          end>
+        Name = 'Off'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C0864880000026B494441545885ED97BF6B14
+              4114C73FDFBD3B5228EB69140495208454823F82A085168206838DA78408F636
+              011B214210F78414B1895AA4D1D24691C5428BFC0F6A4A21B914876230458877
+              58E8E5E659ECE56E8FBB24EB8FB84DBED5CC7B33EF7DE73BFB666621650860E0
+              3E9646F2F922F2D2481C4736DE992F468A6C37E28AA7AEC00E811D02D92D4704
+              7E3F6685369B1412544ADB4B603DB1B371A47DED4E3742E08FFE0B12DDB720F0
+              FBC1CD80A63A9303E60D62F62E1AF777E8AE805901BC8B00C896301EB59C3A07
+              5C01ED017B45E05F27A89498C8F791B3216A9A6572B5FCE704A255DDC1005105
+              9DA718933AF043A017E32CA6E3600526F22FC8D667300D9375CFB9E7BF477609
+              693FB0C89A777723529D5B6056C038D0683FEDD8E7A052C2EC759B2D6743A0E1
+              864237F19846BA0C9C0646C9B83926F27DC908B4E3EB167E40875A4D0C5103FB
+              8C2822661BF6BDE4EAD79211F0125C48F23ED0BC4FEC70D36E7CC7F886530178
+              42CDBB8528377C2793117009DE06E64ED1E4A92F716A484B645C99A0B2C2E46A
+              1963218AAB83C908FC36EC53AC53C710582BAEDB3CD3160474A3A3D603BF1F71
+              6683093564356AB99ECDE3B6D0598652887323C81B044E60DC26F01F03EB1572
+              0474351A6B0BA010B8D098DD43DD169326876E0A049512D2CB98650CC71C666F
+              4153C058D3633C6B2B5351C563855C3DB102DDB7400AC1C631961B8177830662
+              892B60E3D1B8188C5EA48FFCAC579BB60C3F1A31BA7EDCDD8FE268550F09FC30
+              3A967514B35DC03262194F2141B5B5F29A66C9DA039C1D23A3B5B6584ED37836
+              00BCE9AE01D123F17F3ECDE3F9527F90EC10489D405B15A4F18F98BA02A9E317
+              1E32D702A573FF9C0000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\On.png'
+          end>
+        Name = 'On'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C086488000002B0494441545885ED973F4F14
+              4118C67F33BBEB1D7F62940B88100D060F590D5AE0A7B014A291CA684C0C6747
+              614463ACA0920EE237B0102AE335441A2B6D2C3482470C8404F9A380722CC22E
+              3B637177C8DD71DE229CD7F05433EFCEBECF6F7766DED915B4EA261457288724
+              71336D3E581600454C96C57887CC9C7E1F305B62CF46A0B710C02C09315452FB
+              16DDBDB35BF6293804C85D0307275B47F1E904C060987131B93780DD0A9424CE
+              84980E049032EF4BB701FAF70460554CF578CE997B59FE72D531DB3FBD721DFB
+              7E6090222ABC064CE75C6E486D1DAD7293F63529573FD2AA9B4A0B9096115A9C
+              056240CC082D3FCF805815533D79836D1DA5453FC0D6D1A0004517A1119E9FF3
+              3F9C1802F05B755C18CE55ED578584B1D69265ECD3298DA51BCA8FB44963E9B6
+              529151F40100E44BA7D39A6B1973A9379E28C25DCA8D00A0DC4833D01C245BD1
+              29F037EA4FD2A2BBE585EF8F8C230B63DAAF0E03B8ABF6EBD4003A950A770108
+              637D0DE815D6CFB1A08F53F40DF89B758DC0A0F222E065B0BD01B0E2B963B55F
+              D94742F46B5B0F83D70BD6CD62F903554269ADCC650594F525B30D6568B936EF
+              86713109562250EE62038CF0C294F28E5F0762D25AF99132FDF630B30DA5993C
+              15C4E89F01CCD0C20C09F1868418526EF56300B559DBB05D25BDEAAF2505C892
+              61BD1466D20190E1F95BB4EAA62D3732BF7D5D701A5B47B175541E59EED82780
+              1679A109316D861652C568A3BE3DEFACD0DC9572F985106BEF945BD3BE4F80DD
+              E53967DF67DA6678B10E836104CF3231E5D55CD25BD5C7909BEB41F215DC865E
+              B2ED0ED2E9D84C5E1CC9418EA388219D8A2DB76E8409318DAD07F09901B02A67
+              CE7BBF1A3EE387DE22B82CC57A859295C37B06486FB3A705E2D9DF8DA9B3BE1F
+              FE948AB446554183CCF394598700B96BA031F7BBBD046AFC1B402FFF59659F02
+              51EEDFF3DF558EF27F06A2BE4F0000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\Rd.png'
+          end>
+        Name = 'Rd'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C086488000001ED494441545885ED973F4B1C
+              5114C57F230982B24208360B36A9524A8890620A4913C52258B85621F902FB01
+              6297B4D616819449B7A848740BD142C6CA4241ACA28D458480A2112529C2B5F0
+              4C78FBE6CD380A669A3DCDFDF7E69E33F7CD1B66A062440006561179D45305B1
+              8B076E106922F70D77E2954FA02BA02B2023C0A06ED030A817D46EAA676A8530
+              B0F46818AC2BDEF61B19BC4BD71A3402E487AACD96E50B6DC1AEEC30107BB531
+              C7EFF36A3130247FAB48808B9080CDD0424DE395937A5D96E446785B5037F8AD
+              DC17674DC319BF195CB85B64F059F97DF57861D036786630A72D6DFB7C19018A
+              97953B4B490C9ACAFDF59F0311FE54EE83722DC527AE709F2FEF187E931D0062
+              8978A3DC92B3EEA96C0C0CCADFF37A3D92FD08B47CA23C01C75E1C03238EB803
+              F96F25AE5FF12F2009F46B029F22982A2B20018EE4BF076A4EED1C9891FF44E2
+              C6152F47F0C3EBB509CC07F2F902B4785EE130F05CFE77B277580326E42F06DA
+              1DE591E70A10361C3F1D5D4BCD12E054B969B2EF84D2281290007FE43F96DD81
+              7F134A1FA851D903C2FB7F370122592BB87655F6A1ECD7A251DF5A80B0E2F87B
+              74DE61025C7AF5DBF406BCAF62FF9B5047EC25D00BB4FD3B547D9CEB9391B875
+              D5268185C0759D7C9957E33DA3CC9BF0BFA12BA072011D7F4655FC23563E81CA
+              7105B052CCD143FD80390000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\Wr.png'
+          end>
+        Name = 'Wr'
+      end>
+    Destination = <
+      item
+        Layers = <
+          item
+            Name = 'Off'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'On'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Rd'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'Wr'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end>
+    Left = 960
+    Top = 8
+  end
+end

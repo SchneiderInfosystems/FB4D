@@ -1,10 +1,9 @@
 object fmxFirebaseDemo: TfmxFirebaseDemo
   Left = 0
   Top = 0
-  ActiveControl = lstFeatures
   Caption = 'Firebase Lib Demo'
   ClientHeight = 800
-  ClientWidth = 996
+  ClientWidth = 1000
   Constraints.MinHeight = 500.000000000000000000
   Constraints.MinWidth = 1000.000000000000000000
   FormFactor.Width = 320
@@ -13,58 +12,37 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
   OnClose = FormClose
   OnShow = FormShow
   DesignerMasterStyle = 0
-  object edtProjectID: TEdit
-    Touch.InteractiveGestures = [LongTap, DoubleTap]
-    Anchors = [akTop, akRight]
-    TabOrder = 0
-    Position.X = 539.000000000000000000
-    Position.Y = 16.000000000000000000
-    Size.Width = 270.000000000000000000
-    Size.Height = 22.000000000000000000
-    Size.PlatformDefault = False
-    TextPrompt = 'Enter Project ID  from Firebase Console>Settings'
-    object Text1: TText
-      Position.X = -64.000000000000000000
-      Size.Width = 65.000000000000000000
-      Size.Height = 22.000000000000000000
-      Size.PlatformDefault = False
-      Text = 'Project ID'
-    end
-  end
   object TabControl: TTabControl
     Align = Client
-    Margins.Top = 50.000000000000000000
-    Size.Width = 996.000000000000000000
-    Size.Height = 750.000000000000000000
+    Images = imlFirebaseServices
+    Size.Width = 1000.000000000000000000
+    Size.Height = 710.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 0
-    TabOrder = 1
+    TabIndex = 5
+    TabOrder = 0
     TabPosition = PlatformDefault
     OnChange = TabControlChange
     Sizes = (
-      996s
-      724s
-      996s
-      724s
-      996s
-      724s
-      996s
-      724s
-      996s
-      724s
-      996s
-      724s
-      996s
-      724s
-      996s
-      724s)
+      1000s
+      684s
+      1000s
+      684s
+      1000s
+      684s
+      1000s
+      684s
+      1000s
+      684s
+      1000s
+      684s)
     object tabAuth: TTabItem
       CustomIcon = <
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = True
-      Size.Width = 98.000000000000000000
+      IsSelected = False
+      ImageIndex = 1
+      Size.Width = 114.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -72,367 +50,90 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Text = 'Authentication'
       ExplicitSize.cx = 98.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
-      object btnLogin: TButton
-        Anchors = [akTop, akRight]
-        Position.X = 724.000000000000000000
-        Position.Y = 40.000000000000000000
-        Size.Width = 113.000000000000000000
-        Size.Height = 22.000000000000000000
+      inline AuthFra: TAuthFra
+        Align = Client
+        Size.Width = 1000.000000000000000000
+        Size.Height = 684.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 10
-        Text = 'Anonymous Login'
-        TextSettings.Trimming = None
-        OnClick = btnLoginClick
-      end
-      object Label5: TLabel
-        Position.X = 328.000000000000000000
-        Position.Y = 80.000000000000000000
-        Size.Width = 41.000000000000000000
-        Size.Height = 17.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Trimming = None
-        Text = 'Token'
-        TabOrder = 13
-      end
-      object edtToken: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 17
-        Position.X = 328.000000000000000000
-        Position.Y = 104.000000000000000000
-        Size.Width = 645.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-      end
-      object Label6: TLabel
-        Position.X = 16.000000000000000000
-        Position.Y = 80.000000000000000000
-        Size.Width = 33.000000000000000000
-        Size.Height = 17.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Trimming = None
-        Text = 'UID'
-        TabOrder = 11
-      end
-      object edtUID: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 16
-        Position.X = 16.000000000000000000
-        Position.Y = 104.000000000000000000
-        Size.Width = 289.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-      end
-      object Label1: TLabel
-        Position.X = 16.000000000000000000
-        Position.Y = 16.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'User email adress'
-        TabOrder = 3
-      end
-      object edtEmail: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 0
-        Position.X = 16.000000000000000000
-        Position.Y = 40.000000000000000000
-        Size.Width = 289.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        OnChange = edtEmailChange
-        Left = 9
-        Top = 23
-      end
-      object Label2: TLabel
-        Position.X = 328.000000000000000000
-        Position.Y = 16.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'Password'
-        TabOrder = 4
-      end
-      object edtPassword: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 2
-        Password = True
-        Position.X = 328.000000000000000000
-        Position.Y = 40.000000000000000000
-        Size.Width = 253.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        Left = 9
-        Top = 63
-      end
-      object btnRefresh: TButton
-        Anchors = [akTop, akRight]
-        Position.X = 892.000000000000000000
-        Position.Y = 40.000000000000000000
-        TabOrder = 18
-        Text = 'Refresh'
-        TextSettings.Trimming = None
-        Visible = False
-        OnClick = btnRefreshClick
-      end
-      object lblTokenExp: TLabel
-        Anchors = [akLeft, akTop, akRight]
-        Position.X = 384.000000000000000000
-        Position.Y = 80.000000000000000000
-        Size.Width = 589.000000000000000000
-        Size.Height = 17.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.HorzAlign = Trailing
-        TextSettings.Trimming = None
-        Text = 'expires at ...'
-        TabOrder = 12
-      end
-      object btnSignUpNewUser: TButton
-        Anchors = [akTop, akRight]
-        Position.X = 593.000000000000000000
-        Position.Y = 40.000000000000000000
-        Size.Width = 113.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 19
-        Text = 'Sign up new user'
-        TextSettings.Trimming = None
-        OnClick = btnSignUpNewUserClick
-      end
-      object btnPasswordReset: TButton
-        Anchors = [akTop, akRight]
-        Enabled = False
-        Position.X = 849.000000000000000000
-        Position.Y = 40.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 20
-        Text = 'Reset Password'
-        TextSettings.Trimming = None
-        OnClick = btnPasswordResetClick
-      end
-      object TabControlUser: TTabControl
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 16.000000000000000000
-        Position.Y = 160.000000000000000000
-        Size.Width = 954.000000000000000000
-        Size.Height = 543.000000000000000000
-        Size.PlatformDefault = False
-        TabIndex = 0
-        TabOrder = 21
-        TabPosition = PlatformDefault
-        Sizes = (
-          954s
-          517s
-          954s
-          517s)
-        object tabInfo: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = True
-          Size.Width = 82.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Information'
-          ExplicitSize.cx = 83.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object memUser: TMemo
-            Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-            DataDetectorTypes = []
-            ReadOnly = True
-            Align = Client
-            Margins.Left = 10.000000000000000000
-            Margins.Top = 60.000000000000000000
-            Margins.Right = 10.000000000000000000
-            Margins.Bottom = 10.000000000000000000
-            Size.Width = 934.000000000000000000
-            Size.Height = 447.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 0
-            Viewport.Width = 930.000000000000000000
-            Viewport.Height = 443.000000000000000000
+        inherited TabControlUser: TTabControl
+          Size.Width = 964.000000000000000000
+          Size.Height = 499.000000000000000000
+          Sizes = (
+            964s
+            473s
+            964s
+            473s)
+          inherited tabInfo: TTabItem
+            Size.Width = 82.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 83.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited memUser: TMemo
+              Size.Width = 944.000000000000000000
+              Size.Height = 403.000000000000000000
+              Viewport.Width = 944.000000000000000000
+              Viewport.Height = 403.000000000000000000
+            end
+            inherited btnRefresh: TButton
+              Position.X = 778.000000000000000000
+            end
           end
-          object btnGetUserData: TButton
-            Position.X = 16.000000000000000000
-            Position.Y = 22.000000000000000000
-            TabOrder = 1
-            Text = 'User Data'
-            TextSettings.Trimming = None
-            OnClick = btnGetUserDataClick
+          inherited tabUserProfile: TTabItem
+            Size.Width = 125.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 125.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited edtChangeEMail: TEdit
+              Size.Width = 576.000000000000000000
+            end
+            inherited edtChangeDisplayName: TEdit
+              Size.Width = 576.000000000000000000
+            end
+            inherited btnChange: TButton
+              Position.X = 631.000000000000000000
+            end
+            inherited btnChangeEMail: TButton
+              Position.X = 631.000000000000000000
+            end
+            inherited edtChangePassword: TEdit
+              Size.Width = 576.000000000000000000
+            end
+            inherited btnChangePwd: TButton
+              Position.X = 631.000000000000000000
+            end
+            inherited edtChangePhotoURL: TEdit
+              Size.Width = 576.000000000000000000
+            end
+            inherited btnChangePhotoURL: TButton
+              Position.X = 631.000000000000000000
+            end
           end
         end
-        object tabUserProfile: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = False
-          Size.Width = 125.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Change User Profile'
-          ExplicitSize.cx = 125.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object edtChangeEMail: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            Anchors = [akLeft, akTop, akRight]
-            TabOrder = 3
-            Position.X = 24.000000000000000000
-            Position.Y = 142.000000000000000000
-            Size.Width = 674.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            object txtEMail: TText
-              Position.Y = -26.000000000000000000
-              Size.Width = 225.000000000000000000
-              Size.Height = 19.000000000000000000
-              Size.PlatformDefault = False
-              Text = 'EMail Addresse'
-              TextSettings.HorzAlign = Leading
-            end
-          end
-          object edtChangeDisplayName: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            Anchors = [akLeft, akTop, akRight]
-            TabOrder = 0
-            Position.X = 24.000000000000000000
-            Position.Y = 62.000000000000000000
-            Size.Width = 674.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            object Text3: TText
-              Position.Y = -26.000000000000000000
-              Size.Width = 225.000000000000000000
-              Size.Height = 19.000000000000000000
-              Size.PlatformDefault = False
-              Text = 'Display Name'
-              TextSettings.HorzAlign = Leading
-            end
-          end
-          object btnChange: TButton
-            Anchors = [akTop, akRight]
-            Position.X = 729.000000000000000000
-            Position.Y = 62.000000000000000000
-            Size.Width = 185.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 7
-            Text = 'Change Display Name'
-            TextSettings.Trimming = None
-            OnClick = btnChangeClick
-          end
-          object btnChangeEMail: TButton
-            Anchors = [akTop, akRight]
-            Position.X = 729.000000000000000000
-            Position.Y = 142.000000000000000000
-            Size.Width = 185.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 6
-            Text = 'Change EMail Address'
-            TextSettings.Trimming = None
-            OnClick = btnChangeEMailClick
-          end
-          object edtChangePassword: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            Anchors = [akLeft, akTop, akRight]
-            TabOrder = 2
-            Password = True
-            Position.X = 24.000000000000000000
-            Position.Y = 214.000000000000000000
-            Size.Width = 674.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            object Text4: TText
-              Position.Y = -26.000000000000000000
-              Size.Width = 225.000000000000000000
-              Size.Height = 19.000000000000000000
-              Size.PlatformDefault = False
-              Text = 'New Password'
-              TextSettings.HorzAlign = Leading
-            end
-          end
-          object btnChangePwd: TButton
-            Anchors = [akTop, akRight]
-            Position.X = 729.000000000000000000
-            Position.Y = 214.000000000000000000
-            Size.Width = 185.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 5
-            Text = 'Change Password'
-            TextSettings.Trimming = None
-            OnClick = btnChangePwdClick
-          end
-          object edtChangePhotoURL: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            Anchors = [akLeft, akTop, akRight]
-            TabOrder = 1
-            Position.X = 24.000000000000000000
-            Position.Y = 294.000000000000000000
-            Size.Width = 674.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            object txtPhotoURL: TText
-              Position.Y = -26.000000000000000000
-              Size.Width = 225.000000000000000000
-              Size.Height = 19.000000000000000000
-              Size.PlatformDefault = False
-              Text = 'Photo URL'
-              TextSettings.HorzAlign = Leading
-            end
-          end
-          object btnChangePhotoURL: TButton
-            Anchors = [akTop, akRight]
-            Position.X = 729.000000000000000000
-            Position.Y = 294.000000000000000000
-            Size.Width = 185.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 4
-            Text = 'Change Photo URL'
-            TextSettings.Trimming = None
-            OnClick = btnChangePhotoURLClick
-          end
-          object btnDeleteUserAccount: TButton
-            Position.X = 24.000000000000000000
-            Position.Y = 342.000000000000000000
-            Size.Width = 201.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 8
-            Text = 'Delete Signed-In User Account'
-            TextSettings.Trimming = None
-            OnClick = btnDeleteUserAccountClick
-          end
-          object btnSendEMailVerification: TButton
-            Position.X = 240.000000000000000000
-            Position.Y = 342.000000000000000000
-            Size.Width = 177.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 9
-            Text = 'Send EMail Verification'
-            TextSettings.Trimming = None
-            OnClick = btnSendEMailVerificationClick
-          end
+        inherited lblTokenExp: TLabel
+          Size.Width = 599.000000000000000000
         end
-      end
-      object btnLinkEMailPwd: TButton
-        Position.X = 592.000000000000000000
-        Position.Y = 40.000000000000000000
-        Size.Width = 113.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 22
-        Text = 'Link EMail/Pwd'
-        TextSettings.Trimming = None
-        Visible = False
-        OnClick = btnLinkEMailPwdClick
+        inherited edtToken: TEdit
+          Size.Width = 655.000000000000000000
+        end
+        inherited edtPassword: TEdit
+          Size.Width = 141.000000000000000000
+        end
+        inherited btnSignUpNewUser: TButton
+          Position.X = 477.000000000000000000
+        end
+        inherited btnPasswordReset: TButton
+          Position.X = 709.000000000000000000
+        end
+        inherited btnLogin: TButton
+          Position.X = 596.000000000000000000
+        end
+        inherited btnLinkEMailPwd: TButton
+          Position.X = 813.000000000000000000
+        end
+        inherited btnLogout: TButton
+          Position.X = 925.000000000000000000
+          TabOrder = 22
+        end
       end
     end
     object tabRealTimeDB: TTabItem
@@ -441,7 +142,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end>
       TextSettings.Trimming = None
       IsSelected = False
-      Size.Width = 90.000000000000000000
+      ImageIndex = 2
+      Size.Width = 106.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -449,790 +151,117 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Text = 'Real Time DB'
       ExplicitSize.cx = 90.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
-      object memRTDB: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 24.000000000000000000
-        Position.Y = 288.000000000000000000
-        Size.Width = 957.000000000000000000
-        Size.Height = 423.000000000000000000
+      inline RTDBFra: TRTDBFra
+        Align = Client
+        Size.Width = 1000.000000000000000000
+        Size.Height = 684.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 5
-        Viewport.Width = 953.000000000000000000
-        Viewport.Height = 419.000000000000000000
-      end
-      object edtPath: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 6
-        Position.X = 120.000000000000000000
-        Position.Y = 47.000000000000000000
-        Size.Width = 858.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TextPrompt = 'Data base path separated by /'
-        object Label3: TLabel
-          Position.X = -104.000000000000000000
-          Position.Y = 2.000000000000000000
-          Size.Width = 97.000000000000000000
-          Size.Height = 17.000000000000000000
-          Size.PlatformDefault = False
-          TextSettings.HorzAlign = Trailing
-          TextSettings.Trimming = None
-          Text = 'Database Path:'
-          TabOrder = 0
+        inherited edtFirebaseURL: TEdit
+          Size.Width = 861.000000000000000000
         end
-      end
-      object TabControlRTDB: TTabControl
-        Anchors = [akLeft, akTop, akRight]
-        Position.X = 24.000000000000000000
-        Position.Y = 79.000000000000000000
-        Size.Width = 954.000000000000000000
-        Size.Height = 200.000000000000000000
-        Size.PlatformDefault = False
-        TabIndex = 1
-        TabOrder = 7
-        TabPosition = Top
-        Sizes = (
-          954s
-          174s
-          954s
-          174s
-          954s
-          174s
-          954s
-          174s
-          954s
-          174s
-          954s
-          174s)
-        object tabGet: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = False
-          Size.Width = 39.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Get'
-          ExplicitSize.cx = 39.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object btnGetRT: TButton
-            Position.X = 24.000000000000000000
-            Position.Y = 79.000000000000000000
-            Size.Width = 145.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 0
-            Text = 'Get Asynchrous'
-            TextSettings.Trimming = None
-            OnClick = btnGetRTClick
-          end
-          object btnGetRTSynch: TButton
-            Position.X = 24.000000000000000000
-            Position.Y = 14.000000000000000000
-            Size.Width = 145.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 1
-            Text = ' Get Synchronous'
-            TextSettings.Trimming = None
-            OnClick = btnGetRTSynchClick
-          end
-          object Label13: TLabel
-            Anchors = [akLeft, akTop, akRight]
-            Position.X = 440.000000000000000000
-            Position.Y = 16.000000000000000000
-            Size.Width = 498.000000000000000000
-            Size.Height = 153.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.VertAlign = Leading
-            TextSettings.Trimming = None
-            Text = 
-              'Application Note:'#13#13'Get retrieves an database node. If the node c' +
-              'onsists more than one value you get the entire node as JSON Obje' +
-              'ct. If the node is just a single value the function Get returns ' +
-              'a JSON Value.'#13'GetSynchronous send the request in the main thread' +
-              '. For GUI Application you should not block the main thread while' +
-              ' the DB request. That is why the GetAsynchronous calls the reque' +
-              'st in a background thread. On the otherside within a service or ' +
-              'if you already have implemented a background thread in your appl' +
-              'ication for the entire Firebase communication the usage of synch' +
-              'ronous calls leads to simpler implementation.'
-            TabOrder = 2
-          end
-          object aniGetRT: TAniIndicator
-            Position.X = 72.000000000000000000
-            Position.Y = 112.000000000000000000
-          end
-          object Label14: TLabel
-            Position.X = 184.000000000000000000
-            Position.Y = 14.000000000000000000
-            TextSettings.Trimming = None
-            Text = 'Options'
-            TabOrder = 5
-          end
-          object edtColumnName: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 4
-            Position.X = 344.000000000000000000
-            Position.Y = 38.000000000000000000
-            Size.Width = 81.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Enter column'
-            Visible = False
-          end
-          object cboOrderBy: TComboBox
-            Items.Strings = (
-              ''
-              'column'
-              'equal'
-              'key'
-              'value'
-              'priority'
-              '')
-            Position.X = 256.000000000000000000
-            Position.Y = 38.000000000000000000
-            Size.Width = 81.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 6
-            OnChange = cboOrderByChange
-            object Label15: TLabel
-              Position.X = -72.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 63.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'OrderBy;'
-              TabOrder = 0
+        inherited edtPath: TEdit
+          Size.Width = 861.000000000000000000
+        end
+        inherited TabControlRTDB: TTabControl
+          Size.Width = 965.000000000000000000
+          TabIndex = 5
+          Sizes = (
+            965s
+            174s
+            965s
+            174s
+            965s
+            174s
+            965s
+            174s
+            965s
+            174s
+            965s
+            174s
+            965s
+            174s)
+          inherited tabGet: TTabItem
+            IsSelected = False
+            Size.Width = 39.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 39.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited Label13: TLabel
+              Size.Width = 293.000000000000000000
             end
           end
-          object spbLimitToFirst: TSpinBox
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 8
-            Cursor = crIBeam
-            Position.X = 285.000000000000000000
-            Position.Y = 94.000000000000000000
-            Size.Width = 81.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            OnChange = spbLimitToFirstChange
-            object Label16: TLabel
-              Position.X = -104.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 97.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Limit to first'
-              TabOrder = 0
+          inherited tabPut: TTabItem
+            Size.Width = 38.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 38.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited lstDBNode: TListBox
+              Viewport.Width = 196.000000000000000000
+              Viewport.Height = 118.000000000000000000
+            end
+            inherited Label18: TLabel
+              Size.Width = 85.000000000000000000
             end
           end
-          object spbLimitToLast: TSpinBox
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 7
-            Cursor = crIBeam
-            Position.X = 285.000000000000000000
-            Position.Y = 126.000000000000000000
-            Size.Width = 81.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            OnChange = spbLimitToLastChange
-            object Label17: TLabel
-              Position.X = -104.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 97.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Limit to last'
-              TabOrder = 0
+          inherited tabPatch: TTabItem
+            Size.Width = 50.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 49.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited Label19: TLabel
+              Size.Width = 85.000000000000000000
             end
           end
-          object edtColumnValue: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 9
-            Position.X = 344.000000000000000000
-            Position.Y = 64.000000000000000000
-            Size.Width = 81.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Enter value'
-            Visible = False
-          end
-          object lblEqualTo: TLabel
-            Position.X = 215.000000000000000000
-            Position.Y = 64.000000000000000000
-            Size.Width = 121.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.HorzAlign = Trailing
-            TextSettings.Trimming = None
-            Text = 'Equal to'
-            Visible = False
-            TabOrder = 10
-          end
-        end
-        object tabPut: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = True
-          Size.Width = 38.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Put'
-          ExplicitSize.cx = 38.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object btnPutRTSynch: TButton
-            Position.X = 496.000000000000000000
-            Position.Y = 24.000000000000000000
-            Size.Width = 153.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 1
-            Text = 'Put Node Synchronous '
-            TextSettings.Trimming = None
-            OnClick = btnPutRTSynchClick
-          end
-          object edtPutKeyName: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 3
-            Position.X = 64.000000000000000000
-            Position.Y = 22.000000000000000000
-            Size.Width = 193.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Key name'
-            object Label8: TLabel
-              Position.X = -48.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 41.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Key:'
-              TabOrder = 0
+          inherited tabPost: TTabItem
+            Size.Width = 43.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 43.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited Label22: TLabel
+              Size.Width = 85.000000000000000000
             end
           end
-          object edtPutKeyValue: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 4
-            Position.X = 64.000000000000000000
-            Position.Y = 54.000000000000000000
-            Size.Width = 193.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Value of Key'
-            object Label12: TLabel
-              Position.X = -48.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 41.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Value:'
-              TabOrder = 0
+          inherited tabDelete: TTabItem
+            Size.Width = 54.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 55.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited Label25: TLabel
+              Size.Width = 85.000000000000000000
             end
           end
-          object lstDBNode: TListBox
-            Position.X = 280.000000000000000000
-            Position.Y = 23.000000000000000000
-            Size.Width = 200.000000000000000000
-            Size.Height = 122.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 5
-            DisableFocusEffect = True
-            DefaultItemStyles.ItemStyle = ''
-            DefaultItemStyles.GroupHeaderStyle = ''
-            DefaultItemStyles.GroupFooterStyle = ''
-            Viewport.Width = 196.000000000000000000
-            Viewport.Height = 118.000000000000000000
-          end
-          object btnAddUpdateNode: TButton
-            Position.X = 64.000000000000000000
-            Position.Y = 88.000000000000000000
-            Size.Width = 192.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 6
-            Text = 'Add or Update Node'
-            TextSettings.Trimming = None
-            OnClick = btnAddUpdateNodeClick
-          end
-          object btnClearNode: TButton
-            Position.X = 64.000000000000000000
-            Position.Y = 120.000000000000000000
-            Size.Width = 192.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 7
-            Text = 'Clear Node'
-            TextSettings.Trimming = None
-            OnClick = btnClearNodeClick
-          end
-          object btnPutRTAsynch: TButton
-            Position.X = 496.000000000000000000
-            Position.Y = 56.000000000000000000
-            Size.Width = 153.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 0
-            Text = 'Put Node Asynchronous '
-            TextSettings.Trimming = None
-            OnClick = btnPutRTAsynchClick
-          end
-          object aniPutRT: TAniIndicator
-            Position.X = 544.000000000000000000
-            Position.Y = 96.000000000000000000
-          end
-          object Label18: TLabel
-            Anchors = [akLeft, akTop, akRight]
-            Position.X = 656.000000000000000000
-            Position.Y = 21.000000000000000000
-            Size.Width = 290.000000000000000000
-            Size.Height = 153.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.VertAlign = Leading
-            TextSettings.Trimming = None
-            Text = 
-              'Application Note:'#13#13'Write or replace data to a defined database p' +
-              'ath.'
-            TabOrder = 2
-          end
-        end
-        object tabPatch: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = False
-          Size.Width = 50.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Patch'
-          ExplicitSize.cx = 49.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object btnPatchRTSynch: TButton
-            Position.X = 288.000000000000000000
-            Position.Y = 30.000000000000000000
-            Size.Width = 209.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 6
-            Text = 'Patch Synchronous'
-            TextSettings.Trimming = None
-            OnClick = btnPatchRTSynchClick
-          end
-          object Label19: TLabel
-            Anchors = [akLeft, akTop, akRight]
-            Position.X = 664.000000000000000000
-            Position.Y = 21.000000000000000000
-            Size.Width = 290.000000000000000000
-            Size.Height = 153.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.VertAlign = Leading
-            TextSettings.Trimming = None
-            Text = 
-              'Application Note:'#13#13'Update some of the keys for a defined path wi' +
-              'thout replacing all of the data.'
-            TabOrder = 2
-          end
-          object edtPatchKeyName: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 3
-            Position.X = 72.000000000000000000
-            Position.Y = 30.000000000000000000
-            Size.Width = 193.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Key name'
-            object Label20: TLabel
-              Position.X = -48.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 41.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Key:'
-              TabOrder = 0
+          inherited tabListener: TTabItem
+            IsSelected = True
+            Size.Width = 78.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 62.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited lstRunningListener: TListBox
+              Viewport.Width = 261.000000000000000000
+              Viewport.Height = 133.000000000000000000
             end
           end
-          object edtPatchKeyValue: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 4
-            Position.X = 72.000000000000000000
-            Position.Y = 62.000000000000000000
-            Size.Width = 193.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Value of Key'
-            object Label21: TLabel
-              Position.X = -48.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 41.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Value:'
-              TabOrder = 0
-            end
-          end
-          object btnPatchRTAsynch: TButton
-            Position.X = 288.000000000000000000
-            Position.Y = 62.000000000000000000
-            Size.Width = 209.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 5
-            Text = 'Patch Asynchronous'
-            TextSettings.Trimming = None
-            OnClick = btnPatchRTAsynchClick
-          end
-          object aniPatchRT: TAniIndicator
-            Position.X = 368.000000000000000000
-            Position.Y = 104.000000000000000000
+          inherited tabServerVars: TTabItem
+            Size.Width = 104.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 104.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
           end
         end
-        object tabPost: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = False
-          Size.Width = 43.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Post'
-          ExplicitSize.cx = 43.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object btnPostRTSynch: TButton
-            Position.X = 288.000000000000000000
-            Position.Y = 38.000000000000000000
-            Size.Width = 209.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 4
-            Text = 'Post Synchronous'
-            TextSettings.Trimming = None
-            OnClick = btnPostRTSynchClick
-          end
-          object Label22: TLabel
-            Anchors = [akLeft, akTop, akRight]
-            Position.X = 664.000000000000000000
-            Position.Y = 21.000000000000000000
-            Size.Width = 290.000000000000000000
-            Size.Height = 153.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.VertAlign = Leading
-            TextSettings.Trimming = None
-            Text = 
-              'Application Note:'#13#13'Add to a list of data in our Firebase databas' +
-              'e. Every time we send a POST request, the Firebase client genera' +
-              'tes a unique key, like messages/users/<unique-id>/<data>'
-            TabOrder = 0
-          end
-          object edtPostKeyName: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 1
-            Position.X = 80.000000000000000000
-            Position.Y = 38.000000000000000000
-            Size.Width = 193.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Key name or empty for single value'
-            object Label23: TLabel
-              Position.X = -48.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 41.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Key:'
-              TabOrder = 0
-            end
-          end
-          object edtPostKeyValue: TEdit
-            Touch.InteractiveGestures = [LongTap, DoubleTap]
-            TabOrder = 2
-            Position.X = 80.000000000000000000
-            Position.Y = 70.000000000000000000
-            Size.Width = 193.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TextPrompt = 'Value of Key'
-            object Label24: TLabel
-              Position.X = -48.000000000000000000
-              Position.Y = 2.000000000000000000
-              Size.Width = 41.000000000000000000
-              Size.Height = 17.000000000000000000
-              Size.PlatformDefault = False
-              TextSettings.HorzAlign = Trailing
-              TextSettings.Trimming = None
-              Text = 'Value:'
-              TabOrder = 0
-            end
-          end
-          object aniPostRT: TAniIndicator
-            Position.X = 376.000000000000000000
-            Position.Y = 112.000000000000000000
-          end
-          object btnPostRTAsynch: TButton
-            Position.X = 288.000000000000000000
-            Position.Y = 70.000000000000000000
-            Size.Width = 209.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 3
-            Text = 'Post Asynchronous'
-            TextSettings.Trimming = None
-            OnClick = btnPostRTAsynchClick
-          end
+        inherited memRTDB: TMemo
+          Size.Width = 964.000000000000000000
+          Size.Height = 375.000000000000000000
+          Viewport.Width = 964.000000000000000000
+          Viewport.Height = 375.000000000000000000
         end
-        object tabDelete: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = False
-          Size.Width = 54.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Delete'
-          ExplicitSize.cx = 55.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object btnDelRTSynch: TButton
-            Position.X = 16.000000000000000000
-            Position.Y = 22.000000000000000000
-            Size.Width = 161.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 1
-            Text = 'Delete Synchronous'
-            TextSettings.Trimming = None
-            OnClick = btnDelRTSynchClick
-          end
-          object Label25: TLabel
-            Anchors = [akLeft, akTop, akRight]
-            Position.X = 664.000000000000000000
-            Position.Y = 21.000000000000000000
-            Size.Width = 290.000000000000000000
-            Size.Height = 153.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.VertAlign = Leading
-            TextSettings.Trimming = None
-            Text = 
-              'Application Note:'#13#13'Remove data from the specified Firebase datab' +
-              'ase reference.'
-            TabOrder = 2
-          end
-          object btnDelRTAsynch: TButton
-            Position.X = 16.000000000000000000
-            Position.Y = 54.000000000000000000
-            Size.Width = 161.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 0
-            Text = 'Delete Asynchronous'
-            TextSettings.Trimming = None
-            OnClick = btnDelRTAsynchClick
-          end
-          object aniDeleteRT: TAniIndicator
-            Position.X = 64.000000000000000000
-            Position.Y = 88.000000000000000000
-          end
+        inherited popRTDBLog: TPopupMenu
+          Left = 121
+          Top = 430
         end
-        object tabServerVars: TTabItem
-          CustomIcon = <
-            item
-            end>
-          TextSettings.Trimming = None
-          IsSelected = False
-          Size.Width = 104.000000000000000000
-          Size.Height = 26.000000000000000000
-          Size.PlatformDefault = False
-          StyleLookup = ''
-          TabOrder = 0
-          Text = 'Server Variables'
-          ExplicitSize.cx = 104.000000000000000000
-          ExplicitSize.cy = 26.000000000000000000
-          object btnGetServerTimeStamp: TButton
-            Position.X = 32.000000000000000000
-            Position.Y = 30.000000000000000000
-            Size.Width = 241.000000000000000000
-            Size.Height = 22.000000000000000000
-            Size.PlatformDefault = False
-            TabOrder = 7
-            Text = 'Get Server Time Stamp'
-            TextSettings.Trimming = None
-            OnClick = btnGetServerTimeStampClick
-          end
+        inherited imlTabStatus: TImageList
+          Left = 848
+          Top = 224
         end
-      end
-      object edtFirebaseURL: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 4
-        Position.X = 120.000000000000000000
-        Position.Y = 16.000000000000000000
-        Size.Width = 858.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TextPrompt = 
-          'Enter Firebase URL from Console>Realtime DB (e.g. https:<project' +
-          'ID>-default-rtdb.<ServerLocation>.firebasedatabase.app'
-        Left = 8
-        Top = 147
-        object txtFirebaseURL: TText
-          Position.X = -104.000000000000000000
-          Size.Width = 96.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-          Text = 'Firebase URL:'
-          TextSettings.HorzAlign = Trailing
-        end
-      end
-    end
-    object tabScanRTEvent: TTabItem
-      CustomIcon = <
-        item
-        end>
-      TextSettings.Trimming = None
-      IsSelected = False
-      Size.Width = 134.000000000000000000
-      Size.Height = 26.000000000000000000
-      Size.PlatformDefault = False
-      StyleLookup = ''
-      TabOrder = 0
-      Text = 'Real Time DB Listener'
-      ExplicitSize.cx = 151.000000000000000000
-      ExplicitSize.cy = 26.000000000000000000
-      object btnNotifyEvent: TButton
-        Position.X = 32.000000000000000000
-        Position.Y = 62.000000000000000000
-        Size.Width = 137.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 1
-        Text = 'Start Listener'
-        TextSettings.Trimming = None
-        OnClick = btnNotifyEventClick
-      end
-      object memScans: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 32.000000000000000000
-        Position.Y = 96.000000000000000000
-        Size.Width = 925.000000000000000000
-        Size.Height = 615.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Viewport.Width = 921.000000000000000000
-        Viewport.Height = 611.000000000000000000
-      end
-      object btnStopEvent: TButton
-        Position.X = 192.000000000000000000
-        Position.Y = 62.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 4
-        Text = 'Stop Listener'
-        TextSettings.Trimming = None
-        OnClick = btnStopEventClick
-      end
-      object edtRTDBEventPath: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 8
-        Position.X = 124.000000000000000000
-        Position.Y = 31.000000000000000000
-        Size.Width = 533.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TextPrompt = 'Database path separated by /'
-        object Label26: TLabel
-          Position.X = -92.000000000000000000
-          Position.Y = 2.000000000000000000
-          Size.Width = 81.000000000000000000
-          Size.Height = 17.000000000000000000
-          Size.PlatformDefault = False
-          TextSettings.Trimming = None
-          Text = 'Database Path:'
-          TabOrder = 0
-        end
-      end
-      object lblFirebaseURL: TLabel
-        StyledSettings = [Family, Style, FontColor]
-        Position.X = 32.000000000000000000
-        Position.Y = 6.000000000000000000
-        Size.Width = 921.000000000000000000
-        Size.Height = 19.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.Size = 10.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'Enter Firebase URL in Real Time DB tab'
-        TabOrder = 13
-      end
-      object btnStart2ndListener: TButton
-        Anchors = [akTop, akRight]
-        Position.X = 672.000000000000000000
-        Position.Y = 62.000000000000000000
-        Size.Width = 137.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 0
-        Text = 'Start 2nd Listener'
-        TextSettings.Trimming = None
-        OnClick = btnStart2ndListenerClick
-      end
-      object btnStopEvent2: TButton
-        Anchors = [akTop, akRight]
-        Position.X = 831.000000000000000000
-        Position.Y = 62.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 3
-        Text = 'Stop 2nd Listener'
-        TextSettings.Trimming = None
-        OnClick = btnStopEvent2Click
-      end
-      object edtRTDBEvent2Path: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Anchors = [akTop, akRight]
-        TabOrder = 12
-        Position.X = 672.000000000000000000
-        Position.Y = 31.000000000000000000
-        Size.Width = 278.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TextPrompt = 'Database path for 2nd Listener'
       end
     end
     object tabFirestore: TTabItem
@@ -1241,7 +270,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end>
       TextSettings.Trimming = None
       IsSelected = False
-      Size.Width = 66.000000000000000000
+      ImageIndex = 3
+      Size.Width = 82.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -1249,384 +279,108 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Text = 'Firestore'
       ExplicitSize.cx = 185.000000000000000000
       ExplicitSize.cy = 49.000000000000000000
-      object btnGet: TButton
-        Position.X = 464.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
+      inline FirestoreFra: TFirestoreFra
+        Align = Client
+        Size.Width = 1000.000000000000000000
+        Size.Height = 684.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 2
-        Text = 'Get Document'
-        TextSettings.Trimming = None
-        OnClick = btnGetClick
-      end
-      object edtCollection: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 5
-        Position.X = 112.000000000000000000
-        Position.Y = 63.000000000000000000
-        Size.Width = 177.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        object Label4: TLabel
-          Position.X = -88.000000000000000000
-          Position.Y = 3.000000000000000000
-          Size.Width = 72.000000000000000000
-          Size.Height = 17.000000000000000000
-          Size.PlatformDefault = False
-          TextSettings.Trimming = None
-          Text = 'Collection:'
-          TabOrder = 0
+        inherited memFirestore: TMemo
+          Size.Width = 964.000000000000000000
+          Size.Height = 419.000000000000000000
+          Viewport.Width = 964.000000000000000000
+          Viewport.Height = 419.000000000000000000
         end
-      end
-      object edtDocument: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 6
-        Position.X = 112.000000000000000000
-        Position.Y = 95.000000000000000000
-        Size.Width = 177.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        OnChangeTracking = edtDocumentChangeTracking
-        object Label7: TLabel
-          Position.X = -88.000000000000000000
-          Position.Y = 3.000000000000000000
-          Size.Width = 72.000000000000000000
-          Size.Height = 17.000000000000000000
-          Size.PlatformDefault = False
-          TextSettings.Trimming = None
-          Text = 'Document:'
-          TabOrder = 0
-        end
-      end
-      object memFirestore: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 24.000000000000000000
-        Position.Y = 135.000000000000000000
-        Size.Width = 949.000000000000000000
-        Size.Height = 575.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 10
-        Viewport.Width = 945.000000000000000000
-        Viewport.Height = 571.000000000000000000
-      end
-      object btnCreateDocument: TButton
-        Position.X = 24.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 0
-        Text = 'Create Document'
-        TextSettings.Trimming = None
-        OnClick = btnCreateDocumentClick
-      end
-      object btnInsertOrUpdateDocument: TButton
-        Position.X = 152.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 137.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 1
-        Text = 'Insert / Update Doc'
-        TextSettings.Trimming = None
-        OnClick = btnInsertOrUpdateDocumentClick
-      end
-      object btnDeleteDoc: TButton
-        Position.X = 720.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 4
-        Text = 'Delete Document'
-        TextSettings.Trimming = None
-        OnClick = btnDeleteDocClick
-      end
-      object btnPatchDoc: TButton
-        Position.X = 592.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 3
-        Text = 'PatchDocument'
-        TextSettings.Trimming = None
-        OnClick = btnPatchDocClick
-      end
-      object chbUseChildDoc: TCheckBox
-        Position.X = 304.000000000000000000
-        Position.Y = 97.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 19.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 7
-        Text = 'Use Child Document'
-        OnChange = chbUseChildDocChange
-      end
-      object edtChildCollection: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 8
-        Position.X = 592.000000000000000000
-        Position.Y = 63.000000000000000000
-        Size.Width = 177.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        object Label27: TLabel
-          Position.X = -127.000000000000000000
-          Position.Y = 3.000000000000000000
-          TextSettings.Trimming = None
-          Text = 'Child Collection:'
-          TabOrder = 0
-        end
-      end
-      object edtChildDocument: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 9
-        Position.X = 592.000000000000000000
-        Position.Y = 95.000000000000000000
-        Size.Width = 177.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        object Label28: TLabel
-          Position.X = -127.000000000000000000
-          Position.Y = 3.000000000000000000
-          TextSettings.Trimming = None
-          Text = 'Child Document:'
-          TabOrder = 0
-        end
-      end
-      object btnRunQuery: TButton
-        Enabled = False
-        Position.X = 848.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 11
-        Text = 'Run Query'
-        TextSettings.Trimming = None
-        OnClick = btnRunQueryClick
-      end
-      object cboDemoDocType: TComboBox
-        Items.Strings = (
-          'Simple Document'
-          'Complex Document'
-          'Docs for Run Query')
-        ItemIndex = 0
-        Position.X = 296.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 12
-      end
-      object trbMinTestInt: TTrackBar
-        CanParentFocus = True
-        Orientation = Horizontal
-        Position.X = 848.000000000000000000
-        Position.Y = 70.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 19.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 13
-        Value = 50.000000000000000000
-        OnChange = trbMinTestIntChange
-      end
-      object lblMinTestInt: TLabel
-        Position.X = 848.000000000000000000
-        Position.Y = 56.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'Min testInt Val: 50'
-        TabOrder = 14
-      end
-      object btnStartWriteTransaction: TButton
-        Position.X = 777.000000000000000000
-        Position.Y = 97.000000000000000000
-        Size.Width = 104.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 17
-        Text = 'Write Transaction'
-        TextSettings.Trimming = None
-        OnClick = btnStartWriteTransactionClick
-      end
-      object btnStopReadTrans: TButton
-        Position.X = 777.000000000000000000
-        Position.Y = 97.000000000000000000
-        Size.Width = 191.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 16
-        Text = 'Stop Read Transaction'
-        TextSettings.Trimming = None
-        Visible = False
-        OnClick = btnStopReadTransClick
-      end
-      object chbLimitTo10Docs: TCheckBox
-        Position.X = 304.000000000000000000
-        Position.Y = 97.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 19.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 18
-        Text = 'Limit to 10 documents'
-      end
-      object chbUsePageToken: TCheckBox
-        Position.X = 304.000000000000000000
-        Position.Y = 64.000000000000000000
-        Size.Width = 145.000000000000000000
-        Size.Height = 19.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 19
-        Text = 'Get next page'
-      end
-      object btnStartReadTransaction: TButton
-        Position.X = 889.000000000000000000
-        Position.Y = 97.000000000000000000
-        TabOrder = 20
-        Text = 'Read Trans'
-        TextSettings.Trimming = None
-        OnClick = btnStartReadTransactionClick
-      end
-      object btnCommitWriteTrans: TButton
-        Position.X = 777.000000000000000000
-        Position.Y = 97.000000000000000000
-        Size.Width = 191.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 15
-        Text = 'Commit Write Transaction'
-        TextSettings.Trimming = None
-        Visible = False
-        OnClick = btnCommitWriteTransClick
-      end
-    end
-    object tbFSListener: TTabItem
-      CustomIcon = <
-        item
-        end>
-      TextSettings.Trimming = None
-      IsSelected = False
-      Size.Width = 110.000000000000000000
-      Size.Height = 26.000000000000000000
-      Size.PlatformDefault = False
-      StyleLookup = ''
-      TabOrder = 0
-      Text = 'Firestore Listener'
-      ExplicitSize.cx = 111.000000000000000000
-      ExplicitSize.cy = 26.000000000000000000
-      object btnStartFSListener: TButton
-        Position.X = 32.000000000000000000
-        Position.Y = 146.000000000000000000
-        Size.Width = 137.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 0
-        Text = 'Start Listener'
-        TextSettings.Trimming = None
-        OnClick = btnStartFSListenerClick
-      end
-      object btnStopFSListener: TButton
-        Enabled = False
-        Position.X = 189.000000000000000000
-        Position.Y = 146.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Text = 'Stop Listener'
-        TextSettings.Trimming = None
-        OnClick = btnStopFSListenerClick
-      end
-      object memScanFS: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 32.000000000000000000
-        Position.Y = 184.000000000000000000
-        Size.Width = 946.000000000000000000
-        Size.Height = 526.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 1
-        Viewport.Width = 942.000000000000000000
-        Viewport.Height = 522.000000000000000000
-      end
-      object GroupBox1: TGroupBox
-        Anchors = [akLeft, akTop, akRight]
-        Position.X = 32.000000000000000000
-        Position.Y = 16.000000000000000000
-        Size.Width = 946.000000000000000000
-        Size.Height = 57.000000000000000000
-        Size.PlatformDefault = False
-        Text = 'Target 1: Entire Collection'
-        TabOrder = 7
-        object edtCollectionIDForFSListener: TEdit
-          Touch.InteractiveGestures = [LongTap, DoubleTap]
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 6
-          Position.X = 80.000000000000000000
-          Position.Y = 23.000000000000000000
-          Size.Width = 690.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-          TextPrompt = 
-            'Enter ID of collection or for subcollection the document path se' +
-            'parated by /'
-          object Label29: TLabel
-            Position.X = -72.000000000000000000
-            Position.Y = 2.000000000000000000
-            Size.Width = 65.000000000000000000
-            Size.Height = 17.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.HorzAlign = Trailing
-            TextSettings.Trimming = None
-            Text = 'Collection:'
-            TabOrder = 0
+        inherited TabControl: TTabControl
+          Size.Width = 964.000000000000000000
+          Sizes = (
+            964s
+            106s
+            964s
+            106s
+            964s
+            106s
+            964s
+            106s
+            964s
+            106s
+            964s
+            106s
+            964s
+            106s
+            964s
+            106s)
+          inherited tabCreate: TTabItem
+            Size.Width = 54.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 54.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
           end
-        end
-        object chbIncludeDescendants: TCheckBox
-          Anchors = [akTop, akRight]
-          Position.X = 793.000000000000000000
-          Position.Y = 24.000000000000000000
-          Size.Width = 139.000000000000000000
-          Size.Height = 19.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 38
-          Text = 'Include descendants'
-        end
-      end
-      object GroupBox2: TGroupBox
-        Anchors = [akLeft, akTop, akRight]
-        Position.X = 32.000000000000000000
-        Position.Y = 81.000000000000000000
-        Size.Width = 946.000000000000000000
-        Size.Height = 57.000000000000000000
-        Size.PlatformDefault = False
-        Text = 'Target 2: Single Document'
-        TabOrder = 6
-        object edtDocPathForFSListener: TEdit
-          Touch.InteractiveGestures = [LongTap, DoubleTap]
-          Anchors = [akLeft, akTop, akRight]
-          TabOrder = 6
-          Position.X = 80.000000000000000000
-          Position.Y = 23.000000000000000000
-          Size.Width = 850.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-          TextPrompt = 'Enter document path separated by /'
-          object Label30: TLabel
-            Position.X = -64.000000000000000000
-            Position.Y = 2.000000000000000000
-            Size.Width = 57.000000000000000000
-            Size.Height = 17.000000000000000000
-            Size.PlatformDefault = False
-            TextSettings.HorzAlign = Trailing
-            TextSettings.Trimming = None
-            Text = 'Doc Path:'
-            TabOrder = 0
+          inherited tabInsertOrUpdate: TTabItem
+            Size.Width = 100.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 100.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+          end
+          inherited tabPatch: TTabItem
+            Size.Width = 50.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 50.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+          end
+          inherited tabDelete: TTabItem
+            Size.Width = 54.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 54.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+          end
+          inherited tabGet: TTabItem
+            Size.Width = 39.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 39.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+          end
+          inherited tabQuery: TTabItem
+            Size.Width = 53.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 53.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited btnRunQuery: TButton
+              TabOrder = 10
+            end
+            inherited lblMinTestInt: TLabel
+              TabOrder = 4
+            end
+            inherited trbMinTestInt: TTrackBar
+              TabOrder = 3
+            end
+            inherited Label13: TLabel
+              Size.Width = 133.000000000000000000
+            end
+          end
+          inherited tabListener: TTabItem
+            Size.Width = 78.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 62.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited GroupBox1: TGroupBox
+              TabOrder = 4
+            end
+            inherited GroupBox2: TGroupBox
+              Size.Width = 278.000000000000000000
+              TabOrder = 3
+              inherited edtDocPathForFSListener: TEdit
+                Size.Width = 182.000000000000000000
+              end
+            end
+          end
+          inherited tabTransactions: TTabItem
+            Size.Width = 102.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 86.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited lblReadTransID: TLabel
+              TabOrder = 26
+            end
           end
         end
       end
@@ -1637,7 +391,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end>
       TextSettings.Trimming = None
       IsSelected = False
-      Size.Width = 61.000000000000000000
+      ImageIndex = 4
+      Size.Width = 77.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -1645,162 +400,23 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Text = 'Storage'
       ExplicitSize.cx = 61.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
-      object Label9: TLabel
-        Position.X = 24.000000000000000000
-        Position.Y = 22.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'Storage Bucket:'
-        TabOrder = 0
-      end
-      object edtStorageBucket: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 1
-        Position.X = 24.000000000000000000
-        Position.Y = 46.000000000000000000
-        Size.Width = 329.000000000000000000
-        Size.Height = 22.000000000000000000
+      inline StorageFra: TStorageFra
+        Align = Client
+        Size.Width = 1000.000000000000000000
+        Size.Height = 684.000000000000000000
         Size.PlatformDefault = False
-        TextPrompt = 'Enter a Storage Bucket URL without gs://'
-      end
-      object btnGetStorageSynch: TButton
-        Position.X = 24.000000000000000000
-        Position.Y = 134.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 3
-        Text = 'Get Synchronous'
-        TextSettings.Trimming = None
-        OnClick = btnGetStorageSynchClick
-      end
-      object Label10: TLabel
-        Position.X = 24.000000000000000000
-        Position.Y = 78.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'Object'
-        TabOrder = 4
-      end
-      object memStorageResp: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 24.000000000000000000
-        Position.Y = 232.000000000000000000
-        Size.Width = 949.000000000000000000
-        Size.Height = 463.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 5
-        Viewport.Width = 945.000000000000000000
-        Viewport.Height = 459.000000000000000000
-      end
-      object btnDownloadAsync: TButton
-        Enabled = False
-        Position.X = 200.000000000000000000
-        Position.Y = 166.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 9
-        Text = 'Download Asynchronous'
-        TextSettings.Trimming = None
-        OnClick = btnDownloadAsyncClick
-      end
-      object btnUploadSynch: TButton
-        Position.X = 408.000000000000000000
-        Position.Y = 134.000000000000000000
-        Size.Width = 137.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 11
-        Text = 'Upload Synchronous'
-        TextSettings.Trimming = None
-        OnClick = btnUploadSynchClick
-      end
-      object Label11: TLabel
-        Position.X = 408.000000000000000000
-        Position.Y = 78.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'Folder'
-        TabOrder = 12
-      end
-      object btnDeleteSync: TButton
-        Enabled = False
-        Position.X = 24.000000000000000000
-        Position.Y = 198.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 7
-        Text = 'Delete Synchronous'
-        TextSettings.Trimming = None
-        OnClick = btnDeleteSyncClick
-      end
-      object edtStorageObject: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 13
-        Position.X = 24.000000000000000000
-        Position.Y = 103.000000000000000000
-        Size.Width = 329.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TextPrompt = 'Enter the file name'
-      end
-      object edtStoragePath: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 14
-        Position.X = 408.000000000000000000
-        Position.Y = 103.000000000000000000
-        Size.Width = 562.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TextPrompt = 'Enter the path including path separator /'
-      end
-      object btnUploadAsynch: TButton
-        Position.X = 568.000000000000000000
-        Position.Y = 134.000000000000000000
-        Size.Width = 137.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 10
-        Text = 'Upload Asynchronous'
-        TextSettings.Trimming = None
-        OnClick = btnUploadAsynchClick
-      end
-      object btnGetStorageAsynch: TButton
-        Position.X = 200.000000000000000000
-        Position.Y = 134.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Text = 'Get Asynchronous'
-        TextSettings.Trimming = None
-        OnClick = btnGetStorageAsynchClick
-      end
-      object btnDownloadSync: TButton
-        Enabled = False
-        Position.X = 24.000000000000000000
-        Position.Y = 166.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 8
-        Text = 'Download Synchronous'
-        TextSettings.Trimming = None
-        OnClick = btnDownloadSyncClick
-      end
-      object btnDeleteAsync: TButton
-        Enabled = False
-        Position.X = 200.000000000000000000
-        Position.Y = 198.000000000000000000
-        Size.Width = 153.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 6
-        Text = 'Delete Asynchronous'
-        TextSettings.Trimming = None
-        OnClick = btnDeleteAsyncClick
+        inherited edtStorageBucket: TEdit
+          Size.Width = 869.000000000000000000
+        end
+        inherited memStorageResp: TMemo
+          Size.Width = 957.000000000000000000
+          Size.Height = 452.000000000000000000
+          Viewport.Width = 957.000000000000000000
+          Viewport.Height = 452.000000000000000000
+        end
+        inherited edtStoragePath: TEdit
+          Size.Width = 869.000000000000000000
+        end
       end
     end
     object tabFunctions: TTabItem
@@ -1809,7 +425,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end>
       TextSettings.Trimming = None
       IsSelected = False
-      Size.Width = 71.000000000000000000
+      ImageIndex = 5
+      Size.Width = 87.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -1817,195 +434,17 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Text = 'Functions'
       ExplicitSize.cx = 71.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
-      object edtFunctionName: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 0
-        Position.X = 24.000000000000000000
-        Position.Y = 46.000000000000000000
-        Size.Width = 225.000000000000000000
-        Size.Height = 22.000000000000000000
+      inline FunctionsFra: TFunctionsFra
+        Align = Client
+        Size.Width = 1000.000000000000000000
+        Size.Height = 684.000000000000000000
         Size.PlatformDefault = False
-        object lblFunctionName: TLabel
-          Position.Y = -27.000000000000000000
-          TextSettings.Trimming = None
-          Text = 'Function name:'
-          TabOrder = 0
+        inherited memFunctionResp: TMemo
+          Size.Width = 957.000000000000000000
+          Size.Height = 413.000000000000000000
+          Viewport.Width = 957.000000000000000000
+          Viewport.Height = 413.000000000000000000
         end
-      end
-      object btnCallFunctionSynchronous: TButton
-        Position.X = 416.000000000000000000
-        Position.Y = 46.000000000000000000
-        Size.Width = 193.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Text = 'Call Function Synchronous'
-        TextSettings.Trimming = None
-        OnClick = btnCallFunctionSynchronousClick
-      end
-      object memFunctionResp: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Position.X = 24.000000000000000000
-        Position.Y = 256.000000000000000000
-        Size.Width = 954.000000000000000000
-        Size.Height = 456.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 3
-        Viewport.Width = 950.000000000000000000
-        Viewport.Height = 452.000000000000000000
-      end
-      object edtParam1: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 7
-        Position.X = 24.000000000000000000
-        Position.Y = 94.000000000000000000
-        Size.Width = 161.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        object Label32: TLabel
-          Position.Y = -19.000000000000000000
-          TextSettings.Trimming = None
-          Text = 'Parameter 1 - Name:'
-          TabOrder = 0
-        end
-        object edtParam1Val: TEdit
-          Touch.InteractiveGestures = [LongTap, DoubleTap]
-          TabOrder = 3
-          Position.X = 184.000000000000000000
-          Position.Y = -2.000000000000000000
-          Size.Width = 161.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-          object Label33: TLabel
-            Position.Y = -19.000000000000000000
-            TextSettings.Trimming = None
-            Text = 'Parameter 1 - Value:'
-            TabOrder = 0
-          end
-        end
-      end
-      object cboParams: TComboBox
-        Items.Strings = (
-          '0'
-          '1'
-          '2'
-          '3'
-          '4')
-        ItemIndex = 0
-        Position.X = 272.000000000000000000
-        Position.Y = 46.000000000000000000
-        TabOrder = 8
-        OnChange = cboParamsChange
-      end
-      object Label31: TLabel
-        Position.X = 272.000000000000000000
-        Position.Y = 22.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'No of parameters:'
-        TabOrder = 9
-      end
-      object edtParam2: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 6
-        Position.X = 24.000000000000000000
-        Position.Y = 134.000000000000000000
-        Size.Width = 161.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        object Label34: TLabel
-          Position.Y = -19.000000000000000000
-          TextSettings.Trimming = None
-          Text = 'Parameter 2 - Name:'
-          TabOrder = 0
-        end
-        object edtParam2Val: TEdit
-          Touch.InteractiveGestures = [LongTap, DoubleTap]
-          TabOrder = 3
-          Position.X = 184.000000000000000000
-          Position.Y = -2.000000000000000000
-          Size.Width = 161.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-          object Label35: TLabel
-            Position.Y = -19.000000000000000000
-            TextSettings.Trimming = None
-            Text = 'Parameter 2 - Value:'
-            TabOrder = 0
-          end
-        end
-      end
-      object edtParam3: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 5
-        Position.X = 24.000000000000000000
-        Position.Y = 174.000000000000000000
-        Size.Width = 161.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        object Label36: TLabel
-          Position.Y = -19.000000000000000000
-          TextSettings.Trimming = None
-          Text = 'Parameter 3 - Name:'
-          TabOrder = 0
-        end
-        object edtParam3Val: TEdit
-          Touch.InteractiveGestures = [LongTap, DoubleTap]
-          TabOrder = 3
-          Position.X = 184.000000000000000000
-          Position.Y = -2.000000000000000000
-          Size.Width = 161.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-          object Label37: TLabel
-            Position.Y = -19.000000000000000000
-            TextSettings.Trimming = None
-            Text = 'Parameter 3 - Value:'
-            TabOrder = 0
-          end
-        end
-      end
-      object edtParam4: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 4
-        Position.X = 24.000000000000000000
-        Position.Y = 214.000000000000000000
-        Size.Width = 161.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        object Label38: TLabel
-          Position.Y = -19.000000000000000000
-          TextSettings.Trimming = None
-          Text = 'Parameter 4 - Name:'
-          TabOrder = 0
-        end
-        object edtParam4Val: TEdit
-          Touch.InteractiveGestures = [LongTap, DoubleTap]
-          TabOrder = 3
-          Position.X = 184.000000000000000000
-          Position.Y = -2.000000000000000000
-          Size.Width = 161.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-          object Label39: TLabel
-            Position.Y = -19.000000000000000000
-            TextSettings.Trimming = None
-            Text = 'Parameter 4 - Value:'
-            TabOrder = 0
-          end
-        end
-      end
-      object btnCallFunctionAsynchronous: TButton
-        Position.X = 416.000000000000000000
-        Position.Y = 94.000000000000000000
-        Size.Width = 193.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 1
-        Text = 'Call Function Asynchronous'
-        TextSettings.Trimming = None
-        OnClick = btnCallFunctionAsynchronousClick
       end
     end
     object tabVisionML: TTabItem
@@ -2013,443 +452,592 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = False
-      Size.Width = 69.000000000000000000
+      IsSelected = True
+      ImageIndex = 6
+      Size.Width = 88.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
       TabOrder = 0
-      Text = 'VisionML'
+      Text = 'Vision ML'
       ExplicitSize.cx = 69.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
-      object btnVisionMLAnotateStorage: TButton
-        Enabled = False
-        Position.X = 16.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 141.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 1
-        Text = 'Annotate from Storage'
-        TextSettings.Trimming = None
-        OnClick = btnVisionMLAnotateStorageClick
-      end
-      object edtRefStorage: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 4
-        Position.X = 224.000000000000000000
-        Position.Y = 22.000000000000000000
-        Size.Width = 521.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-      end
-      object memAnnotateFile: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Lines.Strings = (
-          '')
-        OnChange = memAnnotateFileChange
-        Position.X = 224.000000000000000000
-        Position.Y = 64.000000000000000000
-        Size.Width = 638.000000000000000000
-        Size.Height = 82.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 5
-        Viewport.Width = 634.000000000000000000
-        Viewport.Height = 78.000000000000000000
-      end
-      object bntLoadML: TButton
-        Position.X = 870.000000000000000000
-        Position.Y = 94.000000000000000000
-        Size.Width = 100.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 7
-        Text = 'Upload File'
-        TextSettings.Trimming = None
-        OnClick = bntLoadMLClick
-      end
-      object edtAnotateFileType: TEdit
-        Touch.InteractiveGestures = [LongTap, DoubleTap]
-        TabOrder = 8
-        Position.X = 870.000000000000000000
-        Position.Y = 64.000000000000000000
-      end
-      object btnVisionMLAnotateFile: TButton
-        Enabled = False
-        Position.X = 16.000000000000000000
-        Position.Y = 64.000000000000000000
-        Size.Width = 141.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 0
-        Text = 'Annotate from File'
-        TextSettings.Trimming = None
-        OnClick = btnVisionMLAnotateFileClick
-      end
-      object lstFeatures: TListBox
-        Position.X = 16.000000000000000000
-        Position.Y = 154.000000000000000000
-        Size.Width = 954.000000000000000000
-        Size.Height = 57.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 9
-        Columns = 3
-        DisableFocusEffect = True
-        ItemIndex = 2
-        DefaultItemStyles.ItemStyle = ''
-        DefaultItemStyles.GroupHeaderStyle = ''
-        DefaultItemStyles.GroupFooterStyle = ''
-        ListStyle = Horizontal
-        ShowCheckboxes = True
-        Viewport.Width = 950.000000000000000000
-        Viewport.Height = 53.000000000000000000
-        object lbiLabelDetection: TListBoxItem
-          IsChecked = True
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 3
-          Text = 'Label Detection'
-        end
-        object lbiObjectLocalization: TListBoxItem
-          IsChecked = True
-          Position.Y = 17.666666030883790000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 45
-          Text = 'Object Localization'
-        end
-        object lbiTextDetection: TListBoxItem
-          IsChecked = True
-          IsSelected = True
-          Position.Y = 35.333332061767580000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 1
-          Text = 'Text Detection'
-        end
-        object lbiDocTextDetection: TListBoxItem
-          Position.X = 229.000000000000000000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 48
-          Text = 'Doc Text Detection'
-        end
-        object lbiFaceDetection: TListBoxItem
-          Position.X = 229.000000000000000000
-          Position.Y = 17.666666030883790000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 0
-          Text = 'Face Detection'
-        end
-        object lbiLogoDetection: TListBoxItem
-          Position.X = 229.000000000000000000
-          Position.Y = 35.333332061767580000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 43
-          Text = 'Logo Detection'
-        end
-        object lbiLandmarkDetection: TListBoxItem
-          Position.X = 458.000000000000000000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 2
-          Text = 'Landmark Detection'
-        end
-        object lbiWebDetection: TListBoxItem
-          Position.X = 458.000000000000000000
-          Position.Y = 17.666666030883790000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 44
-          Text = 'Web Detection'
-        end
-        object lbiImageProp: TListBoxItem
-          Position.X = 458.000000000000000000
-          Position.Y = 35.333332061767580000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 4
-          Text = 'Image Properties'
-        end
-        object lbiCropHints: TListBoxItem
-          Position.X = 687.000000000000000000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 49
-          Text = 'Crop Image Hints'
-        end
-        object lbiSafeSearch: TListBoxItem
-          Position.X = 687.000000000000000000
-          Position.Y = 17.666666030883790000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 47
-          Text = 'Safe Search'
-        end
-        object lbiProductSearch: TListBoxItem
-          Position.X = 687.000000000000000000
-          Position.Y = 35.333332061767580000
-          Size.Width = 229.000000000000000000
-          Size.Height = 17.666666030883790000
-          Size.PlatformDefault = False
-          TabOrder = 46
-          Text = 'Product Search'
-        end
-      end
-      object gpbMLResult: TGroupBox
-        Anchors = [akTop, akRight]
-        Enabled = False
-        Position.X = 706.000000000000000000
-        Position.Y = 219.000000000000000000
-        Size.Width = 265.000000000000000000
-        Size.Height = 50.000000000000000000
-        Size.PlatformDefault = False
-        Text = 'Representation of Result'
-        TabOrder = 11
-        object rdbResAsJSON: TRadioButton
-          GroupName = 'ResultML'
-          Position.X = 150.000000000000000000
-          Position.Y = 23.000000000000000000
-          Size.Width = 98.000000000000000000
-          Size.Height = 19.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 38
-          Text = 'Original JSON'
-          OnChange = rdbResAsChange
-        end
-        object rdbResAsText: TRadioButton
-          GroupName = 'ResultML'
-          IsChecked = True
-          Position.X = 15.000000000000000000
-          Position.Y = 23.000000000000000000
-          Size.Width = 97.000000000000000000
-          Size.Height = 19.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 39
-          Text = 'Evaluated Text'
-          OnChange = rdbResAsChange
-        end
-      end
-      object Label40: TLabel
-        Position.X = 16.000000000000000000
-        Position.Y = 129.000000000000000000
-        TextSettings.Trimming = None
-        Text = 'ML Vision Features'
-        TabOrder = 12
-      end
-      object gpbMLModel: TGroupBox
-        Position.X = 19.000000000000000000
-        Position.Y = 219.000000000000000000
-        Size.Width = 343.000000000000000000
-        Size.Height = 50.000000000000000000
-        Size.PlatformDefault = False
-        Text = 'Model type'
-        TabOrder = 10
-        object rdbLatestModel: TRadioButton
-          GroupName = 'ModelType'
-          Position.X = 238.000000000000000000
-          Position.Y = 23.000000000000000000
-          Size.Width = 98.000000000000000000
-          Size.Height = 19.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 38
-          Text = ' Latest Model'
-        end
-        object rdbStableModel: TRadioButton
-          GroupName = 'ModelType'
-          Position.X = 103.000000000000000000
-          Position.Y = 23.000000000000000000
-          Size.Width = 97.000000000000000000
-          Size.Height = 19.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 40
-          Text = 'Stable Model'
-        end
-        object rdbUnsetModel: TRadioButton
-          GroupName = 'ModelType'
-          IsChecked = True
-          Position.X = 15.000000000000000000
-          Position.Y = 23.000000000000000000
-          Size.Width = 66.000000000000000000
-          Size.Height = 19.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 39
-          Text = 'Unset'
-        end
-      end
-      object gpbMaxResultSet: TGroupBox
-        Position.X = 369.000000000000000000
-        Position.Y = 219.000000000000000000
-        Size.Width = 248.000000000000000000
-        Size.Height = 50.000000000000000000
-        Size.PlatformDefault = False
-        Text = 'Maximal number of results per feature'
-        TabOrder = 13
-        object spbMaxFeatures: TSpinBox
-          Touch.InteractiveGestures = [LongTap, DoubleTap]
-          TabOrder = 38
-          Cursor = crIBeam
-          Max = 150.000000000000000000
-          Value = 50.000000000000000000
-          Position.X = 24.000000000000000000
-          Position.Y = 20.000000000000000000
-          Size.Width = 113.000000000000000000
-          Size.Height = 22.000000000000000000
-          Size.PlatformDefault = False
-        end
-      end
-      object btnClearML: TButton
-        Position.X = 870.000000000000000000
-        Position.Y = 124.000000000000000000
-        Size.Width = 100.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 6
-        Text = 'Clear File'
-        TextSettings.Trimming = None
-        OnClick = btnClearMLClick
-      end
-      object layResult: TLayout
+      inline VisionMLFra: TVisionMLFra
         Align = Client
-        Margins.Left = 16.000000000000000000
-        Margins.Top = 280.000000000000000000
-        Margins.Right = 16.000000000000000000
-        Margins.Bottom = 10.000000000000000000
-        Size.Width = 964.000000000000000000
-        Size.Height = 434.000000000000000000
+        Size.Width = 1000.000000000000000000
+        Size.Height = 684.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 14
-        object sptMLVision: TSplitter
-          Align = Right
-          Cursor = crHSplit
-          MinSize = 20.000000000000000000
-          Position.X = 656.000000000000000000
-          Size.Width = 8.000000000000000000
-          Size.Height = 434.000000000000000000
-          Size.PlatformDefault = False
+        inherited gpbMaxResultSet: TGroupBox
+          inherited spbMaxFeatures: TSpinBox
+            TabOrder = 37
+          end
         end
-        object lstVisionML: TListBox
-          Align = Client
-          PopupMenu = popMLList
-          Size.Width = 656.000000000000000000
-          Size.Height = 434.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 5
-          DisableFocusEffect = True
-          DefaultItemStyles.ItemStyle = ''
-          DefaultItemStyles.GroupHeaderStyle = ''
-          DefaultItemStyles.GroupFooterStyle = ''
-          OnItemClick = lstVisionMLItemClick
-          Viewport.Width = 652.000000000000000000
-          Viewport.Height = 430.000000000000000000
+        inherited gpbMLModel: TGroupBox
+          inherited rdbLatestModel: TRadioButton
+            TabOrder = 37
+          end
+          inherited rdbStableModel: TRadioButton
+            TabOrder = 39
+          end
+          inherited rdbUnsetModel: TRadioButton
+            TabOrder = 38
+          end
         end
-        object rctBackgroundML: TRectangle
-          Align = MostRight
-          Fill.Kind = Gradient
-          Fill.Gradient.Points = <
-            item
-              Color = xFF252525
-              Offset = 0.000000000000000000
+        inherited gpbMLResult: TGroupBox
+          Position.X = 674.000000000000000000
+          inherited rdbResAsJSON: TRadioButton
+            TabOrder = 37
+          end
+          inherited rdbResAsText: TRadioButton
+            TabOrder = 38
+          end
+        end
+        inherited layResult: TLayout
+          Size.Width = 968.000000000000000000
+          Size.Height = 394.000000000000000000
+          inherited sptMLVision: TSplitter
+            Position.X = 660.000000000000000000
+            Size.Height = 394.000000000000000000
+          end
+          inherited lstVisionML: TListBox
+            Size.Width = 660.000000000000000000
+            Size.Height = 394.000000000000000000
+            Viewport.Width = 656.000000000000000000
+            Viewport.Height = 390.000000000000000000
+          end
+          inherited rctBackgroundML: TRectangle
+            Position.X = 668.000000000000000000
+            Size.Height = 394.000000000000000000
+            inherited imgAnotateFile: TImage
+              Size.Height = 394.000000000000000000
             end
-            item
-              Color = xFF929292
-              Offset = 1.000000000000000000
-            end>
-          Fill.Gradient.StartPosition.X = 0.500000000000000000
-          Fill.Gradient.StartPosition.Y = 1.000000000000000000
-          Fill.Gradient.StopPosition.X = 0.499999970197677600
-          Fill.Gradient.StopPosition.Y = 0.000000000000000000
-          Position.X = 664.000000000000000000
-          Size.Width = 300.000000000000000000
-          Size.Height = 434.000000000000000000
-          Size.PlatformDefault = False
-          Stroke.Kind = None
-          OnResized = rctBackgroundMLResized
-          object imgAnotateFile: TImage
-            MultiResBitmap = <
-              item
-              end>
-            Align = Client
-            Size.Width = 300.000000000000000000
-            Size.Height = 434.000000000000000000
-            Size.PlatformDefault = False
           end
-          object pathAnotateFile: TPath
-            Fill.Color = x50DC143C
-            Position.X = 56.000000000000000000
-            Position.Y = 40.000000000000000000
-            Size.Width = 204.000000000000000000
-            Size.Height = 338.000000000000000000
-            Size.PlatformDefault = False
-            Stroke.Color = claRed
-            Stroke.Thickness = 3.000000000000000000
+        end
+        inherited lstFeatures: TListBox
+          Viewport.Width = 950.000000000000000000
+          Viewport.Height = 53.000000000000000000
+          inherited lbiObjectLocalization: TListBoxItem
+            TabOrder = 41
           end
+          inherited lbiDocTextDetection: TListBoxItem
+            TabOrder = 42
+          end
+          inherited lbiLogoDetection: TListBoxItem
+            TabOrder = 39
+          end
+          inherited lbiWebDetection: TListBoxItem
+            TabOrder = 40
+          end
+        end
+        inherited memAnnotateFile: TMemo
+          Viewport.Width = 638.000000000000000000
+          Viewport.Height = 82.000000000000000000
         end
       end
     end
   end
-  object edtKey: TEdit
-    Touch.InteractiveGestures = [LongTap, DoubleTap]
-    Anchors = [akLeft, akTop, akRight]
-    TabOrder = 4
-    Position.X = 96.000000000000000000
-    Position.Y = 16.000000000000000000
-    Size.Width = 345.000000000000000000
-    Size.Height = 22.000000000000000000
+  object layToolbar: TLayout
+    Align = Top
+    ClipChildren = True
+    Size.Width = 1000.000000000000000000
+    Size.Height = 90.000000000000000000
     Size.PlatformDefault = False
-    TextPrompt = 'Enter Web API key from Firebase Console>Settings>General'
-    Left = 8
-    Top = 147
-    object Text2: TText
-      Position.X = -80.000000000000000000
-      Size.Width = 80.000000000000000000
+    TabOrder = 10
+    object btnShowSettings: TButton
+      Align = Left
+      Images = imlFirebaseServices
+      ImageIndex = 0
+      Size.Width = 169.000000000000000000
+      Size.Height = 90.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Firebase Project Settings'
+      TextSettings.Trimming = None
+      OnClick = btnShowSettingsClick
+    end
+    object edtKey: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Anchors = [akLeft, akTop, akRight]
+      TabOrder = 5
+      Position.X = 267.000000000000000000
+      Position.Y = 62.000000000000000000
+      Size.Width = 725.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
-      Text = 'Web API Key'
+      TextPrompt = 'Enter Web API key from Firebase Console>Settings>General'
+      Left = 8
+      Top = 147
+      object Text2: TText
+        Position.X = -80.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Web API Key'
+      end
+      object rctKeyDisabled: TRectangle
+        Align = Client
+        Fill.Color = x0A040404
+        HitTest = False
+        Size.Width = 725.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Stroke.Kind = None
+        Visible = False
+      end
+    end
+    object edtProjectID: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Anchors = [akLeft, akTop, akRight]
+      TabOrder = 0
+      Position.X = 267.000000000000000000
+      Position.Y = 32.000000000000000000
+      Size.Width = 725.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TextPrompt = 'Enter Project ID  from Firebase Console>Settings'
+      object Text1: TText
+        Position.X = -62.000000000000000000
+        Size.Width = 65.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Project ID'
+      end
+      object rctProjectIDDisabled: TRectangle
+        Align = Client
+        Fill.Color = x0A040404
+        HitTest = False
+        Size.Width = 725.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Stroke.Kind = None
+        Visible = False
+      end
+    end
+    object FloatAniToolbar: TFloatAnimation
+      AnimationType = InOut
+      Duration = 0.500000000000000000
+      OnFinish = FloatAniToolbarFinish
+      PropertyName = 'Height'
+      StartValue = 25.000000000000000000
+      StopValue = 90.000000000000000000
+    end
+    object lblOpenFBConsole: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 177.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 128.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Open Firebase Console'
+      TabOrder = 13
+      OnClick = lblOpenFBConsoleClick
+    end
+    object lblOpenFBConsoleForProject: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 313.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 160.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Firebase Console for Project'
+      TabOrder = 12
+      OnClick = lblOpenFBConsoleForProjectClick
+    end
+    object lblOpenFBConsoleForAuth: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 465.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 144.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Firebase Console for Auth'
+      TabOrder = 11
+      OnClick = lblOpenFBConsoleForAuthClick
+    end
+    object lblOpenFBConsoleForRTDB: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 465.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 144.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Firebase Console for RTDB'
+      Visible = False
+      TabOrder = 6
+      OnClick = lblOpenFBConsoleForRTDBClick
+    end
+    object lblOpenFBConsoleForFS: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 465.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 168.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Firebase Console for Firestore'
+      Visible = False
+      TabOrder = 8
+      OnClick = lblOpenFBConsoleForFSClick
+    end
+    object lblOpenFBConsoleForStorage: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 465.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 184.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Firebase Console for Storage'
+      Visible = False
+      TabOrder = 10
+      OnClick = lblOpenFBConsoleForStorageClick
+    end
+    object lblOpenFBConsoleForFunctions: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 465.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 184.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Firebase Console for Functions'
+      Visible = False
+      TabOrder = 9
+      OnClick = lblOpenFBConsoleForFunctionsClick
+    end
+    object lblOpenFBConsoleForVisionML: TLabel
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 465.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 168.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      Text = 'Firebase Console for Vision ML'
+      Visible = False
+      TabOrder = 7
+      OnClick = lblOpenFBConsoleForVisionMLClick
     end
   end
-  object timRefresh: TTimer
-    Enabled = False
-    OnTimer = timRefreshTimer
-    Left = 377
-    Top = 346
-  end
-  object SaveDialog: TSaveDialog
-    Left = 208
-    Top = 346
-  end
-  object OpenDialog: TOpenDialog
-    DefaultExt = 'png'
-    Left = 288
-    Top = 346
-  end
-  object OpenDialogFileAnnotate: TOpenDialog
-    Filter = 
-      'GIF (*.gif)|*.gif|TIFF (*.tif or *.tiff)|*.tiff;*.tif|PDF (*.pdf' +
-      ')|*.pdf'
-    Left = 64
-    Top = 354
-  end
-  object popMLList: TPopupMenu
-    Left = 40
-    Top = 692
-    object mniMLListExport: TMenuItem
-      Text = 'Export to file'
-      OnClick = mniMLListExportClick
-    end
+  object imlFirebaseServices: TImageList
+    Source = <
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C086488000002E9494441545885ED565D4853
+              7114FFAD724DB7BB2D646E4CAF291A8CCC484514FC888CB220A1EC21703E2968
+              047DD143ECB960F420063D29582F26F4600441A1A2911FA489BDE86C90E2C774
+              382FD2DCBDFB508B7F0F2BBDDEDDFFE6D6430FEDBC9DDFFF77CEFFDC7BCEFF9C
+              03242529FF58148918F1C14DB234F919D3DEAD5D4CA93F85CA5216C6D4C371F9
+              3C924800D859C668D708DEEE0383C83CC3C6EDEA504201F09B588F003978F9F8
+              5DC50C80F76D9099D955E2117E923F9877FE1B2622986B70CC7BF7EC844DF275
+              768EB87C7B767212335FF3FDCFC89D971CA055A1E26C29B2DC9FF06AEA07957F
+              EC7431AE1DE7D0F7D185551F5064BD85C7174DD47BA206C0BBC749BBED9DCCD7
+              C6232C6EDB9B70C92C5F9CD414F0413F710CF547BD3C23478F028B1E0539D16A
+              D985EEF7D3F004E55341B7149C181BA0FC6A2D8BD67B0D386756ED4201F728BA
+              9E0E62CC1749FF3E3C89992B85B2AEA87F803194281A6D552833484F54B8DAB2
+              FF7200483357A2B5A5183952BAC184265B03CE1BE34C0100182D1714F76DF5A8
+              1583960AD4E4AB64F9CAFC72D45AC4C8493CB4B5E2BA454DADB5D87D204D03BD
+              58571F85924A4E81522DD635D0A445771F3B808000AF58F76F619B4ADEC1B65F
+              AC0B10027F1180C73940DAEDAFD127069D63189A0BC9F2B7E7C6D1E71423B378
+              62EF40AFD34F6D46F467C84D916EFB082638E949086F3A7BF0C1BD3F88807B14
+              1D9D5FB028A5736B786EEFC1A047FE19528B830FFA89A3B70D8F684F11E13E60
+              50010809702C46E98ED5F5686B28949D94D43EC0A4AA15BC7B9C940DD03BE1FA
+              A2576628498545E365F9CB811835C098CB1556EBEF46A055A1A2AE0A374AA24F
+              F08C926234D5B1C8D486F5226B1DB50D03071846BC6F832CAD8460C836C1A809
+              3B720DBF2037BB1622B835CD77F1A03A5D0184A7E1CA32074D562E582D3D8098
+              0B09A34D8F30D6E79D40191624A931A1206FAF63301ADD8136A3C4161246878C
+              08D0003D13BFABC456B2946C5436574127D909735312F29694A4FCE7F20BFB23
+              ED21F9202D450000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D.wiki\IconSettings.png'
+          end>
+        Name = 'IconSettings'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C08648800000221494441545885ED94BF6B13
+              611C879F98401269A5215CEBAF601434D81FA282C58676506824D82EAEDD2C54
+              287471E920FE01CEA29B118A16EB501D8A22458786561BC1486B8752C18422E8
+              8598A4D7E4927AF11CCC99D8BB9AAB45BADC33DDFBF2B9F7FBDC7BEFFB050B0B
+              0B8B5DC6662624C979353937C9A3E72BC4530ECEF48618E83BC7C926FBEFF7A5
+              EC6775766A9289E914A2207029DCCF40D087D76DFF6B0D871901311A61F461AA
+              3252884F3F23B106AB7259F5B9ED36494EABB1FB77B83DAFFC8AA452BC188B20
+              9687EBAEBDA75E4092136A6C26A59BCFCC2FB294D1062BCC6AC56B88CFBCE783
+              5C567724000ADF7346F34536B49A8AC2865124A797FA07011F2782067FCA7F9C
+              6342E559384C9B5F1FF1048F7060A7028D6EA7AD2D3CC8B5AEAA8427D0CAE850
+              2FED9503D6E8F6DBFA86AED01FA8669ABB42DC08B7D63D84A66E81463A9D5715
+              C0B1D765B8B02497D44241011CB4789DDB5A7BD730D907B42FABE270BAF036D4
+              F481F5925A286DCA6CB153A604A4F59C9A5C7CCDABB977C4168A640C329E8302
+              9DDD3D5C3EDF41F38F4F4C8D8DF360A156C2C1A15347B910ECE162878F9606BD
+              8CA18094FDA83EB93BCEC472FD6B04C0BEFD5C1D1924E47AC3AD9B2F891BC906
+              3AB93E1CE66CD39F1286B720197D6CBE38C0DA17224FDF220AED749F368E6496
+              63DC8BAEEAE67502929C57BF8945F3C53596B2E400EC5B47126296AF9B3AA3C1
+              0E1429E4B75FDF14F9A2AE639AE88416161616FF979F330BBF207BD47EB60000
+              000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D.wiki\IconAuth.png'
+          end>
+        Name = 'IconAuth'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C086488000001B249444154588563601805A3
+              608001233EC9CF5FDEFE7F78FB01C3BDC7CF19BE92653C2F8398AC3C839AAA2C
+              832C0F3356BB58705AFEE1CEFFF5DD1319563E20CB6654A060C670EEC3DFFF46
+              02988E60C2A5E7DBCDE3D4B19C818181E1C1298623377F6095C21902BF7EC234
+              983134CFF06430E4C0E9569CE0CB8FBB0CEB331631AC646060F8F013BB034837
+              95CA60C01D80330A10E03BC3976F3F185E7D23C7F82F0C3F2977C06586CEA2CB
+              E4D84E14201C057C020C4EDEBA0CE6A203E400A7A8648634DF2086C23C6706ED
+              8170C0FBCFDF19181818187E7D7C4F6669881FE04C030212B20C6A0C8F19CE2F
+              9DC690B79F83E1F7B31F0CEFC9B6868741554200AB0CDEBAE0EEF1D5FFE7AFBD
+              CC70FE35D9363330888A32F886463164980BE3B56BC0004E573D3EB9E2FFE47D
+              CFA866919253324386393F867DB8CB819F9F19AEDEF8403507F058FFC12A4E30
+              1728B806314CEA2B67E849946510A49A7348708081BE2E83181707838C9A2E83
+              1A0D1C80330AD8D839181818181836AC59C7201BA0CAF0EBE221869314582400
+              358F680770A95B32842BDC6658F9E032C3E40914D6050A660C4E9AD81D30E06D
+              C251300A460100AA707C5419F8670A0000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D.wiki\IconRTDB.png'
+          end>
+        Name = 'IconRTDB'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C086488000001F9494441545885ED564D2804
+              61187E467BD8D3660F2B919BCD41C94F612307E5279B9F22B75592127121650E
+              7B98346AC36144B2216B2F42949D5A5B1C16F9293F973DC8C141A4A5684F427D
+              0EC460BF996F76F738CFF19DE77BDFE77BBFF7670003060C240951F49264CE73
+              891C0ACBCB2410BC4224A6305AD2515D5F8D4167A12E9FBAC8EBF35324107E40
+              54956542519503A35D354CBE99483E49202BA7EF2CD45FC82829C6E2408B6A0C
+              D58F3BB302993CA405FEB9A95666AC8E66F87B4AE2C632A909787B8D135CF1D6
+              F2D2A7A9B5AB9F0328B501E0E9F58D1A43558012D6AC1CF8C7BA390090A7E273
+              AA9CAEEF5B8A230239B8D3FF6CBF1094DCA453DA4CAACD7C92409CD211D54742
+              6D0800EBDE49B2B1FF8C27008009F9950E78BAD92A3F2901924720DB117A6A33
+              F2ED581C7631FB65260A436E72FCC0CA0660CB843CDEABE95F9570B6E525B3A1
+              1BDCC628049B0D7585E9885E5CE19C26CE6246456D3BF8C65CFD6D18BD8E1FDC
+              9A67879FFF4CB3ACB04F8802D9BDFCF33CB1171C5C3F526330B7216042766901
+              E6FAE8936D90777300E09B1649E8E4E5AB40B5BC3250CA1A6BE16E2BE7B0C426
+              B5A38FE70020B8364356B6EE3576470A11969789B476AA6B6E243C0794F8BF0B
+              D8E7425A2A042CFC5B44EF88ECEFA1D3B3AA990D1D45C80A7DFF03A9136031A3
+              A2A6017CD3CF963460C0000B3E000C4CB25E920D0A890000000049454E44AE42
+              6082}
+            FileName = 'D:\Christoph\Projects\FB4D.wiki\IconFirestore.png'
+          end>
+        Name = 'IconFirestore'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C0864880000019B49444154588563601805A3
+              60148C74C0884B62515BD3FF9537FFE0D4A8E618C4D09F6080533FB180099BE0
+              95CD6D782D67606060B8B57F1D43E1820BFF297500561FEC9D56F7BFEF247106
+              8829083088721050C42DCAD095178BD52E166C82BFF17B1E05BC7AF081E11541
+              551F18BCE39BFE6F5D5887E108AC51401BF087C17BD50D8C28A3A3031818185E
+              7CC010A2AF03B000AA3940D0DC8C21DC1C6B92A2AE0304D50518D4D00515CC18
+              8AA23C1902A3A218C21568E900053386A2AC7C869C6459064198189F2C436E9A
+              27832A3B030303BB2243609A1783351F4D1CC0C310130DB148CC348A21C79585
+              8181818321202D8AC15A0849999029437AA619662851E6001606EBE464061F59
+              189F8341DB278A21292C8C214805B3146253746488F5E5A19E0304EDFC18924D
+              055005D91519DC9C1419D8B0EAE06050F54E66C825225112916C3918D4D89F30
+              ECDBFD8418B7A2023E11066986170C4F4975002B8AE80F8693BB4F31105935E0
+              07586CC31A05E2B2846A17F28082AC04710ED0F1AD620C5727BD50C10704D5CD
+              18A6FA2A50DC7E1805A36014501D0000DE3F4CF9DDD3905F0000000049454E44
+              AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D.wiki\IconStorage.png'
+          end>
+        Name = 'IconStorage'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C086488000001BE494441545885ED963B4842
+              511CC63FC3211A44899A0D1A221BC2C5252C6A94C2C0515089280C871E34441C
+              E90C0D0D36448248F8A0251214A95128A1C1C51A2A1A049D0B511CA241380DE2
+              2D9FF7DC2B22C2FD96F3B8E77FBF1F9CEFDC7301458A147128194D303975C1E8
+              A368DD88A8B99FB2402A0B8BF7561244D04B58229582DDDF1DA22B40D24F5920
+              53AD0D0A7929FE782FD4DA52A63B4447800673A8B1BCB92109E03C4255931087
+              680B900E379BEF607F615C25890040A81922FCD202D116E0BB5215FA26973CF3
+              FF10F57EA9F2D3F25C34846449BE398F4401FAADE10238F6106639080941CAC6
+              7DCCEEA0EC309E13E6A25EC22C1E1FF737831B201B23ECB902E02B0F9A2E3200
+              784D945142156F890F61DD4D0140A50C4B2CC705C10D60B45195410360620AC4
+              5C0BE69C550B1DD43058678475AB7A001A2DEE6DD35CE155F30200C0D9056D78
+              A9717DAF368E10616EFB844A3A35C315C28100D087A2ACABB8278031CD5F3432
+              A14B9CA6E543B81C44A8D56946F900CC4EA2DA32D521AA78BA9207E17210F659
+              3737ADE0DA39DF12D08E5BB0E6EE0D62B7D9DCBDD8F67474CD400384DE882333
+              FFC534AB1737E756327AD7B77F42458A06AE5F6D85AB07D835CFD60000000049
+              454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D.wiki\IconFunctions.png'
+          end>
+        Name = 'IconFunctions'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C086488000002E3494441545885ED964B4854
+              5118C77FE323D4469BC1C644541C4C2B1F5042B3142CCBCC6CE1466851BB8268
+              D5C645B5B1951B21E825516D06A1488911292994A6A298CC71E103670AC54711
+              D7C1D1997126753A2D7C8EF75ED43B8505FE57F79EEF7FFFDF77CFF9CEFF1CD8
+              C1FF0ADF8C47F43947C4D84C5844A313A729B9D42B1E5FBB45C70C9092875D0A
+              8B5253AC4E8B568C968F90C6179303CCB8199134A944518029938A94A5E71C0B
+              4519DA0BD00CDFC43B517FE1AEB04D44D703DA6600401707C4B34BD3CAAF91D9
+              883036F05138FADCF47F95F0AF0D8810DF8616483AA0C710A19240666E1EF945
+              259C2A48DD505F95E00B7A84F3C9431ABAFC6A940D915F56C395DA627213D577
+              88E236F40503C2DD7E6735B9494F61EAE677ECBCC78B4B0257572BB7F57A3CC1
+              B048552942595572D2DAB6983CA7F434576B8F9216BBE9FC809FFEE74DDC7CE9
+              C7D5F682F796CBAA4CC526F48E0EE204C04CCDD9AD2607D053587E9C630048F4
+              8DAA2FA3AC008FEB8D786AFFBEF466C2A8DF6AF2E51AF6605A7A1CB0DBB0B902
+              8ADB3562097CC180703637D0392427CE0E7FA0F38B17C8C472A298B488A884F3
+              553713C0EEFD6594991322A253436E9ADEBAF9110C8B7DEB7A61DD0C84980D28
+              FFD0DCE420D61607D69671A665513F232D0EAC2D0E7A2743CA028110730AC3DA
+              8DE80F61DB0B88E881E4C4545DCFB37AC1E70519D170F81C8F1A173F499245CD
+              5435D65101109F208B021833F692A5E005321FC82BBF48DDAF661ADABD9181F8
+              0492E201249CAFBB9958DBD3BA4C2CE5EB1B73158555355C2A37635588C90A48
+              36A4EBC6EC0F047815E80026F43F7BB0B6ADCE92B1FA206754D800FAF42C720D
+              CA4EA8DC032BA312530A1E9257508271E52D8E93056639C93FCDF23D252E46DD
+              C6152386EC431C610C27C3B4DA3E91B3DE8ACD95DCBB5FA92A4A58C261EBA013
+              001345D9EA6EA6382DCB87D18DB6E80E2380FCEAF35CAF32A376186DFB71ACFD
+              42A28AAD5D48FE7D0821949DE50F6133563CFF370BD8C16F4BBE080F4BEE1ACD
+              0000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D.wiki\IconML.png'
+          end>
+        Name = 'IconML'
+      end>
+    Destination = <
+      item
+        Layers = <
+          item
+            Name = 'IconSettings'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'IconAuth'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'IconRTDB'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'IconFirestore'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'IconStorage'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'IconFunctions'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'IconML'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end>
+    Left = 920
+    Top = 16
   end
 end

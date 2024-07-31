@@ -1,0 +1,388 @@
+object AuthFra: TAuthFra
+  Align = Client
+  Size.Width = 1036.000000000000000000
+  Size.Height = 728.000000000000000000
+  Size.PlatformDefault = False
+  object Label1: TLabel
+    Position.X = 16.000000000000000000
+    Position.Y = 16.000000000000000000
+    TextSettings.Trimming = None
+    Text = 'User email adress'
+    TabOrder = 2
+  end
+  object TabControlUser: TTabControl
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Position.X = 16.000000000000000000
+    Position.Y = 160.000000000000000000
+    Size.Width = 1000.000000000000000000
+    Size.Height = 543.000000000000000000
+    Size.PlatformDefault = False
+    TabIndex = 0
+    TabOrder = 7
+    TabPosition = PlatformDefault
+    Sizes = (
+      1000s
+      517s
+      1000s
+      517s)
+    object tabInfo: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = True
+      Size.Width = 82.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Information'
+      ExplicitSize.cx = 83.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object memUser: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        ReadOnly = True
+        Align = Client
+        Margins.Left = 10.000000000000000000
+        Margins.Top = 60.000000000000000000
+        Margins.Right = 10.000000000000000000
+        Margins.Bottom = 10.000000000000000000
+        Size.Width = 980.000000000000000000
+        Size.Height = 447.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 976.000000000000000000
+        Viewport.Height = 443.000000000000000000
+        object timRefresh: TTimer
+          Enabled = False
+          OnTimer = timRefreshTimer
+          Left = 377
+          Top = 346
+        end
+      end
+      object btnGetUserData: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 22.000000000000000000
+        TabOrder = 1
+        Text = 'User Data'
+        TextSettings.Trimming = None
+        OnClick = btnGetUserDataClick
+      end
+      object btnRefresh: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 920.000000000000000000
+        Position.Y = 22.000000000000000000
+        Size.Width = 64.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 14
+        Text = 'Refresh'
+        TextSettings.Trimming = None
+        OnClick = btnRefreshClick
+      end
+    end
+    object tabUserProfile: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 125.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Change User Profile'
+      ExplicitSize.cx = 125.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object edtChangeEMail: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 3
+        Position.X = 24.000000000000000000
+        Position.Y = 142.000000000000000000
+        Size.Width = 720.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        object txtEMail: TText
+          Position.Y = -26.000000000000000000
+          Size.Width = 225.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'EMail Addresse'
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      object edtChangeDisplayName: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+        Position.X = 24.000000000000000000
+        Position.Y = 62.000000000000000000
+        Size.Width = 720.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        object Text3: TText
+          Position.Y = -26.000000000000000000
+          Size.Width = 225.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Display Name'
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      object btnChange: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 775.000000000000000000
+        Position.Y = 62.000000000000000000
+        Size.Width = 185.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 7
+        Text = 'Change Display Name'
+        TextSettings.Trimming = None
+        OnClick = btnChangeClick
+      end
+      object btnChangeEMail: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 775.000000000000000000
+        Position.Y = 142.000000000000000000
+        Size.Width = 185.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 6
+        Text = 'Change EMail Address'
+        TextSettings.Trimming = None
+        OnClick = btnChangeEMailClick
+      end
+      object edtChangePassword: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 2
+        Password = True
+        Position.X = 24.000000000000000000
+        Position.Y = 214.000000000000000000
+        Size.Width = 720.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        object Text4: TText
+          Position.Y = -26.000000000000000000
+          Size.Width = 225.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'New Password'
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      object btnChangePwd: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 775.000000000000000000
+        Position.Y = 214.000000000000000000
+        Size.Width = 185.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 5
+        Text = 'Change Password'
+        TextSettings.Trimming = None
+        OnClick = btnChangePwdClick
+      end
+      object edtChangePhotoURL: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 1
+        Position.X = 24.000000000000000000
+        Position.Y = 294.000000000000000000
+        Size.Width = 720.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        object txtPhotoURL: TText
+          Position.Y = -26.000000000000000000
+          Size.Width = 225.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Photo URL'
+          TextSettings.HorzAlign = Leading
+        end
+      end
+      object btnChangePhotoURL: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 775.000000000000000000
+        Position.Y = 294.000000000000000000
+        Size.Width = 185.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+        Text = 'Change Photo URL'
+        TextSettings.Trimming = None
+        OnClick = btnChangePhotoURLClick
+      end
+      object btnDeleteUserAccount: TButton
+        Position.X = 24.000000000000000000
+        Position.Y = 342.000000000000000000
+        Size.Width = 201.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+        Text = 'Delete Signed-In User Account'
+        TextSettings.Trimming = None
+        OnClick = btnDeleteUserAccountClick
+      end
+      object btnSendEMailVerification: TButton
+        Position.X = 240.000000000000000000
+        Position.Y = 342.000000000000000000
+        Size.Width = 177.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 9
+        Text = 'Send EMail Verification'
+        TextSettings.Trimming = None
+        OnClick = btnSendEMailVerificationClick
+      end
+    end
+  end
+  object lblTokenExp: TLabel
+    Anchors = [akLeft, akTop, akRight]
+    Position.X = 384.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 635.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.HorzAlign = Trailing
+    TextSettings.Trimming = None
+    Text = 'expires at ...'
+    TabOrder = 5
+  end
+  object Label6: TLabel
+    Position.X = 16.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 33.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'UID'
+    TabOrder = 4
+  end
+  object Label5: TLabel
+    Position.X = 328.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 41.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Token'
+    TabOrder = 6
+  end
+  object Label2: TLabel
+    Position.X = 328.000000000000000000
+    Position.Y = 16.000000000000000000
+    TextSettings.Trimming = None
+    Text = 'Password'
+    TabOrder = 3
+  end
+  object edtUID: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 8
+    Position.X = 16.000000000000000000
+    Position.Y = 104.000000000000000000
+    Size.Width = 289.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object edtToken: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akLeft, akTop, akRight]
+    TabOrder = 11
+    Position.X = 328.000000000000000000
+    Position.Y = 104.000000000000000000
+    Size.Width = 691.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object edtPassword: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akLeft, akTop, akRight]
+    TabOrder = 1
+    Password = True
+    Position.X = 328.000000000000000000
+    Position.Y = 40.000000000000000000
+    Size.Width = 177.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    Left = 9
+    Top = 63
+  end
+  object edtEmail: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 0
+    Position.X = 17.000000000000000000
+    Position.Y = 41.000000000000000000
+    Size.Width = 288.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    OnChange = edtEmailChange
+    Left = 9
+    Top = 23
+  end
+  object btnSignUpNewUser: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 513.000000000000000000
+    Position.Y = 40.000000000000000000
+    Size.Width = 111.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 14
+    Text = 'Sign up new user'
+    TextSettings.Trimming = None
+    OnClick = btnSignUpNewUserClick
+  end
+  object btnPasswordReset: TButton
+    Anchors = [akTop, akRight]
+    Enabled = False
+    Position.X = 745.000000000000000000
+    Position.Y = 40.000000000000000000
+    Size.Width = 96.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 17
+    Text = 'Reset Password'
+    TextSettings.Trimming = None
+    OnClick = btnPasswordResetClick
+  end
+  object btnLogin: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 632.000000000000000000
+    Position.Y = 40.000000000000000000
+    Size.Width = 105.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 10
+    Text = 'Anonymous Login'
+    TextSettings.Trimming = None
+    OnClick = btnLoginClick
+  end
+  object btnLinkEMailPwd: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 849.000000000000000000
+    Position.Y = 40.000000000000000000
+    Size.Width = 104.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 21
+    Text = 'Link EMail/Pwd'
+    TextSettings.Trimming = None
+    OnClick = btnLinkEMailPwdClick
+  end
+  object btnLogout: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 961.000000000000000000
+    Position.Y = 40.000000000000000000
+    Size.Width = 58.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 23
+    Text = 'Logout'
+    TextSettings.Trimming = None
+    OnClick = btnLogoutClick
+  end
+end

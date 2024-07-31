@@ -1,0 +1,195 @@
+object StorageFra: TStorageFra
+  Align = Client
+  Size.Width = 1036.000000000000000000
+  Size.Height = 728.000000000000000000
+  Size.PlatformDefault = False
+  object edtStorageBucket: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akLeft, akTop, akRight]
+    TabOrder = 0
+    Position.X = 112.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 905.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TextPrompt = 'Enter a Storage Bucket URL without gs://'
+    object Label9: TLabel
+      Position.X = -112.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 105.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Storage Bucket:'
+      TabOrder = 0
+    end
+    object rctBucketDisabled: TRectangle
+      Align = Client
+      Fill.Color = x0A040404
+      HitTest = False
+      Size.Width = 905.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      Visible = False
+    end
+  end
+  object memStorageResp: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Position.X = 24.000000000000000000
+    Position.Y = 224.000000000000000000
+    Size.Width = 993.000000000000000000
+    Size.Height = 496.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    Viewport.Width = 989.000000000000000000
+    Viewport.Height = 492.000000000000000000
+    object OpenDialog: TOpenDialog
+      DefaultExt = 'png'
+      Left = 968
+      Top = 594
+    end
+    object SaveDialog: TSaveDialog
+      Left = 888
+      Top = 594
+    end
+  end
+  object btnUploadAsynch: TButton
+    Position.X = 568.000000000000000000
+    Position.Y = 118.000000000000000000
+    Size.Width = 137.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Text = 'Upload Asynchronous'
+    TextSettings.Trimming = None
+    OnClick = btnUploadAsynchClick
+  end
+  object btnUploadSynch: TButton
+    Position.X = 408.000000000000000000
+    Position.Y = 118.000000000000000000
+    Size.Width = 137.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 9
+    Text = 'Upload Synchronous'
+    TextSettings.Trimming = None
+    OnClick = btnUploadSynchClick
+  end
+  object btnGetStorageAsynch: TButton
+    Position.X = 200.000000000000000000
+    Position.Y = 118.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Get Asynchronous'
+    TextSettings.Trimming = None
+    OnClick = btnGetStorageAsynchClick
+  end
+  object btnDownloadAsync: TButton
+    Enabled = False
+    Position.X = 200.000000000000000000
+    Position.Y = 150.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 7
+    Text = 'Download Asynchronous'
+    TextSettings.Trimming = None
+    OnClick = btnDownloadAsyncClick
+  end
+  object btnDeleteAsync: TButton
+    Enabled = False
+    Position.X = 200.000000000000000000
+    Position.Y = 182.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'Delete Asynchronous'
+    TextSettings.Trimming = None
+    OnClick = btnDeleteAsyncClick
+  end
+  object btnDeleteSync: TButton
+    Enabled = False
+    Position.X = 24.000000000000000000
+    Position.Y = 182.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    Text = 'Delete Synchronous'
+    TextSettings.Trimming = None
+    OnClick = btnDeleteSyncClick
+  end
+  object btnDownloadSync: TButton
+    Enabled = False
+    Position.X = 24.000000000000000000
+    Position.Y = 150.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = 'Download Synchronous'
+    TextSettings.Trimming = None
+    OnClick = btnDownloadSyncClick
+  end
+  object btnGetStorageSynch: TButton
+    Position.X = 24.000000000000000000
+    Position.Y = 118.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Get Synchronous'
+    TextSettings.Trimming = None
+    OnClick = btnGetStorageSynchClick
+  end
+  object edtStoragePath: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akLeft, akTop, akRight]
+    TabOrder = 11
+    Position.X = 112.000000000000000000
+    Position.Y = 79.000000000000000000
+    Size.Width = 905.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TextPrompt = 'Enter the path including path separator /'
+    object Label11: TLabel
+      Position.X = -112.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 105.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Folder:'
+      TabOrder = 12
+    end
+  end
+  object edtStorageObject: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 10
+    Position.X = 112.000000000000000000
+    Position.Y = 49.000000000000000000
+    Size.Width = 905.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TextPrompt = 'Enter the file name'
+    object Label10: TLabel
+      Position.X = -112.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 105.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Object:'
+      TabOrder = 4
+    end
+  end
+end

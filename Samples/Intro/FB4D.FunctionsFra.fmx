@@ -1,0 +1,196 @@
+object FunctionsFra: TFunctionsFra
+  Align = Client
+  Size.Width = 1036.000000000000000000
+  Size.Height = 728.000000000000000000
+  Size.PlatformDefault = False
+  object Label31: TLabel
+    Position.X = 272.000000000000000000
+    Position.Y = 22.000000000000000000
+    TextSettings.Trimming = None
+    Text = 'No of parameters:'
+    TabOrder = 9
+  end
+  object memFunctionResp: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Position.X = 24.000000000000000000
+    Position.Y = 256.000000000000000000
+    Size.Width = 993.000000000000000000
+    Size.Height = 457.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    Viewport.Width = 989.000000000000000000
+    Viewport.Height = 453.000000000000000000
+  end
+  object edtParam4: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 4
+    Position.X = 24.000000000000000000
+    Position.Y = 214.000000000000000000
+    Size.Width = 161.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object Label38: TLabel
+      Position.Y = -19.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'Parameter 4 - Name:'
+      TabOrder = 0
+    end
+    object edtParam4Val: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 3
+      Position.X = 184.000000000000000000
+      Position.Y = -2.000000000000000000
+      Size.Width = 161.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      object Label39: TLabel
+        Position.Y = -19.000000000000000000
+        TextSettings.Trimming = None
+        Text = 'Parameter 4 - Value:'
+        TabOrder = 0
+      end
+    end
+  end
+  object edtParam3: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 5
+    Position.X = 24.000000000000000000
+    Position.Y = 174.000000000000000000
+    Size.Width = 161.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object Label36: TLabel
+      Position.Y = -19.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'Parameter 3 - Name:'
+      TabOrder = 0
+    end
+    object edtParam3Val: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 3
+      Position.X = 184.000000000000000000
+      Position.Y = -2.000000000000000000
+      Size.Width = 161.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      object Label37: TLabel
+        Position.Y = -19.000000000000000000
+        TextSettings.Trimming = None
+        Text = 'Parameter 3 - Value:'
+        TabOrder = 0
+      end
+    end
+  end
+  object edtParam2: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 6
+    Position.X = 24.000000000000000000
+    Position.Y = 134.000000000000000000
+    Size.Width = 161.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object Label34: TLabel
+      Position.Y = -19.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'Parameter 2 - Name:'
+      TabOrder = 0
+    end
+    object edtParam2Val: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 3
+      Position.X = 184.000000000000000000
+      Position.Y = -2.000000000000000000
+      Size.Width = 161.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      object Label35: TLabel
+        Position.Y = -19.000000000000000000
+        TextSettings.Trimming = None
+        Text = 'Parameter 2 - Value:'
+        TabOrder = 0
+      end
+    end
+  end
+  object edtParam1: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 7
+    Position.X = 24.000000000000000000
+    Position.Y = 94.000000000000000000
+    Size.Width = 161.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object Label32: TLabel
+      Position.Y = -19.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'Parameter 1 - Name:'
+      TabOrder = 0
+    end
+    object edtParam1Val: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 3
+      Position.X = 184.000000000000000000
+      Position.Y = -2.000000000000000000
+      Size.Width = 161.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      object Label33: TLabel
+        Position.Y = -19.000000000000000000
+        TextSettings.Trimming = None
+        Text = 'Parameter 1 - Value:'
+        TabOrder = 0
+      end
+    end
+  end
+  object edtFunctionName: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 0
+    Position.X = 24.000000000000000000
+    Position.Y = 46.000000000000000000
+    Size.Width = 225.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    object lblFunctionName: TLabel
+      Position.Y = -27.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'Function name:'
+      TabOrder = 0
+    end
+  end
+  object cboParams: TComboBox
+    Items.Strings = (
+      '0'
+      '1'
+      '2'
+      '3'
+      '4')
+    ItemIndex = 0
+    Position.X = 272.000000000000000000
+    Position.Y = 46.000000000000000000
+    TabOrder = 8
+    OnChange = cboParamsChange
+  end
+  object btnCallFunctionSynchronous: TButton
+    Position.X = 416.000000000000000000
+    Position.Y = 46.000000000000000000
+    Size.Width = 193.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Call Function Synchronous'
+    TextSettings.Trimming = None
+    OnClick = btnCallFunctionSynchronousClick
+  end
+  object btnCallFunctionAsynchronous: TButton
+    Position.X = 416.000000000000000000
+    Position.Y = 94.000000000000000000
+    Size.Width = 193.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Call Function Asynchronous'
+    TextSettings.Trimming = None
+    OnClick = btnCallFunctionAsynchronousClick
+  end
+end
