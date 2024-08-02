@@ -1,0 +1,403 @@
+object VisionMLFra: TVisionMLFra
+  Align = Client
+  Size.Width = 1036.000000000000000000
+  Size.Height = 728.000000000000000000
+  Size.PlatformDefault = False
+  object bntLoadML: TButton
+    Position.X = 870.000000000000000000
+    Position.Y = 94.000000000000000000
+    Size.Width = 100.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'Upload File'
+    TextSettings.Trimming = None
+    OnClick = bntLoadMLClick
+  end
+  object btnClearML: TButton
+    Position.X = 870.000000000000000000
+    Position.Y = 124.000000000000000000
+    Size.Width = 100.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Clear File'
+    TextSettings.Trimming = None
+    OnClick = btnClearMLClick
+  end
+  object btnVisionMLAnotateFile: TButton
+    Enabled = False
+    Position.X = 16.000000000000000000
+    Position.Y = 64.000000000000000000
+    Size.Width = 141.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Text = 'Annotate from File'
+    TextSettings.Trimming = None
+    OnClick = btnVisionMLAnotateFileClick
+  end
+  object btnVisionMLAnotateStorage: TButton
+    Enabled = False
+    Position.X = 16.000000000000000000
+    Position.Y = 22.000000000000000000
+    Size.Width = 141.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Annotate from Storage'
+    TextSettings.Trimming = None
+    OnClick = btnVisionMLAnotateStorageClick
+  end
+  object edtAnotateFileType: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 6
+    Position.X = 870.000000000000000000
+    Position.Y = 64.000000000000000000
+  end
+  object edtRefStorage: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 3
+    Position.X = 224.000000000000000000
+    Position.Y = 22.000000000000000000
+    Size.Width = 521.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object gpbMaxResultSet: TGroupBox
+    Position.X = 369.000000000000000000
+    Position.Y = 219.000000000000000000
+    Size.Width = 248.000000000000000000
+    Size.Height = 50.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Maximal number of results per feature'
+    TabOrder = 10
+    object spbMaxFeatures: TSpinBox
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 38
+      Cursor = crIBeam
+      Max = 150.000000000000000000
+      Value = 50.000000000000000000
+      Position.X = 24.000000000000000000
+      Position.Y = 20.000000000000000000
+      Size.Width = 113.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+    end
+  end
+  object gpbMLModel: TGroupBox
+    Position.X = 19.000000000000000000
+    Position.Y = 219.000000000000000000
+    Size.Width = 343.000000000000000000
+    Size.Height = 50.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Model type'
+    TabOrder = 7
+    object rdbLatestModel: TRadioButton
+      GroupName = 'ModelType'
+      Position.X = 238.000000000000000000
+      Position.Y = 23.000000000000000000
+      Size.Width = 98.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 38
+      Text = ' Latest Model'
+    end
+    object rdbStableModel: TRadioButton
+      GroupName = 'ModelType'
+      Position.X = 103.000000000000000000
+      Position.Y = 23.000000000000000000
+      Size.Width = 97.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 40
+      Text = 'Stable Model'
+    end
+    object rdbUnsetModel: TRadioButton
+      GroupName = 'ModelType'
+      IsChecked = True
+      Position.X = 15.000000000000000000
+      Position.Y = 23.000000000000000000
+      Size.Width = 66.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 39
+      Text = 'Unset'
+    end
+  end
+  object gpbMLResult: TGroupBox
+    Anchors = [akTop, akRight]
+    Enabled = False
+    Position.X = 710.000000000000000000
+    Position.Y = 219.000000000000000000
+    Size.Width = 265.000000000000000000
+    Size.Height = 50.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Representation of Result'
+    TabOrder = 8
+    object rdbResAsJSON: TRadioButton
+      GroupName = 'ResultML'
+      Position.X = 150.000000000000000000
+      Position.Y = 23.000000000000000000
+      Size.Width = 98.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 38
+      Text = 'Original JSON'
+      OnChange = rdbResAsChange
+    end
+    object rdbResAsText: TRadioButton
+      GroupName = 'ResultML'
+      IsChecked = True
+      Position.X = 15.000000000000000000
+      Position.Y = 23.000000000000000000
+      Size.Width = 97.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 39
+      Text = 'Evaluated Text'
+      OnChange = rdbResAsChange
+    end
+  end
+  object Label40: TLabel
+    Position.X = 16.000000000000000000
+    Position.Y = 129.000000000000000000
+    TextSettings.Trimming = None
+    Text = 'ML Vision Features'
+    TabOrder = 11
+  end
+  object layResult: TLayout
+    Align = Client
+    Margins.Left = 16.000000000000000000
+    Margins.Top = 280.000000000000000000
+    Margins.Right = 16.000000000000000000
+    Margins.Bottom = 10.000000000000000000
+    Size.Width = 1004.000000000000000000
+    Size.Height = 438.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 14
+    object sptMLVision: TSplitter
+      Align = Right
+      Cursor = crHSplit
+      MinSize = 20.000000000000000000
+      Position.X = 696.000000000000000000
+      Size.Width = 8.000000000000000000
+      Size.Height = 438.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object lstVisionML: TListBox
+      Align = Client
+      PopupMenu = popMLList
+      Size.Width = 696.000000000000000000
+      Size.Height = 438.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      DisableFocusEffect = True
+      DefaultItemStyles.ItemStyle = ''
+      DefaultItemStyles.GroupHeaderStyle = ''
+      DefaultItemStyles.GroupFooterStyle = ''
+      OnItemClick = lstVisionMLItemClick
+      Viewport.Width = 692.000000000000000000
+      Viewport.Height = 434.000000000000000000
+    end
+    object rctBackgroundML: TRectangle
+      Align = MostRight
+      Fill.Kind = Gradient
+      Fill.Gradient.Points = <
+        item
+          Color = xFF252525
+          Offset = 0.000000000000000000
+        end
+        item
+          Color = xFF929292
+          Offset = 1.000000000000000000
+        end>
+      Fill.Gradient.StartPosition.X = 0.500000000000000000
+      Fill.Gradient.StartPosition.Y = 1.000000000000000000
+      Fill.Gradient.StopPosition.X = 0.499999970197677600
+      Fill.Gradient.StopPosition.Y = 0.000000000000000000
+      Position.X = 704.000000000000000000
+      Size.Width = 300.000000000000000000
+      Size.Height = 438.000000000000000000
+      Size.PlatformDefault = False
+      Stroke.Kind = None
+      OnResized = rctBackgroundMLResized
+      object imgAnotateFile: TImage
+        MultiResBitmap = <
+          item
+          end>
+        Align = Client
+        Size.Width = 300.000000000000000000
+        Size.Height = 438.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object pathAnotateFile: TPath
+        Fill.Color = x50DC143C
+        Position.X = 56.000000000000000000
+        Position.Y = 40.000000000000000000
+        Size.Width = 204.000000000000000000
+        Size.Height = 338.000000000000000000
+        Size.PlatformDefault = False
+        Stroke.Color = claRed
+        Stroke.Thickness = 3.000000000000000000
+      end
+    end
+  end
+  object lstFeatures: TListBox
+    Position.X = 16.000000000000000000
+    Position.Y = 154.000000000000000000
+    Size.Width = 954.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 9
+    Columns = 3
+    DisableFocusEffect = True
+    ItemIndex = 2
+    DefaultItemStyles.ItemStyle = ''
+    DefaultItemStyles.GroupHeaderStyle = ''
+    DefaultItemStyles.GroupFooterStyle = ''
+    ListStyle = Horizontal
+    ShowCheckboxes = True
+    Viewport.Width = 950.000000000000000000
+    Viewport.Height = 53.000000000000000000
+    object lbiLabelDetection: TListBoxItem
+      IsChecked = True
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      Text = 'Label Detection'
+    end
+    object lbiObjectLocalization: TListBoxItem
+      IsChecked = True
+      Position.Y = 17.666666030883790000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 42
+      Text = 'Object Localization'
+    end
+    object lbiTextDetection: TListBoxItem
+      IsChecked = True
+      IsSelected = True
+      Position.Y = 35.333332061767580000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Text Detection'
+    end
+    object lbiDocTextDetection: TListBoxItem
+      Position.X = 229.000000000000000000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 43
+      Text = 'Doc Text Detection'
+    end
+    object lbiFaceDetection: TListBoxItem
+      Position.X = 229.000000000000000000
+      Position.Y = 17.666666030883790000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = 'Face Detection'
+    end
+    object lbiLogoDetection: TListBoxItem
+      Position.X = 229.000000000000000000
+      Position.Y = 35.333332061767580000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 40
+      Text = 'Logo Detection'
+    end
+    object lbiLandmarkDetection: TListBoxItem
+      Position.X = 458.000000000000000000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      Text = 'Landmark Detection'
+    end
+    object lbiWebDetection: TListBoxItem
+      Position.X = 458.000000000000000000
+      Position.Y = 17.666666030883790000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 41
+      Text = 'Web Detection'
+    end
+    object lbiImageProp: TListBoxItem
+      Position.X = 458.000000000000000000
+      Position.Y = 35.333332061767580000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      Text = 'Image Properties'
+    end
+    object lbiCropHints: TListBoxItem
+      Position.X = 687.000000000000000000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 48
+      Text = 'Crop Image Hints'
+    end
+    object lbiSafeSearch: TListBoxItem
+      Position.X = 687.000000000000000000
+      Position.Y = 17.666666030883790000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 47
+      Text = 'Safe Search'
+    end
+    object lbiProductSearch: TListBoxItem
+      Position.X = 687.000000000000000000
+      Position.Y = 35.333332061767580000
+      Size.Width = 229.000000000000000000
+      Size.Height = 17.666666030883790000
+      Size.PlatformDefault = False
+      TabOrder = 46
+      Text = 'Product Search'
+    end
+  end
+  object memAnnotateFile: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Lines.Strings = (
+      '')
+    OnChange = memAnnotateFileChange
+    Position.X = 224.000000000000000000
+    Position.Y = 64.000000000000000000
+    Size.Width = 638.000000000000000000
+    Size.Height = 82.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    Viewport.Width = 634.000000000000000000
+    Viewport.Height = 78.000000000000000000
+  end
+  object OpenDialogFileAnnotate: TOpenDialog
+    Filter = 
+      'GIF (*.gif)|*.gif|TIFF (*.tif or *.tiff)|*.tiff;*.tif|PDF (*.pdf' +
+      ')|*.pdf'
+    Left = 88
+    Top = 546
+  end
+  object SaveDialog: TSaveDialog
+    Left = 192
+    Top = 546
+  end
+  object popMLList: TPopupMenu
+    Left = 288
+    Top = 548
+    object mniMLListExport: TMenuItem
+      Text = 'Export to file'
+      OnClick = mniMLListExportClick
+    end
+  end
+end
