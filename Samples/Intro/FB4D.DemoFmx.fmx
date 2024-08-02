@@ -18,7 +18,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     Size.Width = 1000.000000000000000000
     Size.Height = 710.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 5
+    TabIndex = 0
     TabOrder = 0
     TabPosition = PlatformDefault
     OnChange = TabControlChange
@@ -40,7 +40,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = False
+      IsSelected = True
       ImageIndex = 1
       Size.Width = 114.000000000000000000
       Size.Height = 26.000000000000000000
@@ -456,7 +456,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = True
+      IsSelected = False
       ImageIndex = 6
       Size.Width = 88.000000000000000000
       Size.Height = 26.000000000000000000
@@ -872,6 +872,18 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     Size.PlatformDefault = False
     OnClick = imgLogoClick
   end
+  object popClipboard: TPopupMenu
+    Left = 672
+    Top = 40
+    object mniFromClipboard: TMenuItem
+      Text = 'Paste'
+      OnClick = mniFromClipboardClick
+    end
+    object mniToClipboard: TMenuItem
+      Text = 'Copy'
+      OnClick = mniToClipboardClick
+    end
+  end
   object imlFirebaseServices: TImageList
     Source = <
       item
@@ -1164,17 +1176,5 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       end>
     Left = 856
     Top = 88
-  end
-  object popClipboard: TPopupMenu
-    Left = 672
-    Top = 40
-    object mniFromClipboard: TMenuItem
-      Text = 'Paste'
-      OnClick = mniFromClipboardClick
-    end
-    object mniToClipboard: TMenuItem
-      Text = 'Copy'
-      OnClick = mniToClipboardClick
-    end
   end
 end
