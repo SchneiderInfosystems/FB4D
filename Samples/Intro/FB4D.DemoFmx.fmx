@@ -75,7 +75,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Viewport.Height = 403.000000000000000000
             end
             inherited btnRefresh: TButton
-              Position.X = 778.000000000000000000
+              Position.X = 742.000000000000000000
             end
           end
           inherited tabUserProfile: TTabItem
@@ -84,28 +84,28 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 125.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited edtChangeEMail: TEdit
-              Size.Width = 576.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited edtChangeDisplayName: TEdit
-              Size.Width = 576.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited btnChange: TButton
-              Position.X = 631.000000000000000000
+              Position.X = 595.000000000000000000
             end
             inherited btnChangeEMail: TButton
-              Position.X = 631.000000000000000000
+              Position.X = 595.000000000000000000
             end
             inherited edtChangePassword: TEdit
-              Size.Width = 576.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited btnChangePwd: TButton
-              Position.X = 631.000000000000000000
+              Position.X = 595.000000000000000000
             end
             inherited edtChangePhotoURL: TEdit
-              Size.Width = 576.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited btnChangePhotoURL: TButton
-              Position.X = 631.000000000000000000
+              Position.X = 595.000000000000000000
             end
           end
         end
@@ -187,7 +187,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 39.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label13: TLabel
-              Size.Width = 293.000000000000000000
+              Size.Width = 257.000000000000000000
             end
           end
           inherited tabPut: TTabItem
@@ -200,7 +200,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Viewport.Height = 118.000000000000000000
             end
             inherited Label18: TLabel
-              Size.Width = 85.000000000000000000
+              Size.Width = 49.000000000000000000
             end
           end
           inherited tabPatch: TTabItem
@@ -209,7 +209,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 49.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label19: TLabel
-              Size.Width = 85.000000000000000000
+              Size.Width = 49.000000000000000000
             end
           end
           inherited tabPost: TTabItem
@@ -218,7 +218,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 43.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label22: TLabel
-              Size.Width = 85.000000000000000000
+              Size.Width = 49.000000000000000000
             end
           end
           inherited tabDelete: TTabItem
@@ -227,7 +227,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 55.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label25: TLabel
-              Size.Width = 85.000000000000000000
+              Size.Width = 49.000000000000000000
             end
           end
           inherited tabListener: TTabItem
@@ -345,7 +345,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 53.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited btnRunQuery: TButton
-              TabOrder = 10
+              TabOrder = 9
             end
             inherited lblMinTestInt: TLabel
               TabOrder = 4
@@ -354,7 +354,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               TabOrder = 3
             end
             inherited Label13: TLabel
-              Size.Width = 133.000000000000000000
+              Size.Width = 97.000000000000000000
             end
           end
           inherited tabListener: TTabItem
@@ -366,10 +366,10 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               TabOrder = 4
             end
             inherited GroupBox2: TGroupBox
-              Size.Width = 278.000000000000000000
+              Size.Width = 242.000000000000000000
               TabOrder = 3
               inherited edtDocPathForFSListener: TEdit
-                Size.Width = 182.000000000000000000
+                Size.Width = 146.000000000000000000
               end
             end
           end
@@ -382,6 +382,10 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               TabOrder = 26
             end
           end
+        end
+        inherited imlTabStatus: TImageList
+          Left = 944
+          Top = 88
         end
       end
     end
@@ -467,30 +471,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.Width = 1000.000000000000000000
         Size.Height = 684.000000000000000000
         Size.PlatformDefault = False
-        inherited gpbMaxResultSet: TGroupBox
-          inherited spbMaxFeatures: TSpinBox
-            TabOrder = 37
-          end
-        end
-        inherited gpbMLModel: TGroupBox
-          inherited rdbLatestModel: TRadioButton
-            TabOrder = 37
-          end
-          inherited rdbStableModel: TRadioButton
-            TabOrder = 39
-          end
-          inherited rdbUnsetModel: TRadioButton
-            TabOrder = 38
-          end
-        end
         inherited gpbMLResult: TGroupBox
           Position.X = 674.000000000000000000
-          inherited rdbResAsJSON: TRadioButton
-            TabOrder = 37
-          end
-          inherited rdbResAsText: TRadioButton
-            TabOrder = 38
-          end
         end
         inherited layResult: TLayout
           Size.Width = 968.000000000000000000
@@ -517,21 +499,27 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Viewport.Width = 950.000000000000000000
           Viewport.Height = 53.000000000000000000
           inherited lbiObjectLocalization: TListBoxItem
-            TabOrder = 41
-          end
-          inherited lbiDocTextDetection: TListBoxItem
-            TabOrder = 42
-          end
-          inherited lbiLogoDetection: TListBoxItem
             TabOrder = 39
           end
-          inherited lbiWebDetection: TListBoxItem
-            TabOrder = 40
+          inherited lbiDocTextDetection: TListBoxItem
+            TabOrder = 41
+          end
+          inherited lbiLogoDetection: TListBoxItem
+            TabOrder = 38
+          end
+          inherited lbiCropHints: TListBoxItem
+            TabOrder = 45
+          end
+          inherited lbiSafeSearch: TListBoxItem
+            TabOrder = 44
+          end
+          inherited lbiProductSearch: TListBoxItem
+            TabOrder = 43
           end
         end
         inherited memAnnotateFile: TMemo
-          Viewport.Width = 638.000000000000000000
-          Viewport.Height = 82.000000000000000000
+          Viewport.Width = 634.000000000000000000
+          Viewport.Height = 78.000000000000000000
         end
       end
     end
@@ -559,9 +547,10 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 5
-      Position.X = 267.000000000000000000
+      Position.X = 264.000000000000000000
       Position.Y = 62.000000000000000000
-      Size.Width = 725.000000000000000000
+      PopupMenu = popClipboard
+      Size.Width = 680.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextPrompt = 'Enter Web API key from Firebase Console>Settings>General'
@@ -589,14 +578,15 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
-      Position.X = 267.000000000000000000
+      Position.X = 264.000000000000000000
       Position.Y = 32.000000000000000000
-      Size.Width = 725.000000000000000000
+      PopupMenu = popClipboard
+      Size.Width = 680.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextPrompt = 'Enter Project ID  from Firebase Console>Settings'
       object Text1: TText
-        Position.X = -62.000000000000000000
+        Position.X = -65.000000000000000000
         Size.Width = 65.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -626,7 +616,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 177.000000000000000000
+      Position.X = 175.000000000000000000
       Position.Y = 4.000000000000000000
       Size.Width = 128.000000000000000000
       Size.Height = 16.000000000000000000
@@ -637,115 +627,250 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       OnClick = lblOpenFBConsoleClick
     end
     object lblOpenFBConsoleForProject: TLabel
+      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 313.000000000000000000
+      Position.X = 175.000000000000000000
       Position.Y = 4.000000000000000000
       Size.Width = 160.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
       Text = 'Firebase Console for Project'
+      Visible = False
       TabOrder = 12
       OnClick = lblOpenFBConsoleForProjectClick
     end
     object lblOpenFBConsoleForAuth: TLabel
+      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 465.000000000000000000
+      Position.X = 750.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 144.000000000000000000
+      Size.Width = 200.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
+      TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Auth'
       TabOrder = 11
       OnClick = lblOpenFBConsoleForAuthClick
     end
     object lblOpenFBConsoleForRTDB: TLabel
+      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 465.000000000000000000
+      Position.X = 750.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 144.000000000000000000
+      Size.Width = 200.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
+      TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for RTDB'
       Visible = False
       TabOrder = 6
       OnClick = lblOpenFBConsoleForRTDBClick
     end
     object lblOpenFBConsoleForFS: TLabel
+      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 465.000000000000000000
+      Position.X = 760.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 168.000000000000000000
+      Size.Width = 200.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
+      TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Firestore'
       Visible = False
       TabOrder = 8
       OnClick = lblOpenFBConsoleForFSClick
     end
     object lblOpenFBConsoleForStorage: TLabel
+      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 465.000000000000000000
+      Position.X = 750.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 184.000000000000000000
+      Size.Width = 200.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
+      TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Storage'
       Visible = False
       TabOrder = 10
       OnClick = lblOpenFBConsoleForStorageClick
     end
     object lblOpenFBConsoleForFunctions: TLabel
+      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 465.000000000000000000
+      Position.X = 750.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 184.000000000000000000
+      Size.Width = 200.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
+      TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Functions'
       Visible = False
       TabOrder = 9
       OnClick = lblOpenFBConsoleForFunctionsClick
     end
     object lblOpenFBConsoleForVisionML: TLabel
+      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 465.000000000000000000
+      Position.X = 750.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 168.000000000000000000
+      Size.Width = 200.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
+      TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Vision ML'
       Visible = False
       TabOrder = 7
       OnClick = lblOpenFBConsoleForVisionMLClick
     end
+  end
+  object imgLogo: TImage
+    MultiResBitmap.Height = 50
+    MultiResBitmap.Width = 50
+    MultiResBitmap = <
+      item
+        Width = 50
+        Height = 50
+        PNG = {
+          89504E470D0A1A0A0000000D49484452000000320000003208060000001E3F88
+          B10000000473424954080808087C08648800000C4E494441546881ED995B9065
+          E55580BFB5F73EF7EE3EE7F47DBA7BBA33CC30C05C3ACC4C6008882952608226
+          A825084621310F929758D12A2DF3444CF1804F6A39542C130A4940218404A5A2
+          90C4E8186A0C8430419C6BE69A69E6D6D397D3A7CF755F960FFFDE7D769FEE9E
+          EE8658E543FEAA55E7B6CFFAD7B7D7FAD75AFFBFE117E317E3FF64C8FFA379F5
+          E7ADF0BD0EFB14F47642C186940716200AC13CD4BE07D30F4309F0003B940003
+          D22E6B1EEF0544A2C9BE0E99BBE1E6247CC4865B2DD80C1405921810050285AA
+          0F977C385483FDC761FF5E3801F8803D02C18481F2A3FFAC1768BD000270100A
+          75F88C073F5263A8AE477C98ADC2370EC3AF01DD405737740139200D24301EFB
+          B9474EA450AA70BF0FFFB35EE3979300BC0ABCF00ADC0A14819E22E443A014E0
+          1086E87B26F88251C45BD0EFC1532B1A9690770DE4C1E469F81C30040C0C430F
+          C643194C98BE37EF44101761870F6F5ED5A0CFF7AA7EB2CBBC9777077409FE16
+          D8020C0F403F50A0E59D770713414CC2EE00CE5CDD0851DD37A0FAA501D5A4BD
+          F8B775424DC273C036602C0B1B306BA88356A8AD1D26829880AD019C5CD58011
+          47F52B03AACF0FAAFE41DE7CB73BA53A9E7A579EB9005F056E00AEC1845B4F0C
+          669167ACAB70C81740BF0EF94178428CB2AB8F31DB44B206B03B098504DCDF01
+          F765438DE175D7A421BDFA0D1D84078FC043403205594C264B61B2D9A20460AF
+          04115E143C0D8F26E081556705B83905E349733F538A5E9F423662227C3E8093
+          3EDCDF0F7FF63E98ADC3B1FAAA2A0BB07B271C7C16265360F92B14CF953C2280
+          7F197E39017FB8260880BE44582695C053EA5D10680049855F4AC0AFF7C1C3C3
+          30E2C0706A4D2A1DC8DE059F058A0D93BD32B4BC62137A653990A8E0A58AF0F9
+          B03AAF6DF488694650BC0A04A5006F4EC175D1EB8BF0C72350B4404187D26B56
+          5B809B5E85BB8054B21562C938CC4A20FE147CC8818FAC7936804E0B08F03DF0
+          4A8A88E24D7B787611DED7677EF715449181C4BA546F877B819EE652AF38CB81
+          44DEB03BCC225B738AF36DC12F0001786585A682EF41B18835D68738629A184C
+          4ED2E2FA40BA60DB0BB01BE38D0C2DAF3880BD1C08AFC1A80377AE6722DD6AA3
+          49F05DC59F53D473A1A7487A4F1F565A4C0288D666A048C182C19572CDD26101
+          BBE0764C6845200B6B653990E01AB8C5828175816CB2B053E0CD295A75919E42
+          0B228827188C47D216BA3DBB9E29E8859D3BA08F567845EBC4590EC4CAC02DEB
+          9A01A0DBC6F7C19FF690DE02E90FF4AF08812A9206195B7B1EC158DEFF69D888
+          F144E491643B48543B3249D8BE9E09146040F04A2E74E5978750168797256B4E
+          C1D17020716D0B249204E0386D203C05DD166C5ACF0482E063133879D2E3CB41
+          680C397C6F290CAE6FC103F4432FC60B913792CB826C33D5A06F3DCA03141D2A
+          90BEB10F2BB54C38B543441EEA71DA55AD3AB2ADB5B100C172A195868C98F85B
+          F310043B998EF5A42B8453046183D67D74629516C5B24016570031B344F563E1
+          7DBB47AC466B8FBD0E10C5F9EC4F69FE6E1EF9CD41529BD2C600BF0DC256D40D
+          F08E5570BE751979A17675C541B0E42B35F63931B101ABDDB7D6243402A8857D
+          2C3ADC0FB9CCAA688292FA96E2FF4B8DFAC336F61D09127D8BD747E33CF09D00
+          679F42BE0FBDD6FCF32A4AA1D640CE5D5CF8CA332F764C2CC06EF788F3CF3077
+          075CB221CF6037C19631F36B790652194824C10A0B992A78AEF90E60D8B45A89
+          5714EFC701B5BB0392BBEA046E1DF74779EC971D9C9A05B7E5086AF3E024201D
+          D612B769F46800BE6F8245413C1FB93809AE0FC02C3443E3E3B2A469942F41C5
+          85B3005A2C806343AE1379E0D3C8ED77C2C010B8AE01B06DB87E2734EA06AAD9
+          80C087AC4BA20289C79B04CF5D07FF7E37A96704A751878C0783C3C87D0F22B7
+          7D186A15D3CA6CDD6600321DB0F93A635A671E158C0DE1380B732C3E881040DA
+          434B006F1E8E76C05D32390BC54E18DB82ECFE00FAF24BC88D7BE0F63BCCA49E
+          8B6C1842378E9AAD4F32812412E8E42432B801EBD0DBD0DD876CDE8C7E72C804
+          C0CC14546AE07A3034843CF029039F4AC3F82E532CFBFAD10BEFA0470FC3E58B
+          0B3637A0F9164CD1DA10AEB843544026E0270A70651AA937CCDD992BA1A74E22
+          031BA0D1407A7B915C0EAD5490BE3E6464041918846C0E197F3F148BD0D50517
+          27CC1D4F2491C141F4F449334D571E9C04D2DF8FE472483289643248B11B9DF8
+          19522822F90252AD42AD014009A6FED27824B27561E53A6D100AD84FC3A19D70
+          2E051BC5F5D10B13042FBE0017CE11ECFF3728CF414F586AB239B4320FE93434
+          9B904CA2E5325228A2674F99BDC8F75E41360C13BCF13A4C5E42E7CAE6265C38
+          8FD6AA48BE009E87BC7F17C17FBD6AF467B268B984E5B5B2CC09386D1CB3606B
+          10493C6524309D650790390F8F6C80DFD3A17E822DA366312653E6D5B2CD5D76
+          1B70E2180CF4825F87AE41289D37BF37CB901B84DE11133AB397A159850D5BE0
+          C271A8962099042707C52193481C07AA1593043400CBC63E7A0A266770C1FF22
+          3CF3A839622D61426C3A7C9D6DF74844C87FC2B7EF857BEDF397D3FED0007647
+          C62CE82843792E8CDF8CF5178FA373B3C6F837DF80D13118DC60AE3D7B1AFDEA
+          DF81DB40EEBE0FAEDF86EE7B0C79EC09701CC4B6D1B367D0271F6FE94C85B558
+          1CACB979989C01E02C9C79142E87767A31F1013FBE4622101FE001387205BE0B
+          609FBF18AB07E168D6909151181C449FFA0AFAECD7D003FB916BB7C2EB3F449F
+          7B1AD9FB41D8BA033A0BC86FFD36B27D8759CCD76C86EF7F97E0A517915DBB91
+          7BEE37E93D964425089073170C1FE88BF01626F5BAA1AC0E920E2F7C169E6942
+          C93E3F894E97DADA05415D17C9E5B0EEFB04F2ABF7402A059685DC763BD6EF3C
+          04D52ABC7500F9D467E0E8119899313A5C17FDD919F88727D09F1C841D3B61F6
+          6C4CB52093530BDE380CC7FE04CE85F645208BA09603F1EAE07540F039387118
+          9E04B00F9D40E72B2D18012C0B6D34D013C7E1D44913DFBE8FFEF438FA83FF00
+          DF47FEE81164E73864B3303A86ECBAD5B41E9E6BF24F22019E0F566201C22ACF
+          23474E03300BE547E08DD0E0464C9AE1AB0B78ED75240A2D77DE5C98D9052F4D
+          C08EE120B8D37AFB38FEAE1BB0326913228E03F53AFAE547A17793B905769808
+          2A15931CCA65F407FB9191514404F53C48A7919B3E087BF622E337A2CFFF2374
+          8F9926B15A43FEFB18180B83AFC18117613A69726203A8C7A4198AD7BE698E36
+          57366027C1F1C13E08C73E0ED765FD6050A666D042A7C9FB851E530FDE3E04B9
+          BCC96837EE45F6DC846CDB811EFC31FAE43EF8FEB36855C071D0E7BF8C7CE8A3
+          C8AE3DC8D030FA9D7F455FF9267416915219EBED6348D343817F821FFE3E1CB1
+          A0E1C13C46CAA1CC0315A00A34DA3BB6A8B34C13A6E23CE44BD0F10918FD2BF8
+          D33ED8A180BF7D3374E5905A090A03261988C0CC25A8954C164BE6A03860EE8F
+          EF42750EBA7AE0F259F359808E5E24D3894C4E2147CF2C84C5B7E1F57BCC02AF
+          5A3017C02C301393594C70CE03B5761009BD910C6172406727E4CBD0F16118FE
+          7B787863B8A7F7FB8A041B37201D59243A596ACF6ECB8D689D0501529EC73AF3
+          0ECC9401A881FB0D78ED213802342C2887101148F47E2EF4CCB21E2104714298
+          6C0CA6AB6C1EBA140FC0C777C33DA97003E6F71709FA7BA133078E8D58D662B0
+          D070D500F515CBF5B0CA65B87005992E2D4CFC0E4CEE83D71E83F340D3824A60
+          8A5F2906518A415408D7CA7220915712B40EC37240671AF2F5F019DF17E18607
+          E1631B61DC0E7B36158B209F23C87760F7F62256000D17D249D483606A0AA6E7
+          70CA55E21B9C12545F85C31F83A340C5316BA2121A3B171A1F8788D6478D3073
+          ADB4AB89D64AB4C98F3CD30174D9D0E59BF7F9BF861B7E056E1985EBB2E6BB35
+          0D0FF40A4CBF09A7FE064EBE1C3EB20E21AAB4167604127921F2C40204E0AF04
+          1265AF044B3DD30174DAD0E91BEF6481DCBD30F01BB0691B8CF5407F17143390
+          75C056D08649E99529284DC0950370F1CF4D9F54C35466373086D5580A120788
+          433431E5225809248289422C0E13F74E67F89AA375B09C02B27BA1E356C87543
+          A209D629F09E89DD415ACF35BCA0550FEAA191155AE9369228D5C6213CC2E725
+          AB1D524735251E66516A8E8022693F935D74381093A805F74389DA8D666864E4
+          914A4CAAA1D4895573624DEE6A074BEDC718F163113F5416191285C5A2A34C5A
+          8FC8AC361DF1FFBBB4AA751C26F240BC922F81580B4834B1DFF6396A65E220F5
+          10227E4A1E3D88891E5C4ADBFFE31E897AA8384CE4818556643988F580402CAE
+          63C6448AA386AE4E2B04E38768D16181B0D4235ECCD0064B1BC3C80B11F81208
+          80FF05347EFCA15CB393660000000049454E44AE426082}
+        FileName = 
+          'C:\Users\ChristophSchneider\Documents\Project\FB4D\Samples\Intro' +
+          '\res\logoFB4Dsmall.png'
+      end>
+    Anchors = [akTop, akRight]
+    Cursor = crHandPoint
+    Position.X = 952.000000000000000000
+    Size.Width = 48.000000000000000000
+    Size.Height = 48.000000000000000000
+    Size.PlatformDefault = False
+    OnClick = imgLogoClick
   end
   object imlFirebaseServices: TImageList
     Source = <
@@ -1037,7 +1162,19 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             SourceRect.Bottom = 32.000000000000000000
           end>
       end>
-    Left = 920
-    Top = 16
+    Left = 856
+    Top = 88
+  end
+  object popClipboard: TPopupMenu
+    Left = 672
+    Top = 40
+    object mniFromClipboard: TMenuItem
+      Text = 'Paste'
+      OnClick = mniFromClipboardClick
+    end
+    object mniToClipboard: TMenuItem
+      Text = 'Copy'
+      OnClick = mniToClipboardClick
+    end
   end
 end

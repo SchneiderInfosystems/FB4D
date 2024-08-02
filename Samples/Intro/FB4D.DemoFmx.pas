@@ -47,29 +47,33 @@ type
     tabFunctions: TTabItem;
     tabVisionML: TTabItem;
     imlFirebaseServices: TImageList;
+    layToolbar: TLayout;
+    FloatAniToolbar: TFloatAnimation;
+    btnShowSettings: TButton;
     edtProjectID: TEdit;
     Text1: TText;
     edtKey: TEdit;
     Text2: TText;
-    layToolbar: TLayout;
-    btnShowSettings: TButton;
-    FloatAniToolbar: TFloatAnimation;
-    lblOpenFBConsole: TLabel;
     rctKeyDisabled: TRectangle;
     rctProjectIDDisabled: TRectangle;
+    imgLogo: TImage;
+    lblOpenFBConsole: TLabel;
     lblOpenFBConsoleForProject: TLabel;
     lblOpenFBConsoleForAuth: TLabel;
-    RTDBFra: TRTDBFra;
     lblOpenFBConsoleForRTDB: TLabel;
     lblOpenFBConsoleForFS: TLabel;
-    FirestoreFra: TFirestoreFra;
-    StorageFra: TStorageFra;
     lblOpenFBConsoleForStorage: TLabel;
     lblOpenFBConsoleForFunctions: TLabel;
+    lblOpenFBConsoleForVisionML: TLabel;
+    RTDBFra: TRTDBFra;
+    FirestoreFra: TFirestoreFra;
+    StorageFra: TStorageFra;
     FunctionsFra: TFunctionsFra;
     AuthFra: TAuthFra;
-    lblOpenFBConsoleForVisionML: TLabel;
     VisionMLFra: TVisionMLFra;
+    popClipboard: TPopupMenu;
+    mniFromClipboard: TMenuItem;
+    mniToClipboard: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure TabControlChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -83,6 +87,9 @@ type
     procedure lblOpenFBConsoleForStorageClick(Sender: TObject);
     procedure lblOpenFBConsoleForFunctionsClick(Sender: TObject);
     procedure lblOpenFBConsoleForVisionMLClick(Sender: TObject);
+    procedure imgLogoClick(Sender: TObject);
+    procedure mniFromClipboardClick(Sender: TObject);
+    procedure mniToClipboardClick(Sender: TObject);
   private
     function GetIniFileName: string;
     procedure OpenURLinkInBrowser(const URL: string);
@@ -96,7 +103,8 @@ implementation
 {$R *.fmx}
 
 uses
-  System.IniFiles, System.IOUtils,
+  System.IniFiles, System.IOUtils, System.RTTI,
+  Fmx.Platform,
 {$IFDEF MSWINDOWS}
   Winapi.ShellAPI, Winapi.Windows,
 {$ENDIF MSWINDOWS}
@@ -128,6 +136,7 @@ begin
   finally
     IniFile.Free;
   end;
+  TabControlChange(Sender);
   if not(edtKey.Text.IsEmpty or edtProjectID.Text.IsEmpty) then
     layToolbar.Height := FloatAniToolbar.StartValue;
 end;
@@ -161,6 +170,8 @@ procedure TfmxFirebaseDemo.TabControlChange(Sender: TObject);
 begin
   if TabControl.ActiveTab = tabAuth then
     AuthFra.CheckTokenExpired;
+  lblOpenFBConsole.visible := edtProjectID.Text.IsEmpty;
+  lblOpenFBConsoleForProject.visible := not lblOpenFBConsole.visible;
   lblOpenFBConsoleForAuth.visible := TabControl.ActiveTab = tabAuth;
   lblOpenFBConsoleForRTDB.visible := TabControl.ActiveTab = tabRealTimeDB;
   lblOpenFBConsoleForFS.visible := TabControl.ActiveTab = tabFirestore;
@@ -171,6 +182,50 @@ end;
 {$ENDREGION}
 
 {$REGION 'Firebase Project Settings'}
+
+// Because copy / past directly from the Firebase console is not working due to
+// a CRLF before the ID a own solution with a popup menu is implemented here.
+
+function TryGetClipboardService(out clp: IFMXClipboardService): boolean;
+begin
+  result := TPlatformServices.Current.SupportsPlatformService(
+    IFMXClipboardService);
+  if result then
+    clp := IFMXClipboardService(TPlatformServices.Current.GetPlatformService(
+      IFMXClipboardService));
+end;
+
+procedure TfmxFirebaseDemo.mniFromClipboardClick(Sender: TObject);
+var
+  Caller: TPopupMenu;
+  Edit: TEdit;
+  clp: IFMXClipboardService;
+  val: TValue;
+  txt: string;
+begin
+  if TryGetClipboardService(clp) then
+  begin
+    val := clp.GetClipboard;
+    if val.TryAsType(txt) then
+    begin
+      Caller := (((Sender as TMenuItem).parent) as TContent).parent as TPopupMenu;
+      if assigned(Caller) then
+      begin
+        Edit := Caller.PopupComponent as TEdit;
+        Edit.Text := trim(txt);
+      end;
+    end;
+  end;
+end;
+
+procedure TfmxFirebaseDemo.mniToClipboardClick(Sender: TObject);
+var
+  clp: IFMXClipboardService;
+begin
+  if TryGetClipboardService(clp) then
+    clp.SetClipboard(edtProjectID.Text);
+end;
+
 procedure TfmxFirebaseDemo.btnShowSettingsClick(Sender: TObject);
 begin
   FloatAniToolbar.Start;
@@ -194,17 +249,29 @@ begin
 {$ENDIF POSIX}
 end;
 
-procedure TfmxFirebaseDemo.lblOpenFBConsoleClick(Sender: TObject);
 const
+  cFB4DatGitHubURL = 'https://github.com/SchneiderInfosystems/FB4D';
   cFBConsoleURL = 'https://console.firebase.google.com';
+  cFBConsoleForProjectBase = cFBConsoleURL + '/u/0/project/%s/';
+  cFBConsoleForProjectURL = cFBConsoleForProjectBase + 'overview';
+  cFBConsoleForAuthURL = cFBConsoleForProjectBase + 'authentication/users';
+  cFBConsoleForRTDBURL = cFBConsoleForProjectBase + 'database/%s/data';
+  cFBConsoleForFSURL = cFBConsoleForProjectBase +'firestore/databases/%s/data';
+  cFBConsoleForStorageURL = cFBConsoleForProjectBase + 'storage/%s/files';
+  cFBConsoleForFunctionsURL = cFBConsoleForProjectBase +'functions';
+  cFBConsoleForMLApisURL = cFBConsoleForProjectBase + 'ml/apis';
+
+procedure TfmxFirebaseDemo.imgLogoClick(Sender: TObject);
+begin
+  OpenURLinkInBrowser(cFB4DatGitHubURL);
+end;
+
+procedure TfmxFirebaseDemo.lblOpenFBConsoleClick(Sender: TObject);
 begin
   OpenURLinkInBrowser(cFBConsoleURL);
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForProjectClick(Sender: TObject);
-const
-  cFBConsoleForProjectURL =
-    'https://console.firebase.google.com/u/0/project/newproject-e2ba0/overview';
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
@@ -213,9 +280,6 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForAuthClick(Sender: TObject);
-const
-  cFBConsoleForAuthURL =
-    'https://console.firebase.google.com/u/0/project/%s/authentication/users';
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
@@ -224,9 +288,6 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForRTDBClick(Sender: TObject);
-const
-  cFBConsoleForRTDBURL =
-    'https://console.firebase.google.com/u/0/project/%s/database/%s/data';
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
@@ -236,9 +297,6 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForFSClick(Sender: TObject);
-const
-  cFBConsoleForFSURL =
-    'https://console.firebase.google.com/u/0/project/%s/firestore/databases/%s/data';
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
@@ -248,9 +306,6 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForStorageClick(Sender: TObject);
-const
-  cFBConsoleForStorageURL =
-    'https://console.firebase.google.com/u/0/project/%s/storage/%s/files';
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
@@ -262,9 +317,6 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForFunctionsClick(Sender: TObject);
-const
-  cFBConsoleForFunctionsURL =
-    'https://console.firebase.google.com/u/0/project/%s/functions';
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
@@ -273,9 +325,6 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForVisionMLClick(Sender: TObject);
-const
-  cFBConsoleForMLApisURL =
-    'https://console.firebase.google.com/u/0/project/%s/ml/apis';
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
