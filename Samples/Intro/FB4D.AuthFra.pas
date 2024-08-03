@@ -83,7 +83,7 @@ type
     procedure btnDeleteUserAccountClick(Sender: TObject);
     procedure btnSendEMailVerificationClick(Sender: TObject);
     procedure btnRefreshClick(Sender: TObject);
-    procedure edtEmailChange(Sender: TObject);
+    procedure edtEmailAndPwdChange(Sender: TObject);
     procedure btnLogoutClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
@@ -140,7 +140,7 @@ procedure TAuthFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtEmail.Text := IniFile.ReadString('Authentication', 'User', '');
   edtPassword.Text := IniFile.ReadString('Authentication', 'Pwd', '');
-  edtEmailChange(nil);
+  edtEmailAndPwdChange(nil);
 end;
 
 procedure TAuthFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
@@ -236,7 +236,7 @@ begin
   end;
 end;
 
-procedure TAuthFra.edtEmailChange(Sender: TObject);
+procedure TAuthFra.edtEmailAndPwdChange(Sender: TObject);
 begin
   if edtEmail.Text.IsEmpty then
     btnLogin.Text := 'Anonymous Login'

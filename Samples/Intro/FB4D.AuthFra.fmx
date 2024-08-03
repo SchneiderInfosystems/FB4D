@@ -309,6 +309,7 @@ object AuthFra: TAuthFra
     Size.Width = 177.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
+    OnChange = edtEmailAndPwdChange
     Left = 9
     Top = 63
   end
@@ -320,7 +321,7 @@ object AuthFra: TAuthFra
     Size.Width = 288.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    OnChange = edtEmailChange
+    OnChange = edtEmailAndPwdChange
     Left = 9
     Top = 23
   end
@@ -368,7 +369,7 @@ object AuthFra: TAuthFra
     Size.Width = 104.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 21
+    TabOrder = 20
     Text = 'Link EMail/Pwd'
     TextSettings.Trimming = None
     OnClick = btnLinkEMailPwdClick
