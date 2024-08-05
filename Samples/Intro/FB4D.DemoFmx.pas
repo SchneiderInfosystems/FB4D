@@ -250,7 +250,6 @@ begin
 end;
 
 const
-  cFB4DatGitHubURL = 'https://github.com/SchneiderInfosystems/FB4D';
   cFBConsoleURL = 'https://console.firebase.google.com';
   cFBConsoleForProjectBase = cFBConsoleURL + '/u/0/project/%s/';
   cFBConsoleForProjectURL = cFBConsoleForProjectBase + 'overview';
@@ -260,10 +259,33 @@ const
   cFBConsoleForStorageURL = cFBConsoleForProjectBase + 'storage/%s/files';
   cFBConsoleForFunctionsURL = cFBConsoleForProjectBase +'functions';
   cFBConsoleForMLApisURL = cFBConsoleForProjectBase + 'ml/apis';
+  cFB4DWikiURL = 'https://github.com/SchneiderInfosystems/FB4D/wiki/';
+  cFB4DIntroURL = cFB4DWikiURL + 'Getting-Started-with-FB4D';
+  cFB4DAuthURL = cFB4DWikiURL + 'FB4D-Reference-IFirebaseAuthentication';
+  cFB4DRTDBURL = cFB4DWikiURL + 'FB4D-Reference-IRealTimeDB';
+  cFB4DFSURL = cFB4DWikiURL + 'FB4D-Reference-IFirestoreDatabase';
+  cFB4DStorageURL = cFB4DWikiURL + 'FB4D-Reference-IFirebaseStorage';
+  cFB4DFunctsionURL = cFB4DWikiURL + 'FB4D-Reference-IFirebaseFunctions';
+  cFB4DVisionMLURL = cFB4DWikiURL + 'FB4D-Reference-IVisionML';
 
 procedure TfmxFirebaseDemo.imgLogoClick(Sender: TObject);
 begin
-  OpenURLinkInBrowser(cFB4DatGitHubURL);
+  if layToolbar.Height = FloatAniToolbar.StopValue then
+    OpenURLinkInBrowser(cFB4DIntroURL)
+  else if TabControl.ActiveTab = tabAuth then
+    OpenURLinkInBrowser(cFB4DAuthURL)
+  else if TabControl.ActiveTab = tabRealTimeDB then
+    OpenURLinkInBrowser(cFB4DRTDBURL)
+  else if TabControl.ActiveTab = tabFirestore then
+    OpenURLinkInBrowser(cFB4DFSURL)
+  else if TabControl.ActiveTab = tabStorage then
+    OpenURLinkInBrowser(cFB4DStorageURL)
+  else if TabControl.ActiveTab = tabFunctions then
+    OpenURLinkInBrowser(cFB4DFunctsionURL)
+  else if TabControl.ActiveTab = tabVisionML then
+    OpenURLinkInBrowser(cFB4DVisionMLURL)
+  else
+    OpenURLinkInBrowser(cFB4DWikiURL);
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleClick(Sender: TObject);
