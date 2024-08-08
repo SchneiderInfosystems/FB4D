@@ -320,6 +320,9 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 100.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
+            inherited cboDemoDocType: TComboBox
+              TabOrder = 18
+            end
           end
           inherited tabPatch: TTabItem
             Size.Width = 50.000000000000000000
@@ -364,6 +367,9 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cy = 26.000000000000000000
             inherited GroupBox1: TGroupBox
               TabOrder = 4
+              inherited chbIncludeDescendants: TCheckBox
+                TabOrder = 38
+              end
             end
             inherited GroupBox2: TGroupBox
               Size.Width = 242.000000000000000000
@@ -627,7 +633,6 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       OnClick = lblOpenFBConsoleClick
     end
     object lblOpenFBConsoleForProject: TLabel
-      Anchors = [akTop, akRight]
       AutoSize = True
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
@@ -684,7 +689,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 760.000000000000000000
+      Position.X = 750.000000000000000000
       Position.Y = 4.000000000000000000
       Size.Width = 200.000000000000000000
       Size.Height = 16.000000000000000000

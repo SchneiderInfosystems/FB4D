@@ -124,7 +124,7 @@ object FirestoreFra: TFirestoreFra
     Size.Width = 1000.000000000000000000
     Size.Height = 132.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 11
     TabPosition = PlatformDefault
     Sizes = (
@@ -207,6 +207,25 @@ object FirestoreFra: TFirestoreFra
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 19
+        OnChange = cboDemoDocTypeChange
+      end
+      object edtTestInt: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        TabOrder = 20
+        KeyboardType = NumbersAndPunctuation
+        Position.X = 439.000000000000000000
+        Position.Y = 16.000000000000000000
+        Visible = False
+        object lblTestInt: TLabel
+          Position.X = -120.000000000000000000
+          Position.Y = 3.000000000000000000
+          Size.Width = 108.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.HorzAlign = Trailing
+          Text = 'testInt Value'
+          TabOrder = 0
+        end
       end
     end
     object tabPatch: TTabItem
@@ -292,7 +311,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 145.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 13
+        TabOrder = 12
         Text = 'Get next page'
       end
       object chbLimitTo10Docs: TCheckBox
@@ -320,13 +339,12 @@ object FirestoreFra: TFirestoreFra
       ExplicitSize.cx = 53.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
       object btnRunQuery: TButton
-        Enabled = False
         Position.X = 16.000000000000000000
         Position.Y = 16.000000000000000000
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 16
+        TabOrder = 13
         Text = 'Run Query'
         TextSettings.Trimming = None
         OnClick = btnRunQueryClick
@@ -336,7 +354,7 @@ object FirestoreFra: TFirestoreFra
         Position.Y = 58.000000000000000000
         TextSettings.Trimming = None
         Text = 'Min testInt Val: 50'
-        TabOrder = 7
+        TabOrder = 5
       end
       object trbMinTestInt: TTrackBar
         CanParentFocus = True
@@ -346,7 +364,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 121.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 5
+        TabOrder = 4
         Value = 50.000000000000000000
         OnChange = trbMinTestIntChange
       end
@@ -387,7 +405,7 @@ object FirestoreFra: TFirestoreFra
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 1: Entire Collection'
-        TabOrder = 7
+        TabOrder = 5
         object edtCollectionIDForFSListener: TEdit
           Touch.InteractiveGestures = [LongTap, DoubleTap]
           Anchors = [akLeft, akTop, akRight]
@@ -431,7 +449,7 @@ object FirestoreFra: TFirestoreFra
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 2: Single Document'
-        TabOrder = 6
+        TabOrder = 4
         object edtDocPathForFSListener: TEdit
           Touch.InteractiveGestures = [LongTap, DoubleTap]
           Anchors = [akLeft, akTop, akRight]
@@ -462,7 +480,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 2
+        TabOrder = 1
         Text = 'Stop Listener'
         TextSettings.Trimming = None
         OnClick = btnStopFSListenerClick
@@ -512,7 +530,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 104.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 26
+        TabOrder = 25
         Text = 'Read Transaction'
         TextSettings.Trimming = None
         OnClick = btnStartReadTransactionClick

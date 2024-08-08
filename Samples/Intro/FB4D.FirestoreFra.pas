@@ -87,6 +87,8 @@ type
     btnStopFSListener: TButton;
     btnStartFSListener: TButton;
     lblReadTransID: TLabel;
+    edtTestInt: TEdit;
+    lblTestInt: TLabel;
     procedure edtDocumentChangeTracking(Sender: TObject);
     procedure btnGetClick(Sender: TObject);
     procedure btnCreateDocumentClick(Sender: TObject);
@@ -103,6 +105,7 @@ type
     procedure mniClearClick(Sender: TObject);
     procedure btnStartFSListenerClick(Sender: TObject);
     procedure btnStopFSListenerClick(Sender: TObject);
+    procedure cboDemoDocTypeChange(Sender: TObject);
   private
     fDatabase: IFirestoreDatabase;
     fReadTransaction: TFirestoreReadTransaction;
@@ -188,7 +191,6 @@ begin
   edtChildCollection.Text := IniFile.ReadString('Firestore', 'ChildCol', '');
   edtChildDocument.Text := IniFile.ReadString('Firestore', 'ChildDoc', '');
   cboDemoDocType.ItemIndex := IniFile.ReadInteger('Firestore', 'DocType', 0);
-  btnRunQuery.Enabled := IniFile.ReadBool('Firestore', 'RunQueryEnabled', false);
   edtCollectionIDForFSListener.Text := IniFile.ReadString('Firestore',
     'ListenerColID', '');
   edtDocPathForFSListener.Text := IniFile.ReadString('Firestore', 'DocPath', '');
@@ -204,7 +206,6 @@ begin
   IniFile.WriteString('Firestore', 'ChildCol', edtChildCollection.Text);
   IniFile.WriteString('Firestore', 'ChildDoc', edtChildDocument.Text);
   IniFile.WriteInteger('Firestore', 'DocType', cboDemoDocType.ItemIndex);
-  IniFile.WriteBool('Firestore', 'RunQueryEnabled', btnRunQuery.Enabled);
   IniFile.WriteString('Firestore', 'ListenerColID',
     edtCollectionIDForFSListener.Text);
   IniFile.WriteString('Firestore', 'DocPath', edtDocPathForFSListener.Text);
@@ -235,8 +236,6 @@ end;
 
 procedure TFirestoreFra.CheckDocument;
 begin
-  chbLimitTo10Docs.Visible := edtDocument.Text.IsEmpty;
-  chbUseChildDoc.Visible := not chbLimitTo10Docs.Visible;
   edtChildCollection.Visible := chbUseChildDoc.IsChecked;
   edtChildDocument.Visible := chbUseChildDoc.IsChecked;
   chbUsePageToken.Visible := false;
@@ -372,17 +371,12 @@ begin
          else
            Doc.AddOrUpdateField(TJSONObject.SetString('info',
              'This demonstrates a simple child collection with random data.'));
-         if not btnRunQuery.Enabled then
-           Doc.AddOrUpdateField(TJSONObject.SetString('hint',
-             'For test Run Query create same record as this one and by press ' +
-             'Create Doc and Insert Doc repeatedly'))
-         else
-           Doc.AddOrUpdateField(TJSONObject.SetString('hint',
-             'Create at least 5 documents so you have some records for later ' +
-             'test of Run Query'));
-         Doc.AddOrUpdateField(TJSONObject.SetInteger('testInt', random(100)));
+         Doc.AddOrUpdateField(TJSONObject.SetString('hint',
+           'For test Run Query create same record as this one and by press ' +
+           'Create Doc and Insert Doc repeatedly, so you have at least 5 documents'));
+         Doc.AddOrUpdateField(TJSONObject.SetInteger('testInt', StrToInt(edtTestInt.Text)));
          Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('documentCreated', now));
-         btnRunQuery.Enabled := true;
+         edtTestInt.Text := IntToStr(random(100));
        end;
   end;
   if assigned(fWriteTransaction) then
@@ -431,6 +425,13 @@ begin
   end;
   Doc := nil;
 end;
+
+procedure TFirestoreFra.cboDemoDocTypeChange(Sender: TObject);
+begin
+  edtTestInt.visible := cboDemoDocType.ItemIndex = 2;
+  edtTestInt.Text := IntToStr(random(100));
+end;
+
 
 {$ENDREGION}
 
@@ -698,6 +699,10 @@ begin
   // The following structured query expects documents that were created with the
   // option 'Docs for Run Query'
   if not chbUseChildDoc.IsChecked then
+  begin
+    memFirestore.Lines.Add(Format(
+      'Query documents: select * from %s where testIn >= %d order by testInt asc',
+      [edtCollection.Text, trunc(trbMinTestInt.Value)]));
     fDatabase.RunQuery(
       TStructuredQuery.CreateForCollection(edtCollection.Text).
 // To fetch partial documents
@@ -706,8 +711,11 @@ begin
           TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
             trunc(trbMinTestInt.Value))).
         OrderBy('testInt', odAscending),
-      OnFirestoreGet, OnFirestoreError, Query)
-  else
+      OnFirestoreGet, OnFirestoreError, Query);
+  end else begin
+    memFirestore.Lines.Add(
+      Format('Query documents: select testInt, documentCreated, info from %s/%s/%s limit 10 where testIn >= %d order by testInt asc, documentCreated desc',
+      [edtCollection.Text, edtDocument.Text, edtChildCollection.Text, trunc(trbMinTestInt.Value)]));
     fDatabase.RunQuery([edtCollection.Text, edtDocument.Text],
       TStructuredQuery.CreateForSelect(['testInt', 'documentCreated', 'info']).
         Collection(edtChildCollection.Text).
@@ -724,6 +732,7 @@ begin
 //          TJSONObject.SetInteger('testInt', 85)), false).
         Limit(10).Offset(0), // returns only the first 10 documents!
       OnFirestoreGet, OnFirestoreError, Query);
+  end;
 end;
 
 procedure TFirestoreFra.trbMinTestIntChange(Sender: TObject);
