@@ -320,8 +320,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 100.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
-            inherited cboDemoDocType: TComboBox
-              TabOrder = 18
+            inherited edtTestInt: TEdit
+              TabOrder = 19
             end
           end
           inherited tabPatch: TTabItem
@@ -348,16 +348,11 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 53.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited btnRunQuery: TButton
-              TabOrder = 9
-            end
-            inherited lblMinTestInt: TLabel
-              TabOrder = 4
-            end
-            inherited trbMinTestInt: TTrackBar
-              TabOrder = 3
+              TabOrder = 8
             end
             inherited Label13: TLabel
-              Size.Width = 97.000000000000000000
+              Size.Width = 245.000000000000000000
+              Size.Height = 73.000000000000000000
             end
           end
           inherited tabListener: TTabItem
@@ -366,16 +361,15 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 62.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited GroupBox1: TGroupBox
-              TabOrder = 4
+              TabOrder = 2
               inherited chbIncludeDescendants: TCheckBox
                 TabOrder = 38
               end
             end
             inherited GroupBox2: TGroupBox
-              Size.Width = 242.000000000000000000
-              TabOrder = 3
+              Size.Width = 398.000000000000000000
               inherited edtDocPathForFSListener: TEdit
-                Size.Width = 146.000000000000000000
+                Size.Width = 302.000000000000000000
               end
             end
           end
