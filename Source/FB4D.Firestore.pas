@@ -150,6 +150,8 @@ type
     procedure CommitWriteTransaction(Transaction: IFirestoreWriteTransaction;
       OnCommitWriteTransaction: TOnCommitWriteTransaction;
       OnRequestError: TOnRequestError);
+    property ProjectID: string read GetProjectID;
+    property DatabaseID: string read GetDatabaseID;
   end;
 
   TStructuredQuery = class(TInterfacedObject, IStructuredQuery)
@@ -897,7 +899,12 @@ begin
   try
     fLastReceivedMsg := now;
     Response.CheckForJSONObj;
-    if assigned(Response.OnSuccess.OnDocumentDeleted) then
+    if not Response.StatusOk then
+    begin
+      if assigned(Response.OnError) then
+        Response.OnError(RequestID, Response.StatusText);
+    end
+    else if assigned(Response.OnSuccess.OnDocumentDeleted) then
       Response.OnSuccess.OnDocumentDeleted(RequestID,
         Response.GetServerTime(tzLocalTime));
   except
