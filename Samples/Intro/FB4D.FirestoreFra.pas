@@ -785,6 +785,7 @@ begin
     edtCollectionIDForFSListener.Enabled := false;
     edtDocPathForFSListener.Enabled := false;
     chbIncludeDescendants.Enabled := false;
+    tabListener.ImageIndex := 1;
   end else
     memFirestore.Lines.Add('No target defined for starting listener');
 end;
@@ -798,6 +799,7 @@ begin
   edtCollectionIDForFSListener.Enabled := true;
   edtDocPathForFSListener.Enabled := true;
   chbIncludeDescendants.Enabled := true;
+  tabListener.ImageIndex := 0;
 end;
 
 procedure TFirestoreFra.OnFSChangedDocInCollection(
