@@ -67,13 +67,13 @@ type
     lblOpenFBConsoleForVisionML: TLabel;
     RTDBFra: TRTDBFra;
     FirestoreFra: TFirestoreFra;
-    StorageFra: TStorageFra;
     FunctionsFra: TFunctionsFra;
     AuthFra: TAuthFra;
     VisionMLFra: TVisionMLFra;
     popClipboard: TPopupMenu;
     mniFromClipboard: TMenuItem;
     mniToClipboard: TMenuItem;
+    StorageFra: TStorageFra;
     procedure FormShow(Sender: TObject);
     procedure TabControlChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

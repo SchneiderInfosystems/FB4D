@@ -173,6 +173,7 @@ object StorageFra: TStorageFra
   end
   object edtStorageObject: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 10
     Position.X = 112.000000000000000000
     Position.Y = 49.000000000000000000

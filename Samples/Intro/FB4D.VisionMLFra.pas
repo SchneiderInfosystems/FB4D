@@ -110,6 +110,9 @@ implementation
 
 uses
   System.IOUtils, System.NetEncoding, System.StrUtils,
+  {$IFDEF MACOS}
+  Posix.Unistd,
+  {$ENDIF}
   REST.Types,
   FB4D.VisionMLDefinition, FB4D.VisionML,
   FB4D.AuthFra, FB4D.DemoFmx;

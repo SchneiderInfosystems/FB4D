@@ -24,7 +24,7 @@ object FirestoreFra: TFirestoreFra
     object Label27: TLabel
       Position.X = -111.000000000000000000
       Position.Y = 3.000000000000000000
-      Size.Width = 95.000000000000000000
+      Size.Width = 103.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
       TextSettings.HorzAlign = Trailing
@@ -44,7 +44,7 @@ object FirestoreFra: TFirestoreFra
     object Label28: TLabel
       Position.X = -111.000000000000000000
       Position.Y = 3.000000000000000000
-      Size.Width = 95.000000000000000000
+      Size.Width = 104.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
       TextSettings.HorzAlign = Trailing
@@ -64,7 +64,7 @@ object FirestoreFra: TFirestoreFra
     object Label4: TLabel
       Position.X = -111.000000000000000000
       Position.Y = 3.000000000000000000
-      Size.Width = 95.000000000000000000
+      Size.Width = 103.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
       TextSettings.HorzAlign = Trailing
@@ -85,7 +85,7 @@ object FirestoreFra: TFirestoreFra
     object Label7: TLabel
       Position.X = -111.000000000000000000
       Position.Y = 3.000000000000000000
-      Size.Width = 95.000000000000000000
+      Size.Width = 104.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
       TextSettings.HorzAlign = Trailing
@@ -105,8 +105,8 @@ object FirestoreFra: TFirestoreFra
     Size.Height = 463.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 2
-    Viewport.Width = 1000.000000000000000000
-    Viewport.Height = 463.000000000000000000
+    Viewport.Width = 996.000000000000000000
+    Viewport.Height = 459.000000000000000000
     object popFSLog: TPopupMenu
       Left = 97
       Top = 662
@@ -206,7 +206,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 153.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 19
+        TabOrder = 18
         OnChange = cboDemoDocTypeChange
       end
       object edtTestInt: TEdit
@@ -344,7 +344,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 13
+        TabOrder = 10
         Text = 'Run Query'
         TextSettings.Trimming = None
         OnClick = btnRunQueryClick
@@ -354,7 +354,7 @@ object FirestoreFra: TFirestoreFra
         Position.Y = 58.000000000000000000
         TextSettings.Trimming = None
         Text = 'Min testInt Val: 50'
-        TabOrder = 5
+        TabOrder = 4
       end
       object trbMinTestInt: TTrackBar
         CanParentFocus = True
@@ -364,16 +364,16 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 121.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 4
+        TabOrder = 3
         Value = 50.000000000000000000
         OnChange = trbMinTestIntChange
       end
       object Label13: TLabel
         Anchors = [akLeft, akTop, akRight]
-        Position.X = 672.000000000000000000
+        Position.X = 632.000000000000000000
         Position.Y = 16.000000000000000000
-        Size.Width = 313.000000000000000000
-        Size.Height = 57.000000000000000000
+        Size.Width = 353.000000000000000000
+        Size.Height = 73.000000000000000000
         Size.PlatformDefault = False
         TextSettings.VertAlign = Leading
         TextSettings.Trimming = None
@@ -405,7 +405,7 @@ object FirestoreFra: TFirestoreFra
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 1: Entire Collection'
-        TabOrder = 5
+        TabOrder = 3
         object edtCollectionIDForFSListener: TEdit
           Touch.InteractiveGestures = [LongTap, DoubleTap]
           Anchors = [akLeft, akTop, akRight]
@@ -437,7 +437,7 @@ object FirestoreFra: TFirestoreFra
           Size.Width = 139.000000000000000000
           Size.Height = 19.000000000000000000
           Size.PlatformDefault = False
-          TabOrder = 37
+          TabOrder = 38
           Text = 'Include descendants'
         end
       end
@@ -449,7 +449,7 @@ object FirestoreFra: TFirestoreFra
         Size.Height = 57.000000000000000000
         Size.PlatformDefault = False
         Text = 'Target 2: Single Document'
-        TabOrder = 4
+        TabOrder = 2
         object edtDocPathForFSListener: TEdit
           Touch.InteractiveGestures = [LongTap, DoubleTap]
           Anchors = [akLeft, akTop, akRight]
@@ -461,9 +461,9 @@ object FirestoreFra: TFirestoreFra
           Size.PlatformDefault = False
           TextPrompt = 'Enter document path separated by /'
           object Label30: TLabel
-            Position.X = -64.000000000000000000
+            Position.X = -80.000000000000000000
             Position.Y = 2.000000000000000000
-            Size.Width = 57.000000000000000000
+            Size.Width = 73.000000000000000000
             Size.Height = 17.000000000000000000
             Size.PlatformDefault = False
             TextSettings.HorzAlign = Trailing
@@ -514,7 +514,7 @@ object FirestoreFra: TFirestoreFra
       ExplicitSize.cy = 26.000000000000000000
       object btnCommitWriteTrans: TButton
         Enabled = False
-        Position.X = 128.000000000000000000
+        Position.X = 176.000000000000000000
         Position.Y = 16.000000000000000000
         Size.Width = 170.000000000000000000
         Size.Height = 22.000000000000000000
@@ -527,7 +527,7 @@ object FirestoreFra: TFirestoreFra
       object btnStartReadTransaction: TButton
         Position.X = 16.000000000000000000
         Position.Y = 62.000000000000000000
-        Size.Width = 104.000000000000000000
+        Size.Width = 152.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 25
@@ -538,7 +538,7 @@ object FirestoreFra: TFirestoreFra
       object btnStartWriteTransaction: TButton
         Position.X = 16.000000000000000000
         Position.Y = 16.000000000000000000
-        Size.Width = 104.000000000000000000
+        Size.Width = 152.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 24
@@ -548,7 +548,7 @@ object FirestoreFra: TFirestoreFra
       end
       object btnStopReadTrans: TButton
         Enabled = False
-        Position.X = 128.000000000000000000
+        Position.X = 176.000000000000000000
         Position.Y = 62.000000000000000000
         Size.Width = 170.000000000000000000
         Size.Height = 22.000000000000000000
@@ -578,7 +578,7 @@ object FirestoreFra: TFirestoreFra
     Top = 147
     object txtFirebaseURL: TText
       Position.X = -94.000000000000000000
-      Size.Width = 78.000000000000000000
+      Size.Width = 86.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       Text = 'Database ID:'

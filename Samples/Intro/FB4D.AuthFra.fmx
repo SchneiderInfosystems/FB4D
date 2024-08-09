@@ -327,9 +327,9 @@ object AuthFra: TAuthFra
   end
   object btnSignUpNewUser: TButton
     Anchors = [akTop, akRight]
-    Position.X = 513.000000000000000000
+    Position.X = 512.000000000000000000
     Position.Y = 40.000000000000000000
-    Size.Width = 111.000000000000000000
+    Size.Width = 120.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 14
@@ -340,9 +340,9 @@ object AuthFra: TAuthFra
   object btnPasswordReset: TButton
     Anchors = [akTop, akRight]
     Enabled = False
-    Position.X = 745.000000000000000000
+    Position.X = 768.000000000000000000
     Position.Y = 40.000000000000000000
-    Size.Width = 96.000000000000000000
+    Size.Width = 120.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 17
@@ -352,9 +352,9 @@ object AuthFra: TAuthFra
   end
   object btnLogin: TButton
     Anchors = [akTop, akRight]
-    Position.X = 632.000000000000000000
+    Position.X = 640.000000000000000000
     Position.Y = 40.000000000000000000
-    Size.Width = 105.000000000000000000
+    Size.Width = 120.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 10
@@ -364,9 +364,9 @@ object AuthFra: TAuthFra
   end
   object btnLinkEMailPwd: TButton
     Anchors = [akTop, akRight]
-    Position.X = 849.000000000000000000
+    Position.X = 896.000000000000000000
     Position.Y = 40.000000000000000000
-    Size.Width = 104.000000000000000000
+    Size.Width = 120.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 20
@@ -376,8 +376,8 @@ object AuthFra: TAuthFra
   end
   object btnLogout: TButton
     Anchors = [akTop, akRight]
-    Position.X = 961.000000000000000000
-    Position.Y = 40.000000000000000000
+    Position.X = 958.000000000000000000
+    Position.Y = 10.000000000000000000
     Size.Width = 58.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False

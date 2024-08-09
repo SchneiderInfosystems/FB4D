@@ -71,11 +71,11 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             inherited memUser: TMemo
               Size.Width = 944.000000000000000000
               Size.Height = 403.000000000000000000
-              Viewport.Width = 944.000000000000000000
-              Viewport.Height = 403.000000000000000000
+              Viewport.Width = 940.000000000000000000
+              Viewport.Height = 399.000000000000000000
             end
             inherited btnRefresh: TButton
-              Position.X = 742.000000000000000000
+              Position.X = 598.000000000000000000
             end
           end
           inherited tabUserProfile: TTabItem
@@ -84,28 +84,28 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 125.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited edtChangeEMail: TEdit
-              Size.Width = 540.000000000000000000
+              Size.Width = 396.000000000000000000
             end
             inherited edtChangeDisplayName: TEdit
-              Size.Width = 540.000000000000000000
+              Size.Width = 396.000000000000000000
             end
             inherited btnChange: TButton
-              Position.X = 595.000000000000000000
+              Position.X = 451.000000000000000000
             end
             inherited btnChangeEMail: TButton
-              Position.X = 595.000000000000000000
+              Position.X = 451.000000000000000000
             end
             inherited edtChangePassword: TEdit
-              Size.Width = 540.000000000000000000
+              Size.Width = 396.000000000000000000
             end
             inherited btnChangePwd: TButton
-              Position.X = 595.000000000000000000
+              Position.X = 451.000000000000000000
             end
             inherited edtChangePhotoURL: TEdit
-              Size.Width = 540.000000000000000000
+              Size.Width = 396.000000000000000000
             end
             inherited btnChangePhotoURL: TButton
-              Position.X = 595.000000000000000000
+              Position.X = 451.000000000000000000
             end
           end
         end
@@ -122,13 +122,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Position.X = 477.000000000000000000
         end
         inherited btnPasswordReset: TButton
-          Position.X = 709.000000000000000000
+          Position.X = 735.000000000000000000
         end
         inherited btnLogin: TButton
-          Position.X = 596.000000000000000000
+          Position.X = 605.000000000000000000
         end
         inherited btnLinkEMailPwd: TButton
-          Position.X = 813.000000000000000000
+          Position.X = 863.000000000000000000
         end
         inherited btnLogout: TButton
           Position.X = 925.000000000000000000
@@ -187,7 +187,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 39.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label13: TLabel
-              Size.Width = 257.000000000000000000
+              Size.Width = 113.000000000000000000
             end
           end
           inherited tabPut: TTabItem
@@ -200,7 +200,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Viewport.Height = 118.000000000000000000
             end
             inherited Label18: TLabel
-              Size.Width = 49.000000000000000000
+              Size.Width = 0.000000000000000000
             end
           end
           inherited tabPatch: TTabItem
@@ -209,7 +209,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 49.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label19: TLabel
-              Size.Width = 49.000000000000000000
+              Size.Width = 0.000000000000000000
             end
           end
           inherited tabPost: TTabItem
@@ -218,7 +218,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 43.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label22: TLabel
-              Size.Width = 49.000000000000000000
+              Size.Width = 0.000000000000000000
             end
           end
           inherited tabDelete: TTabItem
@@ -227,7 +227,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 55.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label25: TLabel
-              Size.Width = 49.000000000000000000
+              Size.Width = 0.000000000000000000
             end
           end
           inherited tabListener: TTabItem
@@ -351,8 +351,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               TabOrder = 8
             end
             inherited Label13: TLabel
-              Size.Width = 245.000000000000000000
-              Size.Height = 73.000000000000000000
+              Size.Width = 221.000000000000000000
+              Size.Height = 81.000000000000000000
             end
           end
           inherited tabListener: TTabItem
@@ -362,14 +362,12 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cy = 26.000000000000000000
             inherited GroupBox1: TGroupBox
               TabOrder = 2
-              inherited chbIncludeDescendants: TCheckBox
-                TabOrder = 38
-              end
             end
             inherited GroupBox2: TGroupBox
-              Size.Width = 398.000000000000000000
+              Size.Width = 254.000000000000000000
+              TabOrder = 3
               inherited edtDocPathForFSListener: TEdit
-                Size.Width = 302.000000000000000000
+                Size.Width = 158.000000000000000000
               end
             end
           end
@@ -415,10 +413,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         inherited memStorageResp: TMemo
           Size.Width = 957.000000000000000000
           Size.Height = 452.000000000000000000
-          Viewport.Width = 957.000000000000000000
-          Viewport.Height = 452.000000000000000000
+          Viewport.Width = 953.000000000000000000
+          Viewport.Height = 448.000000000000000000
         end
         inherited edtStoragePath: TEdit
+          Size.Width = 869.000000000000000000
+        end
+        inherited edtStorageObject: TEdit
           Size.Width = 869.000000000000000000
         end
       end
@@ -502,10 +503,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             TabOrder = 39
           end
           inherited lbiDocTextDetection: TListBoxItem
-            TabOrder = 41
+            TabOrder = 40
           end
           inherited lbiLogoDetection: TListBoxItem
             TabOrder = 38
+          end
+          inherited lbiWebDetection: TListBoxItem
+            TabOrder = 37
           end
           inherited lbiCropHints: TListBoxItem
             TabOrder = 45
@@ -518,8 +522,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
         end
         inherited memAnnotateFile: TMemo
-          Viewport.Width = 634.000000000000000000
-          Viewport.Height = 78.000000000000000000
+          Viewport.Width = 638.000000000000000000
+          Viewport.Height = 82.000000000000000000
         end
       end
     end
@@ -618,7 +622,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       HitTest = True
       Position.X = 175.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 128.000000000000000000
+      Size.Width = 180.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
@@ -633,7 +637,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       HitTest = True
       Position.X = 175.000000000000000000
       Position.Y = 4.000000000000000000
-      Size.Width = 160.000000000000000000
+      Size.Width = 180.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
