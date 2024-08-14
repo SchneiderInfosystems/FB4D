@@ -71,7 +71,8 @@ type
     // PUSHID is based on charset of cPushID64: Supports chronological sorting
     type TIDKind = (FBID {random 22 Chars},
                     PUSHID {timestamp and random: total 20 Chars},
-                    FSID {random 20 Chars});
+                    FSID {random 20 Chars},
+                    FSPUSHID {timestamp and random: total 24 Chars});
     class function CreateAutoID(IDKind: TIDKind = FBID): string;
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
@@ -605,7 +606,10 @@ begin
       result := ShortenIDTo20Chars(ConvertGUIDtoFBID(TGuid.NewGuid));
     PUSHID:
       result := ConvertTimeStampAndRandomPatternToPUSHID(now,
-        THashMD5.GetHashBytes(GuidToString(TGUID.NewGuid)));
+        copy(THashMD5.GetHashBytes(GuidToString(TGUID.NewGuid)), 1, 12));
+    FSPUSHID:
+      result := ConvertTimeStampAndRandomPatternToPUSHID(now,
+        copy(THashSHA1.GetHashBytes(GuidToString(TGUID.NewGuid)), 1, 16));
   end;
 end;
 
@@ -696,7 +700,7 @@ begin
     result := cPushID64[(tsi mod 64) + low(cPushID64)] + result;
     tsi := tsi shr 6;
   end;
-  for c := 0 to 11 do
+  for c := 0 to length(Random) - 1 do
     result := result + cPushID64[Random[c] and $3F + low(cPushID64)];
 end;
 

@@ -157,9 +157,9 @@ type
     class function IsCompositeType(FieldType: TFirestoreFieldType): boolean;
     { Object to Document Mapper }
     constructor LoadObjectFromDocument(Doc: IFirestoreDocument;
-      Options: TOTDMapperOptions = []);
+      Options: TOTDMapperOptions = []); virtual;
     function SaveObjectToDocument(
-      Options: TOTDMapperOptions = []): IFirestoreDocument;
+      Options: TOTDMapperOptions = []): IFirestoreDocument; virtual;
   end;
 
   TFirestoreDocuments = class(TInterfacedObject, IFirestoreDocuments,
