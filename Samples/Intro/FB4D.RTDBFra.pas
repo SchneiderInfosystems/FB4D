@@ -786,7 +786,7 @@ begin
   if not CheckAndCreateRealTimeDBClass then
     exit;
   ServerTime := fRealTimeDB.GetServerVariablesSynchronous(
-    cServerVariableTimeStamp, GetRTDBPath);
+    cServerVariableTimeStamp, []);
   try
     memRTDB.Lines.Add('ServerTime (local time): ' +
       DateTimeToStr(TFirebaseHelpers.ConvertTimeStampToLocalDateTime(
