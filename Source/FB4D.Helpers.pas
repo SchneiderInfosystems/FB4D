@@ -72,13 +72,17 @@ type
     type TIDKind = (FBID {random 22 Chars},
                     PUSHID {timestamp and random: total 20 Chars},
                     FSID {random 20 Chars},
-                    FSPUSHID {timestamp and random: total 24 Chars});
+                    FSPUSHID {timestamp and random: Base64 total 24 Chars});
     class function CreateAutoID(IDKind: TIDKind = FBID): string;
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
     class function ConvertTimeStampAndRandomPatternToPUSHID(timestamp: TDateTime;
       Random: TBytes; TimeIsUTC: boolean = false): string;
     class function DecodeTimeStampFromPUSHID(const PUSHID: string;
+      ConvertToLocalTime: boolean = true): TDateTime;
+    class function ConvertTimeStampAndRandomPatternToBase64(timestamp: TDateTime;
+      Random: TBytes; TimeIsUTC: boolean = false): string;
+    class function DecodeTimeStampFromBase64(const FSPUSHID: string;
       ConvertToLocalTime: boolean = true): TDateTime;
 
     // File helpers
@@ -608,7 +612,7 @@ begin
       result := ConvertTimeStampAndRandomPatternToPUSHID(now,
         copy(THashMD5.GetHashBytes(GuidToString(TGUID.NewGuid)), 1, 12));
     FSPUSHID:
-      result := ConvertTimeStampAndRandomPatternToPUSHID(now,
+      result := ConvertTimeStampAndRandomPatternToBase64(now,
         copy(THashSHA1.GetHashBytes(GuidToString(TGUID.NewGuid)), 1, 16));
   end;
 end;
@@ -714,6 +718,41 @@ begin
   tsi := 0;
   for c := low(PUSHID) to low(PUSHID) + 7 do
     tsi := tsi shl 6 + pos(PUSHID[c], cPushID64) - low(cPushID64);
+  result := UnixToDateTime(tsi div 1000);
+  if ConvertToLocalTime then
+    result := TTimeZone.Local.ToLocalTime(result);
+  result := result + (tsi mod 1000) / 24 / 3600 / 1000;
+end;
+
+class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToBase64(
+  timestamp: TDateTime; Random: TBytes; TimeIsUTC: boolean): string;
+var
+  tsi: int64;
+  c: integer;
+begin
+  Assert(length(Random) >= 12, 'Too short random pattern');
+  tsi := System.DateUtils.DateTimeToUnix(timestamp, TimeIsUTC) * 1000 +
+    System.DateUtils.MilliSecondOf(timestamp);
+  result := '';
+  for c := 1 to 8 do
+  begin
+    result := cBase64[(tsi mod 64) + low(cBase64)] + result;
+    tsi := tsi shr 6;
+  end;
+  for c := 0 to length(Random) - 1 do
+    result := result + cBase64[Random[c] and $3F + low(cBase64)];
+end;
+
+class function TFirebaseHelpers.DecodeTimeStampFromBase64(const FSPUSHID: string;
+  ConvertToLocalTime: boolean): TDateTime;
+var
+  tsi: int64;
+  c: integer;
+begin
+  Assert(length(FSPUSHID) = 24, 'Invalid PUSHID length');
+  tsi := 0;
+  for c := low(FSPUSHID) to low(FSPUSHID) + 7 do
+    tsi := tsi shl 6 + pos(FSPUSHID[c], cBase64) - low(cBase64);
   result := UnixToDateTime(tsi div 1000);
   if ConvertToLocalTime then
     result := TTimeZone.Local.ToLocalTime(result);

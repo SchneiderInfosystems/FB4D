@@ -39,6 +39,8 @@ type
     procedure ConvertGUIDtoFBIDtoGUID;
     procedure DecodeTimeFromPushID;
     procedure ConvertTimeStampAndRandomPatternToPushID;
+    procedure ConvertTimeStampAndRandomPatternToBase64;
+
   end;
 
 implementation
@@ -139,6 +141,28 @@ begin
   dOut := TFirebaseHelpers.DecodeTimeStampFromPUSHID('-zzzzzzzzzzzzzzzzzzz',
     false);
   Status('Last ID starting with "-" character ' + DateTimeToStr(dOut));
+end;
+
+procedure UT_FBHelpers.ConvertTimeStampAndRandomPatternToBase64;
+var
+  ID, ID2: string;
+  timeStamp, timeStamp2: TDateTime;
+  c: integer;
+  r: TBytes;
+begin
+  ID := TFirebaseHelpers.CreateAutoID(FSPUSHID);
+  Status('ID: ' + ID);
+  Assert.AreEqual(ID.Length, 24, 'Length of ID not 24 as expected');
+  timeStamp := TFirebaseHelpers.DecodeTimeStampFromBase64(ID);
+  Status('TimeStamp: ' + DateTimeToStr(timeStamp));
+  SetLength(r, 16);
+  for c := low(r) to High(r) do
+    r[c] := 0;
+  ID2 := TFirebaseHelpers.ConvertTimeStampAndRandomPatternToBase64(timestamp, r, false);
+  Assert.AreEqual(ID2.Length, 24, 'Length of ID2 not 24 as expected');
+  Status('ID2: ' + ID2);
+  timeStamp2 := TFirebaseHelpers.DecodeTimeStampFromBase64(ID2);
+  Assert.AreEqual(timeStamp, timeStamp2, 'Timestamp different');
 end;
 
 initialization
