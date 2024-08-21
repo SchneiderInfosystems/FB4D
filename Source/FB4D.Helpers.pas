@@ -69,10 +69,10 @@ type
       deprecated 'Use TFirestorePath.ConvertToDocPath instead';
     // FBID is based on charset of cBase64: Helpers and converter to GUID
     // PUSHID is based on charset of cPushID64: Supports chronological sorting
-    type TIDKind = (FBID {random 22 Chars},
-                    PUSHID {timestamp and random: total 20 Chars},
-                    FSID {random 20 Chars},
-                    FSPUSHID {timestamp and random: Base64 total 24 Chars});
+    type TIDKind = (FBID {random 22 Base64 chars},
+                    PUSHID {timestamp and random: total 20 chars of cPushID64},
+                    FSID {random 20 Base64 chars},
+                    FSPUSHID {timestamp and random: total 24 Base64 chars});
     class function CreateAutoID(IDKind: TIDKind = FBID): string;
     class function ConvertGUIDtoFBID(Guid: TGuid): string;
     class function ConvertFBIDtoGUID(const FBID: string): TGuid;
