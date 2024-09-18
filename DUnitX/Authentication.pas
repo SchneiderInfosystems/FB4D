@@ -368,7 +368,7 @@ begin
   fConfig.Auth.ChangeProfileSynchronous('', '', cDisplayName, cPhotoURL);
 
   fUsers := fConfig.Auth.GetUserDataSynchronous;
-  Assert.AreEqual(fUsers.Count, 1 ,'No one user as expected');
+  Assert.AreEqual(fUsers.Count, Int64(1) ,'No one user as expected');
   fUser := fUsers.Items[0];
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fUser.IsEMailAvailable, 'No EMail');

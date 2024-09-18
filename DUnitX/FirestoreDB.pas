@@ -491,11 +491,16 @@ type
 procedure UT_FirestoreDB.Object2DocumentMapper;
 const
   sTitle = 'Object to Document';
+{$IF CompilerVersion >= 36.0}
   saMessage = '''
     I hope that this new approach will make the use of FB4D.Firestore
     extremely easy compared to the access via field getter and setter
     methods.
     ''';
+{$ELSE}
+  saMessage = 'I hope that this new approach will make the use of FB4D.Firestore' +
+    'extremely easy compared to the access via field getter and setter methods.';
+{$ENDIF}
 var
   DocPath: TRequestResourceParam;
   Doc, Doc2: TMyFSDoc;
@@ -658,11 +663,16 @@ end;
 procedure UT_FirestoreDB.Object2DocumentMapperWithOptions;
 const
   sTitle = 'Object to Document';
+{$IF CompilerVersion >= 36.0}
   saMessage = '''
     I hope that this new approach will make the use of FB4D.Firestore
     extremely easy compared to the access via field getter and setter
     methods.
-    ''';
+  ''';
+  {$ELSE}
+  saMessage = 'I hope that this new approach will make the use of FB4D.Firestore' +
+    'extremely easy compared to the access via field getter and setter methods.';
+  {$ENDIF}
 var
   DocPath: TRequestResourceParam;
   Doc, Doc2: TMyFSDoc;
