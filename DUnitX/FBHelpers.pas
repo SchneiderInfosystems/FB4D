@@ -34,29 +34,121 @@ uses
 type
   [TestFixture]
   UT_FBHelpers = class(TObject)
-  private
   published
-    procedure ConvertGUIDtoFBIDtoGUID;
+    procedure CreateAutoIDForFBID;
+    procedure CreateAutoIDForFSID;
+    procedure CreateAutoIDForPUSHID;
+    procedure CreateAutoIDForFSPUSHID;
+    procedure ConvertGUIDtoID64toGUID;
     procedure DecodeTimeFromPushID;
     procedure ConvertTimeStampAndRandomPatternToPushID;
     procedure ConvertTimeStampAndRandomPatternToBase64;
-
+    procedure DecodeID64ToBytes;
+    procedure EncodeBytesToID64;
+    procedure CreateAutoIDandEncodeAndDecodeID64AndBytes;
   end;
 
 implementation
 
 { UT_FBHelpers }
 
-procedure UT_FBHelpers.ConvertGUIDtoFBIDtoGUID;
+procedure UT_FBHelpers.CreateAutoIDForFBID;
 var
-  Guid: TGuid;
-  FBID: string;
+  IDs: TStringList;
+  ID: string;
   c: integer;
 begin
+  IDs := TStringList.Create;
+  try
+    for c := 1 to 1000 do
+    begin
+      ID := TFirebaseHelpers.CreateAutoID(FBID);
+      Assert.AreEqual(22, length(ID), 'Unexpected length of FBID');
+      Assert.AreEqual(-1, IDs.IndexOf(ID), 'Duplicate ID built: ' + ID);
+      IDs.Add(ID);
+    end;
+    Assert.AreEqual(1000, IDs.Count, 'List.Count of IDs wrong');
+  finally
+    IDs.Free;
+  end;
+  Status('Test passed: 1000 unique FBID created');
+end;
+
+procedure UT_FBHelpers.CreateAutoIDForPUSHID;
+var
+  IDs: TStringList;
+  ID: string;
+  c: integer;
+begin
+  IDs := TStringList.Create;
+  try
+    for c := 1 to 1000 do
+    begin
+      ID := TFirebaseHelpers.CreateAutoID(PUSHID);
+      Assert.AreEqual(20, length(ID), 'Unexpected length of PUSHID');
+      Assert.AreEqual(-1, IDs.IndexOf(ID), 'Duplicate ID built: ' + ID);
+      IDs.Add(ID);
+    end;
+    Assert.AreEqual(1000, IDs.Count, 'List.Count of IDs wrong');
+  finally
+    IDs.Free;
+  end;
+  Status('Test passed: 1000 unique PUSHID created');
+end;
+
+procedure UT_FBHelpers.CreateAutoIDForFSID;
+var
+  IDs: TStringList;
+  ID: string;
+  c: integer;
+begin
+  IDs := TStringList.Create;
+  try
+    for c := 1 to 1000 do
+    begin
+      ID := TFirebaseHelpers.CreateAutoID(FSID);
+      Assert.AreEqual(20, length(ID), 'Unexpected length of PUSHID');
+      Assert.AreEqual(-1, IDs.IndexOf(ID), 'Duplicate ID built: ' + ID);
+      IDs.Add(ID);
+    end;
+    Assert.AreEqual(1000, IDs.Count, 'List.Count of IDs wrong');
+  finally
+    IDs.Free;
+  end;
+  Status('Test passed: 1000 unique FSID created');
+end;
+
+procedure UT_FBHelpers.CreateAutoIDForFSPUSHID;
+var
+  IDs: TStringList;
+  ID: string;
+  c: integer;
+begin
+  IDs := TStringList.Create;
+  try
+    for c := 1 to 1000 do
+    begin
+      ID := TFirebaseHelpers.CreateAutoID(FSPUSHID);
+      Assert.AreEqual(24, length(ID), 'Unexpected length of FSPUSHID');
+      Assert.AreEqual(-1, IDs.IndexOf(ID), 'Duplicate ID built: ' + ID);
+      IDs.Add(ID);
+    end;
+    Assert.AreEqual(1000, IDs.Count, 'List.Count of IDs wrong');
+  finally
+    IDs.Free;
+  end;
+  Status('Test passed: 1000 unique FSPUSHID created');
+end;
+
+procedure UT_FBHelpers.ConvertGUIDtoID64toGUID;
+var
+  Guid: TGuid;
+  ID64: string;
+begin
   Guid := TGuid.Empty;
-  FBID := TFirebaseHelpers.ConvertGUIDtoFBID(Guid);
-  Assert.AreEqual(Guid, TFirebaseHelpers.ConvertFBIDtoGUID(FBID));
-  Status('Empty GUID->FBID: ' + FBID);
+  ID64 := TFirebaseHelpers.ConvertGUIDtoID64(Guid);
+  Assert.AreEqual(Guid, TFirebaseHelpers.ConvertID64toGUID(ID64));
+  Status('Empty GUID->ID64: ' + ID64);
 
   Guid.D1 := $FEDCBA98;
   Guid.D2 := $7654;
@@ -70,15 +162,15 @@ begin
   Guid.D4[6] := $FF;
   Guid.D4[7] := $FE;
 
-  FBID := TFirebaseHelpers.ConvertGUIDtoFBID(Guid);
-  Assert.AreEqual(Guid, TFirebaseHelpers.ConvertFBIDtoGUID(FBID));
-  Status('Artifical GUID->FBID: ' + FBID + ' GUID: ' + GUIDToString(Guid));
+  ID64 := TFirebaseHelpers.ConvertGUIDtoID64(Guid);
+  Assert.AreEqual(Guid, TFirebaseHelpers.ConvertID64toGUID(ID64));
+  Status('Artifical GUID->ID64: ' + ID64 + ' GUID: ' + GUIDToString(Guid));
 
-  for c := 0 to 99 do
+  for var c := 0 to 99 do
   begin
     Guid := TGuid.NewGuid;
-    FBID := TFirebaseHelpers.ConvertGUIDtoFBID(Guid);
-    Assert.AreEqual(Guid, TFirebaseHelpers.ConvertFBIDtoGUID(FBID));
+    ID64 := TFirebaseHelpers.ConvertGUIDtoID64(Guid);
+    Assert.AreEqual(Guid, TFirebaseHelpers.ConvertID64toGUID(ID64));
   end;
 end;
 
@@ -158,11 +250,98 @@ begin
   SetLength(r, 16);
   for c := low(r) to High(r) do
     r[c] := 0;
-  ID2 := TFirebaseHelpers.ConvertTimeStampAndRandomPatternToBase64(timestamp, r, false);
+  ID2 := TFirebaseHelpers.ConvertTimeStampAndRandomPatternToID64(timestamp, r, false);
   Assert.AreEqual(ID2.Length, 24, 'Length of ID2 not 24 as expected');
   Status('ID2: ' + ID2);
   timeStamp2 := TFirebaseHelpers.DecodeTimeStampFromBase64(ID2);
   Assert.AreEqual(timeStamp, timeStamp2, 'Timestamp different');
+end;
+
+procedure UT_FBHelpers.DecodeID64ToBytes;
+const
+  TestID = 'AZIAXSK1_UTUQj-44lk-AA-F';
+var
+  TestBytes: TBytes;
+begin
+  TestBytes := TFirebaseHelpers.DecodeID64ToBytes(TestID);
+  Assert.IsTrue(18 = length(TestBytes), 'TestBytes length wrong');
+  Assert.AreEqual(Byte(1), TestBytes[0], 'Byte 0 wrong');
+  Assert.AreEqual(Byte(146), TestBytes[1], 'Byte 1 wrong');
+  Assert.AreEqual(Byte(0), TestBytes[2], 'Byte 2 wrong');
+  Assert.AreEqual(Byte(93), TestBytes[3], 'Byte 3 wrong');
+  Assert.AreEqual(Byte(34), TestBytes[4], 'Byte 4 wrong');
+  Assert.AreEqual(Byte(181), TestBytes[5], 'Byte 5 wrong');
+  Assert.AreEqual(Byte(249), TestBytes[6], 'Byte 6 wrong');
+  Assert.AreEqual(Byte(68), TestBytes[7], 'Byte 7 wrong');
+  Assert.AreEqual(Byte(212), TestBytes[8], 'Byte 8 wrong');
+  Assert.AreEqual(Byte(66), TestBytes[9], 'Byte 9 wrong');
+  Assert.AreEqual(Byte(63), TestBytes[10], 'Byte 10 wrong');
+  Assert.AreEqual(Byte(248), TestBytes[11], 'Byte 11 wrong');
+  Assert.AreEqual(Byte(226), TestBytes[12], 'Byte 12 wrong');
+  Assert.AreEqual(Byte(89), TestBytes[13], 'Byte 13 wrong');
+  Assert.AreEqual(Byte(63), TestBytes[14], 'Byte 14 wrong');
+  Assert.AreEqual(Byte(0), TestBytes[15], 'Byte 15 wrong');
+  Assert.AreEqual(Byte(15), TestBytes[16], 'Byte 16 wrong');
+  Assert.AreEqual(Byte(197), TestBytes[17], 'Byte 17 wrong');
+  Status('Test EncodeBytesToID64 for ' + TestID + ' passed');
+end;
+
+procedure UT_FBHelpers.EncodeBytesToID64;
+const
+  TestID = 'AZIAXSK1_UTUQj-44lk-AA-F';
+var
+  TestBytes: TBytes;
+  ID64: string;
+begin
+  SetLength(TestBytes, 18);
+  TestBytes[0] := 1;
+  TestBytes[1] := 146;
+  TestBytes[2] := 0;
+  TestBytes[3] := 93;
+  TestBytes[4] := 34;
+  TestBytes[5] := 181;
+  TestBytes[6] := 249;
+  TestBytes[7] := 68;
+  TestBytes[8] := 212;
+  TestBytes[9] := 66;
+  TestBytes[10] := 63;
+  TestBytes[11] := 248;
+  TestBytes[12] := 226;
+  TestBytes[13] := 89;
+  TestBytes[14] := 63;
+  TestBytes[15] := 0;
+  TestBytes[16] := 15;
+  TestBytes[17] := 197;
+  ID64 := TFirebaseHelpers.EncodeBytesToID64(TestBytes);
+  Assert.AreEqual(ID64, TestID, 'Wrong result of EncodeBytesToID64');
+  Status('Test EncodeBytesToID64 for ' + TestID + '  passed');
+end;
+
+procedure UT_FBHelpers.CreateAutoIDandEncodeAndDecodeID64AndBytes;
+var
+  ID64, IDCompare: string;
+  TestBytes: TBytes;
+begin
+  ID64 := TFirebaseHelpers.CreateAutoID(FBID);
+  Assert.AreEqual(22, length(ID64), 'Length of CreateAutoID(FBID)');
+  TestBytes := TFirebaseHelpers.DecodeID64ToBytes(ID64);
+  IDCompare := TFirebaseHelpers.EncodeBytesToID64(TestBytes);
+  Assert.AreEqual(ID64, IDCompare, 'Wrong EncodeBytesToID64(DecodeID64ToBytes(ID))=ID');
+  Status('CreateAutoID(FBID)="' + ID64 + '" and DecodeID64ToBytes(EncodeBytesToID64(ID))=ID test passed');
+
+  ID64 := TFirebaseHelpers.CreateAutoID(FSID);
+  Assert.AreEqual(20, length(ID64), 'Length of CreateAutoID(FSID)');
+  TestBytes := TFirebaseHelpers.DecodeID64ToBytes(ID64);
+  IDCompare := TFirebaseHelpers.EncodeBytesToID64(TestBytes);
+  Assert.AreEqual(ID64, IDCompare, 'Wrong EncodeBytesToID64(DecodeID64ToBytes(ID))=ID');
+  Status('CreateAutoID(FSID)="' + ID64 + '" and DecodeID64ToBytes(EncodeBytesToID64(ID))=ID test passed');
+
+  ID64 := TFirebaseHelpers.CreateAutoID(FSPUSHID);
+  Assert.AreEqual(24, length(ID64), 'Length of CreateAutoID(FSID)');
+  TestBytes := TFirebaseHelpers.DecodeID64ToBytes(ID64);
+  IDCompare := TFirebaseHelpers.EncodeBytesToID64(TestBytes);
+  Assert.AreEqual(ID64, IDCompare, 'Wrong EncodeBytesToID64(DecodeID64ToBytes(ID))=ID');
+  Status('CreateAutoID(FSPUSHID)="' + ID64 + '" and DecodeID64ToBytes(EncodeBytesToID64(ID))=ID test passed');
 end;
 
 initialization

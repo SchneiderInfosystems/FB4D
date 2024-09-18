@@ -40,6 +40,8 @@ type
   TOnSimpleDownloadSuccess = procedure(const DownloadURL: string) of object;
   TOnLog = procedure(const Text: string) of object;
 
+  EID64 = class(Exception);
+
   TFirebaseHelpers = class
     class var OnLog: TOnLog;
     // Time conversion functions
@@ -67,23 +69,25 @@ type
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
     class function FirestorePath(const Path: string): TRequestResourceParam;
       deprecated 'Use TFirestorePath.ConvertToDocPath instead';
-    // FBID is based on charset of cBase64: Helpers and converter to GUID
-    // PUSHID is based on charset of cPushID64: Supports chronological sorting
-    type TIDKind = (FBID {random 22 Base64 chars},
-                    PUSHID {timestamp and random: total 20 chars of cPushID64},
-                    FSID {random 20 Base64 chars},
-                    FSPUSHID {timestamp and random: total 24 Base64 chars});
+    // ID64 is based on charset cID64 (A..z,0..9,_-): Helpers and converter to GUID
+    // PUSHID is based on same charset cPushID64 but supports chronological sorting
+    type TIDKind = (FBID {random 22 ID64 chars},
+                    PUSHID {timestamp and random: total 20 chars of PushID64},
+                    FSID {random 20 ID64 chars},
+                    FSPUSHID {timestamp and random: total 24 ID64 chars});
     class function CreateAutoID(IDKind: TIDKind = FBID): string;
-    class function ConvertGUIDtoFBID(Guid: TGuid): string;
-    class function ConvertFBIDtoGUID(const FBID: string): TGuid;
+    class function ConvertGUIDtoID64(Guid: TGuid): string;
+    class function ConvertID64toGUID(const ID: string): TGuid;
     class function ConvertTimeStampAndRandomPatternToPUSHID(timestamp: TDateTime;
       Random: TBytes; TimeIsUTC: boolean = false): string;
     class function DecodeTimeStampFromPUSHID(const PUSHID: string;
       ConvertToLocalTime: boolean = true): TDateTime;
-    class function ConvertTimeStampAndRandomPatternToBase64(timestamp: TDateTime;
+    class function ConvertTimeStampAndRandomPatternToID64(timestamp: TDateTime;
       Random: TBytes; TimeIsUTC: boolean = false): string;
     class function DecodeTimeStampFromBase64(const FSPUSHID: string;
       ConvertToLocalTime: boolean = true): TDateTime;
+    class function DecodeID64ToBytes(const ID64: string): TBytes;
+    class function EncodeBytesToID64(Bytes: TBytes): string;
 
     // File helpers
     class procedure SimpleDownload(const DownloadUrl: string; Stream: TStream;
@@ -109,13 +113,16 @@ type
     // ML helpers
     class function GetLanguageInEnglishFromCode(const Code: string): string;
   private const
-    cBase64 =
+    cID64 =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
-    // The last two chars '_' and '-' are not real Base64 because '+' and '/'
-    // causes troubles in IDs
+    // Base64 with exception of the last two chars '_' and '-' are not real Base64
+    // because '+' and '/' causes troubles in IDs
     cPushID64 =
       '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
     // This notification is used in the Realtime DB for Post and Push operation
+    class function GetID64Char(b: Byte): char;
+    class function GetPushID(ch: Char): Integer; inline;
+    class function GetID64(ch: Char): Integer; inline;
   end;
 
   TFirestorePath = class
@@ -591,102 +598,93 @@ end;
 
 class function TFirebaseHelpers.CreateAutoID(IDKind: TIDKind = FBID): string;
 
-  function ShortenIDTo20Chars(const ID: string): string;
+  function ShortenID64To20Chars(const ID: string): string;
   begin
-    result := ReplaceStr(ID, '_', '');
-    result := ReplaceStr(ID, '-', '');
+    result := ID;
     if result.Length > 20 then
       result := result.Substring(0, 20);
-    while result.Length < 20 do
-      result := result + cBase64[Random(62)];
   end;
 
 begin
   // use OS to generate a random number
   case IDKind of
     FBID:
-      result := ConvertGUIDtoFBID(TGuid.NewGuid);
+      result := ConvertGUIDtoID64(TGuid.NewGuid);
     FSID:
-      result := ShortenIDTo20Chars(ConvertGUIDtoFBID(TGuid.NewGuid));
+      result := ShortenID64To20Chars(ConvertGUIDtoID64(TGuid.NewGuid));
     PUSHID:
       result := ConvertTimeStampAndRandomPatternToPUSHID(now,
         copy(THashMD5.GetHashBytes(GuidToString(TGUID.NewGuid)), 1, 12));
     FSPUSHID:
-      result := ConvertTimeStampAndRandomPatternToBase64(now,
+      result := ConvertTimeStampAndRandomPatternToID64(now,
         copy(THashSHA1.GetHashBytes(GuidToString(TGUID.NewGuid)), 1, 16));
   end;
 end;
 
-class function TFirebaseHelpers.ConvertGUIDtoFBID(Guid: TGuid): string;
-
-  function GetBase64(b: Byte): char;
-  begin
-    result := cBase64[low(cBase64) + b and $3F];
-  end;
-
+class function TFirebaseHelpers.ConvertGUIDtoID64(Guid: TGuid): string;
 var
   D1: cardinal;
   D2, D3: Word;
 begin
   SetLength(result, 22);
   D1 := Guid.D1;
-  result[1] := GetBase64(D1 and $FF);
+  result[1] := GetID64Char(D1 and $FF);
   D1 := D1 shr 6;
-  result[2] := GetBase64(D1 and $FF);
+  result[2] := GetID64Char(D1 and $FF);
   D1 := D1 shr 6;
-  result[3] := GetBase64(D1 and $FF);
+  result[3] := GetID64Char(D1 and $FF);
   D1 := D1 shr 6;
-  result[4] := GetBase64(D1 and $FF);
+  result[4] := GetID64Char(D1 and $FF);
   D1 := D1 shr 6;
-  result[5] := GetBase64(D1 and $FF);
+  result[5] := GetID64Char(D1 and $FF);
   D2 := Guid.D2;
-  result[6] := GetBase64(D2 and $FF);
+  result[6] := GetID64Char(D2 and $FF);
   D2 := D2 shr 6;
-  result[7] := GetBase64(D2 and $FF);
+  result[7] := GetID64Char(D2 and $FF);
   D2 := D2 shr 6;
-  result[8] := GetBase64(D2 and $F + (D1 and $C0) shr 2);
+  result[8] := GetID64Char(D2 and $F + (D1 and $C0) shr 2);
   D3 := Guid.D3;
-  result[9] := GetBase64(D3 and $FF);
+  result[9] := GetID64Char(D3 and $FF);
   D3 := D3 shr 6;
-  result[10] := GetBase64(D3 and $FF);
+  result[10] := GetID64Char(D3 and $FF);
   D3 := D3 shr 6;
-  result[11] := GetBase64(D3 and $F + (Guid.D4[0] and $C0) shr 2);
-  result[12] := GetBase64(Guid.D4[0]);
-  result[13] := GetBase64(Guid.D4[1]);
-  result[14] := GetBase64(Guid.D4[2]);
-  result[15] := GetBase64(Guid.D4[3]);
-  result[16] := GetBase64(Guid.D4[4]);
-  result[17] := GetBase64(Guid.D4[5]);
-  result[18] := GetBase64(Guid.D4[6]);
-  result[19] := GetBase64(Guid.D4[7]);
-  result[20] := GetBase64((Guid.D4[1] and $C0) shr 6 +
+  result[11] := GetID64Char(D3 and $F + (Guid.D4[0] and $C0) shr 2);
+  result[12] := GetID64Char(Guid.D4[0]);
+  result[13] := GetID64Char(Guid.D4[1]);
+  result[14] := GetID64Char(Guid.D4[2]);
+  result[15] := GetID64Char(Guid.D4[3]);
+  result[16] := GetID64Char(Guid.D4[4]);
+  result[17] := GetID64Char(Guid.D4[5]);
+  result[18] := GetID64Char(Guid.D4[6]);
+  result[19] := GetID64Char(Guid.D4[7]);
+  result[20] := GetID64Char((Guid.D4[1] and $C0) shr 6 +
     (Guid.D4[2] and $C0) shr 4 + (Guid.D4[3] and $C0) shr 2);
-  result[21] := GetBase64((Guid.D4[4] and $C0) shr 6 +
+  result[21] := GetID64Char((Guid.D4[4] and $C0) shr 6 +
     (Guid.D4[5] and $C0) shr 4 + (Guid.D4[6] and $C0) shr 2);
-  result[22] := GetBase64((Guid.D4[7] and $C0) shr 6);
+  result[22] := GetID64Char((Guid.D4[7] and $C0) shr 6);
 end;
 
-class function TFirebaseHelpers.ConvertFBIDtoGUID(const FBID: string): TGuid;
+class function TFirebaseHelpers.ConvertID64toGUID(const ID: string): TGuid;
 var
   c: integer;
-  Base64: array[1..22] of byte;
+  ID64: array[1..22] of byte;
 begin
-  for c := low(Base64) to high(Base64) do
-    Base64[c] := 0; // Zero for ID that are shorter than 22
-  for c := 1 to max(length(FBID), high(Base64)) do
-    Base64[c] := pos(FBID[c], cBase64) - 1;
-  result.D1 := Base64[1] + Base64[2] shl 6 + Base64[3] shl 12 +
-    Base64[4] shl 18 + Base64[5] shl 24 + (Base64[8] and $30) shl 26;
-  result.D2 := Base64[6] + Base64[7] shl 6 + (Base64[8] and $F) shl 12;
-  result.D3 := Base64[9] + Base64[10] shl 6 + (Base64[11] and $F) shl 12;
-  result.D4[0] := Base64[12] + (Base64[11] and $30) shl 2;
-  result.D4[1] := Base64[13] + (Base64[20] and $03) shl 6;
-  result.D4[2] := Base64[14] + (Base64[20] and $0C) shl 4;
-  result.D4[3] := Base64[15] + (Base64[20] and $30) shl 2;
-  result.D4[4] := Base64[16] + (Base64[21] and $03) shl 6;
-  result.D4[5] := Base64[17] + (Base64[21] and $0C) shl 4;
-  result.D4[6] := Base64[18] + (Base64[21] and $30) shl 2;
-  result.D4[7] := Base64[19] + (Base64[22] and $03) shl 6;
+  for c := low(ID64) to high(ID64) do
+    ID64[c] := 0; // Zero for ID that are shorter than 22
+  for c := 1 to max(length(ID), high(ID64)) do
+    ID64[c] := GetID64(ID[c]);
+  result.D1 := ID64[1] + ID64[2] shl 6 + ID64[3] shl 12 +
+    ID64[4] shl 18 + ID64[5] shl 24 + (ID64[8] and $30) shl 26;
+  result.D2 := ID64[6] + ID64[7] shl 6 + (ID64[8] and $F) shl 12;
+  result.D3 := ID64[9] + ID64[10] shl 6 + (ID64[11] and $F) shl 12;
+  result.D4[0] := ID64[12] + (ID64[11] and $30) shl 2;
+  result.D4[1] := ID64[13] + (ID64[20] and $03) shl 6;
+  result.D4[2] := ID64[14] + (ID64[20] and $0C) shl 4;
+  result.D4[3] := ID64[15] + (ID64[20] and $30) shl 2;
+  result.D4[4] := ID64[16] + (ID64[21] and $03) shl 6;
+  result.D4[5] := ID64[17] + (ID64[21] and $0C) shl 4;
+  result.D4[6] := ID64[18] + (ID64[21] and $30) shl 2;
+  result.D4[7] := ID64[19] + (ID64[22] and $03) shl 6;
 end;
 
 class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToPUSHID(
@@ -708,6 +706,29 @@ begin
     result := result + cPushID64[Random[c] and $3F + low(cPushID64)];
 end;
 
+class function TFirebaseHelpers.GetPushID(ch: Char): Integer;
+begin
+  result := pos(ch, cPushID64);
+  if result < 0 then
+    raise EID64.Create('Invalid PushID character: ' + ch);
+  if low(cPushID64) > 0 then
+    dec(result, low(cPushID64));
+end;
+
+class function TFirebaseHelpers.GetID64(ch: Char): Integer;
+begin
+  result := pos(ch, cID64);
+  if result < 0 then
+    raise EID64.Create('Invalid ID64 character: ' + ch);
+  if low(cID64) > 0 then
+    dec(result, low(cID64));
+end;
+
+class function TFirebaseHelpers.GetID64Char(b: Byte): char;
+begin
+  result := cID64[low(cID64) + b and $3F];
+end;
+
 class function TFirebaseHelpers.DecodeTimeStampFromPUSHID(
   const PUSHID: string; ConvertToLocalTime: boolean): TDateTime;
 var
@@ -717,14 +738,14 @@ begin
   Assert(length(PUSHID) = 20, 'Invalid PUSHID length');
   tsi := 0;
   for c := low(PUSHID) to low(PUSHID) + 7 do
-    tsi := tsi shl 6 + pos(PUSHID[c], cPushID64) - low(cPushID64);
+    tsi := tsi shl 6 + GetPushID(PUSHID[c]);
   result := UnixToDateTime(tsi div 1000);
   if ConvertToLocalTime then
     result := TTimeZone.Local.ToLocalTime(result);
   result := result + (tsi mod 1000) / 24 / 3600 / 1000;
 end;
 
-class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToBase64(
+class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToID64(
   timestamp: TDateTime; Random: TBytes; TimeIsUTC: boolean): string;
 var
   tsi: int64;
@@ -736,11 +757,11 @@ begin
   result := '';
   for c := 1 to 8 do
   begin
-    result := cBase64[(tsi mod 64) + low(cBase64)] + result;
+    result := cID64[(tsi mod 64) + low(cID64)] + result;
     tsi := tsi shr 6;
   end;
   for c := 0 to length(Random) - 1 do
-    result := result + cBase64[Random[c] and $3F + low(cBase64)];
+    result := result + cID64[Random[c] and $3F + low(cID64)];
 end;
 
 class function TFirebaseHelpers.DecodeTimeStampFromBase64(const FSPUSHID: string;
@@ -752,11 +773,68 @@ begin
   Assert(length(FSPUSHID) = 24, 'Invalid PUSHID length');
   tsi := 0;
   for c := low(FSPUSHID) to low(FSPUSHID) + 7 do
-    tsi := tsi shl 6 + pos(FSPUSHID[c], cBase64) - low(cBase64);
+    tsi := tsi shl 6 + GetID64(FSPUSHID[c]);
   result := UnixToDateTime(tsi div 1000);
   if ConvertToLocalTime then
     result := TTimeZone.Local.ToLocalTime(result);
   result := result + (tsi mod 1000) / 24 / 3600 / 1000;
+end;
+
+class function TFirebaseHelpers.DecodeID64ToBytes(const ID64: string): TBytes;
+var
+  b: Byte;
+  c, d: integer;
+begin
+  SetLength(result, ceil(length(ID64) * 3 / 4)); // ceil rounds up
+  d := 0;
+  for c := Low(ID64) to High(ID64) do
+  begin
+    b := GetID64(ID64[c]);
+    case (c - low(ID64)) mod 4 of
+      0: begin
+           result[d] := b shl 2;
+         end;
+      1: begin
+           result[d] := result[d] + (b shr 4);
+           inc(d);
+           result[d] := (b and $F) shl 4;
+         end;
+      2: begin
+           result[d] := result[d] + (b shr 2);
+           inc(d);
+           result[d] := (b and $3) shl 6;
+         end;
+      3: begin
+           result[d] := result[d] + b;
+           inc(d);
+         end;
+    end;
+  end;
+end;
+
+class function TFirebaseHelpers.EncodeBytesToID64(Bytes: TBytes): string;
+var
+  c, rest: integer;
+begin
+  result := '';
+  rest := 0;
+  for c := 0 to length(Bytes) - 1 do
+    case c mod 3 of
+      0: begin
+           result := result + GetID64Char(Bytes[c] shr 2);
+           rest := (Bytes[c] and $3) shl 4;
+         end;
+      1: begin
+           result := result + GetID64Char(rest + Bytes[c] shr 4);
+           rest := (Bytes[c] and $F) shl 2;
+         end;
+      2: begin
+           result := result + GetID64Char(rest + Bytes[c] shr 6) + GetID64Char(Bytes[c] and $3F);
+           rest := 0;
+         end;
+    end;
+  if rest > 0 then
+    result := result + GetID64Char(rest);
 end;
 
 {$IF Defined(FMX) OR Defined(FGX)}
