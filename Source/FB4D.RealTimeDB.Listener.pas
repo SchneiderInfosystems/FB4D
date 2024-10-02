@@ -71,7 +71,9 @@ type
     procedure OnRecData(const Sender: TObject; ContentLength,
       ReadCount: Int64; var Abort: Boolean);
     procedure OnEndListenerGet(const ASyncResult: IAsyncResult);
+    {$IFNDEF CONSOLE}
     procedure OnEndThread(Sender: TObject);
+    {$ENDIF}
   protected
     procedure Execute; override;
   public
@@ -365,6 +367,7 @@ begin
   end;
 end;
 
+{$IFNDEF CONSOLE}
 procedure TRTDBListenerThread.OnEndThread(Sender: TObject);
 begin
   if not TFirebaseHelpers.AppIsTerminated then
@@ -383,6 +386,7 @@ begin
         end)
   end;
 end;
+{$ENDIF}
 
 procedure TRTDBListenerThread.OnRecData(const Sender: TObject; ContentLength,
   ReadCount: Int64; var Abort: Boolean);

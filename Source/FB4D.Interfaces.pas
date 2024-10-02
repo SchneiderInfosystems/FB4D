@@ -536,14 +536,12 @@ type
     procedure InsertOrUpdateDocument(DocumentPath: TRequestResourceParam;
       Document: IFirestoreDocument; QueryParams: TQueryParams;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError); overload;
-      deprecated 'Use method without DocumentPath and overtake full path in document';
     procedure InsertOrUpdateDocument(Document: IFirestoreDocument;
       QueryParams: TQueryParams; OnDocument: TOnDocument;
       OnRequestError: TOnRequestError); overload;
     function InsertOrUpdateDocumentSynchronous(
       DocumentPath: TRequestResourceParam; Document: IFirestoreDocument;
       QueryParams: TQueryParams = nil): IFirestoreDocument; overload;
-      deprecated 'Use method without DocumentPath and overtake full path in document';
     function InsertOrUpdateDocumentSynchronous(Document: IFirestoreDocument;
       QueryParams: TQueryParams = nil): IFirestoreDocument; overload;
 
@@ -551,14 +549,12 @@ type
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       OnDocument: TOnDocument; OnRequestError: TOnRequestError;
       Mask: TStringDynArray = []); overload;
-      deprecated 'Use method without DocumentPath and overtake full path in document';
     procedure PatchDocument(DocumentPart: IFirestoreDocument;
       UpdateMask: TStringDynArray; OnDocument: TOnDocument;
       OnRequestError: TOnRequestError; Mask: TStringDynArray = []); overload;
     function PatchDocumentSynchronous(DocumentPath: TRequestResourceParam;
       DocumentPart: IFirestoreDocument; UpdateMask: TStringDynArray;
       Mask: TStringDynArray = []): IFirestoreDocument; overload;
-      deprecated 'Use method without DocumentPath and overtake full path in document';
     function PatchDocumentSynchronous(DocumentPart: IFirestoreDocument;
       UpdateMask: TStringDynArray;
       Mask: TStringDynArray = []): IFirestoreDocument; overload;
@@ -596,6 +592,7 @@ type
       deprecated 'Use new version with TOnStopListenEvent';
     procedure StopListener(RemoveAllSubscription: boolean = true);
     function GetTimeStampOfLastAccess: TDateTime; // local time
+    function CheckListenerHasUnprocessedDocuments: boolean;
 
     // Transaction
     procedure BeginReadTransaction(
@@ -611,6 +608,8 @@ type
 
     property ProjectID: string read GetProjectID;
     property DatabaseID: string read GetDatabaseID;
+    property ListenerHasUnprocessedDocuments: boolean
+      read CheckListenerHasUnprocessedDocuments;
   end;
 
 {$IFDEF TOKENJWT}

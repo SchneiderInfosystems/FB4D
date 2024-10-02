@@ -66,6 +66,7 @@ type
     destructor Destroy; override;
     function GetProjectID: string;
     function GetDatabaseID: string;
+    function CheckListenerHasUnprocessedDocuments: boolean;
     procedure RunQuery(StructuredQuery: IStructuredQuery;
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
       QueryParams: TQueryParams = nil); overload;
@@ -152,6 +153,8 @@ type
       OnRequestError: TOnRequestError);
     property ProjectID: string read GetProjectID;
     property DatabaseID: string read GetDatabaseID;
+    property ListenerHasUnprocessedDocuments: boolean
+      read CheckListenerHasUnprocessedDocuments;
   end;
 
   TStructuredQuery = class(TInterfacedObject, IStructuredQuery)
@@ -502,6 +505,14 @@ end;
 function TFirestoreDatabase.GetDatabaseID: string;
 begin
   result := fDatabaseID;
+end;
+
+function TFirestoreDatabase.CheckListenerHasUnprocessedDocuments: boolean;
+begin
+  if fListener.IsRunning and fListener.PendingDocumentChanges then
+    result := true
+  else
+    result := false;
 end;
 
 function TFirestoreDatabase.GetProjectID: string;
