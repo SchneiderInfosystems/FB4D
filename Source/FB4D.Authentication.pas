@@ -897,7 +897,7 @@ begin
       result := pvrOpNotAllowed
     else if SameText(Response.ErrorMsg,
       TFirebaseResponse.ExceptExpiredOobCode) then
-      result := pvrpvrExpired
+      result := pvrExpired
     else if SameText(Response.ErrorMsg,
       TFirebaseResponse.ExceptInvalidOobCode) then
       result := pvrInvalid
@@ -921,7 +921,7 @@ begin
     else if SameText(Response.ErrorMsg, TFirebaseResponse.ExceptOpNotAllowed) then
       Response.OnSuccess.OnPasswordVerification(RequestID, pvrOpNotAllowed)
     else if SameText(Response.ErrorMsg, TFirebaseResponse.ExceptExpiredOobCode) then
-      Response.OnSuccess.OnPasswordVerification(RequestID, pvrpvrExpired)
+      Response.OnSuccess.OnPasswordVerification(RequestID, pvrExpired)
     else if SameText(Response.ErrorMsg, TFirebaseResponse.ExceptInvalidOobCode) then
       Response.OnSuccess.OnPasswordVerification(RequestID, pvrInvalid)
     else if assigned(Response.OnError) then

@@ -68,11 +68,14 @@ const
   cRegionASSoEa3 = 'asia-southeast3';         // Seoul
 
 type
+  // Forward declarations
   IFirebaseUser = interface;
   IFirebaseResponse = interface;
   IFirestoreDocument = interface;
   IFirestoreDocuments = interface;
   IStorageObject = interface;
+  IVisionMLResponse = interface;
+  IGeminiAIResponse = interface;
 
   /// <summary>
   /// Firebase returns timestamps in UTC time zone (tzUTC). FB4D offers the
@@ -108,57 +111,197 @@ type
   TOnFirebaseResp = procedure(const RequestID: string;
     Response: IFirebaseResponse) of object;
 
+  /// <summary>
+  /// Represents a list of IFirebaseUser objects.
+  /// </summary>
   TFirebaseUserList = TList<IFirebaseUser>;
-  TPasswordVerificationResult = (pvrOpNotAllowed, pvrPassed, pvrpvrExpired,
-    pvrInvalid);
+
+  /// <summary>
+  /// Enumerates the possible results of a password verification operation.
+  /// </summary>
+  TPasswordVerificationResult = (
+    pvrOpNotAllowed, ///< The operation is not allowed.
+    pvrPassed, ///< The password verification was successful.
+    pvrExpired, ///< The password has expired.
+    pvrInvalid ///< The provided password is invalid.
+  );
+
+  /// <summary>
+  /// Event handler type for user-related responses.
+  /// This event is triggered when a user operation completes.
+  /// </summary>
+  /// <param name="Info">Additional information about the response.</param>
+  /// <param name="User">The IFirebaseUser object representing the user.</param>
   TOnUserResponse = procedure(const Info: string; User: IFirebaseUser) of object;
-  TOnFetchProviders = procedure(const RequestID: string; IsRegistered: boolean;
-    Providers: TStrings) of object;
-  TOnPasswordVerification = procedure(const Info: string;
-    Result: TPasswordVerificationResult) of object;
+
+  /// <summary>
+  /// Event handler type for fetching authentication providers.
+  /// This event is triggered when the list of available authentication providers is retrieved.
+  /// </summary>
+  /// <param name="RequestID">The unique identifier of the request.</param>
+  /// <param name="IsRegistered">Indicates whether the user is already registered.</param>
+  /// <param name="Providers">A TStrings object containing the list of available providers.</param>
+  TOnFetchProviders = procedure(const RequestID: string; IsRegistered: boolean; Providers: TStrings) of object;
+
+  /// <summary>
+  /// Event handler type for password verification results.
+  /// This event is triggered when a password verification operation completes.
+  /// </summary>
+  /// <param name="Info">Additional information about the response.</param>
+  /// <param name="Result">The result of the password verification operation.</param>
+  TOnPasswordVerification = procedure(const Info: string; Result: TPasswordVerificationResult) of object;
+
+  /// <summary>
+  /// Event handler type for retrieving user data.
+  /// This event is triggered when the user data is successfully retrieved.
+  /// </summary>
+  /// <param name="FirebaseUserList">A TFirebaseUserList containing the retrieved user data.</param>
   TOnGetUserData = procedure(FirebaseUserList: TFirebaseUserList) of object;
+
+  /// <summary>
+  /// Event handler type for token refresh operations.
+  /// This event is triggered when a token refresh operation completes.
+  /// </summary>
+  /// <param name="TokenRefreshed">Indicates whether the token was successfully refreshed.</param>
   TOnTokenRefresh = procedure(TokenRefreshed: boolean) of object;
 
-  TOnRTDBValue = procedure(ResourceParams: TRequestResourceParam;
-    Val: TJSONValue) of object;
-  TOnRTDBDelete = procedure(Params: TRequestResourceParam; Success: boolean)
-    of object;
-  TOnRTDBServerVariable = procedure(const ServerVar: string; Val: TJSONValue)
-    of object;
+  /// <summary>
+  /// Event handler type for Realtime Database value changes.
+  /// This event is triggered when the value of a specific resource in the database changes.
+  /// </summary>
+  /// <param name="ResourceParams">Parameters of the resource whose value changed.</param>
+  /// <param name="Val">The new JSON value of the resource.</param>
+  TOnRTDBValue = procedure(ResourceParams: TRequestResourceParam; Val: TJSONValue) of object;
 
-  TOnDocument = procedure(const Info: string;
-    Document: IFirestoreDocument) of object;
-  TOnDocuments = procedure(const Info: string;
-    Documents: IFirestoreDocuments) of object;
+  /// <summary>
+  /// Event handler type for Realtime Database delete operations.
+  /// This event is triggered when a delete operation on a resource in the database completes.
+  /// </summary>
+  /// <param name="Params">Parameters of the resource that was deleted.</param>
+  /// <param name="Success">Indicates whether the delete operation was successful.</param>
+  TOnRTDBDelete = procedure(Params: TRequestResourceParam; Success: boolean) of object;
+
+  /// <summary>
+  /// Event handler type for Realtime Database server variable changes.
+  /// This event is triggered when the value of a server variable in the database changes.
+  /// </summary>
+  /// <param name="ServerVar">The name of the server variable that changed.</param>
+  /// <param name="Val">The new JSON value of the server variable.</param>
+  TOnRTDBServerVariable = procedure(const ServerVar: string; Val: TJSONValue) of object;
+
+  /// <summary>
+  /// Event handler type for receiving a single Firestore document.
+  /// </summary>
+  /// <param name="Info">Additional information about the document retrieval.</param>
+  /// <param name="Document">The retrieved Firestore document.</param>
+  TOnDocument = procedure(const Info: string; Document: IFirestoreDocument) of object;
+
+  /// <summary>
+  /// Event handler type for receiving multiple Firestore documents.
+  /// </summary>
+  /// <param name="Info">Additional information about the document retrieval.</param>
+  /// <param name="Documents">The retrieved Firestore documents.</param>
+  TOnDocuments = procedure(const Info: string; Documents: IFirestoreDocuments) of object;
+
+  /// <summary>
+  /// Event handler type for receiving a changed Firestore document.
+  /// </summary>
+  /// <param name="ChangedDocument">The changed Firestore document.</param>
   TOnChangedDocument = procedure(ChangedDocument: IFirestoreDocument) of object;
-  TOnDeletedDocument = procedure(const DeleteDocumentPath: string;
-    TimeStamp: TDateTime) of object;
-  TFirestoreReadTransaction = string; // A base64 encoded ID
-  TOnBeginReadTransaction = procedure(Transaction: TFirestoreReadTransaction)
-    of object;
+
+  /// <summary>
+  /// Event handler type for receiving a deleted Firestore document.
+  /// </summary>
+  /// <param name="DeleteDocumentPath">The path of the deleted document.</param>
+  /// <param name="TimeStamp">The timestamp of the deletion.</param>
+  TOnDeletedDocument = procedure(const DeleteDocumentPath: string; TimeStamp: TDateTime) of object;
+
+  /// <summary>
+  /// Type representing a Firestore read transaction ID, encoded in Base64.
+  /// </summary>
+  TFirestoreReadTransaction = string;
+
+  /// <summary>
+  /// Event handler type for the beginning of a Firestore read transaction.
+  /// </summary>
+  /// <param name="Transaction">The ID of the started read transaction.</param>
+  TOnBeginReadTransaction = procedure(Transaction: TFirestoreReadTransaction) of object;
+
+  /// <summary>
+  /// Interface representing a committed Firestore write transaction.
+  /// </summary>
   IFirestoreCommitTransaction = interface
+    /// <summary>
+    /// Returns the commit time of the transaction in the specified time zone.
+    /// </summary>
+    /// <param name="TimeZone">Either the local time zone or UTC for the commit time (default is UTC).</param>
+    /// <returns>The commit time of the transaction.</returns>
     function CommitTime(TimeZone: TTimeZone = tzUTC): TDateTime;
+
+    /// <summary>
+    /// Returns the number of updates performed in the transaction.
+    /// </summary>
+    /// <returns>The number of updates in the transaction.</returns>
     function NoUpdates: cardinal;
+
+    /// <summary>
+    /// Returns the update time of the specified update within the transaction.
+    /// </summary>
+    /// <param name="Index">The index of the update (zero-based).</param>
+    /// <param name="TimeZone">Either the local time zone or UTC for the update time (default is UTC).</param>
+    /// <returns>The update time of the specified update.</returns>
     function UpdateTime(Index: cardinal; TimeZone: TTimeZone = tzUTC): TDateTime;
   end;
-  TOnCommitWriteTransaction = procedure(Transaction: IFirestoreCommitTransaction)
-    of object;
 
+  /// <summary>
+  /// Event handler type for the successful commit of a Firestore write transaction.
+  /// </summary>
+  /// <param name="Transaction">Information about the committed transaction.</param>
+  TOnCommitWriteTransaction = procedure(Transaction: IFirestoreCommitTransaction) of object;
+
+  /// <summary>
+  /// Type representing the name of an object in the Cloud Storage.
+  /// </summary>
   TObjectName = string;
+
+  /// <summary>
+  /// Event handler type for successful storage operations.
+  /// </summary>
+  /// <param name="Obj">The storage object involved in the operation.</param>
   TOnStorage = procedure(Obj: IStorageObject) of object;
-  TOnStorageDeprecated = procedure(const ObjectName: TObjectName;
-    Obj: IStorageObject) of object;
-  TOnStorageError = procedure(const ObjectName: TObjectName;
-    const ErrMsg: string) of object;
+  /// <summary>
+  /// Deprecated event handler type for successful storage operations. Don't use it for new projects anymore.
+  /// Use TOnStorage instead.
+  /// </summary>
+  TOnStorageDeprecated = procedure(const ObjectName: TObjectName; Obj: IStorageObject) of object;
+
+  /// <summary>
+  /// Event handler type for errors during storage operations.
+  /// </summary>
+  /// <param name="ObjectName">The name of the object involved in the error.</param>
+  /// <param name="ErrMsg">The error message.</param>
+  TOnStorageError = procedure(const ObjectName: TObjectName; const ErrMsg: string) of object;
+
+  /// <summary>
+  /// Event handler type for successful deletion of a storage object.
+  /// </summary>
+  /// <param name="ObjectName">The name of the deleted object.</param>
   TOnDeleteStorage = procedure(const ObjectName: TObjectName) of object;
 
-  TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of
-    object;
+  /// <summary>
+  /// Event handler type for successful function execution in Cloud Functions.
+  /// </summary>
+  /// <param name="Info">Additional information about the function execution.</param>
+  /// <param name="ResultObj">The result of the function execution as a JSON object.</param>
+  TOnFunctionSuccess = procedure(const Info: string; ResultObj: TJSONObject) of object;
 
-  IVisionMLResponse = interface;
-
+  /// <summary>
+  /// Event handler signature for receiving annotation results from a Vision ML API call.
+  /// </summary>
+  /// <param name="Res">The IVisionMLResponse object containing the annotation results.</param>
   TOnAnnotate = procedure(Res: IVisionMLResponse) of object;
 
+  {$REGION 'Internaly used OnSuccess Structure'}
   TOnSuccess = record
     type TOnSuccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
       oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
@@ -254,7 +397,9 @@ type
 
   TOnRequestErrorWithOnSuccess = procedure(const RequestID, ErrMsg: string;
     OnSuccess: TOnSuccess) of object;
+  {$ENDREGION}
 
+  {$REGION 'General used Firebase Response'}
   /// <summary>
   /// Interface for handling REST response from all Firebase Services
   /// </summary>
@@ -283,7 +428,9 @@ type
     property OnErrorWithSuccess: TOnRequestErrorWithOnSuccess
       read GetOnErrorWithSuccess;
    end;
+  {$ENDREGION}
 
+  {$REGION 'General used Firebase Request'}
   TQueryParams = TDictionary<string, TStringDynArray>;
   TTokenMode = (tmNoToken, tmBearer, tmAuthParam);
   IFirebaseRequest = interface;
@@ -317,6 +464,7 @@ type
       QueryParams: TQueryParams = nil; TokenMode: TTokenMode = tmBearer):
       IFirebaseResponse; overload;
   end;
+  {$ENDREGION}
 
   {$REGION 'Firebase Realtime DB'}
   IFirebaseEvent = interface(IInterface)
@@ -905,7 +1053,7 @@ type
   end;
   {$ENDREGION}
 
-  {$REGION 'VisionML'}
+  {$REGION 'Vision ML'}
   TVisionMLFeature = (vmlUnspecific, vmlFaceDetection, vmlLandmarkDetection,
     vmlLogoDetection, vmlLabelDetection, vmlTextDetection, vmlDocTextDetection,
     vmlSafeSearchDetection, vmlImageProperties, vmlCropHints, vmlWebDetection,
