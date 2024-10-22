@@ -68,6 +68,12 @@ const
   cRegionASSoEa3 = 'asia-southeast3';         // Seoul
 
 type
+  IFirebaseUser = interface;
+  IFirebaseResponse = interface;
+  IFirestoreDocument = interface;
+  IFirestoreDocuments = interface;
+  IStorageObject = interface;
+
   /// <summary>
   /// Firebase returns timestamps in UTC time zone (tzUTC). FB4D offers the
   /// or convertion into local time by tzLocalTime.
@@ -79,14 +85,26 @@ type
   /// </summary>
   EFirebaseResponse = class(Exception);
 
-  IFirebaseUser = interface;
-  IFirebaseResponse = interface;
-  IFirestoreDocument = interface;
-  IFirestoreDocuments = interface;
-  IStorageObject = interface;
-
+  /// <summary>
+  /// Event handler type for request errors.
+  /// This event is triggered when a Firebase request encounters an error.
+  /// </summary>
+  /// <param name="RequestID">The unique identifier of the request that failed.</param>
+  /// <param name="ErrMsg">The error message describing the reason for failure.</param>
   TOnRequestError = procedure(const RequestID, ErrMsg: string) of object;
+
+  /// <summary>
+  /// Type alias for a dynamic array of strings representing resource parameters for a request.
+  /// Each string in the array represents a segment of the resource path.
+  /// </summary>
   TRequestResourceParam = TStringDynArray;
+
+  /// <summary>
+  /// Event handler type for successful Firebase responses.
+  /// This event is triggered when a Firebase request completes successfully.
+  /// </summary>
+  /// <param name="RequestID">The unique identifier of the successful request.</param>
+  /// <param name="Response">The IFirebaseResponse object containing the response data.</param>
   TOnFirebaseResp = procedure(const RequestID: string;
     Response: IFirebaseResponse) of object;
 
@@ -234,6 +252,9 @@ type
     {$ENDIF}
   end;
 
+  TOnRequestErrorWithOnSuccess = procedure(const RequestID, ErrMsg: string;
+    OnSuccess: TOnSuccess) of object;
+
   /// <summary>
   /// Interface for handling REST response from all Firebase Services
   /// </summary>
@@ -255,9 +276,12 @@ type
     function GetServerTime(TimeZone: TTimeZone): TDateTime;
     function GetOnSuccess: TOnSuccess;
     function GetOnError: TOnRequestError;
+    function GetOnErrorWithSuccess: TOnRequestErrorWithOnSuccess;
     function HeaderValue(const HeaderName: string): string;
     property OnSuccess: TOnSuccess read GetOnSuccess;
     property OnError: TOnRequestError read GetOnError;
+    property OnErrorWithSuccess: TOnRequestErrorWithOnSuccess
+      read GetOnErrorWithSuccess;
    end;
 
   TQueryParams = TDictionary<string, TStringDynArray>;
@@ -270,9 +294,19 @@ type
       OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
       OnSuccess: TOnSuccess); overload;
     procedure SendRequest(ResourceParams: TRequestResourceParam;
+      Method: TRESTRequestMethod; Data: TJSONValue;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
+      OnResponse: TOnFirebaseResp; OnRequestErrorWithOnSuccess: TOnRequestErrorWithOnSuccess;
+      OnSuccess: TOnSuccess); overload;
+    procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
       OnResponse: TOnFirebaseResp; OnRequestError: TOnRequestError;
+      OnSuccess: TOnSuccess); overload;
+    procedure SendRequest(ResourceParams: TRequestResourceParam;
+      Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
+      QueryParams: TQueryParams; TokenMode: TTokenMode;
+      OnResponse: TOnFirebaseResp; OnRequestErrorWithOnSuccess: TOnRequestErrorWithOnSuccess;
       OnSuccess: TOnSuccess); overload;
     function SendRequestSynchronous(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue = nil;
@@ -284,6 +318,7 @@ type
       IFirebaseResponse; overload;
   end;
 
+  {$REGION 'Firebase Realtime DB'}
   IFirebaseEvent = interface(IInterface)
     procedure StopListening(MaxTimeOutInMS: cardinal = 500); overload;
     procedure StopListening(const NodeName: string;
@@ -355,7 +390,9 @@ type
     function GetServerVariablesSynchronous(const ServerVarName: string;
       ResourceParams: TRequestResourceParam): TJSONValue;
   end;
+  {$ENDREGION}
 
+  {$REGION 'Firestore Database'}
   EFirestoreDocument = class(Exception);
   TJSONObjects = array of TJSONObject;
   TFirestoreFieldType = (fftNull, fftBoolean, fftInteger, fftDouble,
@@ -611,6 +648,9 @@ type
     property ListenerHasUnprocessedDocuments: boolean
       read CheckListenerHasUnprocessedDocuments;
   end;
+  {$ENDREGION}
+
+  {$REGION 'Firebase Authentication'}
 
 {$IFDEF TOKENJWT}
   ETokenJWT = class(Exception);
@@ -764,6 +804,8 @@ type
     // Token refresh
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
       OnError: TOnRequestError); overload;
+    procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
+      OnErrorWithOnSuccess: TOnRequestErrorWithOnSuccess); overload;
     procedure RefreshToken(const LastRefreshToken: string;
       OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
     function CheckAndRefreshTokenSynchronous(
@@ -782,7 +824,9 @@ type
     function GetTokenRefreshCount: cardinal;
     function GetLastServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
   end;
+  {$ENDREGION}
 
+  {$REGION 'Cloud Functions'}
   EFirebaseFunctions = class(Exception);
   IFirebaseFunctions = interface(IInterface)
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
@@ -791,7 +835,9 @@ type
     function CallFunctionSynchronous(const FunctionName: string;
       Params: TJSONObject = nil): TJSONObject;
   end;
+  {$ENDREGION}
 
+  {$REGION 'Cloud Storage'}
   TOnDownload = procedure(Obj: IStorageObject) of object;
   TOnDownloadDeprecated = procedure(const ObjectName: TObjectName;
     Obj: IStorageObject) of object;
@@ -857,7 +903,9 @@ type
     function CacheUsageInPercent: extended;
     function IsCacheOverflowed: boolean;
   end;
+  {$ENDREGION}
 
+  {$REGION 'VisionML'}
   TVisionMLFeature = (vmlUnspecific, vmlFaceDetection, vmlLandmarkDetection,
     vmlLogoDetection, vmlLabelDetection, vmlTextDetection, vmlDocTextDetection,
     vmlSafeSearchDetection, vmlImageProperties, vmlCropHints, vmlWebDetection,
@@ -910,6 +958,7 @@ type
       MaxResultsPerFeature: integer = 50;
       Model: TVisionModel = vmStable);
   end;
+  {$ENDREGION}
 
   /// <summary>
   /// The interface IFirebaseConfiguration provides a class factory for

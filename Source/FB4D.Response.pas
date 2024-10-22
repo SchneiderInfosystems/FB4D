@@ -37,6 +37,7 @@ type
     fHttpResp: IHTTPResponse;
     fRestResp: TRESTResponse;
     fOnError: TOnRequestError;
+    fOnErrorWithSuccess: TOnRequestErrorWithOnSuccess;
     fOnSuccess: TOnSuccess;
   public
     const
@@ -50,6 +51,9 @@ type
     constructor Create(HTTPResponse: IHTTPResponse); overload;
     constructor Create(RestResponse: TRESTResponse;
       OnError: TOnRequestError; OnSuccess: TOnSuccess); overload;
+    constructor Create(RestResponse: TRESTResponse;
+      OnErrorWithSuccess: TOnRequestErrorWithOnSuccess;
+      OnSuccess: TOnSuccess); overload;
 
     function ContentAsString: string;
     function GetContentAsJSONObj: TJSONObject;
@@ -67,6 +71,7 @@ type
     function ErrorMsg: string;
     function ErrorMsgOrStatusText: string;
     function GetOnError: TOnRequestError;
+    function GetOnErrorWithSuccess: TOnRequestErrorWithOnSuccess;
     function GetOnSuccess: TOnSuccess;
     function HeaderValue(const HeaderName: string): string;
   end;
@@ -94,6 +99,7 @@ begin
   fHttpResp := HTTPResponse;
   fOnSuccess.Create(nil);
   fOnError := nil;
+  fOnErrorWithSuccess := nil;
 end;
 
 constructor TFirebaseResponse.Create(RestResponse: TRESTResponse;
@@ -104,6 +110,18 @@ begin
   fHttpResp := nil;
   fOnSuccess := OnSuccess;
   fOnError := OnError;
+  fOnErrorWithSuccess := nil;
+end;
+
+constructor TFirebaseResponse.Create(RestResponse: TRESTResponse; OnErrorWithSuccess: TOnRequestErrorWithOnSuccess;
+  OnSuccess: TOnSuccess);
+begin
+  inherited Create;
+  fRestResp := RestResponse;
+  fHttpResp := nil;
+  fOnSuccess := OnSuccess;
+  fOnError := nil;
+  fOnErrorWithSuccess := OnErrorWithSuccess;
 end;
 
 function TFirebaseResponse.StatusCode: integer;
@@ -317,6 +335,11 @@ end;
 function TFirebaseResponse.GetOnError: TOnRequestError;
 begin
   result := fOnError;
+end;
+
+function TFirebaseResponse.GetOnErrorWithSuccess: TOnRequestErrorWithOnSuccess;
+begin
+  result := fOnErrorWithSuccess;
 end;
 
 function TFirebaseResponse.GetOnSuccess: TOnSuccess;

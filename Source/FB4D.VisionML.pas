@@ -109,7 +109,6 @@ uses
 
 const
   VISION_API = 'https://vision.googleapis.com/v1';
-//  VISION_API = 'https://vision.googleapis.com/v1p4beta1';
 
 resourcestring
   rsFunctionCall = 'Function call %s';

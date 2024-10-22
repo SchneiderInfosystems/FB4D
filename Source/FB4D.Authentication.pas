@@ -147,6 +147,8 @@ type
     // Token refresh
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
       OnError: TOnRequestError); overload;
+    procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
+      OnError: TOnRequestErrorWithOnSuccess); overload;
     procedure RefreshToken(const LastRefreshToken: string;
       OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
     function CheckAndRefreshTokenSynchronous(
@@ -1311,6 +1313,32 @@ end;
 
 procedure TFirebaseAuthentication.RefreshToken(OnTokenRefresh: TOnTokenRefresh;
   OnError: TOnRequestError);
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: IFirebaseRequest;
+begin
+  fAuthenticated := false;
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_REFRESH_AUTH_URL, rsRefreshToken);
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('grant_type', 'refresh_token'));
+    Data.AddPair(TJSONPair.Create('refresh_token', fRefreshToken));
+    Params.Add('key', [ApiKey]);
+    Request.SendRequest([], rmPost, Data, Params, tmNoToken,
+      CheckAndRefreshTokenResp, OnError,
+      TOnSuccess.CreateRefreshToken(OnTokenRefresh));
+  finally
+    Params.Free;
+    Data.Free;
+  end;
+  if assigned(fOnTokenRefresh) then
+    fOnTokenRefresh(not fRefreshToken.IsEmpty);
+end;
+
+procedure TFirebaseAuthentication.RefreshToken(OnTokenRefresh: TOnTokenRefresh;
+  OnError: TOnRequestErrorWithOnSuccess);
 var
   Data: TJSONObject;
   Params: TQueryParams;
