@@ -83,8 +83,10 @@ type
     function Prompt(const PromptText: string): IGeminiAIRequest;
     function PromptWithMediaData(const PromptText, MimeType: string;
       MediaStream: TStream): IGeminiAIRequest;
+    {$IF Defined(FMX) OR Defined(FGX)}
     function PromptWithImgData(const PromptText: string;
       ImgStream: TStream): IGeminiAIRequest;
+    {$ENDIF}
     function ModelParameter(Temperature, TopP: double; MaxOutputTokens,
       TopK: cardinal): IGeminiAIRequest;
     function SetStopSequences(StopSequences: TStrings): IGeminiAIRequest;
@@ -458,6 +460,7 @@ begin
   result := self;
 end;
 
+{$IF Defined(FMX) OR Defined(FGX)}
 function TGeminiAIRequest.PromptWithImgData(const PromptText: string;
   ImgStream: TStream): IGeminiAIRequest;
 var
@@ -469,6 +472,7 @@ begin
     raise EGeminiAIRequest.Create('Unknown mime type of image');
   result := PromptWithMediaData(PromptText, MimeType, ImgStream);
 end;
+{$ENDIF}
 
 function TGeminiAIRequest.ModelParameter(Temperature, TopP: double;
   MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;

@@ -40,7 +40,8 @@ uses
   FB4D.Storage in '..\..\Source\FB4D.Storage.pas',
   FB4D.FireStore.Listener in '..\..\Source\FB4D.FireStore.Listener.pas',
   FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas',
-  FB4D.VisionML in '..\..\Source\FB4D.VisionML.pas';
+  FB4D.VisionML in '..\..\Source\FB4D.VisionML.pas',
+  FB4D.GeminiAI in '..\..\source\FB4D.GeminiAI.pas';
 
 {$R *.res}
 

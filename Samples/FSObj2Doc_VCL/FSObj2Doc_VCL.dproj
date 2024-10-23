@@ -124,6 +124,7 @@
         <DCCReference Include="..\..\Source\FB4D.FireStore.Listener.pas"/>
         <DCCReference Include="..\..\Source\FB4D.RealTimeDB.Listener.pas"/>
         <DCCReference Include="..\..\Source\FB4D.VisionML.pas"/>
+        <DCCReference Include="..\..\source\FB4D.GeminiAI.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -152,6 +153,12 @@
             </Delphi.Personality>
             <Deployment Version="5">
                 <DeployFile LocalName="Win32\Debug\FSObj2Doc_VCL.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="Win32\Debug\FSObj2Doc_VCL.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>FSObj2Doc_VCL.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="iOSSimulator">
                         <Operation>1</Operation>

@@ -1397,9 +1397,11 @@ type
     /// </summary>
     function PromptWithMediaData(const PromptText, MimeType: string; MediaStream: TStream): IGeminiAIRequest;
 
+    {$IF Defined(FMX) OR Defined(FGX)}
     /// <summary>
     /// For images the MimeType can be evaluated automatically
     function PromptWithImgData(const PromptText: string; ImgStream: TStream): IGeminiAIRequest;
+    {$ENDIF}
 
     /// <summary>
     /// Sets the model parameters for the request.
