@@ -135,7 +135,7 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>DemoFB4D</SanitizedProjectName>
-        <DCC_UnitSearchPath>..\..\JOSE\Source\Common;..\..\JOSE\Source\JOSE;..\..\delphi-markdown\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\submodules\delphi-jose-jwt\Source\Common;..\..\submodules\delphi-jose-jwt\Source\JOSE;..\..\submodules\delphi-markdown\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_Define>MARKDOWN2HTML;$(FrameworkType);$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
@@ -307,7 +307,6 @@
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
