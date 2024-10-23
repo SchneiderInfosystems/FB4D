@@ -4,7 +4,8 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.WebBrowser, FMX.Layouts;
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.WebBrowser, FMX.Layouts,
+  FMX.Objects, FMX.Consts;
 
   // Workaround for https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-2061
 
@@ -20,6 +21,7 @@ type
     fURL: string;
     fTempFilename: string;
   public
+    constructor Create(AOwner: TComponent); override;
     procedure LoadFromFile(const FileName: string; OnLoaded: TOnLoaded);
     procedure LoadFromStrings(const HTML: string; OnLoaded: TOnLoaded);
     procedure Stop;
@@ -33,6 +35,21 @@ uses
 {$R *.fmx}
 
 { TfmxWebBrowser }
+
+constructor TfmxWebBrowser.Create(AOwner: TComponent);
+begin
+  try
+    inherited;
+  except
+    {$IFDEF MSWINDOWS}
+    on E: Exception do
+      if E.Message.EndsWith(SEdgeBrowserEngineUnavailable) then
+        raise Exception.Create('Please install WebView2 SDK or copy WebView2Loader.dll into exe folder in order to use the Edge webbrowser!')
+      else
+    {$ENDIF}
+    raise;
+  end;
+end;
 
 procedure TfmxWebBrowser.LoadFromFile(const FileName: string; OnLoaded: TOnLoaded);
 begin
