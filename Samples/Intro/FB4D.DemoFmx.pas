@@ -143,7 +143,9 @@ begin
   end;
   TabControlChange(Sender);
   if not(edtKey.Text.IsEmpty or edtProjectID.Text.IsEmpty) then
-    layToolbar.Height := FloatAniToolbar.StartValue;
+    layToolbar.Height := FloatAniToolbar.StartValue
+  else
+    FloatAniToolbar.Inverse := true;
 end;
 
 procedure TfmxFirebaseDemo.FormClose(Sender: TObject; var Action: TCloseAction);
