@@ -14,6 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
+- October 2024: GeminiAI serivce added
 - August 2024: Refactoring and many improvements in DemoFB4D 
 - June 2024: Adding _TOTDMapperOptions_ to control the behavior of the Object-To-Doc mapper. The simple FMX demo application FSObj2Doc demonstrates the Object-To-Document Mapper and has been added to the FB4D Samples project group. Add _IFirestoreWriteTransaction.TransformDoc_ for SetServerTime, Increment, Maximum, Minimum.
 - December 2023: The Object to Document Mapper lets you quickly sync your Pascal objects to the Firestore database by deriving your own class from _TFirestoreDocument_ and adding member variables. All member variables are automatically written to the document and read from the document. The sample application FSObj2Doc demonstrates the functionality
@@ -57,8 +58,19 @@ For older versions up to 10.4.2, you must note the following RSP: Due to a bug i
 
 ### Submodules
 
+**Important note about path changes:** 
+Since introduction of Gemini AI (V1.6.5.631) the folder JOSE is moved to submodules/delphi-jose-jwt because the aditional submodule Delphi-Markup was added. After GIT pull please update both submodules with the Git Bash command `git submodule update --remote --merge` or use your favorit Git tool for this update. 
+
+#### Delphi-JOSE-JWT
+
 For authorization token verification and token content extraction this library uses the Delphi JOSE JWT library. Thank you, Paolo Rossi for your great library!
 
 https://github.com/paolo-rossi/delphi-jose-jwt
+
+#### Delphi-Markdown
+
+For converting markdown formated text into HTML this library uses the Delphi Markdown Library. Thank you, Grahame Grieve for this great library!
+
+https://github.com/grahamegrieve/delphi-markdown
 
 ![Logo FB4D](https://github.com/SchneiderInfosystems/FB4D/wiki/logoFB4D.png)
