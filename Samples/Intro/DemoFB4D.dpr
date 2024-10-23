@@ -52,7 +52,10 @@ uses
   FB4D.Configuration in '..\..\Source\FB4D.Configuration.pas',
   FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas',
   FB4D.VisionMLDefinition in '..\..\Source\FB4D.VisionMLDefinition.pas',
-  FB4D.VisionML in '..\..\Source\FB4D.VisionML.pas';
+  FB4D.VisionML in '..\..\Source\FB4D.VisionML.pas',
+  FB4D.GeminiAIFra in 'FB4D.GeminiAIFra.pas' {GeminiAIFra: TFrame},
+  FB4D.GeminiAI in '..\..\Source\FB4D.GeminiAI.pas',
+  WebBrowserFmx in 'WebBrowserFmx.pas' {fmxWebBrowser};
 
 {$R *.res}
 

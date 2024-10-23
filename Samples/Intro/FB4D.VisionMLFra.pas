@@ -31,7 +31,8 @@ uses
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   FMX.Memo.Types, FMX.ListBox, FMX.Edit, FMX.ScrollBox, FMX.Memo,
   FMX.Controls.Presentation, FMX.Objects, FMX.Layouts, FMX.EditBox, FMX.SpinBox,
-  FB4D.Interfaces, FMX.Menus;
+  FMX.Menus,
+  FB4D.Interfaces;
 
 type
   TVisionMLFra = class(TFrame)
@@ -131,8 +132,8 @@ begin
   fmxFirebaseDemo.rctProjectIDDisabled.Visible := true;
   fmxFirebaseDemo.edtKey.ReadOnly := true;
   fmxFirebaseDemo.rctKeyDisabled.Visible := true;
-  fVisionML := TVisionML.Create( fmxFirebaseDemo.edtProjectID.Text,
-    fmxFirebaseDemo.edtKey.Text,  fmxFirebaseDemo.AuthFra.Auth);
+  fVisionML := TVisionML.Create(fmxFirebaseDemo.edtProjectID.Text,
+    fmxFirebaseDemo.edtKey.Text, fmxFirebaseDemo.AuthFra.Auth);
   result := true;
 end;
 

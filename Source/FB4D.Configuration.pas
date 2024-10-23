@@ -51,6 +51,7 @@ type
     fStorage: IFirebaseStorage;
     fFunctions: IFirebaseFunctions;
     fVisionML: IVisionML;
+    fGeminiAI: IGeminiAI;
   public
     /// <summary>
     /// The first constructor requires all secrets of the Firebase project as
@@ -94,6 +95,7 @@ type
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
     function VisionML: IVisionML;
+    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel): IGeminiAI;
     class function GetLibVersionInfo: string;
     class function GetLibLicenseInfo: string;
   end;
@@ -103,7 +105,7 @@ implementation
 uses
   System.IOUtils,
   FB4D.Authentication, FB4D.RealTimeDB, FB4D.Firestore, FB4D.Storage,
-  FB4D.Functions, FB4D.VisionML;
+  FB4D.Functions, FB4D.VisionML, FB4D.GeminiAI;
 
 {$I FB4DVersion.inc}
 
@@ -225,6 +227,13 @@ begin
   if not assigned(fVisionML) then
     fVisionML := TVisionML.Create(fProjectID, fAPIKey, Auth);
   result := fVisionML;
+end;
+
+function TFirebaseConfiguration.GeminiAI(const ApiKey, Model: string): IGeminiAI;
+begin
+  if not assigned(fGeminiAI) then
+    fGeminiAI := TGeminiAI.Create(ApiKey, Model);
+  result := fGeminiAI;
 end;
 
 function TFirebaseConfiguration.ProjectID: string;

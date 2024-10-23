@@ -274,7 +274,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 42
+      TabOrder = 39
       Text = 'Object Localization'
     end
     object lbiTextDetection: TListBoxItem
@@ -292,7 +292,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 43
+      TabOrder = 40
       Text = 'Doc Text Detection'
     end
     object lbiFaceDetection: TListBoxItem
@@ -310,7 +310,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 40
+      TabOrder = 37
       Text = 'Logo Detection'
     end
     object lbiLandmarkDetection: TListBoxItem
@@ -327,7 +327,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 41
+      TabOrder = 38
       Text = 'Web Detection'
     end
     object lbiImageProp: TListBoxItem

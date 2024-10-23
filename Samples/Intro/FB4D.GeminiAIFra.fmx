@@ -1,0 +1,939 @@
+object GeminiAIFra: TGeminiAIFra
+  Align = Client
+  Size.Width = 1036.000000000000000000
+  Size.Height = 888.000000000000000000
+  Size.PlatformDefault = False
+  object TabControlResult: TTabControl
+    Align = Client
+    Size.Width = 1036.000000000000000000
+    Size.Height = 95.000000000000000000
+    Size.PlatformDefault = False
+    TabIndex = 0
+    TabOrder = 3
+    TabPosition = PlatformDefault
+    Sizes = (
+      1036s
+      69s
+      1036s
+      69s
+      1036s
+      69s
+      1036s
+      69s)
+    object tabHTMLRes: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = True
+      Size.Width = 139.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'HTML formated Result'
+      ExplicitSize.cx = 139.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+    end
+    object tabMarkdownRes: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 164.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Markdown formated Result'
+      ExplicitSize.cx = 164.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object memMarkdown: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Align = Client
+        Size.Width = 1036.000000000000000000
+        Size.Height = 69.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 1036.000000000000000000
+        Viewport.Height = 69.000000000000000000
+      end
+    end
+    object tabMetadata: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 71.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Metadata'
+      ExplicitSize.cx = 74.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object lstMetaData: TListBox
+        Align = Client
+        Size.Width = 1036.000000000000000000
+        Size.Height = 69.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        DisableFocusEffect = True
+        DefaultItemStyles.ItemStyle = ''
+        DefaultItemStyles.GroupHeaderStyle = ''
+        DefaultItemStyles.GroupFooterStyle = ''
+        Viewport.Width = 1032.000000000000000000
+        Viewport.Height = 89.000000000000000000
+      end
+    end
+    object tabRawResult: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 110.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Raw JSON Result'
+      ExplicitSize.cx = 110.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object memRawJSONResult: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Align = Client
+        Size.Width = 1036.000000000000000000
+        Size.Height = 69.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 1036.000000000000000000
+        Viewport.Height = 69.000000000000000000
+      end
+    end
+  end
+  object expGeminiCfg: TExpander
+    Align = Top
+    ShowCheck = False
+    Size.Width = 1036.000000000000000000
+    Size.Height = 465.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Gemini Configuration'
+    TabOrder = 4
+    ContentSize = '440'
+    object chbUseModelParams: TCheckBox
+      Position.X = 17.000000000000000000
+      Position.Y = 34.000000000000000000
+      Size.Width = 161.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Use Model Parameter'
+      OnChange = chbUseModelParamsChange
+    end
+    object edtGeminiAPIKey: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      TabOrder = 2
+      Position.X = 113.000000000000000000
+      Position.Y = 2.000000000000000000
+      Size.Width = 505.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TextPrompt = 'Enter your API Key generated in AIStudio.Google.com'
+      object rctGeminiAPIKeyDisabled: TRectangle
+        Align = Client
+        Fill.Color = x0A040404
+        HitTest = False
+        Size.Width = 905.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        Stroke.Kind = None
+        Visible = False
+      end
+    end
+    object cboGeminiModel: TComboBox
+      Items.Strings = (
+        'gemini-1.0-pro'
+        'gemini-1.5-pro'
+        'gemini-1.5-flash')
+      ItemIndex = 1
+      Position.X = 640.000000000000000000
+      Position.Y = 2.000000000000000000
+      Size.Width = 333.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+    end
+    object layModelParams: TLayout
+      Position.X = 17.000000000000000000
+      Position.Y = 53.000000000000000000
+      Size.Width = 956.000000000000000000
+      Size.Height = 292.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      object lblMaxOutToken: TLabel
+        Position.X = 367.000000000000000000
+        Position.Y = 10.000000000000000000
+        Text = 'lblMaxOutToken'
+        TabOrder = 1
+      end
+      object lblTempValue: TLabel
+        Position.X = 367.000000000000000000
+        Position.Y = 68.000000000000000000
+        Text = 'lblTempValue'
+        TabOrder = 3
+      end
+      object trbMaxOutputToken: TTrackBar
+        CanParentFocus = True
+        Max = 4096.000000000000000000
+        Min = 1.000000000000000000
+        Orientation = Horizontal
+        Position.X = 138.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 221.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 5
+        Value = 640.000000000000000000
+        OnChange = trbMaxOutputTokenChange
+      end
+      object trbTemperature: TTrackBar
+        CanParentFocus = True
+        Orientation = Horizontal
+        Position.X = 138.000000000000000000
+        Position.Y = 67.000000000000000000
+        Size.Width = 221.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 7
+        Value = 80.000000000000000000
+        OnChange = trbTemperatureChange
+      end
+      object Label1: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 8.000000000000000000
+        Text = 'Max output token'
+        TabOrder = 8
+      end
+      object Label2: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 66.000000000000000000
+        Text = 'Temperature'
+        TabOrder = 9
+      end
+      object Label3: TLabel
+        Position.X = 49.000000000000000000
+        Position.Y = 93.000000000000000000
+        Size.Width = 189.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'most deterministic and predictable '
+        TabOrder = 14
+      end
+      object Label4: TLabel
+        Position.X = 269.000000000000000000
+        Position.Y = 93.000000000000000000
+        Size.Width = 178.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'most creative and random'
+        TabOrder = 15
+      end
+      object Label5: TLabel
+        Position.X = 82.000000000000000000
+        Position.Y = 35.000000000000000000
+        TextSettings.HorzAlign = Center
+        Text = 'Short answers'
+        TabOrder = 16
+      end
+      object Label6: TLabel
+        Position.X = 299.000000000000000000
+        Position.Y = 35.000000000000000000
+        TextSettings.HorzAlign = Center
+        Text = 'Long answers'
+        TabOrder = 18
+      end
+      object Label7: TLabel
+        Position.X = 27.000000000000000000
+        Position.Y = 186.000000000000000000
+        Size.Width = 57.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Top-K'
+        TabOrder = 21
+      end
+      object trbTopK: TTrackBar
+        CanParentFocus = True
+        Max = 1024.000000000000000000
+        Min = 1.000000000000000000
+        Orientation = Horizontal
+        Position.X = 138.000000000000000000
+        Position.Y = 185.000000000000000000
+        Size.Width = 221.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+        Value = 10.000000000000000000
+        OnChange = trbTopKChange
+      end
+      object lblTopK: TLabel
+        Position.X = 367.000000000000000000
+        Position.Y = 187.000000000000000000
+        Size.Width = 105.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'lblTopK'
+        TabOrder = 0
+      end
+      object Label8: TLabel
+        Position.X = 49.000000000000000000
+        Position.Y = 212.000000000000000000
+        Size.Width = 189.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'most deterministic and predictable '
+        TabOrder = 10
+      end
+      object Label9: TLabel
+        Position.X = 269.000000000000000000
+        Position.Y = 212.000000000000000000
+        Size.Width = 178.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'most creative and random'
+        TabOrder = 11
+      end
+      object Label10: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 124.000000000000000000
+        Size.Width = 57.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Top-P'
+        TabOrder = 20
+      end
+      object trbTopP: TTrackBar
+        CanParentFocus = True
+        Orientation = Horizontal
+        Position.X = 138.000000000000000000
+        Position.Y = 126.000000000000000000
+        Size.Width = 221.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 6
+        Value = 80.000000000000000000
+        OnChange = trbTopPChange
+      end
+      object lblTopP: TLabel
+        Position.X = 367.000000000000000000
+        Position.Y = 128.000000000000000000
+        Text = 'lblTopP'
+        TabOrder = 2
+      end
+      object Label11: TLabel
+        Position.X = 49.000000000000000000
+        Position.Y = 153.000000000000000000
+        Size.Width = 189.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'most deterministic and predictable '
+        TabOrder = 12
+      end
+      object Label12: TLabel
+        Position.X = 269.000000000000000000
+        Position.Y = 153.000000000000000000
+        Size.Width = 178.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'most creative and random'
+        TabOrder = 13
+      end
+      object Label13: TLabel
+        StyledSettings = [Family, Size, FontColor]
+        Position.X = 475.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 473.000000000000000000
+        Size.Height = 44.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.StyleExt = {00040000000200000004000000}
+        TextSettings.VertAlign = Leading
+        Text = 
+          'Controls the maximum length of the generated response, measured ' +
+          'in individual words or punctuation marks (in the unit "token").'
+        TabOrder = 26
+      end
+      object Label14: TLabel
+        StyledSettings = [Family, Size, FontColor]
+        Position.X = 475.000000000000000000
+        Position.Y = 66.000000000000000000
+        Size.Width = 473.000000000000000000
+        Size.Height = 50.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.StyleExt = {00040000000200000004000000}
+        TextSettings.VertAlign = Leading
+        Text = 
+          'Controls the randomness, creativity and diversity of the generat' +
+          'ed text, where higher values make the output more surprising and' +
+          ' lower values make it more predictable.'
+        TabOrder = 25
+      end
+      object Label15: TLabel
+        StyledSettings = [Family, Size, FontColor]
+        Position.X = 475.000000000000000000
+        Position.Y = 124.000000000000000000
+        Size.Width = 473.000000000000000000
+        Size.Height = 65.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.StyleExt = {00040000000200000004000000}
+        TextSettings.VertAlign = Leading
+        Text = 
+          'Controls predictability and probability: Sets a probability thre' +
+          'shold and considers only the top tokens whose cumulative probabi' +
+          'lity exceeds this threshold, offering a balance between diversit' +
+          'y and quality. '
+        TabOrder = 24
+      end
+      object Label16: TLabel
+        StyledSettings = [Family, Size, FontColor]
+        Position.X = 475.000000000000000000
+        Position.Y = 186.000000000000000000
+        Size.Width = 473.000000000000000000
+        Size.Height = 44.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.StyleExt = {00040000000200000004000000}
+        TextSettings.VertAlign = Leading
+        Text = 
+          'Controls the diversity and coherence: Limits the next token sele' +
+          'ction to the top k most likely candidates, providing control ove' +
+          'r the range of vocabulary used. '
+        TabOrder = 23
+      end
+      object memStopSequences: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Position.X = 138.000000000000000000
+        Position.Y = 238.000000000000000000
+        Size.Width = 318.000000000000000000
+        Size.Height = 47.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 29
+        Viewport.Width = 314.000000000000000000
+        Viewport.Height = 43.000000000000000000
+      end
+      object Label17: TLabel
+        Position.X = 27.000000000000000000
+        Position.Y = 238.000000000000000000
+        Size.Width = 103.000000000000000000
+        Size.Height = 36.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Stop words or sequences'
+        TabOrder = 32
+      end
+      object Label18: TLabel
+        StyledSettings = [Family, Size, FontColor]
+        Position.X = 475.000000000000000000
+        Position.Y = 238.000000000000000000
+        Size.Width = 473.000000000000000000
+        Size.Height = 51.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.StyleExt = {00040000000200000004000000}
+        TextSettings.VertAlign = Leading
+        Text = 
+          'Set a stop sequence to tell the model that it should no longer g' +
+          'enerate content when it generates this word or sequence. A stop ' +
+          'sequence can be any sequence of characters.  Note that the outpu' +
+          't stops at the sequence and the sentence may not be completed. '
+        TabOrder = 28
+      end
+    end
+    object lblGeminiAPIKey: TLabel
+      Position.X = 17.000000000000000000
+      Position.Y = 6.000000000000000000
+      Text = 'Gemini API Key:'
+      TabOrder = 0
+    end
+    object chbUseSafetySettings: TCheckBox
+      Position.X = 16.000000000000000000
+      Position.Y = 353.000000000000000000
+      Size.Width = 151.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 7
+      Text = 'Use Safety Settings'
+      OnChange = chbUseSafetySettingsChange
+    end
+    object laySafetySettings: TLayout
+      Position.X = 17.000000000000000000
+      Position.Y = 380.000000000000000000
+      Size.Width = 956.000000000000000000
+      Size.Height = 53.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 11
+      object cboHateSpeech: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 8.000000000000000000
+        Position.Y = 20.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 15
+      end
+      object Label19: TLabel
+        Position.X = 201.000000000000000000
+        Text = 'Harassment'
+        TabOrder = 17
+      end
+      object Label20: TLabel
+        Position.X = 8.000000000000000000
+        Size.Width = 169.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Hate Speech'
+        TabOrder = 18
+      end
+      object Label21: TLabel
+        Position.X = 391.000000000000000000
+        Text = 'Sexually Explicit'
+        TabOrder = 16
+      end
+      object Label22: TLabel
+        Position.X = 573.000000000000000000
+        Text = 'Dangerous Content'
+        TabOrder = 21
+      end
+      object cboHarassment: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 201.000000000000000000
+        Position.Y = 20.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 11
+      end
+      object cboSexuallyExplicit: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 391.000000000000000000
+        Position.Y = 20.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 9
+      end
+      object cboDangerousContent: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 573.000000000000000000
+        Position.Y = 20.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+      end
+      object cboMedical: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 763.000000000000000000
+        Position.Y = 20.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Visible = False
+      end
+      object Label23: TLabel
+        Position.X = 763.000000000000000000
+        Text = 'Medical Adivse'
+        Visible = False
+        TabOrder = 20
+      end
+      object cboToxicity: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 8.000000000000000000
+        Position.Y = 63.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 14
+        Visible = False
+      end
+      object cboDerogatory: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 201.000000000000000000
+        Position.Y = 63.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 10
+        Visible = False
+      end
+      object cboSexual: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 391.000000000000000000
+        Position.Y = 63.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 5
+        Visible = False
+      end
+      object cboDangerous: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 573.000000000000000000
+        Position.Y = 63.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Visible = False
+      end
+      object cboViolence: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 763.000000000000000000
+        Position.Y = 63.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Visible = False
+      end
+      object Label24: TLabel
+        Position.X = 763.000000000000000000
+        Position.Y = 43.000000000000000000
+        Text = 'Violence'
+        Visible = False
+        TabOrder = 12
+      end
+      object Label25: TLabel
+        Position.X = 573.000000000000000000
+        Position.Y = 43.000000000000000000
+        Text = 'Dangerous'
+        Visible = False
+        TabOrder = 13
+      end
+      object Label26: TLabel
+        Position.X = 391.000000000000000000
+        Position.Y = 43.000000000000000000
+        Text = 'Sexual Vulgar'
+        Visible = False
+        TabOrder = 6
+      end
+      object Label27: TLabel
+        Position.X = 201.000000000000000000
+        Position.Y = 43.000000000000000000
+        Text = 'Derogatory'
+        Visible = False
+        TabOrder = 7
+      end
+      object Label28: TLabel
+        Position.X = 8.000000000000000000
+        Position.Y = 43.000000000000000000
+        Size.Width = 169.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Toxicity'
+        Visible = False
+        TabOrder = 8
+      end
+      object cboCivicIntegrity: TComboBox
+        Items.Strings = (
+          'Don'#39't block'
+          'Block if high probability '
+          'Block if medium probability '
+          'Block if low probability'
+          'Use default level')
+        ItemIndex = 4
+        Position.X = 755.000000000000000000
+        Position.Y = 20.000000000000000000
+        Size.Width = 174.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+      end
+      object Label29: TLabel
+        Position.X = 755.000000000000000000
+        Text = 'Civic Integrity'
+        TabOrder = 19
+      end
+    end
+  end
+  object layPrompt: TLayout
+    Align = Top
+    Position.Y = 465.000000000000000000
+    Size.Width = 1036.000000000000000000
+    Size.Height = 320.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 7
+    object memGeminiPrompt: TMemo
+      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      CheckSpelling = True
+      DataDetectorTypes = []
+      Align = Client
+      Margins.Bottom = 40.000000000000000000
+      Size.Width = 628.000000000000000000
+      Size.Height = 280.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      OnKeyUp = memGeminiPromptKeyUp
+      Viewport.Width = 624.000000000000000000
+      Viewport.Height = 276.000000000000000000
+    end
+    object OpenDialogImgFile: TOpenDialog
+      Filter = 
+        'PNG (*.png)|*.png|JPEG (*.jpg or *.jpeg)|*.jpg;*.jpeg|GIF (*.gif' +
+        ')|*.gif|TIFF (*.tif or *.tiff)|*.tiff;*.tif|PDF (*.pdf)|*.pdf'
+      Left = 776
+      Top = 482
+    end
+    object btnGeminiGenerateContent: TButton
+      Anchors = [akLeft, akBottom]
+      Position.X = 37.000000000000000000
+      Position.Y = 290.000000000000000000
+      Size.Width = 133.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      Text = 'Ask Gemini AI'
+      TextSettings.Trimming = None
+      OnClick = btnGeminiGenerateContentClick
+    end
+    object layMedia: TLayout
+      Align = Right
+      Position.X = 636.000000000000000000
+      Size.Width = 400.000000000000000000
+      Size.Height = 320.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      object rctImage: TRectangle
+        Align = Client
+        Margins.Bottom = 40.000000000000000000
+        Size.Width = 400.000000000000000000
+        Size.Height = 280.000000000000000000
+        Size.PlatformDefault = False
+        object imgMediaFile: TImage
+          MultiResBitmap = <
+            item
+            end>
+          Align = Client
+          Size.Width = 264.000000000000000000
+          Size.Height = 159.000000000000000000
+          Size.PlatformDefault = False
+          Visible = False
+        end
+        object txtNoAttachment: TText
+          Align = Client
+          Size.Width = 400.000000000000000000
+          Size.Height = 280.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'No media file'
+        end
+        object aniPDF: TAniIndicator
+          Align = Center
+          Margins.Bottom = 60.000000000000000000
+        end
+      end
+      object btnLoadPDF: TButton
+        Anchors = [akRight, akBottom]
+        Position.X = 87.000000000000000000
+        Position.Y = 290.000000000000000000
+        TabOrder = 1
+        Text = 'Load PDF'
+        TextSettings.Trimming = None
+        OnClick = btnLoadPDFClick
+      end
+      object bntLoadImage: TButton
+        Anchors = [akRight, akBottom]
+        Position.X = 175.000000000000000000
+        Position.Y = 290.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Load Image'
+        TextSettings.Trimming = None
+        OnClick = bntLoadImageClick
+      end
+      object edtMediaFileType: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akRight, akBottom]
+        TabOrder = 4
+        ReadOnly = True
+        Position.X = 304.000000000000000000
+        Position.Y = 290.000000000000000000
+        Size.Width = 90.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object txtFile: TText
+        Anchors = [akLeft, akRight, akBottom]
+        Position.Y = 288.000000000000000000
+        Size.Width = 79.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.WordWrap = False
+        TextSettings.HorzAlign = Leading
+      end
+      object btnClearMedia: TButton
+        Anchors = [akRight, akBottom]
+        Position.X = 263.000000000000000000
+        Position.Y = 290.000000000000000000
+        Size.Width = 33.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 7
+        Text = 'Clear'
+        TextSettings.Trimming = None
+        OnClick = btnClearMediaClick
+      end
+    end
+    object Splitter2: TSplitter
+      Align = Right
+      Cursor = crHSplit
+      MinSize = 20.000000000000000000
+      Position.X = 628.000000000000000000
+      Size.Width = 8.000000000000000000
+      Size.Height = 320.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object aniHTML: TAniIndicator
+      Anchors = [akLeft, akBottom]
+      Position.X = 4.000000000000000000
+      Position.Y = 282.000000000000000000
+      Size.Width = 28.000000000000000000
+      Size.Height = 32.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object btnCalcPromptToken: TButton
+      Anchors = [akLeft, akBottom]
+      Position.X = 319.000000000000000000
+      Position.Y = 290.000000000000000000
+      Size.Width = 132.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 7
+      Text = 'Calc Token of Prompt'
+      TextSettings.Trimming = None
+      OnClick = btnCalcPromptTokenClick
+    end
+    object lblGeminiPrompt: TLabel
+      AutoSize = True
+      StyledSettings = [Family, Size, Style]
+      Position.X = 8.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 89.599998474121090000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.FontColor = claGray
+      Text = 'Gemini prompt'
+      TabOrder = 2
+    end
+    object btnNextQuestionInChat: TButton
+      Anchors = [akLeft, akBottom]
+      Enabled = False
+      Position.X = 178.000000000000000000
+      Position.Y = 290.000000000000000000
+      Size.Width = 133.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 8
+      Text = 'Next Question in Chat'
+      TextSettings.Trimming = None
+      OnClick = btnNextQuestionInChatClick
+    end
+    object btnCalcRequestInChat: TButton
+      Anchors = [akLeft, akBottom]
+      Enabled = False
+      Position.X = 459.000000000000000000
+      Position.Y = 290.000000000000000000
+      Size.Width = 132.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 6
+      Text = 'Calc Token in Chat'
+      TextSettings.Trimming = None
+      OnClick = btnCalcRequestInChatClick
+    end
+  end
+  object Splitter1: TSplitter
+    Align = Top
+    Cursor = crVSplit
+    MinSize = 20.000000000000000000
+    Position.Y = 785.000000000000000000
+    Size.Width = 1036.000000000000000000
+    Size.Height = 8.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object OpenDialogPDF: TOpenDialog
+    DefaultExt = '.pdf'
+    Filter = 'PDF File (*.pdf)|*.pdf'
+    Left = 777
+    Top = 546
+  end
+end

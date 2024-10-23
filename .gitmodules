@@ -2,3 +2,7 @@
 	path = JOSE
 	url = https://github.com/paolo-rossi/delphi-jose-jwt.git
 	branch = master
+[submodule "delphi-markdown"]
+	path = delphi-markdown
+	url = https://github.com/grahamegrieve/delphi-markdown.git
+	branch = master

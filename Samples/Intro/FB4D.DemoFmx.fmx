@@ -2,10 +2,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
   Left = 0
   Top = 0
   Caption = 'Firebase Lib Demo'
-  ClientHeight = 800
+  ClientHeight = 1020
   ClientWidth = 1000
-  Constraints.MinHeight = 500.000000000000000000
-  Constraints.MinWidth = 1000.000000000000000000
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -16,7 +14,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     Align = Client
     Images = imlFirebaseServices
     Size.Width = 1000.000000000000000000
-    Size.Height = 710.000000000000000000
+    Size.Height = 930.000000000000000000
     Size.PlatformDefault = False
     TabIndex = 0
     TabOrder = 0
@@ -24,17 +22,19 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     OnChange = TabControlChange
     Sizes = (
       1000s
-      684s
+      904s
       1000s
-      684s
+      904s
       1000s
-      684s
+      904s
       1000s
-      684s
+      904s
       1000s
-      684s
+      904s
       1000s
-      684s)
+      904s
+      1000s
+      904s)
     object tabAuth: TTabItem
       CustomIcon = <
         item
@@ -53,29 +53,29 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       inline AuthFra: TAuthFra
         Align = Client
         Size.Width = 1000.000000000000000000
-        Size.Height = 684.000000000000000000
+        Size.Height = 904.000000000000000000
         Size.PlatformDefault = False
         inherited TabControlUser: TTabControl
           Size.Width = 964.000000000000000000
-          Size.Height = 499.000000000000000000
+          Size.Height = 719.000000000000000000
           Sizes = (
             964s
-            473s
+            693s
             964s
-            473s)
+            693s)
           inherited tabInfo: TTabItem
-            Size.Width = 82.000000000000000000
+            Size.Width = 83.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 83.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited memUser: TMemo
               Size.Width = 944.000000000000000000
-              Size.Height = 403.000000000000000000
+              Size.Height = 623.000000000000000000
               Viewport.Width = 940.000000000000000000
-              Viewport.Height = 399.000000000000000000
+              Viewport.Height = 619.000000000000000000
             end
             inherited btnRefresh: TButton
-              Position.X = 598.000000000000000000
+              Position.X = 740.000000000000000000
             end
           end
           inherited tabUserProfile: TTabItem
@@ -84,28 +84,28 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 125.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited edtChangeEMail: TEdit
-              Size.Width = 396.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited edtChangeDisplayName: TEdit
-              Size.Width = 396.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited btnChange: TButton
-              Position.X = 451.000000000000000000
+              Position.X = 595.000000000000000000
             end
             inherited btnChangeEMail: TButton
-              Position.X = 451.000000000000000000
+              Position.X = 595.000000000000000000
             end
             inherited edtChangePassword: TEdit
-              Size.Width = 396.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited btnChangePwd: TButton
-              Position.X = 451.000000000000000000
+              Position.X = 595.000000000000000000
             end
             inherited edtChangePhotoURL: TEdit
-              Size.Width = 396.000000000000000000
+              Size.Width = 540.000000000000000000
             end
             inherited btnChangePhotoURL: TButton
-              Position.X = 451.000000000000000000
+              Position.X = 595.000000000000000000
             end
           end
         end
@@ -119,20 +119,19 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Size.Width = 141.000000000000000000
         end
         inherited btnSignUpNewUser: TButton
-          Position.X = 477.000000000000000000
+          Position.X = 476.000000000000000000
         end
         inherited btnPasswordReset: TButton
-          Position.X = 735.000000000000000000
+          Position.X = 732.000000000000000000
         end
         inherited btnLogin: TButton
-          Position.X = 605.000000000000000000
+          Position.X = 604.000000000000000000
         end
         inherited btnLinkEMailPwd: TButton
-          Position.X = 863.000000000000000000
+          Position.X = 860.000000000000000000
         end
         inherited btnLogout: TButton
-          Position.X = 925.000000000000000000
-          TabOrder = 22
+          Position.X = 922.000000000000000000
         end
       end
     end
@@ -154,7 +153,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       inline RTDBFra: TRTDBFra
         Align = Client
         Size.Width = 1000.000000000000000000
-        Size.Height = 684.000000000000000000
+        Size.Height = 904.000000000000000000
         Size.PlatformDefault = False
         inherited edtFirebaseURL: TEdit
           Size.Width = 861.000000000000000000
@@ -187,7 +186,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 39.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited Label13: TLabel
-              Size.Width = 113.000000000000000000
+              Size.Width = 0.000000000000000000
             end
           end
           inherited tabPut: TTabItem
@@ -196,15 +195,15 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cx = 38.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited lstDBNode: TListBox
-              Viewport.Width = 196.000000000000000000
-              Viewport.Height = 118.000000000000000000
+              Viewport.Width = 200.000000000000000000
+              Viewport.Height = 122.000000000000000000
             end
             inherited Label18: TLabel
               Size.Width = 0.000000000000000000
             end
           end
           inherited tabPatch: TTabItem
-            Size.Width = 50.000000000000000000
+            Size.Width = 49.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 49.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
@@ -222,7 +221,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             end
           end
           inherited tabDelete: TTabItem
-            Size.Width = 54.000000000000000000
+            Size.Width = 55.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 55.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
@@ -250,15 +249,92 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end
         inherited memRTDB: TMemo
           Size.Width = 964.000000000000000000
-          Size.Height = 375.000000000000000000
-          Viewport.Width = 964.000000000000000000
-          Viewport.Height = 375.000000000000000000
+          Size.Height = 595.000000000000000000
+          Viewport.Width = 960.000000000000000000
+          Viewport.Height = 591.000000000000000000
         end
         inherited popRTDBLog: TPopupMenu
           Left = 121
           Top = 430
         end
         inherited imlTabStatus: TImageList
+          Source = <
+            item
+              MultiResBitmap.Height = 32
+              MultiResBitmap.Width = 32
+              MultiResBitmap.LoadSize = 0
+              MultiResBitmap = <
+                item
+                  Width = 32
+                  Height = 32
+                  PNG = {
+                    89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+                    F40000000473424954080808087C08648800000319494441545885ED97CF6B13
+                    411CC55F6AB669BB9B741656D375116B0DD67A52F012F024147F1C3C28A2F526
+                    12D183A017C16EC1F130150F42F0E445143C142B5EFC170403150FA2D42A1454
+                    2C29BBE966579AAEEDAC192FAEAC49B6D183CDA5EF366FE6CBFBF01D666716E8
+                    B012004029159D08A79426BA3A111C55323AA09426362234DAF18E7760136013
+                    20B9DE24634CE79CE7C3B1244925D334CBADD64E4E4E6E9D9B9BBBCE393F3833
+                    33F36E7E7EFE4A8CFFB82D40186C59D61D555573A1EFBAEEB742A1F0647070F0
+                    6623C8ECECECAD5C2E77190092C9E4FE10A085BF1CAD6BDA02C6986EDB3605F0
+                    2C0CAFD7EB02006459CE188651B06DBBC418D3C31A4AE97659964FBBAE8B5AAD
+                    7675646464CF3AFE8D750138E77942C84500701CE72D8053C964F20080539EE7
+                    DD030042C84ECBB21E44200EE9BAAE114220CB72797C7CDC6EE3FFD61F5BC018
+                    D32DCB62AAAAC2F3BCAFD96CF648A4D56F186325CBB2B6A9AA7A5655D5639CF3
+                    FCE8E8E852AD56BB2DCB3200A05C2E9F1F1B1B3B5EA9541EB6F2D705E09CE755
+                    55DD0B004288BB8DFB6C9A669952FA14C0D9D0330CE3862CCB436B6B6B585959
+                    8110E2E8F0F03052A9D4402BBF51B1C79010F2A5952F4952C9F7FD1500701C67
+                    2897CB5D088260BABBBB1B84106432996BAEEB9E8BF35DD73D170B50AFD7B7C4
+                    0145BBE038CE2700F07D7FF7C4C4C48224498FC2F9743AFDA1582C4EC5F9C562
+                    712A16A0ABABEB473B00C698DEDFDFBF030052A9D4E776EBDBE99FBF849CF3BC
+                    A2286900D034EDE37F03A8542A17A2673D94E338437135BEEFFF1042BCFE5BBF
+                    094092A4D2D2D2D27300D034ED781004274208C6984E293DD9D3D373EB17C80B
+                    49924AD1FAC5C5459F526A3586C4F94D00A669960706062EF9BEFF1D008410F7
+                    6DDB7E552814A6ABD5EA7B00CFFAFAFAFA56575757B3D9EC99C6639A48245ABE
+                    2DE3FC2680102293C90C55ABD5390020841886619C5614A51F003CCFFBA228CA
+                    AEB84BE95FD5F232324DB3CC183BCC39CFDBB6BD2F0802A5B7B7778110B2A069
+                    5AD38D288478BDBCBC7C269D4EBFFC1BBF499452B1914FF3685EC71F249B001D
+                    0768FC33DAF07FC48E77A0E3FA0984E2A54684F1059F0000000049454E44AE42
+                    6082}
+                  FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\Off.png'
+                end>
+              Name = 'Off'
+            end
+            item
+              MultiResBitmap.Height = 32
+              MultiResBitmap.Width = 32
+              MultiResBitmap.LoadSize = 0
+              MultiResBitmap = <
+                item
+                  Width = 32
+                  Height = 32
+                  PNG = {
+                    89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+                    F40000000473424954080808087C08648800000271494441545885ED97BB6B14
+                    511487BFDFDD5D5228637C81A01284B095E023085A68216830D8B84A88606F13
+                    B0112204C9AC902236518B345ADA28B2586891FF414D29249B2228065384B8C1
+                    4237738FC5249B5D7762C6479C26A799B9E71CEEF9EEEFCE7D0C646C02288E60
+                    59149F2E239745E166CB3737A6CBB1225B6DCD8A67AEC036C036407ED38C30E8
+                    C6ACD4E2932A84B5EAD602AC158EFC10CEED690DFA7EC260E05F40244F411874
+                    839F008DB51707CCF560FE4D9CF77796AC805909DC050064F3180F1A31AFB338
+                    2E83DB05F68230B84658AB32DCD945C17AA96B92D1A5B93F078847751B0364CB
+                    A073949BA40E830AB017E30CA6636025863B9FE1A2094C7DE4FD53EE066F915D
+                    44EC03CDB2E2EE6C04D53E0566258CFDF13B8FDBE639AC55317BD9E22B582F4E
+                    7D714337708C235D029D0206C845530C7776A50368B5CF9BC4011D5C7FC51075
+                    CC3E22CAC84FC67EEDA6105D4D07E0521C4872EF583B4FBC1D6AF8BD7DC5F305
+                    530978443D7F13592CBD71221D804F7137307F92354E679FD6C1104EF3E4FC1C
+                    616D91D1A53922CDC4FDEA403A80DF367D580723C223B0D4FDFE3AD174BD6DAD
+                    874137E274328BEA38AB532F74A405685F865205EFFB91EB411CC7FC2DC2E061
+                    0C6425CC1F067725CEF533E02AC0F9D578079ED9B4C5214981B056457ADE9432
+                    48645378FF1A34066EB011323D6959A64ECB38162944A915489E02A902368467
+                    61B5E39DC8151B716F35B0A138AFC93C7B91DEF33D5A6EF8727C8B9F3EF1E34E
+                    DE8AE351DD270C2AF1B6AC2344B603C7026281DC4FA7615D93E4ED1E6647412B
+                    AD501AC75911DCAB8D54A03882FDCFAB7973BDCC2F24DB009903B4AC822CFE11
+                    33572073FB019016E403C81B099B0000000049454E44AE426082}
+                  FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\On.png'
+                end>
+              Name = 'On'
+            end>
           Left = 848
           Top = 224
         end
@@ -282,13 +358,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       inline FirestoreFra: TFirestoreFra
         Align = Client
         Size.Width = 1000.000000000000000000
-        Size.Height = 684.000000000000000000
+        Size.Height = 904.000000000000000000
         Size.PlatformDefault = False
         inherited memFirestore: TMemo
           Size.Width = 964.000000000000000000
-          Size.Height = 419.000000000000000000
-          Viewport.Width = 964.000000000000000000
-          Viewport.Height = 419.000000000000000000
+          Size.Height = 639.000000000000000000
+          Viewport.Width = 960.000000000000000000
+          Viewport.Height = 635.000000000000000000
         end
         inherited TabControl: TTabControl
           Size.Width = 964.000000000000000000
@@ -310,7 +386,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             964s
             106s)
           inherited tabCreate: TTabItem
-            Size.Width = 54.000000000000000000
+            Size.Width = 55.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 54.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
@@ -325,13 +401,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             end
           end
           inherited tabPatch: TTabItem
-            Size.Width = 50.000000000000000000
+            Size.Width = 49.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 50.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
           end
           inherited tabDelete: TTabItem
-            Size.Width = 54.000000000000000000
+            Size.Width = 55.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 54.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
@@ -351,7 +427,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               TabOrder = 8
             end
             inherited Label13: TLabel
-              Size.Width = 221.000000000000000000
+              Size.Width = 0.000000000000000000
               Size.Height = 81.000000000000000000
             end
           end
@@ -364,15 +440,15 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               TabOrder = 2
             end
             inherited GroupBox2: TGroupBox
-              Size.Width = 254.000000000000000000
+              Size.Width = 0.000000000000000000
               TabOrder = 3
               inherited edtDocPathForFSListener: TEdit
-                Size.Width = 158.000000000000000000
+                Size.Width = 0.000000000000000000
               end
             end
           end
           inherited tabTransactions: TTabItem
-            Size.Width = 102.000000000000000000
+            Size.Width = 101.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 86.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
@@ -382,6 +458,153 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
         end
         inherited imlTabStatus: TImageList
+          Source = <
+            item
+              MultiResBitmap.Height = 32
+              MultiResBitmap.Width = 32
+              MultiResBitmap.LoadSize = 0
+              MultiResBitmap = <
+                item
+                  Width = 32
+                  Height = 32
+                  PNG = {
+                    89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+                    F40000000473424954080808087C08648800000319494441545885ED97CF6B13
+                    411CC55F6AB669BB9B741656D375116B0DD67A52F012F024147F1C3C28A2F526
+                    12D183A017C16EC1F130150F42F0E445143C142B5EFC170403150FA2D42A1454
+                    2C29BBE966579AAEEDAC192FAEAC49B6D183CDA5EF366FE6CBFBF01D666716E8
+                    B012004029159D08A79426BA3A111C55323AA09426362234DAF18E7760136013
+                    20B9DE24634CE79CE7C3B1244925D334CBADD64E4E4E6E9D9B9BBBCE393F3833
+                    33F36E7E7EFE4A8CFFB82D40186C59D61D555573A1EFBAEEB742A1F0647070F0
+                    6623C8ECECECAD5C2E77190092C9E4FE10A085BF1CAD6BDA02C6986EDB3605F0
+                    2C0CAFD7EB02006459CE188651B06DBBC418D3C31A4AE97659964FBBAE8B5AAD
+                    7675646464CF3AFE8D750138E77942C84500701CE72D8053C964F20080539EE7
+                    DD030042C84ECBB21E44200EE9BAAE114220CB72797C7CDC6EE3FFD61F5BC018
+                    D32DCB62AAAAC2F3BCAFD96CF648A4D56F186325CBB2B6A9AA7A5655D5639CF3
+                    FCE8E8E852AD56BB2DCB3200A05C2E9F1F1B1B3B5EA9541EB6F2D705E09CE755
+                    55DD0B004288BB8DFB6C9A669952FA14C0D9D0330CE3862CCB436B6B6B585959
+                    8110E2E8F0F03052A9D4402BBF51B1C79010F2A5952F4952C9F7FD1500701C67
+                    2897CB5D088260BABBBB1B84106432996BAEEB9E8BF35DD73D170B50AFD7B7C4
+                    0145BBE038CE2700F07D7FF7C4C4C48224498FC2F9743AFDA1582C4EC5F9C562
+                    712A16A0ABABEB473B00C698DEDFDFBF030052A9D4E776EBDBE99FBF849CF3BC
+                    A2286900D034EDE37F03A8542A17A2673D94E338437135BEEFFF1042BCFE5BBF
+                    094092A4D2D2D2D27300D034ED781004274208C6984E293DD9D3D373EB17C80B
+                    49924AD1FAC5C5459F526A3586C4F94D00A669960706062EF9BEFF1D008410F7
+                    6DDB7E552814A6ABD5EA7B00CFFAFAFAFA56575757B3D9EC99C6639A48245ABE
+                    2DE3FC2680102293C90C55ABD5390020841886619C5614A51F003CCFFBA228CA
+                    AEB84BE95FD5F232324DB3CC183BCC39CFDBB6BD2F0802A5B7B7778110B2A069
+                    5AD38D288478BDBCBC7C269D4EBFFC1BBF499452B1914FF3685EC71F249B001D
+                    0768FC33DAF07FC48E77A0E3FA0984E2A54684F1059F0000000049454E44AE42
+                    6082}
+                  FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\Off.png'
+                end>
+              Name = 'Off'
+            end
+            item
+              MultiResBitmap.Height = 32
+              MultiResBitmap.Width = 32
+              MultiResBitmap.LoadSize = 0
+              MultiResBitmap = <
+                item
+                  Width = 32
+                  Height = 32
+                  PNG = {
+                    89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+                    F40000000473424954080808087C08648800000271494441545885ED97BB6B14
+                    511487BFDFDD5D5228637C81A01284B095E023085A68216830D8B84A88606F13
+                    B0112204C9AC902236518B345ADA28B2586891FF414D29249B2228065384B8C1
+                    4237738FC5249B5D7762C6479C26A799B9E71CEEF9EEEFCE7D0C646C02288E60
+                    59149F2E239745E166CB3737A6CBB1225B6DCD8A67AEC036C036407ED38C30E8
+                    C6ACD4E2932A84B5EAD602AC158EFC10CEED690DFA7EC260E05F40244F411874
+                    839F008DB51707CCF560FE4D9CF77796AC805909DC050064F3180F1A31AFB338
+                    2E83DB05F68230B84658AB32DCD945C17AA96B92D1A5B93F078847751B0364CB
+                    A073949BA40E830AB017E30CA6636025863B9FE1A2094C7DE4FD53EE066F915D
+                    44EC03CDB2E2EE6C04D53E0566258CFDF13B8FDBE639AC55317BD9E22B582F4E
+                    7D714337708C235D029D0206C845530C7776A50368B5CF9BC4011D5C7FC51075
+                    CC3E22CAC84FC67EEDA6105D4D07E0521C4872EF583B4FBC1D6AF8BD7DC5F305
+                    530978443D7F13592CBD71221D804F7137307F92354E679FD6C1104EF3E4FC1C
+                    616D91D1A53922CDC4FDEA403A80DF367D580723C223B0D4FDFE3AD174BD6DAD
+                    874137E274328BEA38AB532F74A405685F865205EFFB91EB411CC7FC2DC2E061
+                    0C6425CC1F067725CEF533E02AC0F9D578079ED9B4C5214981B056457ADE9432
+                    48645378FF1A34066EB011323D6959A64ECB38162944A915489E02A902368467
+                    61B5E39DC8151B716F35B0A138AFC93C7B91DEF33D5A6EF8727C8B9F3EF1E34E
+                    DE8AE351DD270C2AF1B6AC2344B603C7026281DC4FA7615D93E4ED1E6647412B
+                    AD501AC75911DCAB8D54A03882FDCFAB7973BDCC2F24DB009903B4AC822CFE11
+                    33572073FB019016E403C81B099B0000000049454E44AE426082}
+                  FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\On.png'
+                end>
+              Name = 'On'
+            end
+            item
+              MultiResBitmap.Height = 32
+              MultiResBitmap.Width = 32
+              MultiResBitmap.LoadSize = 0
+              MultiResBitmap = <
+                item
+                  Width = 32
+                  Height = 32
+                  PNG = {
+                    89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+                    F40000000473424954080808087C086488000002BB494441545885ED974D4F13
+                    511486DF7B66C64E2B7E4023208D0683AD1D137181BFC0B8722944232B833131
+                    D41D0B2326C65559C90EE23F70615919BB21AE5CE9C60D112C31101284925095
+                    76B0EDCC9CEBA22D322DB5C347D30DEFEADE3367EEFBDCE49EFB211095BD60DC
+                    462B4448AA65F3A996003062D412E35D52DD5D8E03B4DA5C4B0E01345E078056
+                    9112D34DF58FC851976353CD3CE818406D9C724019320C074300000509CC8BC5
+                    FD01ECB54111925810CB9E004AE6F1721B0026F605A0F997C62CF3D21397BFD8
+                    32D581AFEF8BA6F1D4334803D55F03AA79A53AC4CEE993C5AC7197C4D61CA2B2
+                    B7B900652927D2AB006200628A2FF3A602A2F997C66A920D1946443E8321C35E
+                    011A2E42454FAF3973DDD300E044655228B93BD269F309251771193B1822B179
+                    9F11BC46CAE643E6F659C8C64576802A901200186AAE624E32FF92A10FB31D04
+                    007031D807A0CFCB680D019C7CD77944E428699B1D82D2234EA14B07007BCBF8
+                    504AC010431F060041DB39C981B8D07EDF92D6999B470350EC0A0198622BF82F
+                    48D624A025AB732507E248890969C804608D03DA8346E37BDA0949FBB9E60AB0
+                    F6BD5286E4CB9CABF9615E2C025ACAD3D88D12145F7A89ADF67B0062A4667E95
+                    4C379E57CA90D4EC052F46070650F5F40A52E22352629AAD532F00800B9D3D3B
+                    BB64A1ED4753015C52B47742C99A0040FAFA08A2B2D7B683EB3BDF055F8421C3
+                    306498D4CCE0210158D48416C432E9E9D26694EF1EA8392B243D2691792B90FB
+                    CC76C7C02101F696635EFE5269ABFA4627142420F8F50EB6DD715D3A6D6721F2
+                    DB5EC6AB5B8656B6FF11C81C2C64FB67AA909360C440A6DF2E76CE60412CC390
+                    9370B002005A60E5AAF5A7E71B58FF04811B24B6FD4C81C4BE01CA65F6AA4EDC
+                    7D6F2C9DF5130060B9B367B9AE41653E2DD63140F5C324547D6F3F7A7168F7BC
+                    AB1F26E368BAE83FBD1648B4FA79FE174788F9875841B6090000000049454E44
+                    AE426082}
+                  FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\Rd.png'
+                end>
+              Name = 'Rd'
+            end
+            item
+              MultiResBitmap.Height = 32
+              MultiResBitmap.Width = 32
+              MultiResBitmap.LoadSize = 0
+              MultiResBitmap = <
+                item
+                  Width = 32
+                  Height = 32
+                  PNG = {
+                    89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+                    F40000000473424954080808087C08648800000216494441545885ED97B16B14
+                    5110C67FEF50042582049B031B2BCB20112CB690342A166291B392F80FE40FD0
+                    2EB6D61682A5764714315E215AC85AA54840AC348DC505028A1A142DEE8DC57D
+                    8B736FF7F64E216E73D3ECCE9B79DFF7BDD9376F77A1610B0006D61079683541
+                    ECED9077822A72D0E62BDE7805660266024A020CDA061D83764D6C52BC14AB35
+                    032B5A23C22B038BB0950219DC2C720D3A2979848F063680BBD3F25555E02D40
+                    800520F3B108979C7B34999A053825D0CDDA153B2B0968C19B31AADB012E3AFF
+                    EAB42413CD9744A5FCA9523E74391D577E8BF0DD3FA2013CD0F807ED85F3117A
+                    066707702FC256845ECA571200106143605F0B1283558D0DD27D20D17B12BD26
+                    8CAEF23F7BE1295F651B0678A6EB7120D38A6E28FCD4A59ED1350B705280EF12
+                    AC131274C7A09B728D3B073E257E16E05C21CE60472B5951858EC9FF06E41578
+                    AB2DB8DF82E56905E406BB02BD05CCB9D87E80DB12739A61A75C56EE4680BE07
+                    B2E1A65E4FC76B0504E81BACEB7E21C2A2C0DE57AC70CEE08AC09E54C0ED8E23
+                    1F2B4081D74ED0B2047405961B7CD1D8F5503E13A6B6BA77416EF04B02E695BC
+                    2DBFEF36D40509D9A1FAF9FF9B00ADF465CDC417CA3B2C018FEA4AFDD70204FE
+                    BCB8B7617BF915E6063F1CD048FB4DC2761C7FBED1D26F42B5D8127004E855EC
+                    F036C30ED807721F57EC1AF0B862DE285FE9683C609B7812FE4F9B09685CC0C8
+                    9F5113FF888D57A071FB0D43C5E6BFF6BA6C9E0000000049454E44AE426082}
+                  FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\Wr.png'
+                end>
+              Name = 'Wr'
+            end>
           Left = 944
           Top = 88
         end
@@ -405,16 +628,16 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       inline StorageFra: TStorageFra
         Align = Client
         Size.Width = 1000.000000000000000000
-        Size.Height = 684.000000000000000000
+        Size.Height = 904.000000000000000000
         Size.PlatformDefault = False
         inherited edtStorageBucket: TEdit
           Size.Width = 869.000000000000000000
         end
         inherited memStorageResp: TMemo
           Size.Width = 957.000000000000000000
-          Size.Height = 452.000000000000000000
+          Size.Height = 672.000000000000000000
           Viewport.Width = 953.000000000000000000
-          Viewport.Height = 448.000000000000000000
+          Viewport.Height = 668.000000000000000000
         end
         inherited edtStoragePath: TEdit
           Size.Width = 869.000000000000000000
@@ -442,13 +665,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       inline FunctionsFra: TFunctionsFra
         Align = Client
         Size.Width = 1000.000000000000000000
-        Size.Height = 684.000000000000000000
+        Size.Height = 904.000000000000000000
         Size.PlatformDefault = False
         inherited memFunctionResp: TMemo
           Size.Width = 957.000000000000000000
-          Size.Height = 413.000000000000000000
-          Viewport.Width = 957.000000000000000000
-          Viewport.Height = 413.000000000000000000
+          Size.Height = 633.000000000000000000
+          Viewport.Width = 953.000000000000000000
+          Viewport.Height = 629.000000000000000000
         end
       end
     end
@@ -470,29 +693,37 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       inline VisionMLFra: TVisionMLFra
         Align = Client
         Size.Width = 1000.000000000000000000
-        Size.Height = 684.000000000000000000
+        Size.Height = 904.000000000000000000
         Size.PlatformDefault = False
+        inherited gpbMLModel: TGroupBox
+          inherited rdbLatestModel: TRadioButton
+            TabOrder = 39
+          end
+          inherited rdbUnsetModel: TRadioButton
+            TabOrder = 38
+          end
+        end
         inherited gpbMLResult: TGroupBox
           Position.X = 674.000000000000000000
         end
         inherited layResult: TLayout
           Size.Width = 968.000000000000000000
-          Size.Height = 394.000000000000000000
+          Size.Height = 614.000000000000000000
           inherited sptMLVision: TSplitter
             Position.X = 660.000000000000000000
-            Size.Height = 394.000000000000000000
+            Size.Height = 614.000000000000000000
           end
           inherited lstVisionML: TListBox
             Size.Width = 660.000000000000000000
-            Size.Height = 394.000000000000000000
+            Size.Height = 614.000000000000000000
             Viewport.Width = 656.000000000000000000
-            Viewport.Height = 390.000000000000000000
+            Viewport.Height = 610.000000000000000000
           end
           inherited rctBackgroundML: TRectangle
             Position.X = 668.000000000000000000
-            Size.Height = 394.000000000000000000
+            Size.Height = 614.000000000000000000
             inherited imgAnotateFile: TImage
-              Size.Height = 394.000000000000000000
+              Size.Height = 614.000000000000000000
             end
           end
         end
@@ -500,16 +731,13 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           Viewport.Width = 950.000000000000000000
           Viewport.Height = 53.000000000000000000
           inherited lbiObjectLocalization: TListBoxItem
-            TabOrder = 39
+            TabOrder = 36
           end
           inherited lbiDocTextDetection: TListBoxItem
-            TabOrder = 40
-          end
-          inherited lbiLogoDetection: TListBoxItem
             TabOrder = 38
           end
-          inherited lbiWebDetection: TListBoxItem
-            TabOrder = 37
+          inherited lbiLogoDetection: TListBoxItem
+            TabOrder = 35
           end
           inherited lbiCropHints: TListBoxItem
             TabOrder = 45
@@ -522,8 +750,139 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
         end
         inherited memAnnotateFile: TMemo
-          Viewport.Width = 638.000000000000000000
-          Viewport.Height = 82.000000000000000000
+          Viewport.Width = 634.000000000000000000
+          Viewport.Height = 78.000000000000000000
+        end
+        inherited OpenDialogFileAnnotate: TOpenDialog
+          Top = 594
+        end
+        inherited SaveDialog: TSaveDialog
+          Top = 594
+        end
+      end
+    end
+    object tabGeminiAI: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      ImageIndex = 7
+      Size.Width = 88.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Gemini AI'
+      ExplicitSize.cx = 88.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      inline GeminiAIFra: TGeminiAIFra
+        Align = Client
+        Size.Width = 1000.000000000000000000
+        Size.Height = 904.000000000000000000
+        Size.PlatformDefault = False
+        inherited TabControlResult: TTabControl
+          Size.Width = 1000.000000000000000000
+          Size.Height = 111.000000000000000000
+          Sizes = (
+            1000s
+            85s
+            1000s
+            85s
+            1000s
+            85s
+            1000s
+            85s)
+          inherited tabHTMLRes: TTabItem
+            Size.Width = 139.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 139.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+          end
+          inherited tabMarkdownRes: TTabItem
+            Size.Width = 164.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 164.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited memMarkdown: TMemo
+              Size.Width = 1000.000000000000000000
+              Size.Height = 85.000000000000000000
+              Viewport.Width = 1000.000000000000000000
+              Viewport.Height = 85.000000000000000000
+            end
+          end
+          inherited tabMetadata: TTabItem
+            Size.Width = 71.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 74.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited lstMetaData: TListBox
+              Size.Width = 1000.000000000000000000
+              Size.Height = 85.000000000000000000
+              Viewport.Width = 1032.000000000000000000
+              Viewport.Height = 89.000000000000000000
+            end
+          end
+          inherited tabRawResult: TTabItem
+            Size.Width = 110.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 110.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited memRawJSONResult: TMemo
+              Size.Width = 1000.000000000000000000
+              Size.Height = 85.000000000000000000
+              Viewport.Width = 1000.000000000000000000
+              Viewport.Height = 85.000000000000000000
+            end
+          end
+        end
+        inherited expGeminiCfg: TExpander
+          Size.Width = 1000.000000000000000000
+          ContentSize = '440'
+          inherited layModelParams: TLayout
+            inherited Label13: TLabel
+              TextSettings.Font.StyleExt = {00040000000200000004000000}
+            end
+            inherited Label14: TLabel
+              TextSettings.Font.StyleExt = {00040000000200000004000000}
+            end
+            inherited Label15: TLabel
+              TextSettings.Font.StyleExt = {00040000000200000004000000}
+            end
+            inherited Label16: TLabel
+              TextSettings.Font.StyleExt = {00040000000200000004000000}
+            end
+            inherited memStopSequences: TMemo
+              Viewport.Width = 314.000000000000000000
+              Viewport.Height = 43.000000000000000000
+            end
+            inherited Label18: TLabel
+              TextSettings.Font.StyleExt = {00040000000200000004000000}
+            end
+          end
+        end
+        inherited layPrompt: TLayout
+          Size.Width = 1000.000000000000000000
+          inherited memGeminiPrompt: TMemo
+            Size.Width = 592.000000000000000000
+            Viewport.Width = 588.000000000000000000
+            Viewport.Height = 276.000000000000000000
+          end
+          inherited layMedia: TLayout
+            Position.X = 600.000000000000000000
+            inherited btnClearMedia: TButton
+              TabOrder = 6
+            end
+          end
+          inherited Splitter2: TSplitter
+            Position.X = 592.000000000000000000
+          end
+          inherited lblGeminiPrompt: TLabel
+            Size.Width = 90.000000000000000000
+          end
+        end
+        inherited Splitter1: TSplitter
+          Size.Width = 1000.000000000000000000
         end
       end
     end
@@ -627,7 +986,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
       Text = 'Open Firebase Console'
-      TabOrder = 13
+      TabOrder = 14
       OnClick = lblOpenFBConsoleClick
     end
     object lblOpenFBConsoleForProject: TLabel
@@ -753,6 +1112,24 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TabOrder = 7
       OnClick = lblOpenFBConsoleForVisionMLClick
     end
+    object lblOpenAIStudio: TLabel
+      Anchors = [akTop, akRight]
+      AutoSize = True
+      Cursor = crHandPoint
+      StyledSettings = [Family, Size, FontColor]
+      HitTest = True
+      Position.X = 750.000000000000000000
+      Position.Y = 4.000000000000000000
+      Size.Width = 200.000000000000000000
+      Size.Height = 16.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {04040000000000000004000000}
+      TextSettings.HorzAlign = Trailing
+      Text = 'Open Google AI Studio'
+      Visible = False
+      TabOrder = 13
+      OnClick = lblOpenAIStudioClick
+    end
   end
   object imgLogo: TImage
     MultiResBitmap.Height = 50
@@ -763,106 +1140,106 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Height = 50
         PNG = {
           89504E470D0A1A0A0000000D49484452000000320000003208060000001E3F88
-          B10000000473424954080808087C08648800000C4E494441546881ED995B9065
-          E55580BFB5F73EF7EE3EE7F47DBA7BBA33CC30C05C3ACC4C6008882952608226
-          A825084621310F929758D12A2DF3444CF1804F6A39542C130A4940218404A5A2
-          90C4E8186A0C8430419C6BE69A69E6D6D397D3A7CF755F960FFFDE7D769FEE9E
-          EE8658E543FEAA55E7B6CFFAD7B7D7FAD75AFFBFE117E317E3FF64C8FFA379F5
-          E7ADF0BD0EFB14F47642C186940716200AC13CD4BE07D30F4309F0003B940003
-          D22E6B1EEF0544A2C9BE0E99BBE1E6247CC4865B2DD80C1405921810050285AA
-          0F977C385483FDC761FF5E3801F8803D02C18481F2A3FFAC1768BD000270100A
-          75F88C073F5263A8AE477C98ADC2370EC3AF01DD405737740139200D24301EFB
-          B9474EA450AA70BF0FFFB35EE3979300BC0ABCF00ADC0A14819E22E443A014E0
-          1086E87B26F88251C45BD0EFC1532B1A9690770DE4C1E469F81C30040C0C430F
-          C643194C98BE37EF44101761870F6F5ED5A0CFF7AA7EB2CBBC9777077409FE16
-          D8020C0F403F50A0E59D770713414CC2EE00CE5CDD0851DD37A0FAA501D5A4BD
-          F8B775424DC273C036602C0B1B306BA88356A8AD1D26829880AD019C5CD58011
-          47F52B03AACF0FAAFE41DE7CB73BA53A9E7A579EB9005F056E00AEC1845B4F0C
-          669167ACAB70C81740BF0EF94178428CB2AB8F31DB44B206B03B098504DCDF01
-          F765438DE175D7A421BDFA0D1D84078FC043403205594C264B61B2D9A20460AF
-          04115E143C0D8F26E081556705B83905E349733F538A5E9F423662227C3E8093
-          3EDCDF0F7FF63E98ADC3B1FAAA2A0BB07B271C7C16265360F92B14CF953C2280
-          7F197E39017FB8260880BE44582695C053EA5D10680049855F4AC0AFF7C1C3C3
-          30E2C0706A4D2A1DC8DE059F058A0D93BD32B4BC62137A653990A8E0A58AF0F9
-          B03AAF6DF488694650BC0A04A5006F4EC175D1EB8BF0C72350B4404187D26B56
-          5B809B5E85BB8054B21562C938CC4A20FE147CC8818FAC7936804E0B08F03DF0
-          4A8A88E24D7B787611DED7677EF715449181C4BA546F877B819EE652AF38CB81
-          44DEB03BCC225B738AF36DC12F0001786585A682EF41B18835D68738629A184C
-          4ED2E2FA40BA60DB0BB01BE38D0C2DAF3880BD1C08AFC1A80377AE6722DD6AA3
-          49F05DC59F53D473A1A7487A4F1F565A4C0288D666A048C182C19572CDD26101
-          BBE0764C6845200B6B653990E01AB8C5828175816CB2B053E0CD295A75919E42
-          0B228827188C47D216BA3DBB9E29E8859D3BA08F567845EBC4590EC4CAC02DEB
-          9A01A0DBC6F7C19FF690DE02E90FF4AF08812A9206195B7B1EC158DEFF69D888
-          F144E491643B48543B3249D8BE9E09146040F04A2E74E5978750168797256B4E
-          C1D17020716D0B249204E0386D203C05DD166C5ACF0482E063133879D2E3CB41
-          680C397C6F290CAE6FC103F4432FC60B913792CB826C33D5A06F3DCA03141D2A
-          90BEB10F2BB54C38B543441EEA71DA55AD3AB2ADB5B100C172A195868C98F85B
-          F310043B998EF5A42B8453046183D67D74629516C5B24016570031B344F563E1
-          7DBB47AC466B8FBD0E10C5F9EC4F69FE6E1EF9CD41529BD2C600BF0DC256D40D
-          F08E5570BE751979A17675C541B0E42B35F63931B101ABDDB7D6243402A8857D
-          2C3ADC0FB9CCAA688292FA96E2FF4B8DFAC336F61D09127D8BD747E33CF09D00
-          679F42BE0FBDD6FCF32A4AA1D640CE5D5CF8CA332F764C2CC06EF788F3CF3077
-          075CB221CF6037C19631F36B790652194824C10A0B992A78AEF90E60D8B45A89
-          5714EFC701B5BB0392BBEA046E1DF74779EC971D9C9A05B7E5086AF3E024201D
-          D612B769F46800BE6F8245413C1FB93809AE0FC02C3443E3E3B2A469942F41C5
-          85B3005A2C806343AE1379E0D3C8ED77C2C010B8AE01B06DB87E2734EA06AAD9
-          80C087AC4BA20289C79B04CF5D07FF7E37A96704A751878C0783C3C87D0F22B7
-          7D186A15D3CA6CDD6600321DB0F93A635A671E158C0DE1380B732C3E881040DA
-          434B006F1E8E76C05D32390BC54E18DB82ECFE00FAF24BC88D7BE0F63BCCA49E
-          8B6C1842378E9AAD4F32812412E8E42432B801EBD0DBD0DD876CDE8C7E72C804
-          C0CC14546AE07A3034843CF029039F4AC3F82E532CFBFAD10BEFA0470FC3E58B
-          0B3637A0F9164CD1DA10AEB843544026E0270A70651AA937CCDD992BA1A74E22
-          031BA0D1407A7B915C0EAD5490BE3E6464041918846C0E197F3F148BD0D50517
-          27CC1D4F2491C141F4F449334D571E9C04D2DF8FE472483289643248B11B9DF8
-          19522822F90252AD42AD014009A6FED27824B27561E53A6D100AD84FC3A19D70
-          2E051BC5F5D10B13042FBE0017CE11ECFF3728CF414F586AB239B4320FE93434
-          9B904CA2E5325228A2674F99BDC8F75E41360C13BCF13A4C5E42E7CAE6265C38
-          8FD6AA48BE009E87BC7F17C17FBD6AF467B268B984E5B5B2CC09386D1CB3606B
-          10493C6524309D650790390F8F6C80DFD3A17E822DA366312653E6D5B2CD5D76
-          1B70E2180CF4825F87AE41289D37BF37CB901B84DE11133AB397A159850D5BE0
-          C271A8962099042707C52193481C07AA1593043400CBC63E7A0A266770C1FF22
-          3CF3A839622D61426C3A7C9D6DF74844C87FC2B7EF857BEDF397D3FED0007647
-          C62CE82843792E8CDF8CF5178FA373B3C6F837DF80D13118DC60AE3D7B1AFDEA
-          DF81DB40EEBE0FAEDF86EE7B0C79EC09701CC4B6D1B367D0271F6FE94C85B558
-          1CACB979989C01E02C9C79142E87767A31F1013FBE4622101FE001387205BE0B
-          609FBF18AB07E168D6909151181C449FFA0AFAECD7D003FB916BB7C2EB3F449F
-          7B1AD9FB41D8BA033A0BC86FFD36B27D8759CCD76C86EF7F97E0A517915DBB91
-          7BEE37E93D964425089073170C1FE88BF01626F5BAA1AC0E920E2F7C169E6942
-          C93E3F894E97DADA05415D17C9E5B0EEFB04F2ABF7402A059685DC763BD6EF3C
-          04D52ABC7500F9D467E0E8119899313A5C17FDD919F88727D09F1C841D3B61F6
-          6C4CB52093530BDE380CC7FE04CE85F645208BA09603F1EAE07540F039387118
-          9E04B00F9D40E72B2D18012C0B6D34D013C7E1D44913DFBE8FFEF438FA83FF00
-          DF47FEE81164E73864B3303A86ECBAD5B41E9E6BF24F22019E0F566201C22ACF
-          23474E03300BE547E08DD0E0464C9AE1AB0B78ED75240A2D77DE5C98D9052F4D
-          C08EE120B8D37AFB38FEAE1BB0326913228E03F53AFAE547A17793B905769808
-          2A15931CCA65F407FB9191514404F53C48A7919B3E087BF622E337A2CFFF2374
-          8F9926B15A43FEFB18180B83AFC18117613A69726203A8C7A4198AD7BE698E36
-          57366027C1F1C13E08C73E0ED765FD6050A666D042A7C9FB851E530FDE3E04B9
-          BCC96837EE45F6DC846CDB811EFC31FAE43EF8FEB36855C071D0E7BF8C7CE8A3
-          C8AE3DC8D030FA9D7F455FF9267416915219EBED6348D343817F821FFE3E1CB1
-          A0E1C13C46CAA1CC0315A00A34DA3BB6A8B34C13A6E23CE44BD0F10918FD2BF8
-          D33ED8A180BF7D3374E5905A090A03261988C0CC25A8954C164BE6A03860EE8F
-          EF42750EBA7AE0F259F359808E5E24D3894C4E2147CF2C84C5B7E1F57BCC02AF
-          5A3017C02C301393594C70CE03B5761009BD910C6172406727E4CBD0F16118FE
-          7B787863B8A7F7FB8A041B37201D59243A596ACF6ECB8D689D0501529EC73AF3
-          0ECC9401A881FB0D78ED213802342C2887101148F47E2EF4CCB21E2104714298
-          6C0CA6AB6C1EBA140FC0C777C33DA97003E6F71709FA7BA133078E8D58D662B0
-          D070D500F515CBF5B0CA65B87005992E2D4CFC0E4CEE83D71E83F340D3824A60
-          8A5F2906518A415408D7CA7220915712B40EC37240671AF2F5F019DF17E18607
-          E1631B61DC0E7B36158B209F23C87760F7F62256000D17D249D483606A0AA6E7
-          70CA55E21B9C12545F85C31F83A340C5316BA2121A3B171A1F8788D6478D3073
-          ADB4AB89D64AB4C98F3CD30174D9D0E59BF7F9BF861B7E056E1985EBB2E6BB35
-          0D0FF40A4CBF09A7FE064EBE1C3EB20E21AAB4167604127921F2C40204E0AF04
-          1265AF044B3DD30174DAD0E91BEF6481DCBD30F01BB0691B8CF5407F17143390
-          75C056D08649E99529284DC0950370F1CF4D9F54C35466373086D5580A120788
-          433431E5225809248289422C0E13F74E67F89AA375B09C02B27BA1E356C87543
-          A209D629F09E89DD415ACF35BCA0550FEAA191155AE9369228D5C6213CC2E725
-          AB1D524735251E66516A8E8022693F935D74381093A805F74389DA8D666864E4
-          914A4CAAA1D4895573624DEE6A074BEDC718F163113F5416191285C5A2A34C5A
-          8FC8AC361DF1FFBBB4AA751C26F240BC922F81580B4834B1DFF6396A65E220F5
-          10227E4A1E3D88891E5C4ADBFFE31E897AA8384CE4818556643988F580402CAE
-          63C6448AA386AE4E2B04E38768D16181B0D4235ECCD0064B1BC3C80B11F81208
-          80FF05347EFCA15CB393660000000049454E44AE426082}
+          B10000000473424954080808087C08648800000C50494441546881ED995B9065
+          657580BFB5F73EF7EE3EE7F47DBA7BBA1D6618602E2D3D230C4288D18218621C
+          931202318AC687E08B2993AAA4E24BB4220FE429B10ACA549422282420994841
+          19058D66224504914BC83017E6CAB4736BFA72FAF4B9EECBCAC3BF779FDDA7BB
+          A7BBC154E5C1BF6AD5B9EDB3FEF5EDB5FEB5D6FF6FF8D5F8D5F83F19F2FF685E
+          FD652B7CB7C33E09BD9D50B021E581058842B000B51FC2CC3D50023CC00E25C0
+          80B4CBBAC7BB019168B26F43E636B83E091FB6E14681AD4051208901512050A8
+          0670D187433538780C0EEE83E3800FD823104C1A283FFACF4681360A2000AF40
+          A10E9FF3E06781315437221ECC55E15FDE808F00DD405737740139200D24301E
+          FBA5474EA450AA70A70FFFB351E357121FBC0A1C78066E048A404F11F221500A
+          700843F45D137CD928E235E86FC2C3AB1A9690770CE4C2D429F80230040C0C43
+          0FC643194C98BE3BEF44101760970F2F5FD6A02FF6AA7EBACBBC9777067411FE
+          1ED8060C0F403F50A0E59D770613414CC11E1F4E5FDE0851BD7F40F56B03AA49
+          7BE96F1B849A82C7811DC058163661D65007AD505B3F4C043109DB7D38B1A601
+          238EEA3706549F1854FDE3BCF96E4F4A753CF58E3C731EBE095C035C8109B79E
+          18CC12CF5897E1902F837E1BF283F0A065945D7E8CD9269235803D492824E0CE
+          0EB8231B6A0CAFBB220DE9B56FE8207CEA30DC0D245390C564B214269B2D4900
+          F66A10E145C123706F02EE5A735680EB53309E34F733A5E8D529643326C21702
+          38E1C39DFDF097EF81B93A1CADAFA9320F7B76C32B8FC1540A2C7F95E2B99A47
+          04F02FC1AF3BF027EB8200E84B846552093CA5DE0581069054F8B5047CAC0FEE
+          198611078653EB529980ECADF079A0D830D92B43CB2B36A1575602890A5E2A0F
+          5FB44CB0AC6FF488694650BC0A04A5006F5EC175D1AB8BF0672350B4404187D2
+          EB565B80EB9E835B8154B21562C938CC6A20FE347C20011F5EF76C009D1610E0
+          7BE0951411C59BF1F0EC22BCA7CFFCEE2B882203890DA9DE09B7033DCDE55E71
+          560289BC6167E16ED9408AF36DC12F0001786585A682EF41B18835D68738629A
+          184C4ED2E2C640BA60C701D883F1468696571CC05E098417603401B76C6422DD
+          6EA349F05DC59F57D473A1A7487A6F1F565A4C0288D666A048C182C1D572CDF2
+          610113703326B42290C5B5B212487005DC60C3C08640B658D829F0E615ADBA48
+          4FA10511C4130CC623690BDD99DDC81474C3EE5DD0472BBCA275E2AC046265E0
+          860DCD00D06DE3FBE0CF78486F81F4FBFA5785401549838CAD3F8F0064A1FFB3
+          B019E389C823C97690A8766492B073231328C080E0955CE8CAAF0CA12C0D2F4B
+          D69D82A39180C4952D90481280E3B481F030745BB065231308828F4DE0E4498F
+          AF04A131E4F0BDA530B8B1050FD00FBD182F44DE48AE08B2C3F4337D1B511EA0
+          E85081F4B57D58A915C2A91D22F2508FD3AE6ACD916DAD8D4508560AAD3464C4
+          C4DFBA8720D8C974AC275D259C22081BB4EEA3936BB4289605B2B402889925AA
+          1F8BEFDB3D62355A7BEC0D8028CEE7DFA4F98779E4F706496D491B03FC36085B
+          5137C03B5AC1F9CE25E440EDF28A8360D9576AEC7362620356BB6FAD29680450
+          8B5A131DEE875C664D3441497D47F1FFAD46FD1E1BFB8309127D4BD747E31CF0
+          6C8073BF42BE0FBDD2FCF3324AA1D640CE5E58FCCA332F764C2CC06EF788F314
+          CCFF065C7420CF6037C1B631F36B791652194824C10A0B992A78AEF90E60D8B4
+          5A896714EFE701B5DB0292137502B78EFBB33CF6F71D9C9A0537E5086A0BE024
+          201DD612B769F46800BE6F8245413C1FB93005AE0FC01C3443E3E3B2AC6994AF
+          41C58333005A2C806343AE13B9EBB3C8CDB7C0C010B8AE01B06DB87A3734EA06
+          AAD980C087AC4BA20289079A048F5F053FBE8DD4A382D3A843C683C161E48E4F
+          21377D086A15D3CA6CDF6100321DB0F52A635A671E158C0DE13803F32C3D8810
+          40DA434B006F018E74C0AD323507C54E18DB86EC791FFAFDA7916BF7C2CD1F34
+          937A2EB26908DD3C6AB63EC9049248A05353C8E026AC43AF43771FB2752BFAE9
+          211300B3D350A981EBC1D01072D7670C7C2A0DE313A658F6F5A3E77F811E7903
+          2E5D58B4B90ECDD7609AD68670D51DA2023209AF2AC0DB3348BD61EECE7C093D
+          790219D8048D06D2DB8BE47268A582F4F5212323C8C0206473C8F87BA15884AE
+          2EB83069EE7822890C0EA2A74E9869BAF2E02490FE7E24974392492493418ADD
+          E8E45B48A188E40B48B50AB506002598FE5BE391C8D6C595EBB44128603F0287
+          76C3D9146C16D747CF4F123C7900CE9F2538F8EF509E879EB0D46473686501D2
+          696836219944CB65A45044CF9C347B911F3E836C1A2678E94598BA88CE97CD4D
+          387F0EAD55917C013C0F79EF04C17F3D67F467B268B984E5B5B2CC9B700A68C4
+          6C0D2289A78C04A6B3EC003293F0A561F8A40EF5136C1B358B319932AF966DEE
+          B2DB80E34761A017FC3A740D42E99CF9BD5986DC20F48E98D099BB04CD2A6CDA
+          06E78F41B504C9243839280E9944E23850AD9824A0015836F6919330354B13FC
+          AFC0A3F79A23D61226C466C2D7B9768F44843C07DFFD38DCEE9CBB94F68706B0
+          3B3266414719CA7361FC7AACBF79009D9F33C6BFFC128C8EC1E02673ED9953E8
+          37FF01DC0672DB1D70F50EF4FEFB90FB1E04C7416C1B3D731A7DE88196CE5458
+          8BC5C19A5F80A95900DE82D3F7C2A5D04E2F263EE0C7D74804E203DC0587A7E1
+          0700F6B90BB17A108E660D191985C141F4E16FA08F7D0B7DFE2072E57678F1A7
+          E8E38F20FBDE0FDB77416701F9F8EF233B7799C57CC556F8D10F089E7E1299D8
+          83ECBFD3A4F75812952040CE9E07C0057D125EC3A45E3794B541D2E1858FC1A3
+          0D28D9E7A6D099525BBB20A8EB22B91CD61D9F407E7B3FA4526059C84D3763FD
+          C1DD50ADC26BCF239FF91C1C390CB3B34687EBA26F9D867F7A107DF515D8B51B
+          E6CEC4540B3235BDE88D37E0E89FC3D9D0BE086409D44A205E1DBC0E08BE00C7
+          0FC34300F6A1E3E842A505238065A18D067AFC189C3C61E2DBF7D1378FA13FF9
+          0FF07DE44FBF84EC1E876C1646C790891B4DEBE1B926FF2412E0F960251621AC
+          F20272F814007350FE2B782934B8119366F8EA025E7B1D8942CB5D30176626E0
+          E9B760D7E620B8C57AFD18FEC4355899B40911C7817A1DFDFABDD0BBC5DC023B
+          4C04958A490EE532FA9383C8C82822827A1EA4D3C875EF87BDFB90F16BD127FE
+          19BAC74C9358AD21FF7DD4442F04DF82E79F8299A4C9890DA01E9366285EFBA6
+          39DA5CD9809D04C707FB5538FA51B82AEB0783323D8B163A4DDE2FF4987AF0FA
+          21C8E54D46BB761FB2F73A64C72EF4959FA30FDD0F3F7A0CAD0A380EFAC4D791
+          0FFC1632B117191A469FFD1EFACCBF4267112995B15E3F8A343D14780A7EFA47
+          70D88286070B182987B20054802AD068EFD8A2CE324D988AF3902F41C72760F4
+          EFE02FFA609702FECEADD095436A25280C98642002B317A15632592C9983E280
+          B93FBE0BD579E8EA814B67CC67013A7A914C2732358D1C39BD1816DF8517F79B
+          055EB5603E80396036267398E05C006AED20127A2319C2E480CE4EC897A1E343
+          30FC8F70CFE6704FEFF71509366F423AB24874B2D49EDD561AD13A0B02A4BC80
+          75FA17305B06737BDD03F0C2DD70186858500E212290E8FD7CE899153D4208E2
+          8430D9184C57D93C74293E0F1F9D80FDE97003E6F71709FA7BA133078E8D58D6
+          52B0D070D500F515CBF5B0CA6538FF3632535A9C7812A61E8017EE837340D382
+          4A608A5F2906518A415408D7CA4A20915712B40EC37240671AF2F5F019DF5FC3
+          359F84DFD90CE34ED8B3A95804F91C41BE03BBB717B10268B8904EA21E04D3D3
+          30338F53AE12DFE094A0FA9FF0C67E3802541CB3262AA1B1F3A1F17188687DD4
+          0833D76ABB9A68AD449BFCC8331D40970D5DBE799FFF2A5CF39B70C3285C9535
+          DFAD6BB8A0D330F3329CFC2A9C78367C641D4254692DEC0824F242E4894508C0
+          5F0D24CA5E09967BA603E8B4A1D337DEC902B9DB61E07761CB0E18EB81FE2E28
+          A621EB80ADA00D702B509986D224BCFD1C5CF88AE9936A98CAEC06C6B01ACB41
+          E200718826A65C04AB8144305188C561E2DEE90C5F73B40E965340761F74DC08
+          B96E4834C13A09DEA3B13B48EBB98617B4EA413D34B2422BDD4612A5DA388447
+          F8BC64AD43EAA8A6C4C32C4ACD115024ED67B24B0E076212B5E07E2851BBD10C
+          8D8C3C52894935943AB16A4EACC95DEB60A9FD18237E2CE287CA2243A2B05872
+          9449EB1199D5A623FE7F9756B58EC3441E8857F26510EB018926F6DB3E47AD4C
+          1CA41E42C44FC9A30731D1834B69FB7FDC23510F1587893CB0D88AAC04B11110
+          88C575CC984871D4D0D5698560FC102D3A2C10967BC48B19DA60796318792102
+          5F0601F0BF4743FC9C25527B7A0000000049454E44AE426082}
         FileName = 
           'C:\Users\ChristophSchneider\Documents\Project\FB4D\Samples\Intro' +
           '\res\logoFB4Dsmall.png'
@@ -1119,6 +1496,38 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             FileName = 'D:\Christoph\Projects\FB4D.wiki\IconML.png'
           end>
         Name = 'IconML'
+      end
+      item
+        MultiResBitmap.Height = 32
+        MultiResBitmap.Width = 32
+        MultiResBitmap.LoadSize = 0
+        MultiResBitmap = <
+          item
+            Width = 32
+            Height = 32
+            PNG = {
+              89504E470D0A1A0A0000000D4948445200000020000000200806000000737A7A
+              F40000000473424954080808087C0864880000020F494441545885ED96B16B13
+              7114C73F574B68308729A12A966024A545C541A12951DA4EA2441C8A43408BFE
+              052ECE1D9D5DC4C1C1A1458319DC4C44858A0D4513414191D292E095A3D2F488
+              39B9EAB535F5E7200DB45CEBDDFD8638E43BBEDFFBBDF7E1FBBBF73868AB2D49
+              E95F6B42E67E872CC046E397D47D2900CB5E17C69241CDDEF4ED82A4033A0B4F
+              165994A82007A097291A1F99D75B0060D9DFC58742098D3572854F547D3E836F
+              808D2F05B2330D00EA332F98F6E9822F00CB2C8B5CB684D68CACF2F0D133DE9B
+              DE5DF00C60D935319BC990D5761C6825EE64DE51F1F8149D9E9AAF2E8BD9C97B
+              DC2D361CCFEBC53CB73B1ACC999BE278789FE2A6A6AB24806AE5ADC84EE579AE
+              B9488E9DE0E6F5CB5C8CEFFF67FD3D132C7B5DFC5C9E633A9F27575AA3EE9616
+              804E7A1309C653494E1E0E11093A3BB22D68D93FC48A6E6003DFE65FF2F4B5CE
+              67C3535767F58439373A4A7A204220A4123D1269F6FDBF1CD84B2DF90676CA32
+              97C4ABC70FB8FFC6790A000E26534C8C0F120FB99B024F63A8867B15CBAE89C0
+              6FE751EC1E4A31716390F82E764B0300A8C188629965B1529DDABE8C62096E5D
+              F5D61C7CAE6235DCA78C5D3B4B7F33D2453A7D9E332E978F340000D12463237F
+              0DEC1E4971E1986733E500D4E001E5F47082185D5C1A3EC5218FD66FC91FF696
+              A27D0CF5341888FA2F21074094FE2B3647E58AC8A9B2A0B5F6B73C1052654BB4
+              D55AFD01916FC7EAC9E8A39E0000000049454E44AE426082}
+            FileName = 'D:\Christoph\Projects\FB4D\Samples\Intro\res\IconGeminiAI.png'
+          end>
+        Name = 'IconGeminiAI'
       end>
     Destination = <
       item
@@ -1173,6 +1582,14 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Layers = <
           item
             Name = 'IconML'
+            SourceRect.Right = 32.000000000000000000
+            SourceRect.Bottom = 32.000000000000000000
+          end>
+      end
+      item
+        Layers = <
+          item
+            Name = 'IconGeminiAI'
             SourceRect.Right = 32.000000000000000000
             SourceRect.Bottom = 32.000000000000000000
           end>

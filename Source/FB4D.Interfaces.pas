@@ -67,6 +67,11 @@ const
   cRegionASSoEa2 = 'asia-southeast2';         // Jakarta
   cRegionASSoEa3 = 'asia-southeast3';         // Seoul
 
+  cGeminiAIPro1_0 = 'gemini-1.0-pro';
+  cGeminiAIPro1_5 = 'gemini-1.5-pro';
+  cGeminiAIFlash1_5 = 'gemini-1.5-flash';
+  cGeminiAIDefaultModel = cGeminiAIPro1_5;
+
 type
   // Forward declarations
   IFirebaseUser = interface;
@@ -301,14 +306,31 @@ type
   /// <param name="Res">The IVisionMLResponse object containing the annotation results.</param>
   TOnAnnotate = procedure(Res: IVisionMLResponse) of object;
 
+  /// <summary>
+  /// Event handler signature for receiving generated content from a Gemini AI API call.
+  /// </summary>
+  /// <param name="Response">The IGeminiAIResponse object containing the generated content.</param>
+  TOnGeminiGenContent = procedure(Response: IGeminiAIResponse) of object;
+
+  /// <summary>
+  /// Event handler signature for receiving token count information from a Gemini AI API call.
+  /// </summary>
+  /// <param name="PromptToken">The number of tokens in the prompt.</param>
+  /// <param name="CachedContentToken">The number of tokens in the cached content (if any).</param>
+  /// <param name="ErrorMsg">An error message if the token count operation failed.</param>
+  TOnGeminiCountToken = procedure(PromptToken, CachedContentToken: integer; const ErrorMsg: string) of object;
+
   {$REGION 'Internaly used OnSuccess Structure'}
   TOnSuccess = record
-    type TOnSuccessCase = (oscUndef, oscFB, oscUser, oscFetchProvider,
-      oscPwdVerification, oscGetUserData, oscRefreshToken, oscRTDBValue,
-      oscRTDBDelete, oscRTDBServerVariable, oscDocument, oscDocuments,
+    type TOnSuccessCase = (oscUndef,
+      oscFB, oscUser, oscFetchProvider, oscPwdVerification, oscGetUserData, oscRefreshToken,
+      oscRTDBValue, oscRTDBDelete, oscRTDBServerVariable,
+      oscDocument, oscDocuments,
       oscDocumentDeleted, oscBeginReadTransaction, oscCommitWriteTransaction,
-      oscStorage, oscStorageDeprecated, oscStorageUpload, oscStorageGetAndDown,
-      oscDelStorage, oscFunctionSuccess, oscVisionML);
+      oscStorage, oscStorageDeprecated, oscStorageUpload, oscStorageGetAndDown, oscDelStorage,
+      oscFunctionSuccess,
+      oscVisionML,
+      oscGeminiGenContent, oscGeminiCountToken);
     constructor Create(OnResp: TOnFirebaseResp);
     constructor CreateUser(OnUserResp: TOnUserResponse);
     constructor CreateFetchProviders(OnFetchProvidersResp: TOnFetchProviders);
@@ -336,6 +358,8 @@ type
     constructor CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
     constructor CreateFunctionSuccess(OnFunctionSuccessResp: TOnFunctionSuccess);
     constructor CreateVisionML(OnAnnotateResp: TOnAnnotate);
+    constructor CreateGeminiGenerateContent(OnGeminiGenContent: TOnGeminiGenContent);
+    constructor CreateGeminiCountToken(OnGeminiCountToken: TOnGeminiCountToken);
     {$IFNDEF AUTOREFCOUNT}
     case OnSuccessCase: TOnSuccessCase of
       oscFB: (OnResponse: TOnFirebaseResp);
@@ -365,6 +389,8 @@ type
       oscDelStorage: (OnDelStorage: TOnDeleteStorage);
       oscFunctionSuccess: (OnFunctionSuccess: TOnFunctionSuccess);
       oscVisionML: (OnAnnotate: TOnAnnotate);
+      oscGeminiGenContent: (OnGenerateContent: TOnGeminiGenContent);
+      oscGeminiCountToken: (OnCountToken: TOnGeminiCountToken);
     {$ELSE}
     var
       OnSuccessCase: TOnSuccessCase;
@@ -392,6 +418,8 @@ type
       OnDelStorage: TOnDeleteStorage;
       OnFunctionSuccess: TOnFunctionSuccess;
       OnAnnotate: TOnAnnotate;
+      OnGenerateContent: TOnGeminiGenContent;
+      OnCountToken: TOnGeminiCountToken;
     {$ENDIF}
   end;
 
@@ -1108,28 +1136,490 @@ type
   end;
   {$ENDREGION}
 
+  {$REGION 'Gemini AI'}
+
   /// <summary>
-  /// The interface IFirebaseConfiguration provides a class factory for
-  /// accessing all interfaces to the Firebase services. The interface will be
-  /// created by the constructors of the class TFirebaseConfiguration in the
-  /// unit FB4D.Configuration. The first constructor requires all secrets of the
-  /// Firebase project as ApiKey and Project ID and when using the Storage also
-  /// the storage Bucket. The second constructor parses the google-services.json
-  /// file that shall be loaded from the Firebase Console after adding an App in
-  /// the project settings.
+  /// Holds metadata about the usage of the Gemini AI API.
+  /// </summary>
+  TGeminiAIUsageMetaData = record
+
+    /// <summary>
+    /// The number of tokens used in the prompt.
+    /// </summary>
+    PromptTokenCount: integer;
+
+    /// <summary>
+    /// The number of tokens generated in the response (CandidatesTokenCount).
+    /// </summary>
+    GeneratedTokenCount: integer;
+
+    /// <summary>
+    /// The total number of tokens used (prompt + generated).
+    /// </summary>
+    TotalTokenCount: integer;
+
+    /// <summary>
+    /// Initializes the metadata record with default values.
+    /// </summary>
+    procedure Init;
+  end;
+
+  /// <summary>
+  /// Enumerates the possible states of a Gemini AI result.
+  /// </summary>
+  TGeminiAIResultState = (
+    grsUnknown,       // The result state is unknown.
+    grsTransmitError,  // An error occurred during transmission.
+    grsParseError,     // An error occurred while parsing the response.
+    grsValid,          // The result is valid.
+    grsBlockedBySafety, // The result was blocked by the safety system.
+    grsBlockedbyOtherReason // The result was blocked for another reason.
+  );
+
+  /// <summary>
+  /// Enumerates the possible reasons for a Gemini AI generation to finish.
+  /// </summary>
+  TGeminiAIFinishReason = (
+    gfrUnknown,      // The finish reason is unknown.
+    gfrStop,         // The generation reached a natural stopping point.
+    gfrMaxToken,     // The generation reached the maximum token limit.
+    gfrSafety,       // The generation was stopped for safety reasons.
+    gfrRecitation,   // The generation was flagged as potential recitation of existing content.
+    gfrOther         // The generation finished for another reason.
+  );
+
+  /// <summary>
+  /// A set of TGeminiAIFinishReason values when getting more than one candidate.
+  /// </summary>
+  TGeminiAIFinishReasons = set of TGeminiAIFinishReason;
+
+  /// <summary>
+  /// Enumerates the different categories of potential harm in AI-generated content.
+  /// </summary>
+  THarmCategory = (
+    hcUnspecific,         // Unspecified harm category.
+    hcHateSpeech,        // Hate speech.
+    hcHarassment,         // Harassment.
+    hcSexuallyExplicit,   // Sexually explicit content.
+    hcDangerousContent,   // Dangerous content.
+    hcCivicIntegrity,     // Content that undermines civic integrity.
+    hcDangerous,          // Dangerous content.
+    hcMedicalAdvice,      // Unsolicited medical advice.
+    hcSexual,             // Sexual content.
+    hcViolence,           // Violent content.
+    hcToxicity,           // Toxic or abusive language.
+    hcDerogatory          // Derogatory or offensive language.
+  );
+
+  /// <summary>
+  /// Enumerates the levels of probability and severity for a safety rating.
+  /// </summary>
+  TProbabilityAndSeverity = (
+    psUnknown,     // Unknown probability or severity.
+    psNEGLIGIBLE, // Negligible probability or severity.
+    psLOW,         // Low probability or severity.
+    psMEDIUM,      // Medium probability or severity.
+    psHIGH         // High probability or severity.
+  );
+
+  /// <summary>
+  /// Holds information about the safety rating of a Gemini AI result.
+  /// </summary>
+  TSafetyRating = record
+
+    /// <summary>
+    /// The probability level of the harm category.
+    /// </summary>
+    Probability: TProbabilityAndSeverity;
+
+    /// <summary>
+    /// The probability score (typically a value between 0 and 1).
+    /// </summary>
+    ProbabilityScore: extended;
+
+    /// <summary>
+    /// The severity level of the harm category.
+    /// </summary>
+    Severity: TProbabilityAndSeverity;
+
+    /// <summary>
+    /// The severity score (typically a value between 0 and 1).
+    /// </summary>
+    SeverityScore: extended;
+
+    /// <summary>
+    /// Initializes the safety rating record with default values.
+    /// </summary>
+    procedure Init;
+
+    /// <summary>
+    /// Returns the probability level as a string.
+    /// </summary>
+    function ProbabilityAsStr: string;
+
+    /// <summary>
+    /// Returns the severity level as a string.
+    /// </summary>
+    function SeverityAsStr: string;
+  end;
+
+  /// <summary>
+  /// Represents a single result from a Gemini AI generation.
+  /// </summary>
+  TGeminiAIResult = record
+
+    /// <summary>
+    /// The reason why the generation finished.
+    /// </summary>
+    FinishReason: TGeminiAIFinishReason;
+
+    /// <summary>
+    /// The index of the result within the response.
+    /// </summary>
+    Index: integer;
+
+    /// <summary>
+    /// An array of strings representing the generated text, split into parts.
+    /// </summary>
+    PartText: array of string;
+
+    /// <summary>
+    /// An array of safety ratings for each harm category.
+    /// </summary>
+    SafetyRatings: array [THarmCategory] of TSafetyRating;
+
+    /// <summary>
+    /// Returns the result text formatted as Markdown.
+    /// </summary>
+    function ResultAsMarkDown: string;
+
+    /// <summary>
+    /// Returns the finish reason as a string.
+    /// </summary>
+    function FinishReasonAsStr: string;
+  end;
+
+  /// <summary>
+  /// Interface representing a response from the Gemini AI API.
+  /// </summary>
+  IGeminiAIResponse = interface(IInterface)
+    /// <summary>
+    /// Returns the raw JSON response from the API.
+    /// </summary>
+    function FormatedJSON: string;
+
+    /// <summary>
+    /// Returns the number of results (candidates) in the response.
+    /// </summary>
+    function NumberOfResults: integer;
+
+    /// <summary>
+    /// Returns the TGeminiAIResult object at the specified index.
+    /// </summary>
+    function EvalResult(ResultIndex: integer): TGeminiAIResult;
+
+    /// <summary>
+    /// Returns the usage metadata for the request.
+    /// </summary>
+    function UsageMetaData: TGeminiAIUsageMetaData;
+
+    /// <summary>
+    /// Returns the overall state of the result.
+    /// </summary>
+    function ResultState: TGeminiAIResultState;
+
+    /// <summary>
+    /// Returns the result state as a string.
+    /// </summary>
+    function ResultStateStr: string;
+
+    /// <summary>
+    /// Returns the set of finish reasons for the generation.
+    /// </summary>
+    function FinishReasons: TGeminiAIFinishReasons;
+
+    /// <summary>
+    /// Returns the finish reasons as a comma-separated string.
+    /// </summary>
+    function FinishReasonsCommaSepStr: string;
+
+    /// <summary>
+    /// Returns True if the response is valid, False otherwise.
+    /// </summary>
+    function IsValid: boolean;
+
+    /// <summary>
+    /// Returns a string describing the failure, if any.
+    /// </summary>
+    function FailureDetail: string;
+
+    /// <summary>
+    /// Returns the result text formatted as Markdown.
+    /// </summary>
+    function ResultAsMarkDown: string;
+
+    {$IFDEF MARKDOWN2HTML}
+    /// <summary>
+    /// Returns the result text formatted as HTML (conditionally defined).
+    /// </summary>
+    function ResultAsHTML: string;
+    {$ENDIF}
+  end;
+
+  /// <summary>
+  /// Enumerates the reason for safety blocking.
+  /// </summary>
+  TSafetyBlockLevel = (
+    sblNone,            // No safety blocking.
+    sblOnlyHigh,        // Block only high-risk content.
+    sblMediumAndAbove,  // Block medium and high-risk content.
+    sblLowAndAbove,     // Block low, medium, and high-risk content.
+    sblUseDefault       // Use the default safety level.
+  );
+
+  /// <summary>
+  /// Exception class for Gemini AI requests
+  /// </summary>
+  EGeminiAIRequest = class(Exception);
+
+  /// <summary>
+  /// Interface for starting operations on Gemini AI API.
+  /// </summary>
+  IGeminiAIRequest = interface(IInterface)
+
+    /// <summary>
+    /// Use simple prompt text as request
+    /// </summary>
+    function Prompt(const PromptText: string): IGeminiAIRequest;
+
+    /// <summary>
+    /// Use a media file (document, picture, video, audio) with a command prompt question
+    /// </summary>
+    function PromptWithMediaData(const PromptText, MimeType: string; MediaStream: TStream): IGeminiAIRequest;
+
+    /// <summary>
+    /// For images the MimeType can be evaluated automatically
+    function PromptWithImgData(const PromptText: string; ImgStream: TStream): IGeminiAIRequest;
+
+    /// <summary>
+    /// Sets the model parameters for the request.
+    /// </summary>
+    /// <param name="Temperatur">Controls the randomness of the generated text.
+    /// </param>
+    /// <param name="TopP">Controls the diversity of the generated text.
+    /// </param>
+    /// <param name="MaxOutputTokens">Limits the maximum number of tokens in the generated text.
+    /// </param>
+    /// <param name="TopK">:Controls the number of candidate words considered during generation.
+    /// </param>
+    function ModelParameter(Temperatur, TopP: double; MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;
+
+    /// <summary>
+    /// Sets the stop sequences for the request.
+    /// Stop sequences are used to stop the generation process when encountered.
+    /// </summary>
+    function SetStopSequences(StopSequences: TStrings): IGeminiAIRequest;
+
+    /// <summary>
+    /// Sets the safety settings for the request.
+    /// </summary>
+    /// <param name="HarmCat">Specifies the category of harmful content to block.
+    /// </param>
+    /// <param name="LevelToBlock">:Specifies the safety level to use for blocking.
+    /// </param>
+    function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
+
+    /// <summary>
+    /// For using in chats add the model answer to the next request.
+    /// </summary>
+    procedure AddAnswerForNextRequest(const ResultAsMarkDown: string);
+
+    /// <summary>
+    /// In chats after adding the last answer from the model the next question from the user can be added.
+    /// </summary>
+    procedure AddQuestionForNextRequest(const PromptText: string);
+
+    /// <summary>
+    /// Within a chat to calculated to number of tokens in the prompt this function allows get a working request.
+    /// </summary>
+    function CloneWithoutCfgAndSettings(Request: IGeminiAIRequest): IGeminiAIRequest;
+  end;
+
+  /// <summary>
+  /// IGeminiAI defines an interface for interacting with a Gemini AI model.
+  /// </summary>
+  IGeminiAI = interface(IInterface)
+    /// <summary>
+    /// GenerateContentByPromptSynchronous generates text content as a response based on the provided simple
+    /// text prompt containing the question. Use this blocking function not in the main thread of a GUI
+    /// application but in threads, services
+    /// or console applications.
+    /// </summary>
+    /// <param name="Prompt">The text prompt to generate content from.
+    /// </param>
+    /// <returns>IGeminiAIResponse: An interface representing the AI's response.
+    /// </returns>
+    function GenerateContentByPromptSynchronous(const Prompt: string): IGeminiAIResponse;
+
+    /// <summary>
+    /// GenerateContentbyPrompt generates content asynchronously based on the provided simple text prompt.
+    /// Use this none blocking function in the main thread of a GUI application.
+    /// </summary>
+    /// <param name="Prompt">The text prompt to generate content from.
+    /// </param>
+    /// <param name="OnRespone">A callback function to invoke when the response is ready.
+    /// </param>
+    procedure GenerateContentbyPrompt(const Prompt: string;
+      OnRespone: TOnGeminiGenContent);
+
+    /// <summary>
+    /// GenerateContentByRequestSynchronous generates content based on the provided IGeminiAIRequest.
+    /// Use this blocking function not in the main thread of a GUI application but in threads, services
+    /// or console applications.
+    /// </summary>
+    /// <param name="GeminiAIRequest">An interface of IGeminiAIRequest for using complex
+    /// prompts with model parameters, media files and model answers in chat applications.
+    /// </param>
+    /// <returns>IGeminiAIResponse: An interface representing the AI's response.
+    /// </returns>
+    function GenerateContentByRequestSynchronous(GeminiAIRequest: IGeminiAIRequest): IGeminiAIResponse;
+
+    /// <summary>
+    /// GenerateContentByRequest generates content asynchronously based on the provided IGeminiAIRequest.
+    /// Use this none blocking function in the main thread of a GUI applications.
+    /// </summary>
+    /// <param name="GeminiAIRequest">An interface of IGeminiAIRequest for using complex
+    /// prompts with model parameters, media files and model answers in chat applications.
+    /// </param>
+    /// <param name="OnRespone">A callback function to invoke when the response is ready.
+    /// </param>
+    procedure GenerateContentByRequest(GeminiAIRequest: IGeminiAIRequest;
+      OnRespone: TOnGeminiGenContent);
+
+    /// <summary>
+    /// CountTokenOfPrompt asynchronously counts the number of tokens in the given simple text prompt.
+    /// Use this none blocking function in the main thread of a GUI applications.
+    /// </summary>
+    /// <param name="Prompt">The text prompt to count tokens in.
+    /// </param>
+    /// <param name="OnResponse">A callback function to invoke with the token count.
+    /// </param>
+    procedure CountTokenOfPrompt(const Prompt: string; OnResponse: TOnGeminiCountToken);
+
+    /// <summary>
+    /// CountTokenOfRequestSynchronous synchronously counts the number of tokens in the given simple text prompt.
+    /// Use this blocking function not in the main thread of a GUI application but in threads, services
+    /// or console applications.
+    /// </summary>
+    /// <param name="Prompt">The text prompt to count tokens in.
+    /// </param>
+    /// <param name="ErrorMsg">Returns an error reason in case of an error.
+    /// </param>
+    /// <param name="CachedContentToken">An output parameter for the cached token count.
+    /// When not using cached content 0 will be returned.</param>
+    /// <returns>The number of tokens in the prompt.
+    /// </returns>
+    function CountTokenOfPromptSynchronous(const Prompt: string; out ErrorMsg: string;
+      out CachedContentToken: integer): integer;
+
+    /// <summary>
+    /// CountTokenOfPrompt asynchronously counts the number of tokens in the given complex prompt.
+    /// Use this none blocking function in the main thread of a GUI applications.
+    /// </summary>
+    /// <param name="GeminiAIRequest">An interface of IGeminiAIRequest with the complex prompt.
+    /// </param>
+    /// <param name="OnResponse">A callback function to invoke with the token count.
+    /// </param>
+    procedure CountTokenOfRequest(GeminiAIRequest: IGeminiAIRequest; OnResponse: TOnGeminiCountToken);
+
+    /// <summary>
+    /// Use this blocking function not in the main thread of a GUI application but in threads, services
+    /// or console applications.
+    /// </summary>
+    /// <param name="GeminiAIRequest">An interface of IGeminiAIRequest with the complex prompt.
+    /// </param>
+    /// <param name="ErrorMsg">Returns an error reason in case of an error.
+    /// </param>
+    /// <param name="CachedContentToken">An output parameter for the cached token count.
+    /// When not using cached content 0 will be returned.</param>
+    /// <returns>The number of tokens in the prompt.
+    /// </returns>
+    function CountTokenOfRequestSynchronous(GeminiAIRequest: IGeminiAIRequest; out ErrorMsg: string;
+      out CachedContentToken: integer): integer;
+  end;
+  {$ENDREGION}
+
+  {$REGION 'Class factory for getting Firebase Services'}
+
+  /// <summary>
+  /// Exception class for Firebase configuration interface
   /// </summary>
   EFirebaseConfiguration = class(Exception);
+
+  /// <summary>
+  /// The interface IFirebaseConfiguration provides a class factory for
+  /// accessing all interfaces to the Firebase services.
+  /// </summary>
+  /// <remarks>
+  /// The interface will be created by the constructors of the class
+  /// TFirebaseConfiguration in the unit FB4D.Configuration.
+  /// The first constructor requires all secrets of the Firebase project
+  /// such as ApiKey and Project ID and when using the Storage also the
+  /// storage Bucket.
+  /// The second constructor variant parses the google-services.json file that
+  /// shall be loaded from the Firebase Console after adding an App in the
+  /// project settings.
+  /// </remarks>
   IFirebaseConfiguration = interface(IInterface)
+    /// <summary>
+    /// Returns the Firebase project ID.
+    /// </summary>
     function ProjectID: string;
+
+    /// <summary>
+    /// Returns the IFirebaseAuthentication interface for managing user authentication.
+    /// </summary>
     function Auth: IFirebaseAuthentication;
+
+    /// <summary>
+    /// Returns the IRealTimeDB interface for interacting with the Firebase Realtime Database.
+    /// </summary>
     function RealTimeDB: IRealTimeDB;
-    function Database(
-      const DatabaseID: string = cDefaultDatabaseID): IFirestoreDatabase;
+
+    /// <summary>
+    /// Returns the IFirestoreDatabase interface for interacting with the Firebase Firestore database.
+    /// </summary>
+    /// <param name="DatabaseID">The ID of the Firestore database to use.
+    /// Default is "(default)".</param>
+    function Database(const DatabaseID: string = cDefaultDatabaseID): IFirestoreDatabase;
+
+    /// <summary>
+    /// Returns the IFirebaseStorage interface for interacting with Firebase Storage.
+    /// </summary>
     function Storage: IFirebaseStorage;
-    function Functions: IFirebaseFunctions;
-    function VisionML: IVisionML;
+
+    /// <summary>
+    /// Sets the storage bucket to use.
+    /// </summary>
+    /// <param name="Bucket">The name of the storage bucket.</param>
     procedure SetBucket(const Bucket: string);
+
+    /// <summary>
+    /// Returns the IFirebaseFunctions interface for interacting with Firebase Cloud Functions.
+    /// </summary>
+    function Functions: IFirebaseFunctions;
+
+    /// <summary>
+    /// Returns the IVisionML interface for interacting with Firebase ML Vision APIs.
+    /// </summary>
+    function VisionML: IVisionML;
+
+    /// <summary>
+    /// Returns the IGeminiAI interface for interacting with Gemini AI APIs.
+    /// </summary>
+    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel): IGeminiAI;
   end;
+  {$ENDREGION}
 
 const
   cFirestoreDocumentPath = 'projects/%s/databases/%s/documents%s';
@@ -1217,6 +1707,21 @@ begin
   Create(nil);
   OnSuccessCase := oscPwdVerification;
   OnPasswordVerification := OnPasswordVerificationResp;
+end;
+
+constructor TOnSuccess.CreateGeminiGenerateContent(
+  OnGeminiGenContent: TOnGeminiGenContent);
+begin
+  Create(nil);
+  OnSuccessCase := oscGeminiGenContent;
+  OnGenerateContent := OnGeminiGenContent;
+end;
+
+constructor TOnSuccess.CreateGeminiCountToken(OnGeminiCountToken: TOnGeminiCountToken);
+begin
+  Create(nil);
+  OnSuccessCase := oscGeminiCountToken;
+  OnCountToken := OnGeminiCountToken;
 end;
 
 constructor TOnSuccess.CreateGetUserData(OnGetUserDataResp: TOnGetUserData);
@@ -1347,6 +1852,96 @@ begin
   Create(nil);
   OnSuccessCase := oscVisionML;
   OnAnnotate := OnAnnotateResp;
+end;
+
+{ TUsageMetaData }
+
+procedure TGeminiAIUsageMetaData.Init;
+begin
+  PromptTokenCount := 0;
+  GeneratedTokenCount := 0;
+  TotalTokenCount := 0;
+end;
+
+{ TGeminiResult }
+
+function TGeminiAIResult.ResultAsMarkDown: string;
+var
+  c: integer;
+begin
+  case length(PartText) of
+    0: result := '';
+    1: result := PartText[0];
+    else begin
+      for c := 0 to length(PartText) - 1 do
+        result := result + '- ' + PartText[c] + sLineBreak;
+    end;
+  end;
+end;
+
+function TGeminiAIResult.FinishReasonAsStr: string;
+begin
+  case FinishReason of
+    gfrUnknown:
+      result := '?';
+    gfrStop:
+      result := 'Stop';
+    gfrMaxToken:
+      result := 'Max token';
+    gfrSafety:
+      result := 'Safty';
+    gfrRecitation:
+      result := 'Recitation';
+    gfrOther:
+      result := 'Other';
+  end;
+end;
+
+{ TSafetyRating }
+
+procedure TSafetyRating.Init;
+begin
+  Probability := psUnknown;
+  ProbabilityScore := 0;
+  Severity := psUnknown;
+  SeverityScore := 0;
+end;
+
+function TSafetyRating.ProbabilityAsStr: string;
+begin
+  case Probability of
+    psUnknown:
+      result := '';
+    psNEGLIGIBLE:
+      result := 'negligible';
+    psLOW:
+      result := 'low';
+    psMEDIUM:
+      result := 'medium';
+    psHIGH:
+      result := 'high';
+    else
+      result := '?';
+  end;
+end;
+
+function TSafetyRating.SeverityAsStr: string;
+begin
+  case Severity of
+    psUnknown:
+      result := '';
+    psNEGLIGIBLE:
+      result := 'negligible';
+    psLOW:
+      result := 'low';
+    psMEDIUM:
+      result := 'medium';
+    psHIGH:
+      result := 'high';
+    else
+      result := '?';
+  end;
+
 end;
 
 end.

@@ -35,7 +35,7 @@ uses
   FMX.ImgList, FMX.Ani,
   FB4D.AuthFra, FB4D.RTDBFra, FB4D.FirestoreFra,
   FB4D.StorageFra, FB4D.FunctionsFra, FB4D.VisionMLFra,
-  FB4D.Interfaces;
+  FB4D.Interfaces, FB4D.GeminiAIFra;
 
 type
   TfmxFirebaseDemo = class(TForm)
@@ -74,6 +74,9 @@ type
     mniFromClipboard: TMenuItem;
     mniToClipboard: TMenuItem;
     StorageFra: TStorageFra;
+    tabGeminiAI: TTabItem;
+    GeminiAIFra: TGeminiAIFra;
+    lblOpenAIStudio: TLabel;
     procedure FormShow(Sender: TObject);
     procedure TabControlChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -90,6 +93,7 @@ type
     procedure imgLogoClick(Sender: TObject);
     procedure mniFromClipboardClick(Sender: TObject);
     procedure mniToClipboardClick(Sender: TObject);
+    procedure lblOpenAIStudioClick(Sender: TObject);
   private
     function GetIniFileName: string;
     procedure OpenURLinkInBrowser(const URL: string);
@@ -133,6 +137,7 @@ begin
     StorageFra.LoadSettingsFromIniFile(IniFile);
     FunctionsFra.LoadSettingsFromIniFile(IniFile);
     VisionMLFra.LoadSettingsFromIniFile(IniFile);
+    GeminiAIFra.LoadSettingsFromIniFile(IniFile);
   finally
     IniFile.Free;
   end;
@@ -155,6 +160,7 @@ begin
     StorageFra.SaveSettingsIntoIniFile(IniFile);
     FunctionsFra.SaveSettingsIntoIniFile(IniFile);
     VisionMLFra.SaveSettingsIntoIniFile(IniFile);
+    GeminiAIFra.SaveSettingsIntoIniFile(IniFile);
   finally
     IniFile.Free;
   end;
@@ -178,6 +184,7 @@ begin
   lblOpenFBConsoleForStorage.visible := TabControl.ActiveTab = tabStorage;
   lblOpenFBConsoleForFunctions.visible := TabControl.ActiveTab = tabFunctions;
   lblOpenFBConsoleForVisionML.visible := TabControl.ActiveTab = tabVisionML;
+  lblOpenAIStudio.visible := TabControl.ActiveTab = tabGeminiAI;
 end;
 {$ENDREGION}
 
@@ -259,6 +266,7 @@ const
   cFBConsoleForStorageURL = cFBConsoleForProjectBase + 'storage/%s/files';
   cFBConsoleForFunctionsURL = cFBConsoleForProjectBase +'functions';
   cFBConsoleForMLApisURL = cFBConsoleForProjectBase + 'ml/apis';
+  cAIStudio = 'https://aistudio.google.com';
   cFB4DWikiURL = 'https://github.com/SchneiderInfosystems/FB4D/wiki/';
   cFB4DIntroURL = cFB4DWikiURL + 'Getting-Started-with-FB4D';
   cFB4DAuthURL = cFB4DWikiURL + 'FB4D-Reference-IFirebaseAuthentication';
@@ -267,6 +275,7 @@ const
   cFB4DStorageURL = cFB4DWikiURL + 'FB4D-Reference-IFirebaseStorage';
   cFB4DFunctsionURL = cFB4DWikiURL + 'FB4D-Reference-IFirebaseFunctions';
   cFB4DVisionMLURL = cFB4DWikiURL + 'FB4D-Reference-IVisionML';
+  cFB4DGeminiAIURL = cFB4DWikiURL + 'FB4D-Reference-IGeminiAI';
 
 procedure TfmxFirebaseDemo.imgLogoClick(Sender: TObject);
 begin
@@ -284,6 +293,8 @@ begin
     OpenURLinkInBrowser(cFB4DFunctsionURL)
   else if TabControl.ActiveTab = tabVisionML then
     OpenURLinkInBrowser(cFB4DVisionMLURL)
+  else if TabControl.ActiveTab = tabGeminiAI then
+    OpenURLinkInBrowser(cFB4DGeminiAIURL)
   else
     OpenURLinkInBrowser(cFB4DWikiURL);
 end;
@@ -352,6 +363,11 @@ begin
     edtProjectID.SetFocus
   else
     OpenURLinkInBrowser(Format(cFBConsoleForMLApisURL, [edtProjectID.Text]));
+end;
+
+procedure TfmxFirebaseDemo.lblOpenAIStudioClick(Sender: TObject);
+begin
+  OpenURLinkInBrowser(cAIStudio);
 end;
 
 {$ENDREGION}
