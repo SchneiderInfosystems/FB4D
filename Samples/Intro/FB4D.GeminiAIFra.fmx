@@ -6,20 +6,20 @@ object GeminiAIFra: TGeminiAIFra
   object TabControlResult: TTabControl
     Align = Client
     Size.Width = 1036.000000000000000000
-    Size.Height = 95.000000000000000000
+    Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
     TabIndex = 0
     TabOrder = 3
     TabPosition = PlatformDefault
     Sizes = (
       1036s
-      69s
+      96s
       1036s
-      69s
+      96s
       1036s
-      69s
+      96s
       1036s
-      69s)
+      96s)
     object tabHTMLRes: TTabItem
       CustomIcon = <
         item
@@ -54,11 +54,11 @@ object GeminiAIFra: TGeminiAIFra
         DataDetectorTypes = []
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 69.000000000000000000
+        Size.Height = 96.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 69.000000000000000000
+        Viewport.Height = 96.000000000000000000
       end
     end
     object tabMetadata: TTabItem
@@ -78,7 +78,7 @@ object GeminiAIFra: TGeminiAIFra
       object lstMetaData: TListBox
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 69.000000000000000000
+        Size.Height = 96.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         DisableFocusEffect = True
@@ -108,11 +108,11 @@ object GeminiAIFra: TGeminiAIFra
         DataDetectorTypes = []
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 69.000000000000000000
+        Size.Height = 96.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 69.000000000000000000
+        Viewport.Height = 96.000000000000000000
       end
     end
   end
@@ -120,11 +120,11 @@ object GeminiAIFra: TGeminiAIFra
     Align = Top
     ShowCheck = False
     Size.Width = 1036.000000000000000000
-    Size.Height = 465.000000000000000000
+    Size.Height = 438.000000000000000000
     Size.PlatformDefault = False
     Text = 'Gemini Configuration'
     TabOrder = 4
-    ContentSize = '440'
+    ContentSize = '413'
     object chbUseModelParams: TCheckBox
       Position.X = 17.000000000000000000
       Position.Y = 34.000000000000000000
@@ -172,7 +172,7 @@ object GeminiAIFra: TGeminiAIFra
       Position.X = 17.000000000000000000
       Position.Y = 53.000000000000000000
       Size.Width = 956.000000000000000000
-      Size.Height = 292.000000000000000000
+      Size.Height = 228.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 4
       object lblMaxOutToken: TLabel
@@ -418,43 +418,6 @@ object GeminiAIFra: TGeminiAIFra
           'r the range of vocabulary used. '
         TabOrder = 23
       end
-      object memStopSequences: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Position.X = 138.000000000000000000
-        Position.Y = 238.000000000000000000
-        Size.Width = 318.000000000000000000
-        Size.Height = 47.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 29
-        Viewport.Width = 314.000000000000000000
-        Viewport.Height = 43.000000000000000000
-      end
-      object Label17: TLabel
-        Position.X = 27.000000000000000000
-        Position.Y = 238.000000000000000000
-        Size.Width = 103.000000000000000000
-        Size.Height = 36.000000000000000000
-        Size.PlatformDefault = False
-        Text = 'Stop words or sequences'
-        TabOrder = 32
-      end
-      object Label18: TLabel
-        StyledSettings = [Family, Size, FontColor]
-        Position.X = 475.000000000000000000
-        Position.Y = 238.000000000000000000
-        Size.Width = 473.000000000000000000
-        Size.Height = 51.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.StyleExt = {00040000000200000004000000}
-        TextSettings.VertAlign = Leading
-        Text = 
-          'Set a stop sequence to tell the model that it should no longer g' +
-          'enerate content when it generates this word or sequence. A stop ' +
-          'sequence can be any sequence of characters.  Note that the outpu' +
-          't stops at the sequence and the sentence may not be completed. '
-        TabOrder = 28
-      end
     end
     object lblGeminiAPIKey: TLabel
       Position.X = 17.000000000000000000
@@ -463,8 +426,8 @@ object GeminiAIFra: TGeminiAIFra
       TabOrder = 0
     end
     object chbUseSafetySettings: TCheckBox
-      Position.X = 16.000000000000000000
-      Position.Y = 353.000000000000000000
+      Position.X = 17.000000000000000000
+      Position.Y = 289.000000000000000000
       Size.Width = 151.000000000000000000
       Size.Height = 19.000000000000000000
       Size.PlatformDefault = False
@@ -474,9 +437,9 @@ object GeminiAIFra: TGeminiAIFra
     end
     object laySafetySettings: TLayout
       Position.X = 17.000000000000000000
-      Position.Y = 380.000000000000000000
+      Position.Y = 310.000000000000000000
       Size.Width = 956.000000000000000000
-      Size.Height = 53.000000000000000000
+      Size.Height = 101.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 11
       object cboHateSpeech: TComboBox
@@ -722,11 +685,48 @@ object GeminiAIFra: TGeminiAIFra
         Text = 'Civic Integrity'
         TabOrder = 19
       end
+      object Label17: TLabel
+        Position.X = 12.000000000000000000
+        Position.Y = 50.000000000000000000
+        Size.Width = 103.000000000000000000
+        Size.Height = 36.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Stop words or sequences'
+        TabOrder = 32
+      end
+      object Label18: TLabel
+        StyledSettings = [Family, Size, FontColor]
+        Position.X = 475.000000000000000000
+        Position.Y = 48.000000000000000000
+        Size.Width = 473.000000000000000000
+        Size.Height = 51.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.StyleExt = {00040000000200000004000000}
+        TextSettings.VertAlign = Leading
+        Text = 
+          'Set a stop sequence to tell the model that it should no longer g' +
+          'enerate content when it generates this word or sequence. A stop ' +
+          'sequence can be any sequence of characters.  Note that the outpu' +
+          't stops at the sequence and the sentence may not be completed. '
+        TabOrder = 28
+      end
+      object memStopSequences: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Position.X = 123.000000000000000000
+        Position.Y = 50.000000000000000000
+        Size.Width = 334.000000000000000000
+        Size.Height = 47.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 29
+        Viewport.Width = 330.000000000000000000
+        Viewport.Height = 43.000000000000000000
+      end
     end
   end
   object layPrompt: TLayout
     Align = Top
-    Position.Y = 465.000000000000000000
+    Position.Y = 438.000000000000000000
     Size.Width = 1036.000000000000000000
     Size.Height = 320.000000000000000000
     Size.PlatformDefault = False
@@ -887,7 +887,7 @@ object GeminiAIFra: TGeminiAIFra
       StyledSettings = [Family, Size, Style]
       Position.X = 8.000000000000000000
       Position.Y = 8.000000000000000000
-      Size.Width = 89.599998474121090000
+      Size.Width = 90.000000000000000000
       Size.Height = 16.000000000000000000
       Size.PlatformDefault = False
       TextSettings.FontColor = claGray
@@ -925,7 +925,7 @@ object GeminiAIFra: TGeminiAIFra
     Align = Top
     Cursor = crVSplit
     MinSize = 20.000000000000000000
-    Position.Y = 785.000000000000000000
+    Position.Y = 758.000000000000000000
     Size.Width = 1036.000000000000000000
     Size.Height = 8.000000000000000000
     Size.PlatformDefault = False

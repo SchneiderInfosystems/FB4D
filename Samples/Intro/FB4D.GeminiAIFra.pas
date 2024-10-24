@@ -184,11 +184,6 @@ begin
   trbTemperature.Value := IniFile.ReadInteger('GeminiAI', 'Temperature', 70);
   trbTopP.Value := IniFile.ReadInteger('GeminiAI', 'TopP', 70);
   trbTopK.Value := IniFile.ReadInteger('GeminiAI', 'TopK', 1);
-  chbUseModelParamsChange(nil);
-  trbMaxOutputTokenChange(nil);
-  trbTemperatureChange(nil);
-  trbTopKChange(nil);
-  trbTopPChange(nil);
   cboHateSpeech.ItemIndex := IniFile.ReadInteger('GeminiAI', 'HateSpeech', 4);
   cboHarassment.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Harassment', 4);
   cboSexuallyExplicit.ItemIndex := IniFile.ReadInteger('GeminiAI', 'SexuallyExplicit', 4);
@@ -202,6 +197,12 @@ begin
   cboViolence.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Violence', 4);
   memGeminiPrompt.Lines.Text :=  TNetEncoding.URL.Decode(IniFile.ReadString('GeminiAI', 'Prompt', rsDefaultPrompt));
   lblGeminiPrompt.visible := memGeminiPrompt.Lines.Text.IsEmpty;
+  chbUseModelParamsChange(nil);
+  chbUseSafetySettingsChange(nil);
+  trbMaxOutputTokenChange(nil);
+  trbTemperatureChange(nil);
+  trbTopKChange(nil);
+  trbTopPChange(nil);
   TabControlResult.ActiveTab := tabMetadata;
 end;
 
@@ -364,12 +365,8 @@ begin
     fRequest := TGeminiAIRequest.Create.Prompt(memGeminiPrompt.Text);
   end;
   if chbUseModelParams.IsChecked then
-  begin
     fRequest.ModelParameter(trbTemperature.Value / 100, trbTopP.Value / 100, round(trbMaxOutputToken.Value),
       round(trbTopK.Value));
-    if memStopSequences.Lines.Count > 0 then
-      fRequest.SetStopSequences(memStopSequences.Lines);
-  end;
   if chbUseSafetySettings.IsChecked then
   begin
     fRequest.SetSafety(hcHateSpeech, TSafetyBlockLevel(cboHateSpeech.ItemIndex));
@@ -385,6 +382,8 @@ begin
 //    fRequest.SetSafety(hcToxicity, TSafetyBlockLevel(cboToxicity.ItemIndex));
 //    fRequest.SetSafety(hcDerogatory, TSafetyBlockLevel(cboDerogatory.ItemIndex));
 //    fRequest.SetSafety(hcViolence, TSafetyBlockLevel(cboViolence.ItemIndex));
+    if memStopSequences.Lines.Count > 0 then
+      fRequest.SetStopSequences(memStopSequences.Lines);
   end;
   aniHTML.Enabled := true;
   aniHTML.Visible := true;
