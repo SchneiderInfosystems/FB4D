@@ -414,13 +414,13 @@ begin
     if memStopSequences.Lines.Count > 0 then
       fRequest.SetStopSequences(memStopSequences.Lines);
   end;
-  aniHTML.Enabled := true;
-  aniHTML.Visible := true;
   tabHTMLRes.Visible := true;
   TabControlResult.ActiveTab := tabHTMLRes;
   fHTMLResultBrowser.LoadFromStrings(Format(cProcessingHTML, [Info]), OnHTMLLoaded);
   memMetaData.Lines.Text := 'Question: "' + memGeminiPrompt.Lines.Text + '"';
   fGeminiAI.generateContentByRequest(fRequest, OnGeminiAIGenContent);
+  aniHTML.Visible := true;
+  aniHTML.Enabled := true;
 end;
 
 procedure TGeminiAIFra.OnGeminiAIGenContent(Response: IGeminiAIResponse);
@@ -513,12 +513,12 @@ begin
     end;
   end else
     fHTMLResultBrowser.LoadFromStrings('<h1>Failed</h1><p>' + Response.FailureDetail + '</p>', OnHTMLLoaded);
+  aniHTML.Enabled := false;
+  aniHTML.Visible := false;
 end;
 
 procedure TGeminiAIFra.OnHTMLLoaded(const FileName: string; ErrorFlag: boolean);
 begin
-  aniHTML.Enabled := false;
-  aniHTML.Visible := false;
   if ErrorFlag then
     TabControlResult.ActiveTab := tabMarkdownRes
   else

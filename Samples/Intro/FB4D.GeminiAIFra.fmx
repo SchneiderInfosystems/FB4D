@@ -59,8 +59,8 @@ object GeminiAIFra: TGeminiAIFra
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
-        Viewport.Width = 1032.000000000000000000
-        Viewport.Height = 92.000000000000000000
+        Viewport.Width = 1036.000000000000000000
+        Viewport.Height = 96.000000000000000000
       end
     end
     object tabMetadata: TTabItem
@@ -87,8 +87,8 @@ object GeminiAIFra: TGeminiAIFra
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
-        Viewport.Width = 1032.000000000000000000
-        Viewport.Height = 92.000000000000000000
+        Viewport.Width = 1036.000000000000000000
+        Viewport.Height = 96.000000000000000000
       end
     end
     object tabRawResult: TTabItem
