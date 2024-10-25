@@ -30,7 +30,7 @@ type
     tabRawResult: TTabItem;
     memRawJSONResult: TMemo;
     tabMetadata: TTabItem;
-    lstMetaData: TListBox;
+    memMetaData: TMemo;
     tabMarkdownRes: TTabItem;
     memMarkdown: TMemo;
     expGeminiCfg: TExpander;
@@ -115,6 +115,7 @@ type
     procedure memGeminiPromptKeyUp(Sender: TObject; var Key: Word; var KeyChar: WideChar; Shift: TShiftState);
     procedure btnNextQuestionInChatClick(Sender: TObject);
     procedure btnCalcRequestInChatClick(Sender: TObject);
+    procedure memMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
   private
     fGeminiAI: IGeminiAI;
     fRequest: IGeminiAIRequest;
@@ -197,6 +198,10 @@ begin
   cboViolence.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Violence', 4);
   memGeminiPrompt.Lines.Text :=  TNetEncoding.URL.Decode(IniFile.ReadString('GeminiAI', 'Prompt', rsDefaultPrompt));
   lblGeminiPrompt.visible := memGeminiPrompt.Lines.Text.IsEmpty;
+  memGeminiPrompt.TextSettings.Font.Size := IniFile.ReadInteger('GeminiAI', 'FontSize', 12);
+  memRawJSONResult.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
+  memMarkdown.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
+  memMetaData.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
   chbUseModelParamsChange(nil);
   chbUseSafetySettingsChange(nil);
   trbMaxOutputTokenChange(nil);
@@ -228,6 +233,7 @@ begin
   IniFile.WriteInteger('GeminiAI', 'Dangerous', cboDangerous.ItemIndex);
   IniFile.WriteInteger('GeminiAI', 'Violence', cboViolence.ItemIndex);
   IniFile.WriteString('GeminiAI', 'Prompt', TNetEncoding.URL.Encode(memGeminiPrompt.Lines.Text));
+  IniFile.WriteInteger('GeminiAI', 'FontSize', trunc(memGeminiPrompt.TextSettings.Font.Size));
 end;
 {$ENDREGION}
 
@@ -267,6 +273,28 @@ end;
 procedure TGeminiAIFra.memGeminiPromptKeyUp(Sender: TObject; var Key: Word; var KeyChar: WideChar; Shift: TShiftState);
 begin
   lblGeminiPrompt.visible := memGeminiPrompt.Lines.Text.IsEmpty;
+end;
+
+procedure TGeminiAIFra.memMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer;
+  var Handled: Boolean);
+begin
+  if ssCtrl in Shift then
+  begin
+    if WheelDelta > 0 then
+    begin
+      if memGeminiPrompt.TextSettings.Font.Size < 32 then
+        memGeminiPrompt.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size + 1
+    end else begin
+      if memGeminiPrompt.TextSettings.Font.Size > 8 then
+        memGeminiPrompt.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size - 1;
+    end;
+    memRawJSONResult.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
+    memMarkdown.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
+    memMetaData.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
+    if assigned(fHTMLResultBrowser) then
+      fHTMLResultBrowser.Zoom(memGeminiPrompt.TextSettings.Font.Size / 12);
+    Handled := true;
+  end;
 end;
 
 procedure TGeminiAIFra.bntLoadImageClick(Sender: TObject);
@@ -342,11 +370,12 @@ begin
   begin
     fHTMLResultBrowser := TfmxWebBrowser.Create(self);
     fHTMLResultBrowser.layChrome.Parent := tabHTMLRes;
+    fHTMLResultBrowser.Zoom(memGeminiPrompt.TextSettings.Font.Size / 12);
   end else begin
     fHTMLResultBrowser.Stop;
     fRequest := nil; // Discard fromer request
   end;
-  lstMetaData.Clear;
+  memMetaData.Lines.Clear;
   TabControlResult.ActiveTab := tabHTMLRes;
   if assigned(fMediaStream) then
   begin
@@ -390,7 +419,7 @@ begin
   tabHTMLRes.Visible := true;
   TabControlResult.ActiveTab := tabHTMLRes;
   fHTMLResultBrowser.LoadFromStrings(Format(cProcessingHTML, [Info]), OnHTMLLoaded);
-  lstMetaData.Items.Text := 'Question: "' + memGeminiPrompt.Lines.Text + '"';
+  memMetaData.Lines.Text := 'Question: "' + memGeminiPrompt.Lines.Text + '"';
   fGeminiAI.generateContentByRequest(fRequest, OnGeminiAIGenContent);
 end;
 
@@ -407,60 +436,60 @@ begin
   fHTMLResultBrowser.Stop;
   if Response.IsValid then
   begin
-    lstMetaData.Items.Add('Usage');
-    lstMetaData.Items.Add('  Prompt token count: ' +
+    memMetaData.Lines.Add('Usage');
+    memMetaData.Lines.Add('  Prompt token count: ' +
       Response.UsageMetaData.PromptTokenCount.ToString);
-    lstMetaData.Items.Add('  Generated token count: ' +
+    memMetaData.Lines.Add('  Generated token count: ' +
       Response.UsageMetaData.GeneratedTokenCount.ToString);
-    lstMetaData.Items.Add('  Total token count: ' +
+    memMetaData.Lines.Add('  Total token count: ' +
       Response.UsageMetaData.TotalTokenCount.ToString);
-    lstMetaData.Items.Add('Result state: ' + Response.ResultStateStr);
-    lstMetaData.Items.Add('Finish reason(s): ' + Response.FinishReasonsCommaSepStr);
+    memMetaData.Lines.Add('Result state: ' + Response.ResultStateStr);
+    memMetaData.Lines.Add('Finish reason(s): ' + Response.FinishReasonsCommaSepStr);
     if Response.NumberOfResults > 1 then
     begin
-      lstMetaData.Items.Add(Response.NumberOfResults.ToString + ' result candidates');
+      memMetaData.Lines.Add(Response.NumberOfResults.ToString + ' result candidates');
       Indent := '  ';
     end else begin
-      lstMetaData.Items.Add('Only one result without candidates');
+      memMetaData.Lines.Add('Only one result without candidates');
       Indent := '';
     end;
     for c := 0 to Response.NumberOfResults - 1 do
     begin
       if Response.NumberOfResults > 1 then
-        lstMetaData.Items.Add(Format('%sCandidate %d', [Indent, c + 1]));
-      lstMetaData.Items.Add(Indent + 'Finish reason: ' + Response.EvalResult(c).FinishReasonAsStr);
-      lstMetaData.Items.Add(Indent + 'Index: ' + Response.EvalResult(c).Index.ToString);
-      lstMetaData.Items.Add(Indent + 'SafetyRating');
+        memMetaData.Lines.Add(Format('%sCandidate %d', [Indent, c + 1]));
+      memMetaData.Lines.Add(Indent + 'Finish reason: ' + Response.EvalResult(c).FinishReasonAsStr);
+      memMetaData.Lines.Add(Indent + 'Index: ' + Response.EvalResult(c).Index.ToString);
+      memMetaData.Lines.Add(Indent + 'SafetyRating');
       if Response.EvalResult(c).SafetyRatings[hcHateSpeech].Probability > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Hate speech: Probability is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Hate speech: Probability is ' +
           Response.EvalResult(c).SafetyRatings[hcHateSpeech].ProbabilityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcHateSpeech].ProbabilityScore));
       if Response.EvalResult(c).SafetyRatings[hcHateSpeech].Severity > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Hate speech: Severity is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Hate speech: Severity is ' +
           Response.EvalResult(c).SafetyRatings[hcHateSpeech].SeverityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcHateSpeech].SeverityScore));
       if Response.EvalResult(c).SafetyRatings[hcHarassment].Probability > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Harassment: Probability is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Harassment: Probability is ' +
           Response.EvalResult(c).SafetyRatings[hcHarassment].ProbabilityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcHarassment].ProbabilityScore));
       if Response.EvalResult(c).SafetyRatings[hcHarassment].Severity > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Harassment: Severity is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Harassment: Severity is ' +
           Response.EvalResult(c).SafetyRatings[hcHarassment].SeverityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcHarassment].SeverityScore));
       if Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].Probability > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Sexually Explicit: Probability is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Sexually Explicit: Probability is ' +
           Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].ProbabilityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].ProbabilityScore));
       if Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].Severity > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Sexually Explicit: Severity is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Sexually Explicit: Severity is ' +
           Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].SeverityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].SeverityScore));
       if Response.EvalResult(c).SafetyRatings[hcDangerousContent].Probability > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Dangerous Content: Probability is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Dangerous Content: Probability is ' +
           Response.EvalResult(c).SafetyRatings[hcDangerousContent].ProbabilityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcDangerousContent].ProbabilityScore));
       if Response.EvalResult(c).SafetyRatings[hcDangerousContent].Severity > psUnknown then
-        lstMetaData.Items.Add(Indent + Indent + 'Dangerous Content: Severity is ' +
+        memMetaData.Lines.Add(Indent + Indent + 'Dangerous Content: Severity is ' +
           Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityScore));
     end;
@@ -479,7 +508,7 @@ begin
       aniHTML.Enabled := false;
       aniHTML.Visible := false;
       tabHTMLRes.Visible := false;
-      lstMetaData.Items.Insert(0, 'Increase max output token in the model parameters!');
+      memMetaData.Lines.Insert(0, 'Increase max output token in the model parameters!');
       TabControlResult.ActiveTab := tabMetadata;
     end;
   end else
@@ -506,7 +535,7 @@ begin
   tabHTMLRes.Visible := true;
   TabControlResult.ActiveTab := tabHTMLRes;
   fHTMLResultBrowser.LoadFromStrings(cProcessingHTML, OnHTMLLoaded);
-  lstMetaData.Items.Add('Next question in chat: "' + memGeminiPrompt.Lines.Text + '"');
+  memMetaData.Lines.Add('Next question in chat: "' + memGeminiPrompt.Lines.Text + '"');
   fGeminiAI.generateContentByRequest(fRequest, OnGeminiAIGenContent);
 end;
 {$ENDREGION}
@@ -533,7 +562,7 @@ begin
   tabRawResult.Visible := false;
   tabMarkdownRes.Visible := false;
   tabMetadata.Visible := true;
-  lstMetaData.Items.Text := 'Calculating...';
+  memMetaData.Lines.Text := 'Calculating...';
 end;
 
 procedure TGeminiAIFra.btnCalcRequestInChatClick(Sender: TObject);
@@ -547,19 +576,19 @@ begin
   tabRawResult.Visible := false;
   tabMarkdownRes.Visible := false;
   tabMetadata.Visible := true;
-  lstMetaData.Items.Text := 'Calculating...';
+  memMetaData.Lines.Text := 'Calculating...';
 end;
 
 procedure TGeminiAIFra.OnGeminiAITokenCount(PromptToken, CachedContentToken: integer; const ErrMsg: string);
 begin
   TabControlResult.ActiveTab := tabMetadata;
-  lstMetaData.Clear;
+  memMetaData.Lines.Clear;
   if ErrMsg.IsEmpty then
   begin
-    lstMetaData.Items.Add('Prompt token count: ' + PromptToken.ToString);
-    lstMetaData.Items.Add('Cached content token count: ' + CachedContentToken.ToString);
+    memMetaData.Lines.Add('Prompt token count: ' + PromptToken.ToString);
+    memMetaData.Lines.Add('Cached content token count: ' + CachedContentToken.ToString);
   end else
-    lstMetaData.Items.Add('Error: ' + ErrMsg);
+    memMetaData.Lines.Add('Error: ' + ErrMsg);
 end;
 {$ENDREGION}
 

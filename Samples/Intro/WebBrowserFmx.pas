@@ -20,8 +20,10 @@ type
     fOnLoaded: TOnLoaded;
     fURL: string;
     fTempFilename: string;
+    fZoom: single;
   public
     constructor Create(AOwner: TComponent); override;
+    procedure Zoom(Scale: single);
     procedure LoadFromFile(const FileName: string; OnLoaded: TOnLoaded);
     procedure LoadFromStrings(const HTML: string; OnLoaded: TOnLoaded);
     procedure Stop;
@@ -49,6 +51,7 @@ begin
     {$ENDIF}
     raise;
   end;
+  fZoom := 1;
 end;
 
 procedure TfmxWebBrowser.LoadFromFile(const FileName: string; OnLoaded: TOnLoaded);
@@ -78,6 +81,8 @@ end;
 
 procedure TfmxWebBrowser.webChromeDidFailLoadWithError(ASender: TObject);
 begin
+  if fZoom <> 1 then
+    Zoom(fZoom);
   if assigned(fOnLoaded) then
     fOnLoaded(fURL, true);
 end;
@@ -86,6 +91,15 @@ procedure TfmxWebBrowser.webChromeDidFinishLoad(ASender: TObject);
 begin
   if assigned(fOnLoaded) then
     fOnLoaded(fURL, false);
+  if fZoom <> 1 then
+    Zoom(fZoom);
+end;
+
+procedure TfmxWebBrowser.Zoom(Scale: single);
+begin
+  fZoom := Scale;
+  if assigned(webChrome) then
+    webChrome.EvaluateJavaScript(Format('document.body.style.zoom = "%d%%";', [trunc(Scale * 100)]));
 end;
 
 end.

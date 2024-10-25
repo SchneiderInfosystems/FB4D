@@ -816,7 +816,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 74.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
-            inherited lstMetaData: TListBox
+            inherited memMetaData: TMemo
               Size.Width = 1000.000000000000000000
               Size.Height = 85.000000000000000000
               Viewport.Width = 1032.000000000000000000
@@ -852,12 +852,14 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             inherited Label16: TLabel
               TextSettings.Font.StyleExt = {00040000000200000004000000}
             end
-            inherited memStopSequences: TMemo
-              Viewport.Width = 314.000000000000000000
-              Viewport.Height = 43.000000000000000000
-            end
+          end
+          inherited laySafetySettings: TLayout
             inherited Label18: TLabel
               TextSettings.Font.StyleExt = {00040000000200000004000000}
+            end
+            inherited memStopSequences: TMemo
+              Viewport.Width = 334.000000000000000000
+              Viewport.Height = 47.000000000000000000
             end
           end
         end
@@ -876,9 +878,6 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
           inherited Splitter2: TSplitter
             Position.X = 592.000000000000000000
-          end
-          inherited lblGeminiPrompt: TLabel
-            Size.Width = 90.000000000000000000
           end
         end
         inherited Splitter1: TSplitter

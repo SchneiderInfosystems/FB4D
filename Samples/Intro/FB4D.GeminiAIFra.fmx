@@ -8,7 +8,7 @@ object GeminiAIFra: TGeminiAIFra
     Size.Width = 1036.000000000000000000
     Size.Height = 122.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 0
+    TabIndex = 3
     TabOrder = 3
     TabPosition = PlatformDefault
     Sizes = (
@@ -25,7 +25,7 @@ object GeminiAIFra: TGeminiAIFra
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = True
+      IsSelected = False
       Size.Width = 139.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
@@ -52,13 +52,15 @@ object GeminiAIFra: TGeminiAIFra
       object memMarkdown: TMemo
         Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
         DataDetectorTypes = []
+        StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
         Size.Height = 96.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 96.000000000000000000
+        OnMouseWheel = memMouseWheel
+        Viewport.Width = 1032.000000000000000000
+        Viewport.Height = 92.000000000000000000
       end
     end
     object tabMetadata: TTabItem
@@ -75,18 +77,18 @@ object GeminiAIFra: TGeminiAIFra
       Text = 'Metadata'
       ExplicitSize.cx = 74.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
-      object lstMetaData: TListBox
+      object memMetaData: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
         Size.Height = 96.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        DisableFocusEffect = True
-        DefaultItemStyles.ItemStyle = ''
-        DefaultItemStyles.GroupHeaderStyle = ''
-        DefaultItemStyles.GroupFooterStyle = ''
+        OnMouseWheel = memMouseWheel
         Viewport.Width = 1032.000000000000000000
-        Viewport.Height = 89.000000000000000000
+        Viewport.Height = 92.000000000000000000
       end
     end
     object tabRawResult: TTabItem
@@ -94,7 +96,7 @@ object GeminiAIFra: TGeminiAIFra
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = False
+      IsSelected = True
       Size.Width = 110.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
@@ -106,13 +108,15 @@ object GeminiAIFra: TGeminiAIFra
       object memRawJSONResult: TMemo
         Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
         DataDetectorTypes = []
+        StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
         Size.Height = 96.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 96.000000000000000000
+        OnMouseWheel = memMouseWheel
+        Viewport.Width = 1032.000000000000000000
+        Viewport.Height = 92.000000000000000000
       end
     end
   end
@@ -692,7 +696,7 @@ object GeminiAIFra: TGeminiAIFra
         Size.Height = 36.000000000000000000
         Size.PlatformDefault = False
         Text = 'Stop words or sequences'
-        TabOrder = 32
+        TabOrder = 30
       end
       object Label18: TLabel
         StyledSettings = [Family, Size, FontColor]
@@ -708,7 +712,7 @@ object GeminiAIFra: TGeminiAIFra
           'enerate content when it generates this word or sequence. A stop ' +
           'sequence can be any sequence of characters.  Note that the outpu' +
           't stops at the sequence and the sentence may not be completed. '
-        TabOrder = 28
+        TabOrder = 27
       end
       object memStopSequences: TMemo
         Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
@@ -735,6 +739,7 @@ object GeminiAIFra: TGeminiAIFra
       Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
       CheckSpelling = True
       DataDetectorTypes = []
+      StyledSettings = [Family, Style, FontColor]
       Align = Client
       Margins.Bottom = 40.000000000000000000
       Size.Width = 628.000000000000000000
@@ -742,6 +747,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.PlatformDefault = False
       TabOrder = 3
       OnKeyUp = memGeminiPromptKeyUp
+      OnMouseWheel = memMouseWheel
       Viewport.Width = 624.000000000000000000
       Viewport.Height = 276.000000000000000000
     end
