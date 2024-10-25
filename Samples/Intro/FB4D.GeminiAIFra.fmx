@@ -893,11 +893,14 @@ object GeminiAIFra: TGeminiAIFra
       StyledSettings = [Family, Size, Style]
       Position.X = 8.000000000000000000
       Position.Y = 8.000000000000000000
-      Size.Width = 90.000000000000000000
-      Size.Height = 16.000000000000000000
+      Size.Width = 343.200012207031300000
+      Size.Height = 32.000000000000000000
       Size.PlatformDefault = False
       TextSettings.FontColor = claGray
-      Text = 'Gemini prompt'
+      TextSettings.WordWrap = False
+      Text = 
+        'Gemini prompt'#10'Use the mouse wheel together with the Ctrl key to ' +
+        'zoom the text'
       TabOrder = 2
     end
     object btnNextQuestionInChat: TButton
