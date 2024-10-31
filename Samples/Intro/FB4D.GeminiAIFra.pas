@@ -309,8 +309,23 @@ begin
     imgMediaFile.Bitmap.LoadFromFile(OpenDialogImgFile.FileName);
     imgMediaFile.Visible := true;
     fMediaStream := TFileStream.Create(OpenDialogImgFile.FileName, fmOpenRead);
+    {$IF CompilerVersion < 35} // Delphi 10.4 and before
+    case TFirebaseHelpers.ImageStreamToContentType(fMediaStream) of
+      TRESTContentType.ctIMAGE_JPEG:
+        edtMediaFileType.Text := 'image/jpeg';
+      TRESTContentType.ctIMAGE_GIF:
+        edtMediaFileType.Text := 'image/gif';
+      TRESTContentType.ctIMAGE_PNG:
+        edtMediaFileType.Text := 'image/png';
+      TRESTContentType.ctIMAGE_TIFF:
+        edtMediaFileType.Text := 'image/tiff';
+      else
+        edtMediaFileType.Text := '?';
+    end;
+    {$ELSE}
     edtMediaFileType.Text := TFirebaseHelpers.ImageStreamToContentType(
       fMediaStream);
+    {$ENDIF}
   end;
 end;
 
@@ -330,7 +345,11 @@ begin
     fPDFBrowser.LoadFromFile(OpenDialogPDF.FileName, OnPDFLoaded);
     fPDFBrowser.layChrome.Parent := rctImage;
     fMediaStream := TFileStream.Create(OpenDialogPDF.FileName, fmOpenRead);
+    {$IF CompilerVersion < 35} // Delphi 10.4 and before
+    edtMediaFileType.Text := 'application/pdf'
+    {$ELSE}
     edtMediaFileType.Text := TRESTContentType.ctAPPLICATION_PDF;
+    {$ENDIF}
   end;
 end;
 
@@ -382,12 +401,22 @@ begin
     if imgMediaFile.Visible then
     begin
       Info := 'prompt with image media';
+      {$IF CompilerVersion < 35} // Delphi 10.4 and before
+      fRequest := TGeminiAIRequest.Create.PromptWithMediaData(
+        memGeminiPrompt.Text, edtMediaFileType.Text, fMediaStream);
+      {$ELSE}
       fRequest := TGeminiAIRequest.Create.PromptWithImgData(
         memGeminiPrompt.Text, fMediaStream);
+      {$ENDIF}
     end else begin
       Info := 'prompt with PDF media';
+      {$IF CompilerVersion < 35} // Delphi 10.4 and before
+      fRequest := TGeminiAIRequest.Create.PromptWithMediaData(
+        memGeminiPrompt.Text, 'application/pdf', fMediaStream);
+      {$ELSE}
       fRequest := TGeminiAIRequest.Create.PromptWithMediaData(
         memGeminiPrompt.Text, TRESTContentType.ctAPPLICATION_PDF, fMediaStream);
+      {$ENDIF}
     end;
   end else begin
     Info := 'prompt';
@@ -549,12 +578,21 @@ begin
   fHTMLResultBrowser.Stop;
   if assigned(fMediaStream) then
   begin
+    {$IF CompilerVersion < 35} // Delphi 10.4 and before
+    if imgMediaFile.Visible then
+      Request := TGeminiAIRequest.Create.PromptWithMediaData(
+        memGeminiPrompt.Text, edtMediaFileType.Text, fMediaStream)
+    else
+      Request := TGeminiAIRequest.Create.PromptWithMediaData(
+        memGeminiPrompt.Text, 'application/pdf', fMediaStream);
+    {$ELSE}
     if imgMediaFile.Visible then
       Request := TGeminiAIRequest.Create.PromptWithImgData(
         memGeminiPrompt.Text, fMediaStream)
     else
       Request := TGeminiAIRequest.Create.PromptWithMediaData(
         memGeminiPrompt.Text, TRESTContentType.ctAPPLICATION_PDF, fMediaStream);
+    {$ENDIF}
   end else
     Request := TGeminiAIRequest.Create.Prompt(memGeminiPrompt.Text);
   fGeminiAI.CountTokenOfRequest(Request, OnGeminiAITokenCount);

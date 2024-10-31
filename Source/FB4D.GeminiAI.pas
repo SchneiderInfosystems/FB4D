@@ -83,9 +83,11 @@ type
     function Prompt(const PromptText: string): IGeminiAIRequest;
     function PromptWithMediaData(const PromptText, MimeType: string;
       MediaStream: TStream): IGeminiAIRequest;
+    {$IF CompilerVersion >= 35} // Delphi 11 and later
     {$IF Defined(FMX) OR Defined(FGX)}
     function PromptWithImgData(const PromptText: string;
       ImgStream: TStream): IGeminiAIRequest;
+    {$ENDIF}
     {$ENDIF}
     function ModelParameter(Temperature, TopP: double; MaxOutputTokens,
       TopK: cardinal): IGeminiAIRequest;
@@ -460,6 +462,7 @@ begin
   result := self;
 end;
 
+{$IF CompilerVersion >= 35} // Delphi 11 and later
 {$IF Defined(FMX) OR Defined(FGX)}
 function TGeminiAIRequest.PromptWithImgData(const PromptText: string;
   ImgStream: TStream): IGeminiAIRequest;
@@ -473,6 +476,7 @@ begin
   result := PromptWithMediaData(PromptText, MimeType, ImgStream);
 end;
 {$ENDIF}
+{$ENDIF}
 
 function TGeminiAIRequest.ModelParameter(Temperature, TopP: double;
   MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;
@@ -485,12 +489,19 @@ begin
   if (Temperature < 0) and (Temperature > 0) then
     raise EGeminiAIRequest.CreateFmt('Temperatur out of range 0..1: %f',
       [Temperature]);
-  fGenerationConfig.AddPair('temperature', Temperature);
   if (TopP < 0) and (TopP > 0) then
     raise EGeminiAIRequest.CreateFmt('TopP out of range 0..1: %f', [TopP]);
+  {$IF CompilerVersion >= 35} // Delphi 11 and later
+  fGenerationConfig.AddPair('temperature', Temperature);
   fGenerationConfig.AddPair('topP', TopP);
   fGenerationConfig.AddPair('maxOutputTokens', MaxOutputTokens);
   fGenerationConfig.AddPair('topK', TopK);
+  {$ELSE}
+  fGenerationConfig.AddPair('temperature', FloatToStr(Temperature));
+  fGenerationConfig.AddPair('topP', FloatToStr(TopP));
+  fGenerationConfig.AddPair('maxOutputTokens', IntToStr(MaxOutputTokens));
+  fGenerationConfig.AddPair('topK', IntToStr(TopK));
+  {$ENDIF}
   result := self;
 end;
 
