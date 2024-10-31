@@ -30,7 +30,7 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 ### Prerequisites
 
-The sample projects are developed and prepared for **Delphi 12.0 Athens**.
+The sample projects are developed and prepared for **Delphi 12.2 Athens**.
 
 🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
 
@@ -56,7 +56,7 @@ AnnotateFile is limited to pdf only, as the gif and tif image format is not yet 
  
 #### Limitation on Linux64
 
-There are no restrictions when using Delphi 11 Alexandria.
+There are no restrictions when using Delphi 11 Alexandria or higher.
 
 For older versions up to 10.4.2, you must note the following RSP: Due to a bug in the Linux RTL, all HTTP requests that transfer data to the server by using the _Patch_ method are not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. [For more information see RSP-33177](https://quality.embarcadero.com/browse/RSP-33177).
 
