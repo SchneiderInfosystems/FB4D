@@ -1314,7 +1314,7 @@ type
     function NumberOfResults: integer;
 
     /// <summary>
-    /// Returns the TGeminiAIResult object at the specified index.
+    /// Returns the TGeminiAIResult record at the specified index for candidates.
     /// </summary>
     function EvalResult(ResultIndex: integer): TGeminiAIResult;
 
