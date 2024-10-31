@@ -14,15 +14,15 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
-- October 2024: GeminiAI service added, A new tab in the DemoFB4D App demonstrates the functionality
-- August 2024: Refactoring and many improvements in DemoFB4D 
-- June 2024: Adding _TOTDMapperOptions_ to control the behavior of the Object-To-Doc mapper. The simple FMX demo application FSObj2Doc demonstrates the Object-To-Document Mapper and has been added to the FB4D Samples project group. Add _IFirestoreWriteTransaction.TransformDoc_ for SetServerTime, Increment, Maximum, Minimum.
-- December 2023: The Object to Document Mapper lets you quickly sync your Pascal objects to the Firestore database by deriving your own class from _TFirestoreDocument_ and adding member variables. All member variables are automatically written to the document and read from the document. The sample application FSObj2Doc demonstrates the functionality
-- October 2023: Firestore database write transaction supports delete document too. The new Auth_SelfReg_VCL demo application explains all options of the self registration workflow.
-- June 2023: Firestore database supports write transactions
-- October 2022: Interface for ML Vision service added
-- October 2021: Prepared for Delphi Alexandria
-- April 7, 2021: Revised RT DB Listener
+- October 2024: _GeminiAI_ service added, a new tab in the _DemoFB4D_ App demonstrates the functionality;
+- August 2024: Refactoring and many improvements in _DemoFB4D_ App;
+- June 2024: Adding _TOTDMapperOptions_ to control the behavior of the Object-To-Doc mapper. The simple FMX demo application _FSObj2Doc_ demonstrates the Object-To-Document Mapper and has been added to the FB4D Samples project group. Add _IFirestoreWriteTransaction.TransformDoc_ for SetServerTime, Increment, Maximum, Minimum;
+- Februar 2024: Migrate to Delphi Athene;
+- December 2023: The Object to Document Mapper lets you quickly sync your Pascal objects to the Firestore database by deriving your own class from _TFirestoreDocument_ and adding member variables. All member variables are automatically written to the document and read from the document. The sample application _FSObj2Doc_ demonstrates the functionality;
+- October 2023: Firestore database write transaction supports delete document too. The _Auth_SelfReg_VCL_ demo application explains all options of the self registration workflow;
+- June 2023: Firestore database supports write transactions;
+- October 2022: Interface for _ML Vision_ service added;
+- April 2021: Revised _RT DB_ Listener;
 - March 2021: New optional cache to accelerate the repeated access to storage objects. Additional _IFirebaseStorage.GetAndDownload_ method in order to simplify the download from the storage. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirebaseStorage#optional-cache-for-storage-objects)  
 New option in _FB4D.SelfRegistrationFra_ framework to support enter display name and upload profile image when registering a new user. [see more details](https://github.com/SchneiderInfosystems/FB4D/wiki/Self-Registration-Workflow#optional-user-profile-image)  
 Real Time Database creation has changed within the Firebase Console. The Firebase ID is no longer sufficient to access newly created RT DBs. A Firebase URL is now required, which can also include the server location. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IRealTimeDB#create-an-instance-for-the-interface-irealtimedb).  
