@@ -44,10 +44,12 @@ begin
     inherited;
   except
     {$IFDEF MSWINDOWS}
+    {$IF CompilerVersion >= 35} // Delphi 11 and later
     on E: Exception do
       if E.Message.EndsWith(SEdgeBrowserEngineUnavailable) then
         raise Exception.Create('Please install WebView2 SDK or copy WebView2Loader.dll into exe folder in order to use the Edge webbrowser!')
       else
+    {$ENDIF}
     {$ENDIF}
     raise;
   end;

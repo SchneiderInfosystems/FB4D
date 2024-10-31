@@ -1198,7 +1198,7 @@ type
   /// </summary>
   THarmCategory = (
     hcUnspecific,         // Unspecified harm category.
-    hcHateSpeech,        // Hate speech.
+    hcHateSpeech,         // Hate speech.
     hcHarassment,         // Harassment.
     hcSexuallyExplicit,   // Sexually explicit content.
     hcDangerousContent,   // Dangerous content.
@@ -1397,10 +1397,12 @@ type
     /// </summary>
     function PromptWithMediaData(const PromptText, MimeType: string; MediaStream: TStream): IGeminiAIRequest;
 
+    {$IF CompilerVersion >= 35} // Delphi 11 and later
     {$IF Defined(FMX) OR Defined(FGX)}
     /// <summary>
     /// For images the MimeType can be evaluated automatically
     function PromptWithImgData(const PromptText: string; ImgStream: TStream): IGeminiAIRequest;
+    {$ENDIF}
     {$ENDIF}
 
     /// <summary>
