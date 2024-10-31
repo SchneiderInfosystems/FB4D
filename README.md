@@ -14,7 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and important library enhancements that need the attention of users of this library.
 
-- October 2024: GeminiAI serivce added
+- October 2024: GeminiAI service added, A new tab in the DemoFB4D App demonstrates the functionality
 - August 2024: Refactoring and many improvements in DemoFB4D 
 - June 2024: Adding _TOTDMapperOptions_ to control the behavior of the Object-To-Doc mapper. The simple FMX demo application FSObj2Doc demonstrates the Object-To-Document Mapper and has been added to the FB4D Samples project group. Add _IFirestoreWriteTransaction.TransformDoc_ for SetServerTime, Increment, Maximum, Minimum.
 - December 2023: The Object to Document Mapper lets you quickly sync your Pascal objects to the Firestore database by deriving your own class from _TFirestoreDocument_ and adding member variables. All member variables are automatically written to the document and read from the document. The sample application FSObj2Doc demonstrates the functionality
