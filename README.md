@@ -42,6 +42,10 @@ Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.
 
 **FB4D** is developed in pure object pascal and can be used with _Firemonkey_ on all supported platforms. The library and its sample projects are currently tested with Win64/Win32, Mac64/32, Linux64 by using FMXLinux, iOS64 and Android. (Hint to mobile platforms: The TokenJWT to perform the token verification requires the installation of the OpenSSL libraries). For more information about using OpenSSL see the [installation of OpenSSL](https://github.com/SchneiderInfosystems/FB4D/wiki/Getting-Started-with-FB4D#install-openssl)
 
+#### Hints for Windows 
+
+In the _DemoFB4D_ app, the Edge web browser is used to display Markdown as HTML and PDF. To do this, it is necessary to install the WebView2 SDK or at least copy the WebView2Loader.dll into your executable directory. Read more about WebView2 and TWebBrowser on Embarcadero's Wiki. This upgrade is only necessary under Win32 and Win64. 
+
 #### Limitation on Android for VisionML
 
 AnnotateFile is limited to pdf only, as gif support does not work due [RSP-17682](https://quality.embarcadero.com/browse/RSP-17682), and the tif image format is not yet supported.
@@ -59,7 +63,7 @@ For older versions up to 10.4.2, you must note the following RSP: Due to a bug i
 ### Submodules
 
 **Important note about path changes:** 
-Since introduction of Gemini AI (V1.6.5.631) the folder JOSE is moved to submodules/delphi-jose-jwt because the aditional submodule Delphi-Markup was added. After GIT pull please update both submodules with the Git Bash command `git submodule update --remote --merge` or use your favorit Git tool for this update. 
+Since introduction of Gemini AI (V1.6.5.631) the folder JOSE is moved to submodules/delphi-jose-jwt because the additional submodule Delphi-Markup was added. After GIT pull please update both submodules with the Git Bash command `git submodule update --remote --merge` or use your favorite Git tool for this update. 
 
 #### Delphi-JOSE-JWT
 
@@ -69,7 +73,7 @@ https://github.com/paolo-rossi/delphi-jose-jwt
 
 #### Delphi-Markdown
 
-For converting markdown formated text into HTML this library uses the Delphi Markdown Library. Thank you, Grahame Grieve for this great library!
+For converting markdown formatted text into HTML this library uses the Delphi Markdown Library. Thank you, Grahame Grieve for this great library!
 
 https://github.com/grahamegrieve/delphi-markdown
 
