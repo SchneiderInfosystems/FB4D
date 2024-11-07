@@ -267,6 +267,10 @@ type
     function AddPageToken(const PageToken: string): TQueryParams;
   end;
 
+  TSchemaItemsHelper = class helper for TSchemaItems
+    class function CreateItem(const FieldName: string; Schema: IGeminiSchema): TPair<string, IGeminiSchema>;
+  end;
+
 resourcestring
   rsFBFailureIn = '%s Firebase failure in %s: %s';
 
@@ -2157,6 +2161,13 @@ begin
   if not Transaction.IsEmpty then
     Add(cFirestoreTransaction, [Transaction]);
   result := self;
+end;
+
+{ TSchemaItemsHelper }
+
+class function TSchemaItemsHelper.CreateItem(const FieldName: string; Schema: IGeminiSchema): TPair<string, IGeminiSchema>;
+begin
+  result := TPair<string, IGeminiSchema>.Create(FieldName, Schema);
 end;
 
 end.
