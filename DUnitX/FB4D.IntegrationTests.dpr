@@ -42,7 +42,8 @@ uses
   Authentication in 'Authentication.pas',
   FBHelpers in 'FBHelpers.pas',
   Storage in 'Storage.pas',
-  Consts in 'Consts.pas';
+  Consts in 'Consts.pas',
+  GeminiAI in 'GeminiAI.pas';
 
 begin
 {$IFDEF TESTINSIGHT}

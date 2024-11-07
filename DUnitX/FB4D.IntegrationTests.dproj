@@ -196,6 +196,7 @@
         <DCCReference Include="FBHelpers.pas"/>
         <DCCReference Include="Storage.pas"/>
         <DCCReference Include="Consts.pas"/>
+        <DCCReference Include="GeminiAI.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -238,6 +239,18 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Win32\Debug\FB4D.IntegrationTests.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="Win64\Debug\FB4D.IntegrationTests.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>FB4D.IntegrationTests.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\FB4D.IntegrationTests.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>FB4D.IntegrationTests.rsm</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="OSX32">
                         <Operation>1</Operation>
