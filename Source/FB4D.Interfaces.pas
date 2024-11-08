@@ -81,6 +81,7 @@ type
   IStorageObject = interface;
   IVisionMLResponse = interface;
   IGeminiAIResponse = interface;
+  IGeminiSchema = interface;
 
   /// <summary>
   /// Firebase returns timestamps in UTC time zone (tzUTC). FB4D offers the
@@ -1304,9 +1305,21 @@ type
   /// </summary>
   IGeminiAIResponse = interface(IInterface)
     /// <summary>
-    /// Returns the raw JSON response from the API.
+    /// Returns the result text formatted as Markdown.
     /// </summary>
-    function FormatedJSON: string;
+    function ResultAsMarkDown: string;
+
+    {$IFDEF MARKDOWN2HTML}
+    /// <summary>
+    /// Returns the result text formatted as HTML (conditionally defined).
+    /// </summary>
+    function ResultAsHTML: string;
+    {$ENDIF}
+
+    /// <summary>
+    /// Returns the result as JSON value or object or array when using IGeminiAIRequest.SetJSONResponseSchema.
+    /// </summary>
+    function ResultAsJSON: TJSONValue;
 
     /// <summary>
     /// Returns the number of results (candidates) in the response.
@@ -1354,16 +1367,19 @@ type
     function FailureDetail: string;
 
     /// <summary>
-    /// Returns the result text formatted as Markdown.
+    /// Returns the model version.
     /// </summary>
-    function ResultAsMarkDown: string;
+    function ModelVersion: string;
 
-    {$IFDEF MARKDOWN2HTML}
     /// <summary>
-    /// Returns the result text formatted as HTML (conditionally defined).
+    /// Returns the raw JSON response from the API.
     /// </summary>
-    function ResultAsHTML: string;
-    {$ENDIF}
+    function RawJSONResult: TJSONValue;
+
+    /// <summary>
+    /// Returns the raw JSON response from the API as formated string or an error.
+    /// </summary>
+    function RawFormatedJSONResult: string;
   end;
 
   /// <summary>
@@ -1376,6 +1392,80 @@ type
     sblLowAndAbove,     // Block low, medium, and high-risk content.
     sblUseDefault       // Use the default safety level.
   );
+
+  /// <summary>
+  /// Class to hold schema items, where property names and an instances of the IGeminiSchema interface is stored in an
+  /// Interface. This structure represents the JSON schema for the data structure definition.
+  /// </summary>
+  TSchemaItems = TDictionary<string, IGeminiSchema>;
+
+  /// <summary>
+  /// Interface for defining a Gemini schema item. This allows building a JSON schema
+  /// definition programmatically. The methods are fluent, meaning they return the
+  /// interface instance itself, allowing for chained calls.
+  /// </summary>
+  IGeminiSchema = interface(IInterface)
+    /// <summary>
+    /// Sets the schema item type to string.
+    /// </summary>
+    function SetStringType: IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to floating-point number.
+    /// </summary>
+    function SetFloatType: IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to integer.
+    /// </summary>
+    function SetIntegerType: IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to boolean.
+    /// </summary>
+    function SetBooleanType: IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to an enumeration.
+    /// EnumValues: An array of strings representing the allowed enum values.
+    /// </summary>
+    function SetEnumType(EnumValues: TStringDynArray): IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to an array.
+    /// </summary>
+    /// <param name="ArrayElement">The schema definition for the elements within the array.
+    /// </param>
+    /// <param name="MaxItems">The maximum number of items allowed in the array (-1 for no limit).
+    /// </param>
+    /// <param name="MinItems">The minimum number of items allowed in the array (-1 for no limit).
+    /// </param>
+    function SetArrayType(ArrayElement: IGeminiSchema; MaxItems: integer = -1; MinItems: integer = -1): IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to an object.
+    /// </summary>
+    /// </param>
+    /// <param name="RequiredItems">A dictionary of required schema items for the object, keyed by property name.
+    /// </param>
+    /// <param name="OptionalItems">A dictionary of optional schema items for the object, keyed by property name.
+    /// </param>
+    function SetObjectType(RequiredItems: TSchemaItems; OptionalItems: TSchemaItems = nil): IGeminiSchema;
+
+    /// <summary>
+    /// Sets the description for the schema item. This is for documentation.
+    /// </summary>
+    /// <param name="Description">The descriptive text for the schema item. }
+    /// </param>
+    function SetDescription(const Description: string): IGeminiSchema;
+
+    /// <summary>
+    /// Sets the nullability of the schema item.
+    /// </summary>
+    /// <param name="IsNullable">True if the item can be null, False otherwise.
+    /// </param>
+    function SetNullable(IsNullable: boolean): IGeminiSchema;
+  end;
 
   /// <summary>
   /// Exception class for Gemini AI requests
@@ -1432,6 +1522,13 @@ type
     /// <param name="LevelToBlock">:Specifies the safety level to use for blocking.
     /// </param>
     function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
+
+    /// <summary>
+    /// Sets as result an JSON object with a given JSON schema.
+    /// </summary>
+    /// <param name="Schema">Interface to IGeminiSchema
+    /// </param>
+    function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
 
     /// <summary>
     /// For using in chats add the model answer to the next request.

@@ -26,7 +26,7 @@ unit FB4D.GeminiAI;
 interface
 
 uses
-  System.Classes, System.JSON, System.SysUtils, System.SyncObjs,
+  System.Classes, System.Types, System.JSON, System.SysUtils, System.SyncObjs,
   System.Net.HttpClient, System.Net.URLClient, System.Generics.Collections,
   REST.Types,
   {$IFDEF MARKDOWN2HTML}
@@ -68,6 +68,32 @@ type
       out CachedContentToken: integer): integer;
   end;
 
+  TGeminiSchema = class(TInterfacedObject, IGeminiSchema)
+  private
+    fSchema: TJSONObject;
+    function GetJSONObject: TJSONObject;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function SetStringType: IGeminiSchema;
+    function SetFloatType: IGeminiSchema;
+    function SetIntegerType: IGeminiSchema;
+    function SetBooleanType: IGeminiSchema;
+    function SetEnumType(EnumValues: TStringDynArray): IGeminiSchema;
+    function SetArrayType(ArrayElement: IGeminiSchema; MinItems: integer = -1; MaxItems: integer = -1): IGeminiSchema;
+    function SetObjectType(RequiredItems: TSchemaItems; OptionalItems: TSchemaItems = nil): IGeminiSchema;
+    function SetDescription(const Description: string): IGeminiSchema;
+    function SetNullable(IsNullable: boolean): IGeminiSchema;
+    // Class helpers
+    class function StringType: IGeminiSchema;
+    class function FloatType: IGeminiSchema;
+    class function IntegerType: IGeminiSchema;
+    class function BooleanType: IGeminiSchema;
+    class function EnumType(EnumValues: TStringDynArray): IGeminiSchema;
+    class function ArrayType(ArrayElement: IGeminiSchema; MinItems: integer = -1; MaxItems: integer = -1): IGeminiSchema;
+    class function ObjectType(RequiredItems: TSchemaItems; OptionalItems: TSchemaItems = nil): IGeminiSchema;
+  end;
+
   TGeminiAIRequest = class(TInterfacedObject, IGeminiAIRequest)
   private
     fRequest: TJSONObject;
@@ -76,6 +102,7 @@ type
     fGenerationConfig: TJSONObject;
     fSavetySettings: TJSONArray;
     function AsJSON: TJSONObject;
+    procedure CheckAndCreateGenerationConfig;
   public
     constructor Create;
     destructor Destroy; override;
@@ -93,6 +120,7 @@ type
       TopK: cardinal): IGeminiAIRequest;
     function SetStopSequences(StopSequences: TStrings): IGeminiAIRequest;
     function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
+    function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
     procedure AddAnswerForNextRequest(const ResultAsMarkDown: string);
     procedure AddQuestionForNextRequest(const PromptText: string);
   public
@@ -107,13 +135,16 @@ type
     fFailureDetail: string;
     fResults: array of TGeminiAIResult;
     fFinishReasons: TGeminiAIFinishReasons;
+    fModelVersion: string;
     procedure EvaluateResults;
     constructor CreateError(const RequestID, ErrMsg: string);
     function ConvertMarkDownToHTML(const MarkDown: string): string;
   public
     constructor Create(Response: IFirebaseResponse);
     destructor Destroy; override;
-    function FormatedJSON: string;
+    function ResultAsMarkDown: string;
+    function ResultAsHTML: string;
+    function ResultAsJSON: TJSONValue;
     function NumberOfResults: integer; // Candidates
     function EvalResult(ResultIndex: integer): TGeminiAIResult;
     function UsageMetaData: TGeminiAIUsageMetaData;
@@ -123,8 +154,9 @@ type
     function FinishReasonsCommaSepStr: string;
     function IsValid: boolean;
     function FailureDetail: string;
-    function ResultAsMarkDown: string;
-    function ResultAsHTML: string;
+    function ModelVersion: string;
+    function RawFormatedJSONResult: string;
+    function RawJSONResult: TJSONValue;
     class function HarmCategoryToStr(hc: THarmCategory): string;
     class function HarmCategoryFromStr(const txt: string): THarmCategory;
   end;
@@ -478,14 +510,19 @@ end;
 {$ENDIF}
 {$ENDIF}
 
-function TGeminiAIRequest.ModelParameter(Temperature, TopP: double;
-  MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;
+procedure TGeminiAIRequest.CheckAndCreateGenerationConfig;
 begin
   if not assigned(fGenerationConfig) then
   begin
     fGenerationConfig := TJSONObject.Create;
     fRequest.AddPair('generationConfig', fGenerationConfig);
   end;
+end;
+
+function TGeminiAIRequest.ModelParameter(Temperature, TopP: double;
+  MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;
+begin
+  CheckAndCreateGenerationConfig;
   if (Temperature < 0) and (Temperature > 0) then
     raise EGeminiAIRequest.CreateFmt('Temperatur out of range 0..1: %f',
       [Temperature]);
@@ -510,16 +547,23 @@ var
   Arr: TJSONArray;
   ss: string;
 begin
-  if not assigned(fGenerationConfig) then
-  begin
-    fGenerationConfig := TJSONObject.Create;
-    fRequest.AddPair('generationConfig', fGenerationConfig);
-  end;
+  CheckAndCreateGenerationConfig;
   Arr := TJSONArray.Create;
   for ss in StopSequences do
     Arr.Add(ss);
   fGenerationConfig.AddPair('stopSequences', Arr);
   result := self;
+end;
+
+function TGeminiAIRequest.SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
+begin
+  CheckAndCreateGenerationConfig;
+  {$IF CompilerVersion >= 35} // Delphi 11 and later
+  fGenerationConfig.AddPair('response_mime_type', CONTENTTYPE_APPLICATION_JSON);
+  {$ELSE}
+  fGenerationConfig.AddPair('response_mime_type', 'application/json');
+  {$ENDIF}
+  fGenerationConfig.AddPair('response_schema', (Schema as TGeminiSchema).GetJSONObject);
 end;
 
 function TGeminiAIRequest.SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
@@ -601,7 +645,7 @@ begin
   fContentResponse := nil;
   fUsageMetaData.Init;
   fResultState := TGeminiAIResultState.grsTransmitError;
-  fFailureDetail := 'REST API Call failed for ' + RequestID + ': ' + ErrMsg;
+  fFailureDetail := ErrMsg;
   SetLength(fResults, 0);
 end;
 
@@ -611,7 +655,7 @@ begin
   inherited;
 end;
 
-function TGeminiResponse.FormatedJSON: string;
+function TGeminiResponse.RawFormatedJSONResult: string;
 begin
   if assigned(fContentResponse) then
     result := fContentResponse.Format
@@ -619,6 +663,14 @@ begin
     result := fFailureDetail
   else
     result := '?';
+end;
+
+function TGeminiResponse.RawJSONResult: TJSONValue;
+begin
+  if assigned(fContentResponse) then
+    result := fContentResponse
+  else
+    result := TJSONNull.Create;
 end;
 
 function TGeminiResponse.EvalResult(ResultIndex: integer): TGeminiAIResult;
@@ -654,7 +706,8 @@ begin
   result := '';
   case fResultState of
     grsUnknown,
-    grsParseError:
+    grsParseError,
+    grsTransmitError:
       result := fFailureDetail;
     grsBlockedBySafety:
       result := 'Blocked by safety';
@@ -751,9 +804,20 @@ begin
     result := ConvertMarkDownToHTML(result);
 end;
 
+function TGeminiResponse.ResultAsJSON: TJSONValue;
+begin
+  Assert(NumberOfResults = 1, 'Not a single result received');
+  result := TJSONValue.ParseJSONValue(EvalResult(0).ResultAsMarkDown);
+end;
+
 function TGeminiResponse.UsageMetaData: TGeminiAIUsageMetaData;
 begin
   result := fUsageMetaData;
+end;
+
+function TGeminiResponse.ModelVersion: string;
+begin
+  result := fModelVersion;
 end;
 
 procedure TGeminiResponse.EvaluateResults;
@@ -861,6 +925,7 @@ begin
     Obj.TryGetValue<integer>('promptTokenCount', fUsageMetaData.PromptTokenCount);
     Obj.TryGetValue<integer>('candidatesTokenCount', fUsageMetaData.GeneratedTokenCount);
     Obj.TryGetValue<integer>('totalTokenCount', fUsageMetaData.TotalTokenCount);
+    fModelVersion := fContentResponse.GetValue<string>('modelVersion');
   except
     on e: exception do
     begin
@@ -908,6 +973,150 @@ begin
   for hc := succ(Low(THarmCategory)) to high(THarmCategory) do
     if SameText(Txt, HarmCategoryToStr(hc)) then
       exit(hc);
+end;
+
+{ TGeminiSchema }
+
+constructor TGeminiSchema.Create;
+begin
+  fSchema := TJSONObject.Create;
+end;
+
+destructor TGeminiSchema.Destroy;
+begin
+  FreeAndNil(fSchema);
+  inherited;
+end;
+
+function TGeminiSchema.GetJSONObject: TJSONObject;
+begin
+  result := fSchema;
+  fSchema := nil;
+end;
+
+function TGeminiSchema.SetStringType: IGeminiSchema;
+begin
+  fSchema.AddPair('type', 'STRING');
+  result := self;
+end;
+
+function TGeminiSchema.SetIntegerType: IGeminiSchema;
+begin
+  fSchema.AddPair('type', 'INTEGER');
+  result := self;
+end;
+
+function TGeminiSchema.SetFloatType: IGeminiSchema;
+begin
+  fSchema.AddPair('type', 'NUMBER');
+  result := self;
+end;
+
+function TGeminiSchema.SetBooleanType: IGeminiSchema;
+begin
+  fSchema.AddPair('type', 'BOOLEAN');
+  result := self;
+end;
+
+function TGeminiSchema.SetEnumType(EnumValues: TStringDynArray): IGeminiSchema;
+var
+  Arr: TJSONArray;
+  Enum: string;
+begin
+  fSchema.AddPair('type', 'STRING');
+  fSchema.AddPair('format', 'enum');
+  Arr := TJSONArray.Create;
+  for Enum in EnumValues do
+    Arr.Add(Enum);
+  fSchema.AddPair('enum', Arr);
+  result := self;
+end;
+
+function TGeminiSchema.SetDescription(const Description: string): IGeminiSchema;
+begin
+  fSchema.AddPair('description', Description);
+  result := self;
+end;
+
+function TGeminiSchema.SetNullable(IsNullable: boolean): IGeminiSchema;
+begin
+  fSchema.AddPair('nullable', BoolToStr(IsNullable, true).ToLower);
+  result := self;
+end;
+
+function TGeminiSchema.SetArrayType(ArrayElement: IGeminiSchema; MinItems, MaxItems: integer): IGeminiSchema;
+begin
+  Assert(assigned(ArrayElement), 'Missing ArrayElement');
+  fSchema.AddPair('type', 'ARRAY');
+  fSchema.AddPair('items', (ArrayElement as TGeminiSchema).GetJSONObject);
+  if MinItems >= 0 then
+    fSchema.AddPair('minItems', MinItems);
+  if MaxItems > MinItems then
+    fSchema.AddPair('maxItems', MaxItems);
+  result := self;
+end;
+
+function TGeminiSchema.SetObjectType(RequiredItems, OptionalItems: TSchemaItems): IGeminiSchema;
+var
+  Properties: TJSONObject;
+  Required: TJSONArray;
+  ObjName: string;
+begin
+  Assert(assigned(RequiredItems), 'Missing ArrayElement');
+  fSchema.AddPair('type', 'OBJECT');
+  Properties := TJSONObject.Create;
+  Required := TJSONArray.Create;
+  for ObjName in RequiredItems.Keys do
+  begin
+    Properties.AddPair(ObjName, (RequiredItems.Items[ObjName] as TGeminiSchema).GetJSONObject);
+    Required.Add(ObjName);
+  end;
+  if assigned(OptionalItems) then
+    for ObjName in OptionalItems.Keys do
+      Properties.AddPair(ObjName, (OptionalItems.Items[ObjName] as TGeminiSchema).GetJSONObject);
+  fSchema.AddPair('properties', Properties);
+  if not Required.IsEmpty then
+    fSchema.AddPair('required', Required)
+  else
+    Required.Free;
+  RequiredItems.Free;
+  OptionalItems.Free;
+  result := self;
+end;
+
+class function TGeminiSchema.StringType: IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetStringType;
+end;
+
+class function TGeminiSchema.FloatType: IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetFloatType;
+end;
+
+class function TGeminiSchema.BooleanType: IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetBooleanType;
+end;
+
+class function TGeminiSchema.EnumType(EnumValues: TStringDynArray): IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetEnumType(EnumValues);
+end;
+
+class function TGeminiSchema.IntegerType: IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetIntegerType;
+end;
+
+class function TGeminiSchema.ObjectType(RequiredItems, OptionalItems: TSchemaItems): IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetObjectType(RequiredItems, OptionalItems);
+end;
+
+class function TGeminiSchema.ArrayType(ArrayElement: IGeminiSchema; MinItems, MaxItems: integer): IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetArrayType(ArrayElement, MinItems, MaxItems);
 end;
 
 end.

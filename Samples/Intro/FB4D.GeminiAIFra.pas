@@ -461,7 +461,7 @@ begin
   tabRawResult.Visible := true;
   tabMetadata.Visible := true;
   tabMarkdownRes.Visible := true;
-  memRawJSONResult.Lines.Text := Response.FormatedJSON;
+  memRawJSONResult.Lines.Text := Response.RawFormatedJSONResult;
   fHTMLResultBrowser.Stop;
   if Response.IsValid then
   begin
@@ -522,6 +522,7 @@ begin
           Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityScore));
     end;
+    memMetaData.Lines.Add('Model version: ' + Response.ModelVersion);
 {$IFDEF DEBUG}
     var NowStr: string := FormatDateTime('yymmdd_hhnnss', now);
     TFile.WriteAllText(Format('GeminiAI%s.md', [NowStr]), Response.ResultAsMarkDown);
@@ -541,7 +542,8 @@ begin
       TabControlResult.ActiveTab := tabMetadata;
     end;
   end else
-    fHTMLResultBrowser.LoadFromStrings('<h1>Failed</h1><p>' + Response.FailureDetail + '</p>', OnHTMLLoaded);
+    fHTMLResultBrowser.LoadFromStrings('<h1>REST API Call failed</h1><p>' + Response.FailureDetail + '</p>',
+      OnHTMLLoaded);
   aniHTML.Enabled := false;
   aniHTML.Visible := false;
 end;
