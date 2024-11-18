@@ -146,7 +146,7 @@ end;
 procedure TAuthFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('Authentication', 'User', edtEmail.Text);
-  {$MESSAGE 'Attention: Password will be stored in your inifile in clear text'}
+  {$MESSAGE 'Attention: Password is stored in your file in plain text, but don''t do this in real application. Store the RefreshToken instead.'}
   IniFile.WriteString('Authentication', 'Pwd', edtPassword.Text);
 end;
 

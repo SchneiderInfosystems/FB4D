@@ -158,6 +158,7 @@ begin
   Assert.AreEqual(fUser.EMail, cEMail, 'Wrong EMail');
   Assert.IsNotEmpty(fUser.UID, 'UID is empty');
   Assert.IsNotEmpty(fUSer.Token, 'Token is empty');
+  Status('Account with UID "' + fUser.UID + '" for "' + cEmail + '" and pwd "' + cPassword + '" created');
 end;
 
 procedure UT_Authentication.SignUpWithEmailAndPassword;

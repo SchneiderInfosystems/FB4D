@@ -79,11 +79,11 @@ type
     class function ConvertGUIDtoID64(Guid: TGuid): string;
     class function ConvertID64toGUID(const ID: string): TGuid;
     class function ConvertTimeStampAndRandomPatternToPUSHID(timestamp: TDateTime;
-      Random: TBytes; TimeIsUTC: boolean = false): string;
+      RandomPattern: TBytes; TimeIsUTC: boolean = false): string;
     class function DecodeTimeStampFromPUSHID(const PUSHID: string;
       ConvertToLocalTime: boolean = true): TDateTime;
     class function ConvertTimeStampAndRandomPatternToID64(timestamp: TDateTime;
-      Random: TBytes; TimeIsUTC: boolean = false): string;
+      RandomPattern: TBytes; TimeIsUTC: boolean = false): string;
     class function DecodeTimeStampFromBase64(const FSPUSHID: string;
       ConvertToLocalTime: boolean = true): TDateTime;
     class function DecodeID64ToBytes(const ID64: string): TBytes;
@@ -472,7 +472,7 @@ begin
   if AppIsTerminated then
     exit;
 {$IF Defined(FMX)}
-  {$IFDEF LINUX}
+  {$IF Defined(LINUX) and (CompilerVersion < 35)}
   writeln(msg);  // Workaround for RSP-32303
   {$ELSE}
   FMX.Types.Log.d(msg, []);
@@ -610,7 +610,7 @@ class function TFirebaseHelpers.CreateAutoID(IDKind: TIDKind = FBID): string;
   end;
 
 begin
-  // use OS to generate a random number
+  // use OS to generate a safe random number
   case IDKind of
     FBID:
       result := ConvertGUIDtoID64(TGuid.NewGuid);
@@ -692,12 +692,12 @@ begin
 end;
 
 class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToPUSHID(
-  timestamp: TDateTime; Random: TBytes; TimeIsUTC: boolean): string;
+  timestamp: TDateTime; RandomPattern: TBytes; TimeIsUTC: boolean): string;
 var
   tsi: int64;
   c: integer;
 begin
-  Assert(length(Random) >= 12, 'Too short random pattern');
+  Assert(length(RandomPattern) >= 12, 'Too short random pattern');
   tsi := System.DateUtils.DateTimeToUnix(timestamp, TimeIsUTC) * 1000 +
     System.DateUtils.MilliSecondOf(timestamp);
   result := '';
@@ -706,8 +706,8 @@ begin
     result := cPushID64[(tsi mod 64) + low(cPushID64)] + result;
     tsi := tsi shr 6;
   end;
-  for c := 0 to length(Random) - 1 do
-    result := result + cPushID64[Random[c] and $3F + low(cPushID64)];
+  for c := 0 to length(RandomPattern) - 1 do
+    result := result + cPushID64[RandomPattern[c] and $3F + low(cPushID64)];
 end;
 
 class function TFirebaseHelpers.GetPushID(ch: Char): Integer;
@@ -750,12 +750,12 @@ begin
 end;
 
 class function TFirebaseHelpers.ConvertTimeStampAndRandomPatternToID64(
-  timestamp: TDateTime; Random: TBytes; TimeIsUTC: boolean): string;
+  timestamp: TDateTime; RandomPattern: TBytes; TimeIsUTC: boolean): string;
 var
   tsi: int64;
   c: integer;
 begin
-  Assert(length(Random) >= 12, 'Too short random pattern');
+  Assert(length(RandomPattern) >= 12, 'Too short random pattern');
   tsi := System.DateUtils.DateTimeToUnix(timestamp, TimeIsUTC) * 1000 +
     System.DateUtils.MilliSecondOf(timestamp);
   result := '';
@@ -764,8 +764,8 @@ begin
     result := cID64[(tsi mod 64) + low(cID64)] + result;
     tsi := tsi shr 6;
   end;
-  for c := 0 to length(Random) - 1 do
-    result := result + cID64[Random[c] and $3F + low(cID64)];
+  for c := 0 to length(RandomPattern) - 1 do
+    result := result + cID64[RandomPattern[c] and $3F + low(cID64)];
 end;
 
 class function TFirebaseHelpers.DecodeTimeStampFromBase64(const FSPUSHID: string;

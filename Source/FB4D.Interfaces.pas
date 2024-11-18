@@ -1040,7 +1040,7 @@ type
     function updateTime(TimeZone: TTimeZone = tzLocalTime): TDatetime;
     function DownloadUrl: string;
     function DownloadToken: string;
-    function MD5HashCode: string;
+    function MD5HashCode: string; // FB doesn't offer a better hash algo, but for a simple comparison it is sufficient.
     function storageClass: string;
     function etag: string;
     function generation: Int64;
@@ -1083,6 +1083,7 @@ type
   {$ENDREGION}
 
   {$REGION 'Vision ML'}
+  EVisionML = class(Exception);
   TVisionMLFeature = (vmlUnspecific, vmlFaceDetection, vmlLandmarkDetection,
     vmlLogoDetection, vmlLabelDetection, vmlTextDetection, vmlDocTextDetection,
     vmlSafeSearchDetection, vmlImageProperties, vmlCropHints, vmlWebDetection,

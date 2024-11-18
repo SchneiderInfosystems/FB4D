@@ -359,7 +359,7 @@ begin
     fItem.Text := fItem.Text + ' (ID: ' + fDocID + ')';
     {$ENDIF}
     if not SameText(Doc.GetStringValue('createdBy'), UID) then
-      raise Exception.Create('Unerlaubtes Photo empfangen');
+      raise EStorageObject.Create('Unerlaubtes Photo empfangen');
     PhotoInterpretation := TPhotoInterpretation.Create(
       Doc.GetArrayStringValues('labels'),
       Doc.GetArrayStringValues('texts'));

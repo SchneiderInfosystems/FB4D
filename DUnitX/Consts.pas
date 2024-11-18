@@ -27,8 +27,18 @@ interface
 
 const
   cEMail = 'Integration.Tester@FB4D.org';
-  cPassword = 'It54623!';
+var
+  cPassword: string;
 
 implementation
 
+uses
+  System.SysUtils,
+  FB4D.Helpers;
+
+initialization
+  // generate for each run and own password
+  cPassword := TFirebaseHelpers.CreateAutoID(FBID);
+  // Limit to 12 chars
+  cPassword := cPassword.SubString(12);
 end.

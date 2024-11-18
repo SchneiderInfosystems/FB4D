@@ -291,7 +291,8 @@ begin
       Resp.UsageMetaData.TotalTokenCount.ToString);
   finally
     FileStream.Free;
-  end;end;
+  end;
+end;
 
 initialization
   TDUnitX.RegisterTestFixture(UT_GeminiAI);

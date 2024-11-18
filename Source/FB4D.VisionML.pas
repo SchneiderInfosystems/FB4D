@@ -161,7 +161,7 @@ function TVisionML.GetFeaturesJSONArr(Features: TVisionMLFeatures;
       vmlObjectLocalization:
         result := 'OBJECT_LOCALIZATION';
       else
-        raise Exception.Create('Unknown feature ' + ord(Feature).ToString);
+        raise EVisionML.Create('Unknown feature ' + ord(Feature).ToString);
     end;
   end;
 
@@ -357,7 +357,7 @@ begin
   fResp := Response.GetContentAsJSONObj;
   Responses := fResp.GetValue('responses') as TJSONArray;
   if Responses.Count <> 1 then
-    raise EFirebaseResponse.CreateFmt(
+    raise EVisionML.CreateFmt(
       'ML Vision does not return one object as expected, but %d',
       [Responses.Count]);
   MainResp := Responses.Items[0] as TJSONObject;
