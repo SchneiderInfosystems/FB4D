@@ -148,6 +148,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextPrompt = 'Enter your API Key generated in AIStudio.Google.com'
+      OnExit = edtGeminiAPIKeyExit
       object rctGeminiAPIKeyDisabled: TRectangle
         Align = Client
         Fill.Color = x0A040404
@@ -160,17 +161,13 @@ object GeminiAIFra: TGeminiAIFra
       end
     end
     object cboGeminiModel: TComboBox
-      Items.Strings = (
-        'gemini-1.0-pro'
-        'gemini-1.5-pro'
-        'gemini-1.5-flash')
-      ItemIndex = 1
       Position.X = 640.000000000000000000
       Position.Y = 2.000000000000000000
       Size.Width = 333.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 3
+      OnChange = cboGeminiModelChange
     end
     object layModelParams: TLayout
       Position.X = 17.000000000000000000

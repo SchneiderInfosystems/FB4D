@@ -36,11 +36,17 @@ uses
 
 type
   TGeminiAI = class(TInterfacedObject, IGeminiAI)
+  private const
+    cModels = 'models/';
   private
     fApiKey: string;
     fModel: string;
-
+    fModelDetails: TDictionary<string, TGeminiModelDetails>;
     function BaseURL: string;
+    procedure OnFetchModelsResponse(const RequestID: string; Response: IFirebaseResponse);
+    procedure OnFetchModelsErrorResp(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
+    procedure OnFetchModelDetailResponse(const RequestID: string; Response: IFirebaseResponse);
+    procedure OnFetchModelDetailErrorResp(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
     procedure OnGenerateContentResponse(const RequestID: string; Response: IFirebaseResponse);
     procedure OnGenerateContentError(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
     procedure OnCountTokenResponse(const RequestID: string; Response: IFirebaseResponse);
@@ -51,8 +57,19 @@ type
     function CountTokenSynchronous(Body: TJSONObject; out ErrorMsg: string;
       out CachedContentToken: integer): integer;
     procedure CountToken(Body: TJSONObject; OnResponse: TOnGeminiCountToken);
+    function GetModulDetails(Model: TJSONObject): TGeminiModelDetails;
   public
     constructor Create(const ApiKey: string; const Model: string = cGeminiAIDefaultModel);
+    destructor Destroy; override;
+
+    procedure FetchListOfModelsSynchronous(ModelNames: TStrings);
+    procedure FetchListOfModels(OnFetchModels: TOnGeminiFetchModels);
+
+    function FetchModelDetailsSynchronous(const ModelName: string): TGeminiModelDetails;
+    procedure FetchModelDetails(const ModelName: string; OnFetchModelDetail: TOnGeminiFetchModel);
+
+    procedure SetModel(const ModelName: string);
+
     function GenerateContentByPromptSynchronous(const Prompt: string): IGeminiAIResponse;
     procedure GenerateContentByPrompt(const Prompt: string; OnResponse: TOnGeminiGenContent);
 
@@ -168,19 +185,258 @@ uses
   FB4D.Helpers;
 
 const
-  GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/%s';
+  GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models';
+  GEMINI_API_4Model = GEMINI_API + '/%s';
 
 { TGemini }
 
 constructor TGeminiAI.Create(const ApiKey, Model: string);
 begin
+  fModelDetails := TDictionary<string, TGeminiModelDetails>.Create;
   fApiKey := ApiKey;
   fModel := Model;
 end;
 
+destructor TGeminiAI.Destroy;
+begin
+  fModelDetails.Free;
+  inherited;
+end;
+
+procedure TGeminiAI.SetModel(const ModelName: string);
+begin
+  fModel := ModelName;
+end;
+
 function TGeminiAI.BaseURL: string;
 begin
-  result := Format(GEMINI_API, [fModel]);
+  if fModel.IsEmpty then
+    raise EGeminiAIRequest.Create('SetModel first');
+  result := Format(GEMINI_API_4Model, [fModel]);
+end;
+
+procedure TGeminiAI.FetchListOfModelsSynchronous(ModelNames: TStrings);
+var
+  Params: TQueryParams;
+  Response: IFirebaseResponse;
+  Resp: TJSONObject;
+  Models: TJSONArray;
+  Model: TJSONValue;
+  ModelName: string;
+begin
+  ModelNames.Clear;
+  Params := TQueryParams.Create;
+  try
+    Params.Add('key', [fApiKey]);
+    Response := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Models').SendRequestSynchronous(
+      [], rmGet, nil, Params, tmNoToken);
+    if Response.StatusOk and Response.IsJSONObj then
+    begin
+      Resp := Response.GetContentAsJSONObj;
+      try
+        Models := Resp.GetValue<TJSONArray>('models');
+        for Model in Models do
+        begin
+          ModelName := (Model as TJSONObject).GetValue<string>('name');
+          if ModelName.StartsWith(cModels) then
+            ModelNames.Add(Modelname.Substring(length(cModels)));
+          fModelDetails.AddOrSetValue(ModelName, GetModulDetails(Model as TJSONObject));
+        end;
+      finally
+        Resp.Free;
+      end;
+    end;
+  finally
+    Params.Free;
+  end;
+end;
+
+procedure TGeminiAI.FetchListOfModels(OnFetchModels: TOnGeminiFetchModels);
+var
+  Params: TQueryParams;
+  Request: IFirebaseRequest;
+begin
+  Params := TQueryParams.Create;
+  try
+    Request := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Models');
+    Params.Add('key', [fApiKey]);
+    Request.SendRequest([], rmGet, nil, Params, tmNoToken,
+      OnFetchModelsResponse, OnFetchModelsErrorResp,
+      TOnSuccess.CreateGeminiFetchModelNames(OnFetchModels));
+  finally
+    Params.Free;
+  end;
+end;
+
+procedure TGeminiAI.OnFetchModelsResponse(const RequestID: string; Response: IFirebaseResponse);
+var
+  Resp: TJSONObject;
+  Models: TJSONArray;
+  Model: TJSONValue;
+  ModelName: string;
+  ModelNames: TStringList;
+begin
+  if Response.StatusOk then
+    try
+      Response.CheckForJSONObj;
+      ModelNames := TStringList.Create;
+      Resp := Response.GetContentAsJSONObj;
+      try
+        Models := Resp.GetValue<TJSONArray>('models');
+        for Model in Models do
+        begin
+          ModelName := (Model as TJSONObject).GetValue<string>('name');
+          if ModelName.StartsWith(cModels) then
+            ModelName := Modelname.Substring(length(cModels));
+          ModelNames.Add(ModelName);
+          fModelDetails.AddOrSetValue(ModelName, GetModulDetails(Model as TJSONObject));
+        end;
+        if assigned(Response.OnSuccess.OnFetchModels) then
+          Response.OnSuccess.OnFetchModels(ModelNames, '');
+      finally
+        ModelNames.Free;
+        Resp.Free;
+      end;
+    except
+      on e: exception do
+        if assigned(Response.OnSuccess.OnFetchModels) then
+          Response.OnSuccess.OnFetchModels(nil, e.Message)
+        else
+          TFirebaseHelpers.LogFmt(rsFBFailureIn, ['Gemini.OnFetchModelsResponse', RequestID, e.Message]);
+    end
+  else if assigned(Response.OnSuccess.OnFetchModels) then
+    Response.OnSuccess.OnFetchModels(nil, response.ErrorMsg)
+  else
+    TFirebaseHelpers.LogFmt(rsFBFailureIn, ['Gemini.OnFetchModelsResponse', RequestID, response.ErrorMsg]);
+end;
+
+procedure TGeminiAI.OnFetchModelsErrorResp(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
+begin
+  if assigned(OnSuccess.OnFetchModels) then
+    OnSuccess.OnFetchModels(nil, ErrMsg)
+  else
+    TFirebaseHelpers.LogFmt(rsFBFailureIn, ['Gemini.OnFetchModelsErrorResp', RequestID, ErrMsg]);
+end;
+
+function TGeminiAI.FetchModelDetailsSynchronous(const ModelName: string): TGeminiModelDetails;
+var
+  Params: TQueryParams;
+  Response: IFirebaseResponse;
+  Model: TJSONObject;
+begin
+  if not fModelDetails.TryGetValue(ModelName, result) then
+  begin
+    Params := TQueryParams.Create;
+    try
+      Params.Add('key', [fApiKey]);
+      Response := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Model').SendRequestSynchronous(
+        [ModelName], rmGet, nil, Params, tmNoToken);
+      if Response.StatusOk and Response.IsJSONObj then
+      begin
+        Model := Response.GetContentAsJSONObj;
+        try
+          result := GetModulDetails(Model);
+          fModelDetails.AddOrSetValue(ModelName, result);
+        finally
+          Model.Free;
+        end;
+      end;
+    finally
+      Params.Free;
+    end;
+  end;
+end;
+
+function TGeminiAI.GetModulDetails(Model: TJSONObject): TGeminiModelDetails;
+var
+  GenMethods: TJSONArray;
+  GenMethod: TJSONValue;
+  c: integer;
+begin
+  result.Init;
+  result.ModelFullName := Model.GetValue<string>('name');
+  Model.TryGetValue<string>('baseModelId', result.BaseModelId);
+  Model.TryGetValue<string>('version', result.Version);
+  Model.TryGetValue<string>('displayName', result.DisplayName);
+  Model.TryGetValue<string>('description', result.Description);
+  Model.TryGetValue<integer>('inputTokenLimit', result.InputTokenLimit);
+  Model.TryGetValue<integer>('outputTokenLimit', result.OutputTokenLimit);
+  if Model.TryGetValue<TJSONArray>('supportedGenerationMethods', GenMethods) then
+  begin
+    SetLength(result.SupportedGenerationMethods, GenMethods.Count);
+    c := 0;
+    for GenMethod in GenMethods do
+    begin
+      result.SupportedGenerationMethods[c] := GenMethod.value;
+      inc(c);
+    end;
+  end;
+  Model.TryGetValue<double>('temperature', result.Temperature);
+  Model.TryGetValue<double>('maxTemperature', result.MaxTemperature);
+  Model.TryGetValue<double>('topP', result.TopP);
+  Model.TryGetValue<integer>('topK', result.TopK);
+end;
+
+procedure TGeminiAI.FetchModelDetails(const ModelName: string; OnFetchModelDetail: TOnGeminiFetchModel);
+var
+  Params: TQueryParams;
+  Detail: TGeminiModelDetails;
+begin
+  if fModelDetails.TryGetValue(ModelName, Detail) then
+  begin
+    if assigned(OnFetchModelDetail) then
+      OnFetchModelDetail(Detail, '');
+  end else begin
+    Params := TQueryParams.Create;
+    try
+      Params.Add('key', [fApiKey]);
+      TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Model').SendRequest([ModelName], rmGet, nil, Params, tmNoToken,
+        OnFetchModelDetailResponse, OnFetchModelDetailErrorResp,
+        TOnSuccess.CreateGeminiFetchModelDetail(OnFetchModelDetail));
+    finally
+      Params.Free;
+    end;
+  end;
+end;
+
+procedure TGeminiAI.OnFetchModelDetailResponse(const RequestID: string; Response: IFirebaseResponse);
+var
+  Detail: TGeminiModelDetails;
+  Model: TJSONObject;
+  ModelName: string;
+begin
+  Detail.Init;
+  if Response.StatusOk then
+  begin
+    Response.CheckForJSONObj;
+    Model := Response.GetContentAsJSONObj;
+    try
+      ModelName := Model.GetValue<string>('name');
+      if ModelName.StartsWith(cModels) then
+        ModelName := Modelname.Substring(length(cModels));
+      Detail := GetModulDetails(Model);
+      fModelDetails.AddOrSetValue(ModelName, Detail);
+      if assigned(Response.OnSuccess.OnFetchModelDetail) then
+        Response.OnSuccess.OnFetchModelDetail(Detail, '');
+    finally
+      Model.Free;
+    end;
+  end
+  else if assigned(Response.OnSuccess.OnFetchModelDetail) then
+    Response.OnSuccess.OnFetchModelDetail(Detail, response.ErrorMsg)
+  else
+    TFirebaseHelpers.LogFmt(rsFBFailureIn, ['Gemini.OnFetchModelDetailResponse', RequestID, response.ErrorMsg]);
+end;
+
+procedure TGeminiAI.OnFetchModelDetailErrorResp(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
+var
+  Detail: TGeminiModelDetails;
+begin
+  Detail.Init;
+  if assigned(OnSuccess.OnFetchModelDetail) then
+    OnSuccess.OnFetchModelDetail(Detail, ErrMsg)
+  else
+    TFirebaseHelpers.LogFmt(rsFBFailureIn, ['Gemini.OnFetchModelDetailErrorResp', RequestID, ErrMsg]);
 end;
 
 function TGeminiAI.GenerateContentSynchronous(Body: TJSONObject): IGeminiAIResponse;

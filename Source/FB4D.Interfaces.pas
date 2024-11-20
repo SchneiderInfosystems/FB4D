@@ -308,6 +308,41 @@ type
   TOnAnnotate = procedure(Res: IVisionMLResponse) of object;
 
   /// <summary>
+  /// Event handler signature for receiving model names from a Gemini AI API call.
+  /// </summary>
+  /// <param name="Models">Returns a list of model names. Copy the string list within the callback handler because
+  /// the caller will get Models free after call. In case of error this list is nil.</param>
+  /// <param name="ErrorMsg">In cases where Models returns nil the ErrorMsg contains the reason of the problem.</param>
+  TOnGeminiFetchModels = procedure(Models: TStrings; const ErrorMsg: string) of object;
+
+  /// <summary>
+  /// Detail information of Gemini AI models
+  /// </summary>
+  TGeminiModelDetails = record
+    ModelFullName: string;
+    BaseModelId: string;
+    Version: string;
+    DisplayName: string;
+    Description: string;
+    InputTokenLimit: integer;
+    OutputTokenLimit: integer;
+    SupportedGenerationMethods: array of string;
+    Temperature: double;
+    MaxTemperature: double;
+    TopP: double;
+    TopK: integer;
+    procedure Init;
+  end;
+
+  /// <summary>
+  /// Event handler signature for receiving model name detail from a Gemini AI API call.
+  /// </summary>
+  /// <param name="Detail">Returns all details of model. In case of error this list is nil.</param>
+  /// <param name="ErrorMsg">In normal case this string is empty. In case of error this string contains the reason
+  /// of the problem.</param>
+  TOnGeminiFetchModel = procedure(Detail: TGeminiModelDetails; const ErrorMsg: string) of object;
+
+  /// <summary>
   /// Event handler signature for receiving generated content from a Gemini AI API call.
   /// </summary>
   /// <param name="Response">The IGeminiAIResponse object containing the generated content.</param>
@@ -331,7 +366,7 @@ type
       oscStorage, oscStorageDeprecated, oscStorageUpload, oscStorageGetAndDown, oscDelStorage,
       oscFunctionSuccess,
       oscVisionML,
-      oscGeminiGenContent, oscGeminiCountToken);
+      oscGeminiFetchModelNames, oscGeminiFetchModelDetail, oscGeminiGenContent, oscGeminiCountToken);
     constructor Create(OnResp: TOnFirebaseResp);
     constructor CreateUser(OnUserResp: TOnUserResponse);
     constructor CreateFetchProviders(OnFetchProvidersResp: TOnFetchProviders);
@@ -359,6 +394,8 @@ type
     constructor CreateDelStorage(OnDelStorageResp: TOnDeleteStorage);
     constructor CreateFunctionSuccess(OnFunctionSuccessResp: TOnFunctionSuccess);
     constructor CreateVisionML(OnAnnotateResp: TOnAnnotate);
+    constructor CreateGeminiFetchModelNames(OnGeminiFetchModels: TOnGeminiFetchModels);
+    constructor CreateGeminiFetchModelDetail(OnGeminiFetchModelDetail: TOnGeminiFetchModel);
     constructor CreateGeminiGenerateContent(OnGeminiGenContent: TOnGeminiGenContent);
     constructor CreateGeminiCountToken(OnGeminiCountToken: TOnGeminiCountToken);
     {$IFNDEF AUTOREFCOUNT}
@@ -390,6 +427,8 @@ type
       oscDelStorage: (OnDelStorage: TOnDeleteStorage);
       oscFunctionSuccess: (OnFunctionSuccess: TOnFunctionSuccess);
       oscVisionML: (OnAnnotate: TOnAnnotate);
+      oscGeminiFetchModelNames: (OnFetchModels: TOnGeminiFetchModels);
+      oscGeminiFetchModelDetail: (OnFetchModelDetail: TOnGeminiFetchModel);
       oscGeminiGenContent: (OnGenerateContent: TOnGeminiGenContent);
       oscGeminiCountToken: (OnCountToken: TOnGeminiCountToken);
     {$ELSE}
@@ -419,6 +458,8 @@ type
       OnDelStorage: TOnDeleteStorage;
       OnFunctionSuccess: TOnFunctionSuccess;
       OnAnnotate: TOnAnnotate;
+      OnFetchModels: TOnGeminiFetchModels;
+      OnFetchModelDetail: TOnGeminiFetchModel;
       OnGenerateContent: TOnGeminiGenContent;
       OnCountToken: TOnGeminiCountToken;
     {$ENDIF}
@@ -1552,10 +1593,52 @@ type
   /// </summary>
   IGeminiAI = interface(IInterface)
     /// <summary>
+    /// Fetch list of model names accessible in Gemini AI. Use this blocking function not in the main thread of a GUI
+    /// application but in threads, services or console applications.
+    /// </summary>
+    procedure FetchListOfModelsSynchronous(ModelNames: TStrings);
+
+    /// <summary>
+    /// Fetch list of model names accessible in Gemini AI. Use this none blocking function in the main thread of a GUI
+    /// application.
+    /// </summary>
+    /// <param name="OnFetchModels">Call back method of the following signature:
+    /// procedure(Models: TStrings; const ErrorMsg: string) of object.
+    /// </param>
+    procedure FetchListOfModels(OnFetchModels: TOnGeminiFetchModels);
+
+    /// <summary>
+    /// Returns model details for a Gemini model. If data is already fetched from the webservices returns cached 
+	/// value otherwise start a request on webservices. Use this blocking function not in the main thread of a GUI
+    /// application but in threads, services or console applications.
+    /// </summary>
+    /// <param name="ModelName">The name of the model (without "models/" of the full model name).
+    /// </param>
+    /// <returns>TGeminiModelDetails: Contains all detail information about a model.
+    /// </returns>
+    function FetchModelDetailsSynchronous(const ModelName: string): TGeminiModelDetails;
+
+    /// <summary>
+    /// Returns model details for a Gemini model. If data is already fetched from the webservices returns cached 
+	/// value otherwise start a request on webservices. Use this none blocking function in the main thread of a GUI 
+	/// application.
+    /// </summary>
+    /// <param name="ModelName">The name of the model (without "models/" of the full model name).
+    /// </param>
+    /// <param name="OnFetchModelDetail">Call back method of the following signature:
+    /// procedure(Detail: TGeminiModelDetails; const ErrorMsg: string) of object.
+    /// </param>
+    procedure FetchModelDetails(const ModelName: string; OnFetchModelDetail: TOnGeminiFetchModel);
+
+    /// <summary>
+    /// Set name of model for upcomming request
+    /// </summary>
+    procedure SetModel(const ModelName: string);
+
+    /// <summary>
     /// GenerateContentByPromptSynchronous generates text content as a response based on the provided simple
     /// text prompt containing the question. Use this blocking function not in the main thread of a GUI
-    /// application but in threads, services
-    /// or console applications.
+    /// application but in threads, services or console applications.
     /// </summary>
     /// <param name="Prompt">The text prompt to generate content from.
     /// </param>
@@ -1811,21 +1894,6 @@ begin
   OnPasswordVerification := OnPasswordVerificationResp;
 end;
 
-constructor TOnSuccess.CreateGeminiGenerateContent(
-  OnGeminiGenContent: TOnGeminiGenContent);
-begin
-  Create(nil);
-  OnSuccessCase := oscGeminiGenContent;
-  OnGenerateContent := OnGeminiGenContent;
-end;
-
-constructor TOnSuccess.CreateGeminiCountToken(OnGeminiCountToken: TOnGeminiCountToken);
-begin
-  Create(nil);
-  OnSuccessCase := oscGeminiCountToken;
-  OnCountToken := OnGeminiCountToken;
-end;
-
 constructor TOnSuccess.CreateGetUserData(OnGetUserDataResp: TOnGetUserData);
 begin
   Create(nil);
@@ -1956,6 +2024,35 @@ begin
   OnAnnotate := OnAnnotateResp;
 end;
 
+constructor TOnSuccess.CreateGeminiFetchModelDetail(OnGeminiFetchModelDetail: TOnGeminiFetchModel);
+begin
+  Create(nil);
+  OnSuccessCase := oscGeminiFetchModelDetail;
+  OnFetchModelDetail := OnGeminiFetchModelDetail;
+end;
+
+constructor TOnSuccess.CreateGeminiFetchModelNames(OnGeminiFetchModels: TOnGeminiFetchModels);
+begin
+  Create(nil);
+  OnSuccessCase := oscGeminiFetchModelNames;
+  OnFetchModels := OnGeminiFetchModels;
+end;
+
+constructor TOnSuccess.CreateGeminiGenerateContent(
+  OnGeminiGenContent: TOnGeminiGenContent);
+begin
+  Create(nil);
+  OnSuccessCase := oscGeminiGenContent;
+  OnGenerateContent := OnGeminiGenContent;
+end;
+
+constructor TOnSuccess.CreateGeminiCountToken(OnGeminiCountToken: TOnGeminiCountToken);
+begin
+  Create(nil);
+  OnSuccessCase := oscGeminiCountToken;
+  OnCountToken := OnGeminiCountToken;
+end;
+
 { TUsageMetaData }
 
 procedure TGeminiAIUsageMetaData.Init;
@@ -2044,6 +2141,24 @@ begin
       result := '?';
   end;
 
+end;
+
+{ TGeminiModelDetails }
+
+procedure TGeminiModelDetails.Init;
+begin
+  ModelFullName := '';
+  BaseModelId := '';
+  Version := '';
+  DisplayName := '';
+  Description := '';
+  InputTokenLimit := 0;
+  OutputTokenLimit := 0;
+  SetLength(SupportedGenerationMethods, 0);
+  Temperature := 0;
+  MaxTemperature := 0;
+  TopP := 0;
+  TopK := 0;
 end;
 
 end.

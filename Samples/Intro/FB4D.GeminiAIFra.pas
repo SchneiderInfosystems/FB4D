@@ -116,13 +116,17 @@ type
     procedure btnNextQuestionInChatClick(Sender: TObject);
     procedure btnCalcRequestInChatClick(Sender: TObject);
     procedure memMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
+    procedure cboGeminiModelChange(Sender: TObject);
+    procedure edtGeminiAPIKeyExit(Sender: TObject);
   private
     fGeminiAI: IGeminiAI;
+    fModelName: string;
     fRequest: IGeminiAIRequest;
     fMediaStream: TFileStream;
     fPDFBrowser: TfmxWebBrowser;
     fHTMLResultBrowser: TfmxWebBrowser;
     function CheckAndCreateGeminiAIClass: boolean;
+    procedure OnGeminiFetchModels(Models: TStrings; const ErrorMsg: string);
     procedure OnGeminiAIGenContent(Response: IGeminiAIResponse);
     procedure OnGeminiAITokenCount(PromptToken, CachedContentToken: integer; const ErrMsg: string);
     procedure OnHTMLLoaded(const FileName: string; ErrorFlag: boolean);
@@ -131,6 +135,7 @@ type
     destructor Destroy; override;
     procedure LoadSettingsFromIniFile(IniFile: TIniFile);
     procedure SaveSettingsIntoIniFile(IniFile: TIniFile);
+    procedure FetchModelNameList;
   end;
 
 implementation
@@ -152,12 +157,10 @@ function TGeminiAIFra.CheckAndCreateGeminiAIClass: boolean;
 begin
   if assigned(fGeminiAI) then
     exit(true);
-  fGeminiAI := TGeminiAI.Create(edtGeminiAPIKey.Text,
-    cboGeminiModel.Items[cboGeminiModel.ItemIndex]);
+  fGeminiAI := TGeminiAI.Create(edtGeminiAPIKey.Text, fModelName);
   fRequest := nil;
   edtGeminiAPIKey.ReadOnly := true;
   rctGeminiApiKeyDisabled.Visible := true;
-  cboGeminiModel.Enabled := false;
   result := true;
 end;
 
@@ -176,7 +179,7 @@ end;
 procedure TGeminiAIFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtGeminiAPIKey.Text := IniFile.ReadString('GeminiAI', 'APIKey', '');
-  cboGeminiModel.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Model', 0);
+  fModelName := IniFile.ReadString('GeminiAI', 'ModelName', cGeminiAIDefaultModel);
   chbUseModelParams.IsChecked := IniFile.ReadBool('GeminiAI', 'UseModeParams', false);
   chbUseSafetySettings.IsChecked := IniFile.ReadBool('GeminiAI', 'UseSafetySettings', false);
   expGeminiCfg.IsExpanded := edtGeminiAPIKey.Text.IsEmpty;
@@ -209,11 +212,13 @@ begin
   trbTopKChange(nil);
   trbTopPChange(nil);
   TabControlResult.ActiveTab := tabMetadata;
+  FetchModelNameList;
 end;
 
 procedure TGeminiAIFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('GeminiAI', 'APIKey', edtGeminiAPIKey.Text);
+  IniFile.WriteString('GeminiAI', 'ModelName', fModelName);
   IniFile.WriteInteger('GeminiAI', 'Model', cboGeminiModel.ItemIndex);
   IniFile.WriteBool('GeminiAI', 'UseModeParams', chbUseModelParams.IsChecked);
   IniFile.WriteInteger('GeminiAI', 'MaxOutToken', round(trbMaxOutputToken.Value));
@@ -238,6 +243,42 @@ end;
 {$ENDREGION}
 
 {$REGION 'Model Configuration'}
+procedure TGeminiAIFra.FetchModelNameList;
+begin
+  if not edtGeminiAPIKey.Text.IsEmpty then
+  begin
+    CheckAndCreateGeminiAIClass;
+    fGeminiAI.FetchListOfModels(OnGeminiFetchModels);
+  end;
+end;
+
+procedure TGeminiAIFra.OnGeminiFetchModels(Models: TStrings; const ErrorMsg: string);
+begin
+  if assigned(Models) then
+  begin
+    cboGeminiModel.Items.AddStrings(Models);
+    cboGeminiModel.ItemIndex := cboGeminiModel.Items.IndexOf(fModelName);
+  end else begin
+    memMetaData.Lines.Text := 'Fetch of model list failed: ' + ErrorMsg;
+    tabMetadata.visible := true;
+    TabControlResult.ActiveTab := tabMetadata;
+  end;
+end;
+
+procedure TGeminiAIFra.edtGeminiAPIKeyExit(Sender: TObject);
+begin
+  FetchModelNameList;
+end;
+
+procedure TGeminiAIFra.cboGeminiModelChange(Sender: TObject);
+begin
+  if cboGeminiModel.ItemIndex < 0 then
+    exit;
+  CheckAndCreateGeminiAIClass;
+  fModelName := cboGeminiModel.Items[cboGeminiModel.ItemIndex];
+  fGeminiAI.SetModel(fModelName);
+end;
+
 procedure TGeminiAIFra.chbUseModelParamsChange(Sender: TObject);
 begin
   layModelParams.Enabled := chbUseModelParams.IsChecked;
