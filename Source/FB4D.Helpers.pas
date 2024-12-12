@@ -101,6 +101,8 @@ type
     {$ENDIF}
     // Miscellaneous functions
     class function IsEMailAdress(const EMail: string): boolean;
+    class function IsPasswordPolicyFulfilled(const Password: string; Policy: TPasswordPolicy = [];
+      MinPasswordLength: integer = 6; MaxPasswordLength: integer = 4096): boolean;
     // Application helpers
     class procedure Log(msg: string);
     class procedure LogFmt(msg: string; const Args: array of const);
@@ -1002,6 +1004,40 @@ begin
     end;
   end;
   result := (State = stSubDomain) and (subdomains >= 2);
+end;
+
+class function TFirebaseHelpers.IsPasswordPolicyFulfilled(const Password: string;
+  Policy: TPasswordPolicy; MinPasswordLength, MaxPasswordLength: integer): boolean;
+const
+  SpecChars = ['^', '$', '*', '.', '[', ']', '{', '}', '(', ')', '?', '"', '!',
+    '@', '#', '%', '&', '/', '\', ',', '>', '<', '''', ':', ';', '|', '_', '~'];
+var
+  UC, LC, SC, NC: boolean;
+  Ch: Char;
+begin
+  result := (Password.Length >= MinPasswordLength) and
+    (Password.Length <= MaxPasswordLength);
+  UC := false;
+  LC := false;
+  SC := false;
+  NC := false;
+  for ch in Password do
+    if ch.IsDigit then
+      NC := true
+    else if ch.IsLower then
+      LC := true
+    else if ch.IsUpper then
+      UC := true
+    else if CharInSet(Ch, SpecChars) then
+      SC := true;
+  if (RequireUpperCase in Policy) and not UC then
+    result := false;
+  if (RequireLowerCase in Policy) and not LC then
+    result := false;
+  if (RequireSpecialChar in Policy) and not SC then
+    result := false;
+  if (RequireNumericChar in Policy) and not NC then
+    result := false;
 end;
 
 class function TFirebaseHelpers.IsMainThread: boolean;

@@ -899,6 +899,10 @@ type
     ScreenName: string;
   end;
 
+  TPasswordPolicyItem = (RequireUpperCase, RequireLowerCase, RequireSpecialChar,
+    RequireNumericChar);
+  TPasswordPolicy = set of TPasswordPolicyItem;
+
   /// <summary>
   /// The IFirebaseUser interface provides only getter functions that are used
   /// to retrieve details of the user profile and the access token.
