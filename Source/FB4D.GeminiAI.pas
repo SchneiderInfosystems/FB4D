@@ -118,8 +118,10 @@ type
     fParts: TJSONArray;
     fGenerationConfig: TJSONObject;
     fSavetySettings: TJSONArray;
+    fTools: TJSONArray;
     function AsJSON: TJSONObject;
     procedure CheckAndCreateGenerationConfig;
+    procedure CheckAndCreateTools;
   public
     constructor Create;
     destructor Destroy; override;
@@ -138,6 +140,7 @@ type
     function SetStopSequences(StopSequences: TStrings): IGeminiAIRequest;
     function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
     function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
+    procedure AddGroundingByGoogleSearch(Threshold: double);
     procedure AddAnswerForNextRequest(const ResultAsMarkDown: string);
     procedure AddQuestionForNextRequest(const PromptText: string);
   public
@@ -699,7 +702,8 @@ begin
   fGenerationConfig := nil;
   fRequest.RemovePair('safetySettings');
   fSavetySettings := nil;
-  result := self
+  fTools := nil;
+  result := self;
 end;
 
 destructor TGeminiAIRequest.Destroy;
@@ -775,6 +779,15 @@ begin
   end;
 end;
 
+procedure TGeminiAIRequest.CheckAndCreateTools;
+begin
+  if not assigned(fTools) then
+  begin
+    fTools := TJSONArray.Create;
+    fRequest.AddPair('tools', fTools);
+  end;
+end;
+
 function TGeminiAIRequest.ModelParameter(Temperature, TopP: double;
   MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;
 begin
@@ -836,6 +849,15 @@ begin
       TJSONPair.Create('category', TGeminiResponse.HarmCategoryToStr(HarmCat))).
       AddPair('threshold', SafetyBlockLevelToStr(LevelToBlock)));
   result := self;
+end;
+
+procedure TGeminiAIRequest.AddGroundingByGoogleSearch(Threshold: double);
+begin
+  CheckAndCreateTools;
+  fTools.Add(TJSONObject.Create(TJSONPair.Create('google_search_retrieval',
+    TJSONObject.Create(TJSONPair.Create('dynamic_retrieval_config',
+      TJSONObject.Create(TJSONPair.Create('mode', 'MODE_DYNAMIC')).
+      AddPair('dynamic_threshold', Threshold))))));
 end;
 
 procedure TGeminiAIRequest.AddAnswerForNextRequest(const ResultAsMarkDown: string);
@@ -1078,10 +1100,10 @@ end;
 
 procedure TGeminiResponse.EvaluateResults;
 var
-  Candidates, Parts, saftyRatings: TJSONArray;
-  Ind, Ind2: integer;
+  Candidates, Parts, Arr, Arr2: TJSONArray;
+  Ind, Ind2, Ind3: integer;
   Txt: string;
-  Candidate, Obj: TJSONObject;
+  Candidate, Obj, Obj2: TJSONObject;
   HarmCat: THarmCategory;
 begin
   fFinishReasons := [];
@@ -1093,6 +1115,7 @@ begin
       SetLength(fResults, Candidates.Count);
       for Ind := 0 to Candidates.Count - 1 do
       begin
+        fResults[Ind].Init;
         fResultState := grsValid;
         Candidate := Candidates.Items[Ind] as TJSONObject;
         if Candidate.TryGetValue<TJSONObject>('content', Obj) then
@@ -1121,12 +1144,79 @@ begin
             fResults[Ind].FinishReason := gfrUnknown;
           fFinishReasons := fFinishReasons + [fResults[Ind].FinishReason];
         end;
-        Candidate.TryGetValue<integer>('index', fResults[Ind].Index);
-        if Candidate.TryGetValue<TJSONArray>('safetyRatings', saftyRatings) then
+        if Candidate.TryGetValue<TJSONObject>('groundingMetadata', Obj) then
         begin
-          for Ind2 := 0 to saftyRatings.Count - 1 do
+          fResults[Ind].GroundingMetadata.ActiveGrounding := true;
+          if Obj.TryGetValue<TJSONArray>('groundingChunks', Arr) then
           begin
-            obj := saftyRatings.Items[Ind2] as TJSONObject;
+            SetLength(fResults[Ind].GroundingMetadata.Chunks, Arr.Count);
+            for Ind2 := 0 to Arr.Count - 1 do
+            begin
+              if Arr.Items[Ind2].TryGetValue<TJSONObject>('web', Obj2) then
+              begin
+                Obj2.TryGetValue<string>('uri', fResults[Ind].GroundingMetadata.Chunks[Ind2].Uri);
+                Obj2.TryGetValue<string>('title', fResults[Ind].GroundingMetadata.Chunks[Ind2].Title);
+              end else begin
+                fResults[Ind].GroundingMetadata.Chunks[Ind2].Uri := '';
+                fResults[Ind].GroundingMetadata.Chunks[Ind2].Title := '';
+              end;
+            end;
+          end;
+          if Obj.TryGetValue<TJSONArray>('groundingSupports', Arr) then
+          begin
+            SetLength(fResults[Ind].GroundingMetadata.Support, Arr.Count);
+            for Ind2 := 0 to Arr.Count - 1 do
+            begin
+              if Arr.Items[Ind2].TryGetValue<TJSONArray>('groundingChunkIndices', Arr2) then
+              begin
+                SetLength(fResults[Ind].GroundingMetadata.Support[Ind2].ChunkIndices, Arr2.Count);
+                for Ind3 := 0 to Arr2.Count - 1 do
+                  fResults[Ind].GroundingMetadata.Support[Ind2].ChunkIndices[Ind3] :=
+                    Arr2.Items[Ind3].AsType<integer>;
+              end;
+              if Arr.Items[Ind2].TryGetValue<TJSONArray>('confidenceScores', Arr2) then
+              begin
+                SetLength(fResults[Ind].GroundingMetadata.Support[Ind2].ConfidenceScores, Arr2.Count);
+                for Ind3 := 0 to Arr2.Count - 1 do
+                  fResults[Ind].GroundingMetadata.Support[Ind2].ConfidenceScores[Ind3] :=
+                    Arr2.Items[Ind3].AsType<double>;
+              end;
+              if Arr.Items[Ind2].TryGetValue<TJSONObject>('segment', Obj2) then
+              begin
+                if not Obj2.TryGetValue<integer>('partIndex',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.PartIndex) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.PartIndex := 0;
+                if not Obj2.TryGetValue<integer>('startIndex',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.StartIndex) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.StartIndex := 0;
+                if not Obj2.TryGetValue<integer>('endIndex',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.EndIndex) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.EndIndex := 0;
+                if not Obj2.TryGetValue<string>('text',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.Text) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.Text := '';
+              end;
+            end;
+          end;
+          if Obj.TryGetValue<TJSONObject>('searchEntryPoint', Obj2) then
+            Obj2.TryGetValue<string>('renderedContent', fResults[Ind].GroundingMetadata.RenderedContent);
+          if Obj.TryGetValue<TJSONArray>('webSearchQueries', Arr) then
+          begin
+            SetLength(fResults[Ind].GroundingMetadata.WebSearchQuery, Arr.Count);
+            for Ind2 := 0 to Arr.Count - 1 do
+              fResults[Ind].GroundingMetadata.WebSearchQuery[Ind2] :=
+                Arr.Items[Ind2].AsType<string>;
+          end;
+          if Obj.TryGetValue<TJSONObject>('retrievalMetadata', Obj2) then
+            Obj2.TryGetValue<Double>('googleSearchDynamicRetrievalScore',
+              fResults[Ind].GroundingMetadata.GoogleSearchDynamicRetrievalScore);
+        end;
+        Candidate.TryGetValue<integer>('index', fResults[Ind].Index);
+        if Candidate.TryGetValue<TJSONArray>('safetyRatings', Arr) then
+        begin
+          for Ind2 := 0 to Arr.Count - 1 do
+          begin
+            obj := Arr.Items[Ind2] as TJSONObject;
             HarmCat := THarmCategory.hcUnspecific;
             if obj.TryGetValue<string>('category', Txt) then
               HarmCat := HarmCategoryFromStr(Txt);
