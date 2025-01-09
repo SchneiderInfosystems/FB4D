@@ -36,13 +36,16 @@ uses
 
 type
   TGeminiAI = class(TInterfacedObject, IGeminiAI)
+  public type
+    TAPIVersion = (V1, V1Beta);
   private const
     cModels = 'models/';
   private
     fApiKey: string;
+    fAPIVersion: string;
     fModel: string;
     fModelDetails: TDictionary<string, TGeminiModelDetails>;
-    function BaseURL: string;
+    function BaseURL(IncludingModel: boolean): string;
     procedure OnFetchModelsResponse(const RequestID: string; Response: IFirebaseResponse);
     procedure OnFetchModelsErrorResp(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
     procedure OnFetchModelDetailResponse(const RequestID: string; Response: IFirebaseResponse);
@@ -59,7 +62,8 @@ type
     procedure CountToken(Body: TJSONObject; OnResponse: TOnGeminiCountToken);
     function GetModulDetails(Model: TJSONObject): TGeminiModelDetails;
   public
-    constructor Create(const ApiKey: string; const Model: string = cGeminiAIDefaultModel);
+    constructor Create(const ApiKey: string; const Model: string = cGeminiAIDefaultModel;
+      APIVersion: TAPIVersion = V1Beta);
     destructor Destroy; override;
 
     procedure FetchListOfModelsSynchronous(ModelNames: TStrings);
@@ -188,16 +192,25 @@ uses
   FB4D.Helpers;
 
 const
-  GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models';
+  GEMINI_API = 'https://generativelanguage.googleapis.com/%s/models';
   GEMINI_API_4Model = GEMINI_API + '/%s';
 
 { TGemini }
 
-constructor TGeminiAI.Create(const ApiKey, Model: string);
+constructor TGeminiAI.Create(const ApiKey, Model: string; APIVersion: TAPIVersion);
 begin
   fModelDetails := TDictionary<string, TGeminiModelDetails>.Create;
   fApiKey := ApiKey;
   fModel := Model;
+  case APIVersion of
+    V1:
+      fAPIVersion := 'v1';
+    V1BETA:
+      fAPIVersion := 'v1beta';
+    else
+      raise EGeminiAIRequest.CreateFmt('API version %s is currently not implemented',
+        [TRttiEnumerationType.GetName(APIVersion)]);
+  end;
 end;
 
 destructor TGeminiAI.Destroy;
@@ -211,11 +224,15 @@ begin
   fModel := ModelName;
 end;
 
-function TGeminiAI.BaseURL: string;
+function TGeminiAI.BaseURL(IncludingModel: boolean): string;
 begin
-  if fModel.IsEmpty then
-    raise EGeminiAIRequest.Create('SetModel first');
-  result := Format(GEMINI_API_4Model, [fModel]);
+  if IncludingModel then
+  begin
+    if fModel.IsEmpty then
+      raise EGeminiAIRequest.Create('SetModel first');
+    result := Format(GEMINI_API_4Model, [fAPIVersion, fModel]);
+  end else
+    result := Format(GEMINI_API, [fAPIVersion]);
 end;
 
 procedure TGeminiAI.FetchListOfModelsSynchronous(ModelNames: TStrings);
@@ -231,7 +248,7 @@ begin
   Params := TQueryParams.Create;
   try
     Params.Add('key', [fApiKey]);
-    Response := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Models').SendRequestSynchronous(
+    Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models').SendRequestSynchronous(
       [], rmGet, nil, Params, tmNoToken);
     if Response.StatusOk and Response.IsJSONObj then
     begin
@@ -261,7 +278,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Models');
+    Request := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models');
     Params.Add('key', [fApiKey]);
     Request.SendRequest([], rmGet, nil, Params, tmNoToken,
       OnFetchModelsResponse, OnFetchModelsErrorResp,
@@ -332,7 +349,7 @@ begin
     Params := TQueryParams.Create;
     try
       Params.Add('key', [fApiKey]);
-      Response := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Model').SendRequestSynchronous(
+      Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model').SendRequestSynchronous(
         [ModelName], rmGet, nil, Params, tmNoToken);
       if Response.StatusOk and Response.IsJSONObj then
       begin
@@ -393,7 +410,7 @@ begin
     Params := TQueryParams.Create;
     try
       Params.Add('key', [fApiKey]);
-      TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Model').SendRequest([ModelName], rmGet, nil, Params, tmNoToken,
+      TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model').SendRequest([ModelName], rmGet, nil, Params, tmNoToken,
         OnFetchModelDetailResponse, OnFetchModelDetailErrorResp,
         TOnSuccess.CreateGeminiFetchModelDetail(OnFetchModelDetail));
     finally
@@ -449,7 +466,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.Generate.Content');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Generate.Content');
     Params.Add('key', [fApiKey]);
     try
       result := TGeminiResponse.Create(Request.SendRequestSynchronous([':generateContent'],
@@ -494,7 +511,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.generate.Content');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.generate.Content');
     Params.Add('key', [fApiKey]);
     Request.SendRequest([':generateContent'], rmPost, Body, Params, tmNoToken,
       OnGenerateContentResponse, OnGenerateContentError,
@@ -561,7 +578,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.Count.Token');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token');
     Params.Add('key', [fApiKey]);
     Request.SendRequest([':countTokens'], rmPost, Body, Params, tmNoToken,
       OnCountTokenResponse, OnCountTokenError,
@@ -641,7 +658,7 @@ begin
   ErrorMsg := '';
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.Count.Token');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token');
     Params.Add('key', [fApiKey]);
     try
       JSONObj := Request.SendRequestSynchronous([':countTokens'], rmPost, Body, Params, tmNoToken).GetContentAsJSONObj;
