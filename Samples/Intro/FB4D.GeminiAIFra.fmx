@@ -115,8 +115,8 @@ object GeminiAIFra: TGeminiAIFra
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
-        Viewport.Width = 1016.000000000000000000
-        Viewport.Height = 12.000000000000000000
+        Viewport.Width = 1036.000000000000000000
+        Viewport.Height = 16.000000000000000000
       end
     end
   end
@@ -144,7 +144,7 @@ object GeminiAIFra: TGeminiAIFra
       TabOrder = 2
       Position.X = 113.000000000000000000
       Position.Y = 2.000000000000000000
-      Size.Width = 505.000000000000000000
+      Size.Width = 432.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextPrompt = 'Enter your API Key generated in AIStudio.Google.com'
@@ -797,6 +797,15 @@ object GeminiAIFra: TGeminiAIFra
           ' to reduce hallucinations and improve the accuracy.'
         TabOrder = 23
       end
+    end
+    object cboAPIVersion: TComboBox
+      Position.X = 553.000000000000000000
+      Position.Y = 2.000000000000000000
+      Size.Width = 79.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 14
+      OnChange = cboAPIVersionChange
     end
   end
   object layPrompt: TLayout

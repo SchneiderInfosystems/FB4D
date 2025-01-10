@@ -108,6 +108,7 @@ type
     Label31: TLabel;
     Label32: TLabel;
     Label33: TLabel;
+    cboAPIVersion: TComboBox;
     procedure btnGeminiGenerateContentClick(Sender: TObject);
     procedure bntLoadImageClick(Sender: TObject);
     procedure trbMaxOutputTokenChange(Sender: TObject);
@@ -126,6 +127,7 @@ type
     procedure cboGeminiModelChange(Sender: TObject);
     procedure edtGeminiAPIKeyExit(Sender: TObject);
     procedure chbUseGoogleSearchChange(Sender: TObject);
+    procedure cboAPIVersionChange(Sender: TObject);
   private
     fGeminiAI: IGeminiAI;
     fModelName: string;
@@ -163,9 +165,11 @@ resourcestring
 {$REGION 'Class Handling'}
 function TGeminiAIFra.CheckAndCreateGeminiAIClass: boolean;
 begin
+  if edtGeminiAPIKey.Text.IsEmpty then
+    exit(false);
   if assigned(fGeminiAI) then
     exit(true);
-  fGeminiAI := TGeminiAI.Create(edtGeminiAPIKey.Text, fModelName);
+  fGeminiAI := TGeminiAI.Create(edtGeminiAPIKey.Text, fModelName, TGeminiAPIVersion(cboAPIVersion.ItemIndex));
   fRequest := nil;
   edtGeminiAPIKey.ReadOnly := true;
   rctGeminiApiKeyDisabled.Visible := true;
@@ -188,6 +192,10 @@ procedure TGeminiAIFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtGeminiAPIKey.Text := IniFile.ReadString('GeminiAI', 'APIKey', '');
   fModelName := IniFile.ReadString('GeminiAI', 'ModelName', cGeminiAIDefaultModel);
+  TGeminiAI.SetListOfAPIVersions(cboAPIVersion.Items);
+  cboAPIVersion.ItemIndex := cboAPIVersion.Items.IndexOf(IniFile.ReadString('GeminiAI', 'APIVersion', ''));
+  if cboAPIVersion.ItemIndex < 0 then
+    cboAPIVersion.ItemIndex := ord(cDefaultGeminiAPIVersion);
   chbUseModelParams.IsChecked := IniFile.ReadBool('GeminiAI', 'UseModeParams', false);
   chbUseSafetySettings.IsChecked := IniFile.ReadBool('GeminiAI', 'UseSafetySettings', false);
   chbUseGoogleSearch.IsChecked := IniFile.ReadBool('GeminiAI', 'UseGoogleSearch', false);
@@ -230,6 +238,8 @@ procedure TGeminiAIFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('GeminiAI', 'APIKey', edtGeminiAPIKey.Text);
   IniFile.WriteString('GeminiAI', 'ModelName', fModelName);
+  if cboAPIVersion.ItemIndex >= 0 then
+    IniFile.WriteString('GeminiAI', 'APIVersion', cboAPIVersion.Items[cboAPIVersion.ItemIndex]);
   IniFile.WriteInteger('GeminiAI', 'Model', cboGeminiModel.ItemIndex);
   IniFile.WriteBool('GeminiAI', 'UseModeParams', chbUseModelParams.IsChecked);
   IniFile.WriteInteger('GeminiAI', 'MaxOutToken', round(trbMaxOutputToken.Value));
@@ -258,11 +268,9 @@ end;
 {$REGION 'Model Configuration'}
 procedure TGeminiAIFra.FetchModelNameList;
 begin
-  if not edtGeminiAPIKey.Text.IsEmpty then
-  begin
-    CheckAndCreateGeminiAIClass;
+  cboGeminiModel.Clear;
+  if CheckAndCreateGeminiAIClass then
     fGeminiAI.FetchListOfModels(OnGeminiFetchModels);
-  end;
 end;
 
 procedure TGeminiAIFra.OnGeminiFetchModels(Models: TStrings; const ErrorMsg: string);
@@ -280,6 +288,13 @@ end;
 
 procedure TGeminiAIFra.edtGeminiAPIKeyExit(Sender: TObject);
 begin
+  FetchModelNameList;
+end;
+
+procedure TGeminiAIFra.cboAPIVersionChange(Sender: TObject);
+begin
+  if assigned(fGeminiAI) then
+    fGeminiAI.SetAPIVersion(TGeminiAPIVersion(cboAPIVersion.ItemIndex));
   FetchModelNameList;
 end;
 

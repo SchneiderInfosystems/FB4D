@@ -73,6 +73,11 @@ const
   cGeminiAIDefaultModel = cGeminiAIPro1_5;
 
 type
+  TGeminiAPIVersion = (V1, V1Beta);
+const
+  cDefaultGeminiAPIVersion = V1Beta;
+
+type
   // Forward declarations
   IFirebaseUser = interface;
   IFirebaseResponse = interface;
@@ -1715,6 +1720,11 @@ type
   /// </summary>
   IGeminiAI = interface(IInterface)
     /// <summary>
+    /// Allows changing the API Version after creation of the class.
+    /// </summary>
+    procedure SetAPIVersion(APIVersion: TGeminiAPIVersion);
+
+    /// <summary>
     /// Fetch list of model names accessible in Gemini AI. Use this blocking function not in the main thread of a GUI
     /// application but in threads, services or console applications.
     /// </summary>
@@ -1924,7 +1934,8 @@ type
     /// <summary>
     /// Returns the IGeminiAI interface for interacting with Gemini AI APIs.
     /// </summary>
-    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel): IGeminiAI;
+    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel;
+      APIVersion: TGeminiAPIVersion = cDefaultGeminiAPIVersion): IGeminiAI;
   end;
   {$ENDREGION}
 

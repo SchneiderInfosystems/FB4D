@@ -36,8 +36,6 @@ uses
 
 type
   TGeminiAI = class(TInterfacedObject, IGeminiAI)
-  public type
-    TAPIVersion = (V1, V1Beta);
   private const
     cModels = 'models/';
   private
@@ -63,8 +61,11 @@ type
     function GetModulDetails(Model: TJSONObject): TGeminiModelDetails;
   public
     constructor Create(const ApiKey: string; const Model: string = cGeminiAIDefaultModel;
-      APIVersion: TAPIVersion = V1Beta);
+      APIVersion: TGeminiAPIVersion = cDefaultGeminiAPIVersion);
     destructor Destroy; override;
+
+    class procedure SetListOfAPIVersions(s: TStrings);
+    procedure SetAPIVersion(APIVersion: TGeminiAPIVersion);
 
     procedure FetchListOfModelsSynchronous(ModelNames: TStrings);
     procedure FetchListOfModels(OnFetchModels: TOnGeminiFetchModels);
@@ -197,11 +198,22 @@ const
 
 { TGemini }
 
-constructor TGeminiAI.Create(const ApiKey, Model: string; APIVersion: TAPIVersion);
+constructor TGeminiAI.Create(const ApiKey, Model: string; APIVersion: TGeminiAPIVersion);
 begin
   fModelDetails := TDictionary<string, TGeminiModelDetails>.Create;
   fApiKey := ApiKey;
   fModel := Model;
+  SetAPIVersion(APIVersion);
+end;
+
+destructor TGeminiAI.Destroy;
+begin
+  fModelDetails.Free;
+  inherited;
+end;
+
+procedure TGeminiAI.SetAPIVersion(APIVersion: TGeminiAPIVersion);
+begin
   case APIVersion of
     V1:
       fAPIVersion := 'v1';
@@ -213,10 +225,13 @@ begin
   end;
 end;
 
-destructor TGeminiAI.Destroy;
+class procedure TGeminiAI.SetListOfAPIVersions(s: TStrings);
+var
+  APIVersion: TGeminiAPIVersion;
 begin
-  fModelDetails.Free;
-  inherited;
+  s.Clear;
+  for ApiVersion := Low(TGeminiAPIVersion) to High(TGeminiAPIVersion) do
+    s.Add(TRttiEnumerationType.GetName(APIVersion));
 end;
 
 procedure TGeminiAI.SetModel(const ModelName: string);
