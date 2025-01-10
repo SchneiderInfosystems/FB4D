@@ -73,6 +73,11 @@ const
   cGeminiAIDefaultModel = cGeminiAIPro1_5;
 
 type
+  TGeminiAPIVersion = (V1, V1Beta);
+const
+  cDefaultGeminiAPIVersion = V1Beta;
+
+type
   // Forward declarations
   IFirebaseUser = interface;
   IFirebaseResponse = interface;
@@ -1311,6 +1316,101 @@ type
   end;
 
   /// <summary>
+  /// Represents metadata associated with grounding information. This record
+  /// stores information related to the active grounding status, relevant content
+  /// chunks, supporting evidence, web search queries, rendered content, and a
+  /// Google search dynamic retrieval score.
+  /// </summary>
+  TGroundingMetadata = record
+
+    /// <summary>
+    /// Indicates whether active grounding is enabled.
+    /// </summary>
+    ActiveGrounding: boolean;
+
+    /// <summary>
+    /// An array of content chunks relevant to the grounding.  Each chunk
+    /// contains a URI and a title.
+    /// </summary>
+    Chunks: array of record
+      /// <summary>
+      /// URI of the content chunk.
+      /// </summary>
+      Uri: string;
+      /// <summary>
+      /// Title or brief description of the content chunk.
+      /// </summary>
+      title: string;
+    end;
+
+    /// <summary>
+    /// An array of support elements providing evidence for the grounding. Each
+    /// support element includes indices referencing related chunks, confidence
+    /// scores, and a specific text segment.
+    /// </summary>
+    Support: array of record
+      /// <summary>
+      /// Indices into the 'Chunks' array, indicating which chunks are
+      /// relevant to this particular piece of supporting evidence.
+      /// </summary>
+      ChunkIndices: array of integer;
+
+      /// <summary>
+      /// Confidence scores associated with this supporting evidence, potentially
+      /// indicating the strength or reliability of the connection to the chunks.
+      /// </summary>
+      ConfidenceScores: array of double;
+
+      /// <summary>
+      /// The specific text segment that provides the supporting evidence.
+      /// </summary>
+      Segment: record
+        /// <summary>
+        /// Index of the part (if the text is divided into parts).  This might
+        /// relate to sentence number or paragraph number.  Its meaning is context-dependent.
+        /// </summary>
+        PartIndex: integer;
+        /// <summary>
+        /// Starting index (character position) of the segment within the larger text.
+        /// </summary>
+        StartIndex: integer;
+        /// <summary>
+        /// Ending index (character position) of the segment within the larger text.
+        /// </summary>
+        EndIndex: integer;
+        /// <summary>
+        /// The actual text of the supporting segment.
+        /// </summary>
+        Text: string;
+      end;
+    end;
+
+    /// <summary>
+    /// An array of web search queries related to the grounding.  These queries
+    /// were likely used to retrieve the supporting chunks.
+    /// </summary>
+    WebSearchQuery: array of string;
+
+
+    /// <summary>
+    /// The rendered content associated with the grounding.  This might be a
+    /// summary, explanation, or other synthesized output based on the grounded information.
+    /// </summary>
+    RenderedContent: string;
+
+    /// <summary>
+    /// A score representing the dynamic retrieval quality from Google Search. This
+    /// likely reflects how well the retrieved information matches the grounding context.
+    /// </summary>
+    GoogleSearchDynamicRetrievalScore: double;
+
+    /// <summary>
+    /// Initialization procedure for the record.
+    /// </summary>
+    procedure Init;
+  end;
+
+  /// <summary>
   /// Represents a single result from a Gemini AI generation.
   /// </summary>
   TGeminiAIResult = record
@@ -1336,6 +1436,13 @@ type
     SafetyRatings: array [THarmCategory] of TSafetyRating;
 
     /// <summary>
+    /// Metadata for enabled grounding. This structure holds information
+    /// related to the grounding process, specifically details derived from
+    /// a Google search.  This metadata is used when grounding is active.
+    /// </summary>
+    GroundingMetadata: TGroundingMetadata;
+
+    /// <summary>
     /// Returns the result text formatted as Markdown.
     /// </summary>
     function ResultAsMarkDown: string;
@@ -1344,6 +1451,11 @@ type
     /// Returns the finish reason as a string.
     /// </summary>
     function FinishReasonAsStr: string;
+
+    /// <summary>
+    /// Initialize the structure.
+    /// </summary>
+    procedure Init;
   end;
 
   /// <summary>
@@ -1577,6 +1689,17 @@ type
     function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
 
     /// <summary>
+    /// Augments the grounding process by incorporating Google Search results. This allows the system to
+    /// consider real-world information and context from the web when grounding concepts or entities.
+    /// </summary>
+    /// <param name="Threshold">The minimum similarity score (between 0 and 1) required for a Google Search
+    /// result to be considered a valid grounding source.  A higher threshold increases precision but
+    /// might reduce recall.  For example, a threshold of 0.8 means only search results with a similarity
+    /// score of 0.8 or greater will be used for grounding.
+    /// </param>
+    procedure AddGroundingByGoogleSearch(Threshold: double);
+
+    /// <summary>
     /// For using in chats add the model answer to the next request.
     /// </summary>
     procedure AddAnswerForNextRequest(const ResultAsMarkDown: string);
@@ -1596,6 +1719,11 @@ type
   /// IGeminiAI defines an interface for interacting with a Gemini AI model.
   /// </summary>
   IGeminiAI = interface(IInterface)
+    /// <summary>
+    /// Allows changing the API Version after creation of the class.
+    /// </summary>
+    procedure SetAPIVersion(APIVersion: TGeminiAPIVersion);
+
     /// <summary>
     /// Fetch list of model names accessible in Gemini AI. Use this blocking function not in the main thread of a GUI
     /// application but in threads, services or console applications.
@@ -1806,7 +1934,8 @@ type
     /// <summary>
     /// Returns the IGeminiAI interface for interacting with Gemini AI APIs.
     /// </summary>
-    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel): IGeminiAI;
+    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel;
+      APIVersion: TGeminiAPIVersion = cDefaultGeminiAPIVersion): IGeminiAI;
   end;
   {$ENDREGION}
 
@@ -2068,6 +2197,18 @@ end;
 
 { TGeminiResult }
 
+procedure TGeminiAIResult.Init;
+var
+  hc: THarmCategory;
+begin
+  FinishReason := TGeminiAIFinishReason.gfrUnknown;
+  Index := 0;
+  SetLength(PartText, 0);
+  for hc := low(THarmCategory) to high(THarmCategory) do
+    SafetyRatings[hc].Init;
+  GroundingMetadata.Init;
+end;
+
 function TGeminiAIResult.ResultAsMarkDown: string;
 var
   c: integer;
@@ -2145,6 +2286,18 @@ begin
       result := '?';
   end;
 
+end;
+
+{ TGroundingMetadata }
+
+procedure TGroundingMetadata.Init;
+begin
+  ActiveGrounding := false;
+  SetLength(Chunks, 0);
+  SetLength(Support, 0);
+  SetLength(WebSearchQuery, 0);
+  RenderedContent := '';
+  GoogleSearchDynamicRetrievalScore := 0;
 end;
 
 { TGeminiModelDetails }

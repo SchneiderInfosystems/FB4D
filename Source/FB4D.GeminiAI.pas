@@ -40,9 +40,10 @@ type
     cModels = 'models/';
   private
     fApiKey: string;
+    fAPIVersion: string;
     fModel: string;
     fModelDetails: TDictionary<string, TGeminiModelDetails>;
-    function BaseURL: string;
+    function BaseURL(IncludingModel: boolean): string;
     procedure OnFetchModelsResponse(const RequestID: string; Response: IFirebaseResponse);
     procedure OnFetchModelsErrorResp(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
     procedure OnFetchModelDetailResponse(const RequestID: string; Response: IFirebaseResponse);
@@ -59,8 +60,12 @@ type
     procedure CountToken(Body: TJSONObject; OnResponse: TOnGeminiCountToken);
     function GetModulDetails(Model: TJSONObject): TGeminiModelDetails;
   public
-    constructor Create(const ApiKey: string; const Model: string = cGeminiAIDefaultModel);
+    constructor Create(const ApiKey: string; const Model: string = cGeminiAIDefaultModel;
+      APIVersion: TGeminiAPIVersion = cDefaultGeminiAPIVersion);
     destructor Destroy; override;
+
+    class procedure SetListOfAPIVersions(s: TStrings);
+    procedure SetAPIVersion(APIVersion: TGeminiAPIVersion);
 
     procedure FetchListOfModelsSynchronous(ModelNames: TStrings);
     procedure FetchListOfModels(OnFetchModels: TOnGeminiFetchModels);
@@ -118,8 +123,10 @@ type
     fParts: TJSONArray;
     fGenerationConfig: TJSONObject;
     fSavetySettings: TJSONArray;
+    fTools: TJSONArray;
     function AsJSON: TJSONObject;
     procedure CheckAndCreateGenerationConfig;
+    procedure CheckAndCreateTools;
   public
     constructor Create;
     destructor Destroy; override;
@@ -138,6 +145,7 @@ type
     function SetStopSequences(StopSequences: TStrings): IGeminiAIRequest;
     function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
     function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
+    procedure AddGroundingByGoogleSearch(Threshold: double);
     procedure AddAnswerForNextRequest(const ResultAsMarkDown: string);
     procedure AddQuestionForNextRequest(const PromptText: string);
   public
@@ -185,16 +193,17 @@ uses
   FB4D.Helpers;
 
 const
-  GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models';
+  GEMINI_API = 'https://generativelanguage.googleapis.com/%s/models';
   GEMINI_API_4Model = GEMINI_API + '/%s';
 
 { TGemini }
 
-constructor TGeminiAI.Create(const ApiKey, Model: string);
+constructor TGeminiAI.Create(const ApiKey, Model: string; APIVersion: TGeminiAPIVersion);
 begin
   fModelDetails := TDictionary<string, TGeminiModelDetails>.Create;
   fApiKey := ApiKey;
   fModel := Model;
+  SetAPIVersion(APIVersion);
 end;
 
 destructor TGeminiAI.Destroy;
@@ -203,16 +212,42 @@ begin
   inherited;
 end;
 
+procedure TGeminiAI.SetAPIVersion(APIVersion: TGeminiAPIVersion);
+begin
+  case APIVersion of
+    V1:
+      fAPIVersion := 'v1';
+    V1BETA:
+      fAPIVersion := 'v1beta';
+    else
+      raise EGeminiAIRequest.CreateFmt('API version %s is currently not implemented',
+        [TRttiEnumerationType.GetName(APIVersion)]);
+  end;
+end;
+
+class procedure TGeminiAI.SetListOfAPIVersions(s: TStrings);
+var
+  APIVersion: TGeminiAPIVersion;
+begin
+  s.Clear;
+  for ApiVersion := Low(TGeminiAPIVersion) to High(TGeminiAPIVersion) do
+    s.Add(TRttiEnumerationType.GetName(APIVersion));
+end;
+
 procedure TGeminiAI.SetModel(const ModelName: string);
 begin
   fModel := ModelName;
 end;
 
-function TGeminiAI.BaseURL: string;
+function TGeminiAI.BaseURL(IncludingModel: boolean): string;
 begin
-  if fModel.IsEmpty then
-    raise EGeminiAIRequest.Create('SetModel first');
-  result := Format(GEMINI_API_4Model, [fModel]);
+  if IncludingModel then
+  begin
+    if fModel.IsEmpty then
+      raise EGeminiAIRequest.Create('SetModel first');
+    result := Format(GEMINI_API_4Model, [fAPIVersion, fModel]);
+  end else
+    result := Format(GEMINI_API, [fAPIVersion]);
 end;
 
 procedure TGeminiAI.FetchListOfModelsSynchronous(ModelNames: TStrings);
@@ -228,7 +263,7 @@ begin
   Params := TQueryParams.Create;
   try
     Params.Add('key', [fApiKey]);
-    Response := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Models').SendRequestSynchronous(
+    Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models').SendRequestSynchronous(
       [], rmGet, nil, Params, tmNoToken);
     if Response.StatusOk and Response.IsJSONObj then
     begin
@@ -258,7 +293,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Models');
+    Request := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models');
     Params.Add('key', [fApiKey]);
     Request.SendRequest([], rmGet, nil, Params, tmNoToken,
       OnFetchModelsResponse, OnFetchModelsErrorResp,
@@ -329,7 +364,7 @@ begin
     Params := TQueryParams.Create;
     try
       Params.Add('key', [fApiKey]);
-      Response := TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Model').SendRequestSynchronous(
+      Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model').SendRequestSynchronous(
         [ModelName], rmGet, nil, Params, tmNoToken);
       if Response.StatusOk and Response.IsJSONObj then
       begin
@@ -390,7 +425,7 @@ begin
     Params := TQueryParams.Create;
     try
       Params.Add('key', [fApiKey]);
-      TFirebaseRequest.Create(GEMINI_API, 'Gemini.Get.Model').SendRequest([ModelName], rmGet, nil, Params, tmNoToken,
+      TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model').SendRequest([ModelName], rmGet, nil, Params, tmNoToken,
         OnFetchModelDetailResponse, OnFetchModelDetailErrorResp,
         TOnSuccess.CreateGeminiFetchModelDetail(OnFetchModelDetail));
     finally
@@ -446,7 +481,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.Generate.Content');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Generate.Content');
     Params.Add('key', [fApiKey]);
     try
       result := TGeminiResponse.Create(Request.SendRequestSynchronous([':generateContent'],
@@ -491,7 +526,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.generate.Content');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.generate.Content');
     Params.Add('key', [fApiKey]);
     Request.SendRequest([':generateContent'], rmPost, Body, Params, tmNoToken,
       OnGenerateContentResponse, OnGenerateContentError,
@@ -558,7 +593,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.Count.Token');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token');
     Params.Add('key', [fApiKey]);
     Request.SendRequest([':countTokens'], rmPost, Body, Params, tmNoToken,
       OnCountTokenResponse, OnCountTokenError,
@@ -638,7 +673,7 @@ begin
   ErrorMsg := '';
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL, 'Gemini.Count.Token');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token');
     Params.Add('key', [fApiKey]);
     try
       JSONObj := Request.SendRequestSynchronous([':countTokens'], rmPost, Body, Params, tmNoToken).GetContentAsJSONObj;
@@ -699,7 +734,8 @@ begin
   fGenerationConfig := nil;
   fRequest.RemovePair('safetySettings');
   fSavetySettings := nil;
-  result := self
+  fTools := nil;
+  result := self;
 end;
 
 destructor TGeminiAIRequest.Destroy;
@@ -775,6 +811,15 @@ begin
   end;
 end;
 
+procedure TGeminiAIRequest.CheckAndCreateTools;
+begin
+  if not assigned(fTools) then
+  begin
+    fTools := TJSONArray.Create;
+    fRequest.AddPair('tools', fTools);
+  end;
+end;
+
 function TGeminiAIRequest.ModelParameter(Temperature, TopP: double;
   MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;
 begin
@@ -836,6 +881,15 @@ begin
       TJSONPair.Create('category', TGeminiResponse.HarmCategoryToStr(HarmCat))).
       AddPair('threshold', SafetyBlockLevelToStr(LevelToBlock)));
   result := self;
+end;
+
+procedure TGeminiAIRequest.AddGroundingByGoogleSearch(Threshold: double);
+begin
+  CheckAndCreateTools;
+  fTools.Add(TJSONObject.Create(TJSONPair.Create('google_search_retrieval',
+    TJSONObject.Create(TJSONPair.Create('dynamic_retrieval_config',
+      TJSONObject.Create(TJSONPair.Create('mode', 'MODE_DYNAMIC')).
+      AddPair('dynamic_threshold', Threshold))))));
 end;
 
 procedure TGeminiAIRequest.AddAnswerForNextRequest(const ResultAsMarkDown: string);
@@ -1078,10 +1132,10 @@ end;
 
 procedure TGeminiResponse.EvaluateResults;
 var
-  Candidates, Parts, saftyRatings: TJSONArray;
-  Ind, Ind2: integer;
+  Candidates, Parts, Arr, Arr2: TJSONArray;
+  Ind, Ind2, Ind3: integer;
   Txt: string;
-  Candidate, Obj: TJSONObject;
+  Candidate, Obj, Obj2: TJSONObject;
   HarmCat: THarmCategory;
 begin
   fFinishReasons := [];
@@ -1093,6 +1147,7 @@ begin
       SetLength(fResults, Candidates.Count);
       for Ind := 0 to Candidates.Count - 1 do
       begin
+        fResults[Ind].Init;
         fResultState := grsValid;
         Candidate := Candidates.Items[Ind] as TJSONObject;
         if Candidate.TryGetValue<TJSONObject>('content', Obj) then
@@ -1121,12 +1176,79 @@ begin
             fResults[Ind].FinishReason := gfrUnknown;
           fFinishReasons := fFinishReasons + [fResults[Ind].FinishReason];
         end;
-        Candidate.TryGetValue<integer>('index', fResults[Ind].Index);
-        if Candidate.TryGetValue<TJSONArray>('safetyRatings', saftyRatings) then
+        if Candidate.TryGetValue<TJSONObject>('groundingMetadata', Obj) then
         begin
-          for Ind2 := 0 to saftyRatings.Count - 1 do
+          fResults[Ind].GroundingMetadata.ActiveGrounding := true;
+          if Obj.TryGetValue<TJSONArray>('groundingChunks', Arr) then
           begin
-            obj := saftyRatings.Items[Ind2] as TJSONObject;
+            SetLength(fResults[Ind].GroundingMetadata.Chunks, Arr.Count);
+            for Ind2 := 0 to Arr.Count - 1 do
+            begin
+              if Arr.Items[Ind2].TryGetValue<TJSONObject>('web', Obj2) then
+              begin
+                Obj2.TryGetValue<string>('uri', fResults[Ind].GroundingMetadata.Chunks[Ind2].Uri);
+                Obj2.TryGetValue<string>('title', fResults[Ind].GroundingMetadata.Chunks[Ind2].Title);
+              end else begin
+                fResults[Ind].GroundingMetadata.Chunks[Ind2].Uri := '';
+                fResults[Ind].GroundingMetadata.Chunks[Ind2].Title := '';
+              end;
+            end;
+          end;
+          if Obj.TryGetValue<TJSONArray>('groundingSupports', Arr) then
+          begin
+            SetLength(fResults[Ind].GroundingMetadata.Support, Arr.Count);
+            for Ind2 := 0 to Arr.Count - 1 do
+            begin
+              if Arr.Items[Ind2].TryGetValue<TJSONArray>('groundingChunkIndices', Arr2) then
+              begin
+                SetLength(fResults[Ind].GroundingMetadata.Support[Ind2].ChunkIndices, Arr2.Count);
+                for Ind3 := 0 to Arr2.Count - 1 do
+                  fResults[Ind].GroundingMetadata.Support[Ind2].ChunkIndices[Ind3] :=
+                    Arr2.Items[Ind3].AsType<integer>;
+              end;
+              if Arr.Items[Ind2].TryGetValue<TJSONArray>('confidenceScores', Arr2) then
+              begin
+                SetLength(fResults[Ind].GroundingMetadata.Support[Ind2].ConfidenceScores, Arr2.Count);
+                for Ind3 := 0 to Arr2.Count - 1 do
+                  fResults[Ind].GroundingMetadata.Support[Ind2].ConfidenceScores[Ind3] :=
+                    Arr2.Items[Ind3].AsType<double>;
+              end;
+              if Arr.Items[Ind2].TryGetValue<TJSONObject>('segment', Obj2) then
+              begin
+                if not Obj2.TryGetValue<integer>('partIndex',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.PartIndex) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.PartIndex := 0;
+                if not Obj2.TryGetValue<integer>('startIndex',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.StartIndex) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.StartIndex := 0;
+                if not Obj2.TryGetValue<integer>('endIndex',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.EndIndex) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.EndIndex := 0;
+                if not Obj2.TryGetValue<string>('text',
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.Text) then
+                  fResults[Ind].GroundingMetadata.Support[Ind2].Segment.Text := '';
+              end;
+            end;
+          end;
+          if Obj.TryGetValue<TJSONObject>('searchEntryPoint', Obj2) then
+            Obj2.TryGetValue<string>('renderedContent', fResults[Ind].GroundingMetadata.RenderedContent);
+          if Obj.TryGetValue<TJSONArray>('webSearchQueries', Arr) then
+          begin
+            SetLength(fResults[Ind].GroundingMetadata.WebSearchQuery, Arr.Count);
+            for Ind2 := 0 to Arr.Count - 1 do
+              fResults[Ind].GroundingMetadata.WebSearchQuery[Ind2] :=
+                Arr.Items[Ind2].AsType<string>;
+          end;
+          if Obj.TryGetValue<TJSONObject>('retrievalMetadata', Obj2) then
+            Obj2.TryGetValue<Double>('googleSearchDynamicRetrievalScore',
+              fResults[Ind].GroundingMetadata.GoogleSearchDynamicRetrievalScore);
+        end;
+        Candidate.TryGetValue<integer>('index', fResults[Ind].Index);
+        if Candidate.TryGetValue<TJSONArray>('safetyRatings', Arr) then
+        begin
+          for Ind2 := 0 to Arr.Count - 1 do
+          begin
+            obj := Arr.Items[Ind2] as TJSONObject;
             HarmCat := THarmCategory.hcUnspecific;
             if obj.TryGetValue<string>('category', Txt) then
               HarmCat := HarmCategoryFromStr(Txt);

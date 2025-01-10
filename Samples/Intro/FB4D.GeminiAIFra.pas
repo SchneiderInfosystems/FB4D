@@ -101,6 +101,14 @@ type
     btnClearMedia: TButton;
     btnNextQuestionInChat: TButton;
     btnCalcRequestInChat: TButton;
+    chbUseGoogleSearch: TCheckBox;
+    trbGoogleSearchThreshold: TTrackBar;
+    layGoogleSearch: TLayout;
+    Label30: TLabel;
+    Label31: TLabel;
+    Label32: TLabel;
+    Label33: TLabel;
+    cboAPIVersion: TComboBox;
     procedure btnGeminiGenerateContentClick(Sender: TObject);
     procedure bntLoadImageClick(Sender: TObject);
     procedure trbMaxOutputTokenChange(Sender: TObject);
@@ -118,6 +126,8 @@ type
     procedure memMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure cboGeminiModelChange(Sender: TObject);
     procedure edtGeminiAPIKeyExit(Sender: TObject);
+    procedure chbUseGoogleSearchChange(Sender: TObject);
+    procedure cboAPIVersionChange(Sender: TObject);
   private
     fGeminiAI: IGeminiAI;
     fModelName: string;
@@ -155,9 +165,11 @@ resourcestring
 {$REGION 'Class Handling'}
 function TGeminiAIFra.CheckAndCreateGeminiAIClass: boolean;
 begin
+  if edtGeminiAPIKey.Text.IsEmpty then
+    exit(false);
   if assigned(fGeminiAI) then
     exit(true);
-  fGeminiAI := TGeminiAI.Create(edtGeminiAPIKey.Text, fModelName);
+  fGeminiAI := TGeminiAI.Create(edtGeminiAPIKey.Text, fModelName, TGeminiAPIVersion(cboAPIVersion.ItemIndex));
   fRequest := nil;
   edtGeminiAPIKey.ReadOnly := true;
   rctGeminiApiKeyDisabled.Visible := true;
@@ -180,8 +192,13 @@ procedure TGeminiAIFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtGeminiAPIKey.Text := IniFile.ReadString('GeminiAI', 'APIKey', '');
   fModelName := IniFile.ReadString('GeminiAI', 'ModelName', cGeminiAIDefaultModel);
+  TGeminiAI.SetListOfAPIVersions(cboAPIVersion.Items);
+  cboAPIVersion.ItemIndex := cboAPIVersion.Items.IndexOf(IniFile.ReadString('GeminiAI', 'APIVersion', ''));
+  if cboAPIVersion.ItemIndex < 0 then
+    cboAPIVersion.ItemIndex := ord(cDefaultGeminiAPIVersion);
   chbUseModelParams.IsChecked := IniFile.ReadBool('GeminiAI', 'UseModeParams', false);
   chbUseSafetySettings.IsChecked := IniFile.ReadBool('GeminiAI', 'UseSafetySettings', false);
+  chbUseGoogleSearch.IsChecked := IniFile.ReadBool('GeminiAI', 'UseGoogleSearch', false);
   expGeminiCfg.IsExpanded := edtGeminiAPIKey.Text.IsEmpty;
     // or chbUseModelParams.IsChecked or chbUseSafetySettings.IsChecked;
   trbMaxOutputToken.Value := IniFile.ReadInteger('GeminiAI', 'MaxOutToken', 640);
@@ -199,6 +216,7 @@ begin
   cboSexual.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Sexual', 4);
   cboDangerous.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Dangerous', 4);
   cboViolence.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Violence', 4);
+  trbGoogleSearchThreshold.Value := IniFile.ReadFloat('GeminiAI', 'GoogleSearchThreshold', 0.3);
   memGeminiPrompt.Lines.Text :=  TNetEncoding.URL.Decode(IniFile.ReadString('GeminiAI', 'Prompt', rsDefaultPrompt));
   lblGeminiPrompt.visible := memGeminiPrompt.Lines.Text.IsEmpty;
   memGeminiPrompt.TextSettings.Font.Size := IniFile.ReadInteger('GeminiAI', 'FontSize', 12);
@@ -207,6 +225,7 @@ begin
   memMetaData.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
   chbUseModelParamsChange(nil);
   chbUseSafetySettingsChange(nil);
+  chbUseGoogleSearchChange(nil);
   trbMaxOutputTokenChange(nil);
   trbTemperatureChange(nil);
   trbTopKChange(nil);
@@ -219,6 +238,8 @@ procedure TGeminiAIFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('GeminiAI', 'APIKey', edtGeminiAPIKey.Text);
   IniFile.WriteString('GeminiAI', 'ModelName', fModelName);
+  if cboAPIVersion.ItemIndex >= 0 then
+    IniFile.WriteString('GeminiAI', 'APIVersion', cboAPIVersion.Items[cboAPIVersion.ItemIndex]);
   IniFile.WriteInteger('GeminiAI', 'Model', cboGeminiModel.ItemIndex);
   IniFile.WriteBool('GeminiAI', 'UseModeParams', chbUseModelParams.IsChecked);
   IniFile.WriteInteger('GeminiAI', 'MaxOutToken', round(trbMaxOutputToken.Value));
@@ -237,6 +258,8 @@ begin
   IniFile.WriteInteger('GeminiAI', 'Sexual', cboSexual.ItemIndex);
   IniFile.WriteInteger('GeminiAI', 'Dangerous', cboDangerous.ItemIndex);
   IniFile.WriteInteger('GeminiAI', 'Violence', cboViolence.ItemIndex);
+  IniFile.WriteBool('GeminiAI', 'UseGoogleSearch', chbUseGoogleSearch.IsChecked);
+  IniFile.WriteFloat('GeminiAI', 'GoogleSearchThreshold', trbGoogleSearchThreshold.Value);
   IniFile.WriteString('GeminiAI', 'Prompt', TNetEncoding.URL.Encode(memGeminiPrompt.Lines.Text));
   IniFile.WriteInteger('GeminiAI', 'FontSize', trunc(memGeminiPrompt.TextSettings.Font.Size));
 end;
@@ -245,11 +268,9 @@ end;
 {$REGION 'Model Configuration'}
 procedure TGeminiAIFra.FetchModelNameList;
 begin
-  if not edtGeminiAPIKey.Text.IsEmpty then
-  begin
-    CheckAndCreateGeminiAIClass;
+  cboGeminiModel.Clear;
+  if CheckAndCreateGeminiAIClass then
     fGeminiAI.FetchListOfModels(OnGeminiFetchModels);
-  end;
 end;
 
 procedure TGeminiAIFra.OnGeminiFetchModels(Models: TStrings; const ErrorMsg: string);
@@ -267,6 +288,13 @@ end;
 
 procedure TGeminiAIFra.edtGeminiAPIKeyExit(Sender: TObject);
 begin
+  FetchModelNameList;
+end;
+
+procedure TGeminiAIFra.cboAPIVersionChange(Sender: TObject);
+begin
+  if assigned(fGeminiAI) then
+    fGeminiAI.SetAPIVersion(TGeminiAPIVersion(cboAPIVersion.ItemIndex));
   FetchModelNameList;
 end;
 
@@ -307,6 +335,11 @@ end;
 procedure TGeminiAIFra.chbUseSafetySettingsChange(Sender: TObject);
 begin
   laySafetySettings.Enabled := chbUseSafetySettings.IsChecked;
+end;
+
+procedure TGeminiAIFra.chbUseGoogleSearchChange(Sender: TObject);
+begin
+  layGoogleSearch.Enabled := chbUseGoogleSearch.IsChecked;
 end;
 {$ENDREGION}
 
@@ -484,6 +517,8 @@ begin
     if memStopSequences.Lines.Count > 0 then
       fRequest.SetStopSequences(memStopSequences.Lines);
   end;
+  if chbUseGoogleSearch.IsChecked then
+    fRequest.AddGroundingByGoogleSearch(trbGoogleSearchThreshold.Value);
   tabHTMLRes.Visible := true;
   TabControlResult.ActiveTab := tabHTMLRes;
   fHTMLResultBrowser.LoadFromStrings(Format(cProcessingHTML, [Info]), OnHTMLLoaded);
@@ -496,7 +531,7 @@ end;
 procedure TGeminiAIFra.OnGeminiAIGenContent(Response: IGeminiAIResponse);
 var
   c: integer;
-  Indent: string;
+  Indent, s: string;
 begin
   tabHTMLRes.Visible := true;
   tabRawResult.Visible := true;
@@ -562,6 +597,15 @@ begin
         memMetaData.Lines.Add(Indent + Indent + 'Dangerous Content: Severity is ' +
           Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityAsStr + ', Score: ' +
           FloatToStr(Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityScore));
+      if Response.EvalResult(c).GroundingMetadata.ActiveGrounding then
+      begin
+        if length(Response.EvalResult(c).GroundingMetadata.WebSearchQuery) > 0 then
+        begin
+          memMetaData.Lines.Add(Indent + 'WebSearchQuery');
+          for s in Response.EvalResult(c).GroundingMetadata.WebSearchQuery do
+            memMetaData.Lines.Add(Indent + Indent + s);
+        end;
+      end;
     end;
     memMetaData.Lines.Add('Model version: ' + Response.ModelVersion);
 {$IFDEF DEBUG}

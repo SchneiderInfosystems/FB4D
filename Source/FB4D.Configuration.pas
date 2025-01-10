@@ -95,7 +95,8 @@ type
     function Storage: IFirebaseStorage;
     function Functions: IFirebaseFunctions;
     function VisionML: IVisionML;
-    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel): IGeminiAI;
+    function GeminiAI(const ApiKey: string; const Model: string = cGeminiAIDefaultModel;
+      APIVersion: TGeminiAPIVersion = cDefaultGeminiAPIVersion): IGeminiAI;
     class function GetLibVersionInfo: string;
     class function GetLibLicenseInfo: string;
   end;
@@ -229,10 +230,11 @@ begin
   result := fVisionML;
 end;
 
-function TFirebaseConfiguration.GeminiAI(const ApiKey, Model: string): IGeminiAI;
+function TFirebaseConfiguration.GeminiAI(const ApiKey, Model: string;
+  APIVersion: TGeminiAPIVersion): IGeminiAI;
 begin
   if not assigned(fGeminiAI) then
-    fGeminiAI := TGeminiAI.Create(ApiKey, Model);
+    fGeminiAI := TGeminiAI.Create(ApiKey, Model, APIVersion);
   result := fGeminiAI;
 end;
 

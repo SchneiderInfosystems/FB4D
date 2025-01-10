@@ -6,20 +6,20 @@ object GeminiAIFra: TGeminiAIFra
   object TabControlResult: TTabControl
     Align = Client
     Size.Width = 1036.000000000000000000
-    Size.Height = 122.000000000000000000
+    Size.Height = 42.000000000000000000
     Size.PlatformDefault = False
     TabIndex = 3
     TabOrder = 3
     TabPosition = PlatformDefault
     Sizes = (
       1036s
-      96s
+      16s
       1036s
-      96s
+      16s
       1036s
-      96s
+      16s
       1036s
-      96s)
+      16s)
     object tabHTMLRes: TTabItem
       CustomIcon = <
         item
@@ -55,12 +55,12 @@ object GeminiAIFra: TGeminiAIFra
         StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 96.000000000000000000
+        Size.Height = 16.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
         Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 96.000000000000000000
+        Viewport.Height = 16.000000000000000000
       end
     end
     object tabMetadata: TTabItem
@@ -83,12 +83,12 @@ object GeminiAIFra: TGeminiAIFra
         StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 96.000000000000000000
+        Size.Height = 16.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
         Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 96.000000000000000000
+        Viewport.Height = 16.000000000000000000
       end
     end
     object tabRawResult: TTabItem
@@ -111,12 +111,12 @@ object GeminiAIFra: TGeminiAIFra
         StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 96.000000000000000000
+        Size.Height = 16.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
-        Viewport.Width = 1032.000000000000000000
-        Viewport.Height = 92.000000000000000000
+        Viewport.Width = 1036.000000000000000000
+        Viewport.Height = 16.000000000000000000
       end
     end
   end
@@ -124,13 +124,13 @@ object GeminiAIFra: TGeminiAIFra
     Align = Top
     ShowCheck = False
     Size.Width = 1036.000000000000000000
-    Size.Height = 438.000000000000000000
+    Size.Height = 518.000000000000000000
     Size.PlatformDefault = False
     Text = 'Gemini Configuration'
     TabOrder = 4
-    ContentSize = '413'
+    ContentSize = '493'
     object chbUseModelParams: TCheckBox
-      Position.X = 17.000000000000000000
+      Position.X = 16.000000000000000000
       Position.Y = 34.000000000000000000
       Size.Width = 161.000000000000000000
       Size.Height = 19.000000000000000000
@@ -144,7 +144,7 @@ object GeminiAIFra: TGeminiAIFra
       TabOrder = 2
       Position.X = 113.000000000000000000
       Position.Y = 2.000000000000000000
-      Size.Width = 505.000000000000000000
+      Size.Width = 432.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextPrompt = 'Enter your API Key generated in AIStudio.Google.com'
@@ -170,7 +170,7 @@ object GeminiAIFra: TGeminiAIFra
       OnChange = cboGeminiModelChange
     end
     object layModelParams: TLayout
-      Position.X = 17.000000000000000000
+      Position.X = 16.000000000000000000
       Position.Y = 53.000000000000000000
       Size.Width = 956.000000000000000000
       Size.Height = 228.000000000000000000
@@ -421,13 +421,13 @@ object GeminiAIFra: TGeminiAIFra
       end
     end
     object lblGeminiAPIKey: TLabel
-      Position.X = 17.000000000000000000
+      Position.X = 16.000000000000000000
       Position.Y = 6.000000000000000000
       Text = 'Gemini API Key:'
       TabOrder = 0
     end
     object chbUseSafetySettings: TCheckBox
-      Position.X = 17.000000000000000000
+      Position.X = 16.000000000000000000
       Position.Y = 289.000000000000000000
       Size.Width = 151.000000000000000000
       Size.Height = 19.000000000000000000
@@ -437,12 +437,12 @@ object GeminiAIFra: TGeminiAIFra
       OnChange = chbUseSafetySettingsChange
     end
     object laySafetySettings: TLayout
-      Position.X = 17.000000000000000000
+      Position.X = 16.000000000000000000
       Position.Y = 310.000000000000000000
       Size.Width = 956.000000000000000000
       Size.Height = 101.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 11
+      TabOrder = 9
       object cboHateSpeech: TComboBox
         Items.Strings = (
           'Don'#39't block'
@@ -724,10 +724,93 @@ object GeminiAIFra: TGeminiAIFra
         Viewport.Height = 43.000000000000000000
       end
     end
+    object chbUseGoogleSearch: TCheckBox
+      Position.X = 16.000000000000000000
+      Position.Y = 419.000000000000000000
+      Size.Width = 313.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 11
+      Text = 'Use Grounding with Google Search'
+      OnChange = chbUseGoogleSearchChange
+    end
+    object layGoogleSearch: TLayout
+      Position.X = 16.000000000000000000
+      Position.Y = 440.000000000000000000
+      Size.Width = 956.000000000000000000
+      Size.Height = 53.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 13
+      object trbGoogleSearchThreshold: TTrackBar
+        CanParentFocus = True
+        Max = 1.000000000000000000
+        Orientation = Horizontal
+        Position.X = 138.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 221.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Value = 0.300000000000000000
+      end
+      object Label30: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 106.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Threshold'
+        TabOrder = 1
+      end
+      object Label31: TLabel
+        Position.X = 74.000000000000000000
+        Position.Y = 31.000000000000000000
+        Size.Width = 144.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'Use always google search'
+        TabOrder = 3
+      end
+      object Label32: TLabel
+        Position.X = 269.000000000000000000
+        Position.Y = 31.000000000000000000
+        Size.Width = 169.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'Use never google search'
+        TabOrder = 2
+      end
+      object Label33: TLabel
+        StyledSettings = [Family, Size, FontColor]
+        Position.X = 475.000000000000000000
+        Position.Y = 4.000000000000000000
+        Size.Width = 478.000000000000000000
+        Size.Height = 44.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.StyleExt = {00040000000200000004000000}
+        TextSettings.VertAlign = Leading
+        Text = 
+          'The threshold enables dynamic retrieval, where the model uses Go' +
+          'ogle Search only when it is beneficial to the response. It helps' +
+          ' to reduce hallucinations and improve the accuracy.'
+        TabOrder = 23
+      end
+    end
+    object cboAPIVersion: TComboBox
+      Position.X = 553.000000000000000000
+      Position.Y = 2.000000000000000000
+      Size.Width = 79.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 14
+      OnChange = cboAPIVersionChange
+    end
   end
   object layPrompt: TLayout
     Align = Top
-    Position.Y = 438.000000000000000000
+    Position.Y = 518.000000000000000000
     Size.Width = 1036.000000000000000000
     Size.Height = 320.000000000000000000
     Size.PlatformDefault = False
@@ -890,7 +973,7 @@ object GeminiAIFra: TGeminiAIFra
       StyledSettings = [Family, Size, Style]
       Position.X = 8.000000000000000000
       Position.Y = 8.000000000000000000
-      Size.Width = 343.200012207031300000
+      Size.Width = 343.000000000000000000
       Size.Height = 32.000000000000000000
       Size.PlatformDefault = False
       TextSettings.FontColor = claGray
@@ -931,7 +1014,7 @@ object GeminiAIFra: TGeminiAIFra
     Align = Top
     Cursor = crVSplit
     MinSize = 20.000000000000000000
-    Position.Y = 758.000000000000000000
+    Position.Y = 838.000000000000000000
     Size.Width = 1036.000000000000000000
     Size.Height = 8.000000000000000000
     Size.PlatformDefault = False
