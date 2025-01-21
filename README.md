@@ -82,5 +82,3 @@ https://github.com/grahamegrieve/delphi-markdown
 # Sponsoring FB4D
 
 We recommend that anyone using this open source component in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed.  
-
-[<img src="https://api.gitsponsors.com/api/badge/img?id=154539603" height="20">](https://api.gitsponsors.com/api/badge/link?p=JRxbHWDcUCcHSj2TVZ3rLmHTJzt3y8IUqANaJXxF2XasmSVrwhUuhQ2JsEJkbTIIZd5cmhymM+0rLxkDkRVr+TvW0X/U0AN0nd6fRPKe2Pw=)
