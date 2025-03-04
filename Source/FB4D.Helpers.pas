@@ -259,10 +259,13 @@ type
     function AddOrderByAndEqualTo(const FieldName, FilterValue: string): TQueryParams; overload;
     function AddOrderByAndEqualTo(const FieldName: string; FilterValue: integer): TQueryParams; overload;
     function AddOrderByAndEqualTo(const FieldName: string; FilterValue: extended): TQueryParams; overload;
+    function AddOrderByAndStartAt(const FieldName: string; StartValue: string): TQueryParams; overload;
     function AddOrderByAndStartAt(const FieldName: string; StartValue: integer): TQueryParams; overload;
     function AddOrderByAndStartAt(const FieldName: string; StartValue: extended): TQueryParams; overload;
+    function AddOrderByAndEndAt(const FieldName: string; EndValue: string): TQueryParams; overload;
     function AddOrderByAndEndAt(const FieldName: string; EndValue: integer): TQueryParams; overload;
     function AddOrderByAndEndAt(const FieldName: string; EndValue: extended): TQueryParams; overload;
+    function AddOrderByAndStartEndAt(const FieldName: string; StartValue, EndValue: string): TQueryParams; overload;
     function AddOrderByAndStartEndAt(const FieldName: string; StartValue, EndValue: integer): TQueryParams; overload;
     function AddOrderByAndStartEndAt(const FieldName: string; StartValue, EndValue: extended): TQueryParams; overload;
     function AddTransaction(Transaction: TFirestoreReadTransaction): TQueryParams;
@@ -2168,6 +2171,14 @@ begin
   result := self;
 end;
 
+function TQueryParamsHelper.AddOrderByAndStartAt(const FieldName: string; StartValue: string): TQueryParams;
+begin
+  if not FieldName.IsEmpty then
+    Add(cGetQueryParamOrderBy, ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
+  Add(cGetQueryParamStartAt, ['"' + StringReplace(StartValue, '"', '""', [rfReplaceAll]) + '"']);
+  result := self;
+end;
+
 function TQueryParamsHelper.AddOrderByAndStartAt(const FieldName: string; StartValue: integer): TQueryParams;
 begin
   if not FieldName.IsEmpty then
@@ -2184,6 +2195,14 @@ begin
   result := self;
 end;
 
+function TQueryParamsHelper.AddOrderByAndEndAt(const FieldName: string; EndValue: string): TQueryParams;
+begin
+  if not FieldName.IsEmpty then
+    Add(cGetQueryParamOrderBy, ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
+  Add(cGetQueryParamEndAt, ['"' + StringReplace(EndValue, '"', '""', [rfReplaceAll]) + '"']);
+  result := self;
+end;
+
 function TQueryParamsHelper.AddOrderByAndEndAt(const FieldName: string; EndValue: integer): TQueryParams;
 begin
   if not FieldName.IsEmpty then
@@ -2197,6 +2216,16 @@ begin
   if not FieldName.IsEmpty then
     Add(cGetQueryParamOrderBy, ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
   Add(cGetQueryParamEqualTo, [EndValue.ToString]);
+  result := self;
+end;
+
+function TQueryParamsHelper.AddOrderByAndStartEndAt(const FieldName: string; StartValue,
+  EndValue: string): TQueryParams;
+begin
+  if not FieldName.IsEmpty then
+    Add(cGetQueryParamOrderBy, ['"' + StringReplace(FieldName, '"', '""', [rfReplaceAll]) + '"']);
+  Add(cGetQueryParamStartAt, ['"' + StringReplace(StartValue, '"', '""', [rfReplaceAll]) + '"']);
+  Add(cGetQueryParamEndAt, ['"' + StringReplace(EndValue, '"', '""', [rfReplaceAll]) + '"']);
   result := self;
 end;
 
