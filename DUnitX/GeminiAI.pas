@@ -216,7 +216,8 @@ const
     Take from this invoice the reason for payment, the invoice amount
     with the tax amount and tax rate and the currency, the IBAN
     number and the payment date, the address of the invoice issuer
-    and the recipient as well as the invoice number.
+    and the recipient as well as the invoice number. In case of multiline
+    fields seperate by ; character.
     ''';
 var
   Request: IGeminiAIRequest;
