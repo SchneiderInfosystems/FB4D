@@ -66,3 +66,6 @@ __recovery/
 *.stat
 #Boss Dependency Manager for Delphi and Lazarus (Windows)
 modules/
+
+# Project specific files
+/DUnitX/Win64/Debug/FB4D.IntegrationTests.ini

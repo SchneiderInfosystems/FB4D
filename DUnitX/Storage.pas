@@ -64,11 +64,14 @@ procedure UT_FirebaseStorage.TestSynchronousUploadDownload;
 const
   cObjName = 'TestObj.ini';
 var
+  FileName: string;
   FileStream: TFileStream;
   MemoryStream: TMemoryStream;
   Obj, Obj2, Obj3: IStorageObject;
 begin
-  FileStream := TFileStream.Create(ChangeFileExt(ParamStr(0), '.ini'), fmOpenRead);
+  FileName := ChangeFileExt(ParamStr(0), '.ini');
+  Assert.IsTrue(FileExists(FileName), 'File missing: ' + Filename + ' -> Restart once test app');
+  FileStream := TFileStream.Create(FileName, fmOpenRead);
   try
     Obj := fStorage.UploadSynchronousFromStream(FileStream, cObjName, ctTEXT_PLAIN);
   finally
