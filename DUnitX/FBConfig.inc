@@ -8,4 +8,5 @@ const
   cApiKey = enter your ApiKey here
   cProjectID = enter your Project here
   cBucket = enter your Bucket here
+  cGeminiAI = enter your Gemini AI here
 

@@ -30,7 +30,7 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 ### Prerequisites
 
-The sample projects are developed and prepared for **Delphi 12.2 Athens**.
+The sample projects are developed and prepared for **Delphi 12.3 Athens**.
 
 🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
 
