@@ -24,7 +24,7 @@ This log informs about interface changes and important library enhancements that
 - October 2022: Interface for _ML Vision_ service added;
 - April 2021: Revised _RT DB_ Listener;
 - March 2021: New optional cache to accelerate the repeated access to storage objects. Additional _IFirebaseStorage.GetAndDownload_ method in order to simplify the download from the storage. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirebaseStorage#optional-cache-for-storage-objects)  
-New option in _FB4D.SelfRegistrationFra_ framework to support enter display name and upload profile image when registering a new user. [see more details](https://github.com/SchneiderInfosystems/FB4D/wiki/Self-Registration-Workflow#optional-user-profile-image)  
+New option in _FB4D.SelfRegistrationFra_ framework to support enter display name and upload profile image when registering a new user. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/Self-Registration-Workflow#optional-user-profile-image)  
 Real Time Database creation has changed within the Firebase Console. The Firebase ID is no longer sufficient to access newly created RT DBs. A Firebase URL is now required, which can also include the server location. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IRealTimeDB#create-an-instance-for-the-interface-irealtimedb).  
 A new listener detects changes within the Firestore Database without pooling. [See more details](https://github.com/SchneiderInfosystems/FB4D/wiki/FB4D-Reference-IFirestoreDatabase#firestore-listener).
 
@@ -69,16 +69,19 @@ Since introduction of Gemini AI (V1.6.5.631) the folder JOSE is moved to submodu
 
 For authorization token verification and token content extraction this library uses the Delphi JOSE JWT library. Thank you, Paolo Rossi for your great library!
 
-https://github.com/paolo-rossi/delphi-jose-jwt
+[github.com/paolo-rossi/delphi-jose-jwt](https://github.com/paolo-rossi/delphi-jose-jwt)
 
 #### Delphi-Markdown
 
 For converting markdown formatted text into HTML this library uses the Delphi Markdown Library. Thank you, Grahame Grieve for this great library!
 
-https://github.com/grahamegrieve/delphi-markdown
-
-![Logo FB4D](https://github.com/SchneiderInfosystems/FB4D/wiki/logoFB4D.png)
+[github.com/grahamegrieve/delphi-markdown](https://github.com/grahamegrieve/delphi-markdown)
 
 # Sponsoring FB4D
 
-We recommend that anyone using this open source component in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed.  
+We recommend that anyone using this open source component in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed.
+
+Christoph Schneider, Schneider Infosystems AG, Switzerland
+[www.schneider-infosys.ch](https://www.schneider-infosys.ch)  
+
+![Logo FB4D](logoFB4D.png)
