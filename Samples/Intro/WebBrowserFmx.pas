@@ -71,7 +71,7 @@ begin
   fOnLoaded := OnLoaded;
   fURL := '';
   Stop;
-  webChrome.LoadFromStrings(HTML, '');
+  webChrome.LoadFromStrings(HTML, TEncoding.UTF8, '');
 end;
 
 procedure TfmxWebBrowser.Stop;
