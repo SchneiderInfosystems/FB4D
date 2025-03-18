@@ -1089,28 +1089,30 @@ end;
 
 function TGeminiResponse.ResultAsHTML: string;
 const
-  cCodeStart = '```html'#$A;
+  cCodeHTMLStart = '```html'#$A;
+  cCodeXMLStart = '```xml'#$A;
   cCodeEnd = '```';
 
-  function ExtractHTML(var MarkDown: string): string;
+  function ExtractCode(const CodeStart: string; var MarkDown: string): string;
   var
     pEnd: integer;
   begin
-    result := MarkDown.Substring(cCodeStart.length);
+    result := MarkDown.Substring(CodeStart.length);
     pEnd := Pos(cCodeEnd, result);
     if pEnd > 0 then
     begin
       result := result.SubString(0, pEnd - 1);
-      MarkDown := MarkDown.SubString(cCodeStart.length + pEnd + cCodeEnd.Length);
+      MarkDown := MarkDown.SubString(CodeStart.length + pEnd + cCodeEnd.Length);
     end;
   end;
 
 begin
   result := ResultAsMarkDown;
-  if result.StartsWith(cCodeStart, true) then
-  begin
-    result := ExtractHTML(result) + ConvertMarkDownToHTML(result);
-  end else
+  if result.StartsWith(cCodeHTMLStart, true) then
+    result := ExtractCode(cCodeHTMLStart, result) + ConvertMarkDownToHTML(result)
+  else if result.StartsWith(cCodeXMLStart, true) then
+    result := ExtractCode(cCodeXMLStart, result) + ConvertMarkDownToHTML(result)
+  else
     result := ConvertMarkDownToHTML(result);
 end;
 
