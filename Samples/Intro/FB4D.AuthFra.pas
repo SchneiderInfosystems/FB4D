@@ -334,6 +334,7 @@ begin
   edtToken.Text := fAuth.Token;
   edtUID.Text := '';
   btnLogout.Enabled := false;
+  memUser.Lines.Clear;
 end;
 
 procedure TAuthFra.btnPasswordResetClick(Sender: TObject);
@@ -453,15 +454,9 @@ begin
         fAuth.TokenJWT.Header.JSON.Pairs[c].JsonString.Value + ': ' +
         fAuth.TokenJWT.Header.JSON.Pairs[c].JsonValue.Value);
     mem.Lines.Add('JWT.Claims:');
-    for c := 0 to fAuth.TokenJWT.Claims.JSON.Count - 1 do
-      if fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue is TJSONString then
-        mem.Lines.Add('  ' +
-          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonString.Value + ': ' +
-          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue.Value)
-      else
-        mem.Lines.Add('  ' +
-          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonString.Value + ': ' +
-          fAuth.TokenJWT.Claims.JSON.Pairs[c].JsonValue.ToJSON);
+    for c := 0 to fAuth.TokenJWT.NoOfClaims - 1 do
+      mem.Lines.Add('  ' + fAuth.TokenJWT.ClaimName[c] + ': ' +
+        fAuth.TokenJWT.ClaimValueAsStr[c]);
     if fAuth.TokenJWT.VerifySignature then
       mem.Lines.Add('Token signatur verified')
     else

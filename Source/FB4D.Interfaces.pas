@@ -887,8 +887,16 @@ type
     function VerifySignature: boolean;
     function GetHeader: TJWTHeader;
     function GetClaims: TJWTClaims;
+    function GetNoOfClaims: integer;
+    function GetClaimName(Index: integer): string;
+    function GetClaimValue(Index: integer): TJSONValue;
+    function GetClaimValueAsStr(Index: integer): string;
     property Header: TJWTHeader read GetHeader;
     property Claims: TJWTClaims read GetClaims;
+    property NoOfClaims: integer read GetNoOfClaims;
+    property ClaimName[Index: integer]: string read GetClaimName;
+    property ClaimValue[Index: integer]: TJSONValue read GetClaimValue;
+    property ClaimValueAsStr[Index: integer]: string read GetClaimValueAsStr;
   end;
 {$ENDIF}
 

@@ -33,6 +33,8 @@ uses
 
 type
   TTokenJWT = class(TInterfacedObject, ITokenJWT)
+  private const
+    cAuthTime = 'auth_time';
   private
     fContext: TJOSEContext;
     function GetPublicKey(const Id: string): TJOSEBytes;
@@ -42,6 +44,10 @@ type
     function VerifySignature: boolean;
     function GetHeader: TJWTHeader;
     function GetClaims: TJWTClaims;
+    function GetNoOfClaims: integer;
+    function GetClaimName(Index: integer): string;
+    function GetClaimValue(Index: integer): TJSONValue;
+    function GetClaimValueAsStr(Index: integer): string;
   end;
 
 implementation
@@ -49,7 +55,7 @@ implementation
 uses
   System.Generics.Collections,
   JOSE.Core.JWS, JOSE.Signing.RSA,
-  FB4D.Request;
+  FB4D.Request, FB4D.Helpers;
 
 { TTokenJWT }
 
@@ -101,6 +107,42 @@ end;
 function TTokenJWT.GetClaims: TJWTClaims;
 begin
   result := fContext.GetClaims;
+end;
+
+function TTokenJWT.GetNoOfClaims: integer;
+begin
+  result := GetClaims.JSON.Count;
+end;
+
+function TTokenJWT.GetClaimName(Index: integer): string;
+begin
+  result := GetClaims.JSON.Pairs[Index].JsonString.Value;
+end;
+
+function TTokenJWT.GetClaimValue(Index: integer): TJSONValue;
+begin
+  result := GetClaims.JSON.Pairs[Index].JsonValue;
+end;
+
+function TTokenJWT.GetClaimValueAsStr(Index: integer): string;
+var
+  Val: TJSONValue;
+  Name: string;
+  TimeStamp: Int64;
+begin
+  Val := GetClaimValue(Index);
+  Name := GetClaimName(Index);
+  if (Name = TReservedClaimNames.ISSUED_AT) or
+     (Name = TReservedClaimNames.EXPIRATION) or
+     (Name = cAuthTime) then
+  begin
+    TimeStamp := StrToInt64Def(Val.Value, 0) * 1000;
+    result := DateTimeToStr(TFirebaseHelpers.ConvertTimeStampToUTCDateTime(TimeStamp));
+  end
+  else if Val is TJSONString then
+    result := Val.Value
+  else
+    result := Val.ToJSON;
 end;
 
 function TTokenJWT.GetHeader: TJWTHeader;
