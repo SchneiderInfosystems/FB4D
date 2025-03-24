@@ -172,6 +172,8 @@ begin
       fmxFirebaseDemo.AuthFra.Auth, edtDatabaseID.Text);
     fmxFirebaseDemo.edtProjectID.ReadOnly := true;
     fmxFirebaseDemo.rctProjectIDDisabled.Visible := true;
+    edtDatabaseID.ReadOnly := true;
+    rctFBURLDisabled.Visible := true;
     fReadTransaction := '';
     fWriteTransaction := nil;
   end;
