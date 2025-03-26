@@ -224,7 +224,6 @@ end;
 
 procedure TAuthFra.OnUserResponse(const Info: string; User: IFirebaseUser);
 begin
-  memUser.Lines.Clear;
   DisplayUser(memUser, User);
   edtToken.Text := fAuth.Token;
   edtUID.Text := User.UID;
@@ -288,7 +287,7 @@ begin
     exit;
   if not CheckSignedIn(memUser) then
     exit;
-  memUser.Lines.Clear;
+  memUser.Lines.Text := 'Delete User Account:';
   TDialogService.MessageDialog('Do you realy wan''t delete the signed-in user?',
     TMsgDlgType.mtConfirmation, [TMsgDlgBtn.mbYes, TMsgDlgBtn.mbNo],
     TMsgDlgBtn.mbYes, 0,
@@ -300,7 +299,7 @@ begin
         edtToken.Text := '';
         fAuth.DeleteCurrentUser(OnUserResp, OnUserError)
       end else
-        memUser.Lines.Add('Delete aborted by user');
+        memUser.Lines.Add('Delete account aborted by user');
     end);
 end;
 
@@ -310,12 +309,13 @@ begin
     exit;
   if not CheckSignedIn(memUser) then
     exit;
-  memUser.Lines.Clear;
+  memUser.Lines.Text := 'Get User Data:';
   fAuth.GetUserData(OnGetUserData, OnUserError);
 end;
 
 procedure TAuthFra.btnLinkEMailPwdClick(Sender: TObject);
 begin
+  memUser.Lines.Text := 'Link EMail/Password:';
   fAuth.LinkWithEMailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   btnLinkEMailPwd.Enabled := false;
@@ -328,12 +328,15 @@ begin
     exit;
   if edtEMail.Text.IsEmpty then
   begin
+    memUser.Lines.Text := 'Sign-In anonymously:';
     fAuth.SignInAnonymously(OnUserResponse, OnUserError);
     btnLinkEMailPwd.Enabled := true;
     btnSignUpNewUser.Enabled := false;
-  end else
+  end else begin
+    memUser.Lines.Text := 'Sign-In with email and password:';
     fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
       OnUserResponse, OnUserError);
+  end;
 end;
 
 procedure TAuthFra.btnGoogleOAuthClick(Sender: TObject);
@@ -344,8 +347,10 @@ begin
     edtGoogleOAuthClientID.SetFocus
   else if edtGoogleOAuthClientSecret.Text.IsEmpty then
     edtGoogleOAuthClientSecret.SetFocus
-  else
+  else begin
+    memUser.Lines.Text := 'Sign-In with Google Account:';
     fAuth.SignInWithGoogleAccount(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text, OnUserResponse, OnUserError, edtEMail.Text);
+  end;
 end;
 
 procedure TAuthFra.btnLogoutClick(Sender: TObject);
@@ -356,7 +361,7 @@ begin
   edtToken.Text := fAuth.Token;
   edtUID.Text := '';
   btnLogout.Enabled := false;
-  memUser.Lines.Clear;
+  memUser.Lines.Text := 'Logout';
 end;
 
 procedure TAuthFra.btnPasswordResetClick(Sender: TObject);
@@ -385,6 +390,7 @@ procedure TAuthFra.btnSignUpNewUserClick(Sender: TObject);
 begin
   if not CheckAndCreateAuthenticationClass then
     exit;
+  memUser.Lines.Text := 'Sign-Up new user:';
   fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
 end;
