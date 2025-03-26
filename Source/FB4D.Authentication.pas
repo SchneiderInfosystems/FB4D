@@ -355,7 +355,7 @@ begin
   if not assigned(fAuth2Authenticator) then
     fAuth2Authenticator := TGoogleOAuth2Authenticator.Create(ClientID, ClientSecret,
       Scope, OptionalGMailAdr);
-  if fAuth2Authenticator.AuthorizationState = idle then
+  if fAuth2Authenticator.AuthorizationState in [idle, failed, timeOutOccured] then
     fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError)
   else if fAuth2Authenticator.AuthorizationState = passed then
     OnError('Sign in with Google Account', 'Already authorized')
