@@ -55,6 +55,9 @@ type
 implementation
 
 uses
+{$IFDEF POSIX}
+  Posix.Unistd,
+{$ENDIF}
   System.IOUtils;
 
 {$R *.fmx}

@@ -635,10 +635,11 @@ class function TFirebaseHelpers.CryptoRandom64(NoOfChars: integer;
   var RandomStream: TFileStream;
   begin
     RandomStream := TFileStream.Create('/dev/urandom', fmOpenRead);
-  try
-    RandomStream.Read(result, SizeOf(result));
-  finally
-    RandomStream.Free;
+    try
+      RandomStream.Read(result, SizeOf(result));
+    finally
+      RandomStream.Free;
+    end;
   end;
   {$ENDIF}
 
