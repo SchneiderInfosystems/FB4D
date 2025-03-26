@@ -276,6 +276,7 @@ end;
 
 destructor TFirebaseAuthentication.Destroy;
 begin
+  fAuth2Authenticator.Free;
   fCSForToken.Free;
   inherited;
 end;
