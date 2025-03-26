@@ -486,7 +486,7 @@ begin
      (Name = cAuthTime) then
   begin
     TimeStamp := StrToInt64Def(Val.Value, 0) * 1000;
-    result := DateTimeToStr(TFirebaseHelpers.ConvertTimeStampToUTCDateTime(TimeStamp));
+    result := DateTimeToStr(TFirebaseHelpers.ConvertTimeStampToLocalDateTime(TimeStamp));
   end
   else if Val is TJSONString then
     result := Val.Value
