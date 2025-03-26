@@ -225,6 +225,11 @@ end;
 procedure TAuthFra.OnUserResponse(const Info: string; User: IFirebaseUser);
 begin
   DisplayUser(memUser, User);
+  if User.IsEMailAvailable and not SameText(edtEmail.Text, User.EMail) then
+  begin
+    memUser.Lines.Add('User''s email has changed: ' + User.EMail);
+    edtEmail.Text := User.EMail;
+  end;
   edtToken.Text := fAuth.Token;
   edtUID.Text := User.UID;
   lblTokenExp.Text := 'expires at ' + DateTimeToStr(fAuth.TokenExpiryDT);
@@ -361,6 +366,11 @@ begin
   edtToken.Text := fAuth.Token;
   edtUID.Text := '';
   btnLogout.Enabled := false;
+  btnRefresh.Enabled := false;
+  btnPasswordReset.Enabled := true;
+  timRefresh.Enabled := false;
+  btnLogin.Enabled := true;
+  btnSignUpNewUser.Enabled := true;
   memUser.Lines.Text := 'Logout';
 end;
 
