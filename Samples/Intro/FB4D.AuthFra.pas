@@ -356,9 +356,9 @@ begin
   else if edtGoogleOAuthClientSecret.Text.IsEmpty then
     edtGoogleOAuthClientSecret.SetFocus
   else begin
-    memUser.Lines.Text := 'Sign-In with Google Account:';
     fAuth.SignInWithGoogleAccount(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text, OnUserResponse,
       OnUserError, edtEMail.Text);
+    memUser.Lines.Text := 'Sign-In with Google Account on ' + fAuth.GetOAuthRedirectionEndpoint;
     btnGoogleOAuth.Enabled := false;
   end;
 end;

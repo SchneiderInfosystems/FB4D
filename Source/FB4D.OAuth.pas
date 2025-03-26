@@ -86,6 +86,7 @@ type
     property AuthorizationState: TAuthorizationState read fAuthorizationState;
     property AuthorizationError: string read fAuthorizationError;
     property TimeoutInMS: integer read fTimeoutInMS write fTimeoutInMS;
+    property RedirectionEndpoint: string read fRedirectionEndpoint;
   end;
 
 {$IFDEF TOKENJWT}

@@ -171,6 +171,7 @@ type
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
+    function GetOAuthRedirectionEndpoint: string;
     function GetLastServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     property ApiKey: string read fApiKey;
   end;
@@ -1603,6 +1604,14 @@ begin
   result := fLastUTCServerTime;
   if TimeZone = tzLocalTime then
     result := TFirebaseHelpers.ConvertToLocalDateTime(result);
+end;
+
+function TFirebaseAuthentication.GetOAuthRedirectionEndpoint: string;
+begin
+  if assigned(fAuth2Authenticator) then
+    result := fAuth2Authenticator.RedirectionEndpoint
+  else
+    result := 'n/a';
 end;
 
 function TFirebaseAuthentication.Token: string;

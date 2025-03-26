@@ -1061,6 +1061,7 @@ type
     function NeedTokenRefresh: boolean;
     function GetRefreshToken: string;
     function GetTokenRefreshCount: cardinal;
+    function GetOAuthRedirectionEndpoint: string;
     function GetLastServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
   end;
   {$ENDREGION}
