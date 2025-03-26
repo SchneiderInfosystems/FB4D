@@ -235,6 +235,8 @@ begin
       while fAuthorizationState = started do
       begin
         Sleep(cSliceTimeInMS);
+        if TFirebaseHelpers.AppIsTerminated then
+          exit;
         inc(Timeout, cSliceTimeInMS);
         if Timeout > fTimeoutInMS then
           fAuthorizationState := timeOutOccured;
