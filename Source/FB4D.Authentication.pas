@@ -182,6 +182,7 @@ type
     {$ENDIF}
     fExpiresAt: TDateTime;
     fRefreshToken: string;
+    fErrorMsg: string;
   public
     constructor Create(JSONResp: TJSONObject; TokenExpected: boolean = true);
       overload;
@@ -228,6 +229,7 @@ type
     {$ENDIF}
     function ExpiresAt: TDateTime; // local time
     function RefreshToken: string;
+    function ErrorMsg: string;
   end;
 
 implementation
@@ -357,9 +359,18 @@ begin
       Scope, OptionalGMailAdr);
   if fAuth2Authenticator.AuthorizationState in [idle, failed, timeOutOccured] then
     fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError)
+  else if fAuth2Authenticator.RequiresTokenRefresh then
+  begin
+    if fAuth2Authenticator.GetTokensFromAuthCode(true) then
+      OnAuthenticatorFinished(passed, OnUserResponse, OnError)
+    else
+      OnAuthenticatorFinished(fAuth2Authenticator.AuthorizationState, OnUserResponse, OnError);
+  end
   else if fAuth2Authenticator.AuthorizationState = passed then
-    OnError('Sign in with Google Account', 'Already authorized')
-  else
+  begin
+    OnError('Sign in with Google Account', 'Already authorized');
+    fAuthenticated := true;
+  end else
     OnError('Sign in with Google Account', 'Unexpected state: ' + fAuth2Authenticator.AuthorizationStateInfo);
 end;
 
@@ -1647,9 +1658,11 @@ begin
   fClaimFields := TDictionary<string,TJSONValue>.Create;
   {$ENDIF}
   fJSONResp := JSONResp;
+  if not fJSONResp.TryGetValue('errorMessage', fErrorMsg) then
+    fErrorMsg := '';
   if not fJSONResp.TryGetValue('idToken', fToken) then
     if TokenExpected then
-      raise EFirebaseUser.Create('idToken not found')
+      raise EFirebaseUser.Create('idToken not found, (Error: ' + fErrorMsg + ')')
     else
       fToken := ''
   else begin
@@ -1735,6 +1748,11 @@ function TFirebaseUser.EMail: string;
 begin
   if not fJSONResp.TryGetValue('email', result) then
     raise EFirebaseUser.Create('email not found');
+end;
+
+function TFirebaseUser.ErrorMsg: string;
+begin
+  result := fErrorMsg;
 end;
 
 function TFirebaseUser.ExpiresAt: TDateTime;

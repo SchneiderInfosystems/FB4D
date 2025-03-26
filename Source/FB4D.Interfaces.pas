@@ -960,6 +960,7 @@ type
 {$ENDIF}
     function ExpiresAt: TDateTime; // local time
     function RefreshToken: string;
+    function ErrorMsg: string;
   end;
   EFirebaseAuthentication = class(Exception);
 

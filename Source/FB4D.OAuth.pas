@@ -68,7 +68,6 @@ type
     function GetMsgPageAsHtml(const errorStr: string = ''): string;
     procedure StartLocalServer;
     procedure StopLocalServer;
-    function GetTokensFromAuthCode: boolean;
     procedure onCommandGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
     procedure onCommandError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -78,7 +77,9 @@ type
     function CheckAccess(const ClientID, ClientSecret: string): boolean;
     procedure OpenDefaultBrowserForLogin(OnAuthenticatorFinished: TOnAuthenticatorFinished;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    function GetTokensFromAuthCode(RefreshFlag: boolean = false): boolean;
     function AuthorizationStateInfo: string;
+    function RequiresTokenRefresh: boolean;
     property AuthorizationRequestURI: string read fAuthorizationRequestURI;
     property IDToken: string read fIDToken;
     property AccessTokenExpiry: TDateTime read fAccessTokenExpiry;
@@ -119,7 +120,7 @@ uses
 
 resourcestring
   rsAuthorizationNotStarted = 'Authorization not started';
-  rsAuthorizationStarted = 'Authorization just started';
+  rsAuthorizationStarted = 'Authorization request waiting for user action';
   rsAuthorizationFailed = 'Authorization process failed';
   rsAuthorizationTimeout = 'Authorization not approved within the time limit';
   rsAuthorizationFirstStepPassed = 'First step of authorization passed';
@@ -251,7 +252,7 @@ begin
     end).Start;
 end;
 
-function TGoogleOAuth2Authenticator.GetTokensFromAuthCode: boolean;
+function TGoogleOAuth2Authenticator.GetTokensFromAuthCode(RefreshFlag: boolean): boolean;
 var
   restClient: TRestClient;
   restRequest: TRESTRequest;
@@ -268,9 +269,15 @@ begin
     restRequest.AddAuthParameter('client_id', fClientID, TRESTRequestParameterKind.pkGETorPOST);
     restRequest.AddAuthParameter('client_secret', fClientSecret, TRESTRequestParameterKind.pkGETorPOST);
     restRequest.AddAuthParameter('redirect_uri', fRedirectionEndpoint, TRESTRequestParameterKind.pkGETorPOST);
-    restRequest.AddAuthParameter('code', fAuthCode, TRESTRequestParameterKind.pkGETorPOST);
-    restRequest.AddAuthParameter('code_verifier', fCodeVerifier, TRESTRequestParameterKind.pkGETorPOST); // Added for PKCE
-    restRequest.AddAuthParameter('grant_type', 'authorization_code', TRESTRequestParameterKind.pkGETorPOST);
+    if not RefreshFlag then
+    begin
+      restRequest.AddAuthParameter('code', fAuthCode, TRESTRequestParameterKind.pkGETorPOST);
+      restRequest.AddAuthParameter('code_verifier', fCodeVerifier, TRESTRequestParameterKind.pkGETorPOST);     // Added for PKCE
+      restRequest.AddAuthParameter('grant_type', 'authorization_code', TRESTRequestParameterKind.pkGETorPOST);
+    end else begin
+      restRequest.AddAuthParameter('refresh_token', fRefreshToken, TRESTRequestParameterKind.pkGETorPOST);
+      restRequest.AddAuthParameter('grant_type', 'refresh_token', TRESTRequestParameterKind.pkGETorPOST);
+    end;
     restRequest.Execute;
     if restRequest.Response.GetSimpleValue('refresh_token', respValueStr) then
       fRefreshToken := respValueStr;
@@ -293,6 +300,12 @@ begin
   finally
     restClient.Free;
   end;
+end;
+
+function TGoogleOAuth2Authenticator.RequiresTokenRefresh: boolean;
+begin
+  result := (AuthorizationState in [passed, authCodeReceived]) and
+    (fAccessTokenExpiry < now) and not fRefreshToken.IsEmpty;
 end;
 
 function TGoogleOAuth2Authenticator.AuthorizationStateInfo: string;
