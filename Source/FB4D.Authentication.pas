@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2024 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -31,10 +31,7 @@ uses
   System.Net.HttpClient,
   System.Generics.Collections,
   REST.Types,
-{$IFDEF TOKENJWT}
-  FB4D.OAuth,
-{$ENDIF}
-  FB4D.Interfaces, FB4D.Response, FB4D.Request;
+  FB4D.Interfaces, FB4D.Response, FB4D.Request, FB4D.OAuth;
 
 type
   TFirebaseAuthentication = class(TInterfacedObject, IFirebaseAuthentication)
@@ -53,6 +50,7 @@ type
     {$IFDEF TOKENJWT}
     fTokenJWT: ITokenJWT;
     {$ENDIF}
+    fAuth2Authenticator: TGoogleOAuth2Authenticator;
     fExpiresAt: TDateTime;
     fRefreshToken: string;
     fTokenRefreshCount: cardinal;
@@ -75,6 +73,8 @@ type
     procedure CheckAndRefreshTokenResp(const RequestID: string;
       Response: IFirebaseResponse);
     procedure AddPairForTokenId(Data: TJSONObject);
+    procedure OnAuthenticatorFinished(State: TGoogleOAuth2Authenticator.TAuthorizationState;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
   public
     constructor Create(const ApiKey: string);
     destructor Destroy; override;
@@ -93,12 +93,15 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
+    procedure SignInWithGoogleAccount(const ClientID, ClientSecret: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError;
+      const OptionalGMailAdr: string = '');
     // Link new email/password access to anonymous user
     procedure LinkWithEMailAndPassword(const EMail, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
     function LinkWithEMailAndPasswordSynchronous(const EMail,
       Password: string): IFirebaseUser;
-    // Login by using OAuth from Facebook, Twitter, Google, etc.
+    // Login by using OAuth from Facebook, Twitter, etc.
     procedure LinkOrSignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
       ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
@@ -268,6 +271,7 @@ begin
   fTokenRefreshCount := 1; // begin with 1 and use 0 as sentinel
   fOnTokenRefresh := nil;
   fLastUTCServerTime := 0;
+  fAuth2Authenticator := nil;
 end;
 
 destructor TFirebaseAuthentication.Destroy;
@@ -329,6 +333,51 @@ begin
     Data.AddPair(TJSONPair.Create('postBody',
       OAuthTokenName + '=' + OAuthToken + '&providerId=' + ProviderID));
     Data.AddPair(TJSONPair.Create('requestUri', requestUri));
+    AddPairForTokenId(Data);
+    Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
+    Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
+    Params.Add('key', [ApiKey]);
+    Request.SendRequest(['accounts:signInWithIdp'], rmPost, Data, Params,
+      tmNoToken, OnUserResp, OnError, TOnSuccess.CreateUser(OnUserResponse));
+  finally
+    Params.Free;
+    Data.Free;
+  end;
+end;
+
+procedure TFirebaseAuthentication.SignInWithGoogleAccount(const ClientID, ClientSecret: string;
+  OnUserResponse: TOnUserResponse; OnError: TOnRequestError; const OptionalGMailAdr: string);
+const
+  Scope: string = 'openid email profile';
+begin
+  fAuthenticated := false;
+  if assigned(fAuth2Authenticator) then
+    if not fAuth2Authenticator.CheckAccess(ClientID, ClientSecret) then
+      FreeAndNil(fAuth2Authenticator);
+  if not assigned(fAuth2Authenticator) then
+    fAuth2Authenticator := TGoogleOAuth2Authenticator.Create(ClientID, ClientSecret,
+      Scope, OptionalGMailAdr);
+  fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError);
+end;
+
+procedure TFirebaseAuthentication.OnAuthenticatorFinished(State: TGoogleOAuth2Authenticator.TAuthorizationState;
+  OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+const
+  ProviderID: string = 'google.com';
+  IDToken: string = 'id_token';
+var
+  Data: TJSONObject;
+  Params: TQueryParams;
+  Request: IFirebaseRequest;
+begin
+  Data := TJSONObject.Create;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
+    Format(rsSignInWithOAuth, [ProviderID]));
+  Params := TQueryParams.Create;
+  try
+    Data.AddPair(TJSONPair.Create('postBody',
+      IDToken + '=' + fAuth2Authenticator.IDToken + '&providerId=' + ProviderID));
+    Data.AddPair(TJSONPair.Create('requestUri', fAuth2Authenticator.AuthorizationRequestURI));
     AddPairForTokenId(Data);
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));

@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2024 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -991,6 +991,9 @@ type
     function LinkWithEMailAndPasswordSynchronous(const EMail,
       Password: string): IFirebaseUser;
     // Login by using OAuth from Facebook, Twitter, Google, etc.
+    procedure SignInWithGoogleAccount(const ClientID, ClientSecret: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError;
+      const OptionalGMailAdr: string = '');
     procedure LinkOrSignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
       ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);

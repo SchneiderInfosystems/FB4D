@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2024 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -70,6 +70,11 @@ type
     btnLinkEMailPwd: TButton;
     timRefresh: TTimer;
     btnLogout: TButton;
+    btnGoogleOAuth: TButton;
+    edtGoogleOAuthClientID: TEdit;
+    Label3: TLabel;
+    edtGoogleOAuthClientSecret: TEdit;
+    Label4: TLabel;
     procedure btnSignUpNewUserClick(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
     procedure btnLinkEMailPwdClick(Sender: TObject);
@@ -85,6 +90,7 @@ type
     procedure btnRefreshClick(Sender: TObject);
     procedure edtEmailAndPwdChange(Sender: TObject);
     procedure btnLogoutClick(Sender: TObject);
+    procedure btnGoogleOAuthClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     function CheckAndCreateAuthenticationClass: boolean;
@@ -140,14 +146,18 @@ procedure TAuthFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtEmail.Text := IniFile.ReadString('Authentication', 'User', '');
   edtPassword.Text := IniFile.ReadString('Authentication', 'Pwd', '');
+  edtGoogleOAuthClientID.Text := IniFile.ReadString('GoogleOAuth2', 'ClientID', '');
+  edtGoogleOAuthClientSecret.Text := IniFile.ReadString('GoogleOAuth2', 'ClientSecret', '');
   edtEmailAndPwdChange(nil);
 end;
 
 procedure TAuthFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('Authentication', 'User', edtEmail.Text);
-  {$MESSAGE 'Attention: Password is stored in your file in plain text, but don''t do this in real application. Store the RefreshToken instead.'}
+  IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
+  {$MESSAGE 'Attention: Password and Google OAuth2 Client Secret is stored in your ini file in plain text, but don''t do this in real application. Store the RefreshToken instead of password.'}
   IniFile.WriteString('Authentication', 'Pwd', edtPassword.Text);
+  IniFile.WriteString('GoogleOAuth2', 'ClientSecret', edtGoogleOAuthClientSecret.Text);
 end;
 
 {$ENDREGION}
@@ -324,6 +334,18 @@ begin
   end else
     fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
       OnUserResponse, OnUserError);
+end;
+
+procedure TAuthFra.btnGoogleOAuthClick(Sender: TObject);
+begin
+  if not CheckAndCreateAuthenticationClass then
+    exit;
+  if edtGoogleOAuthClientID.Text.IsEmpty then
+    edtGoogleOAuthClientID.SetFocus
+  else if edtGoogleOAuthClientSecret.Text.IsEmpty then
+    edtGoogleOAuthClientSecret.SetFocus
+  else
+    fAuth.SignInWithGoogleAccount(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text, OnUserResponse, OnUserError, edtEMail.Text);
 end;
 
 procedure TAuthFra.btnLogoutClick(Sender: TObject);
