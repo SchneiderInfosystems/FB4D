@@ -210,6 +210,9 @@ procedure TAuthFra.OnUserError(const Info, ErrMsg: string);
 begin
   ShowMessage(Info + ' failed: ' + ErrMsg);
   memUser.Lines.Add(Info + ' failed: ' + ErrMsg);
+  if Info.Contains(TFirebaseAuthentication.GoogleProviderID) or
+     Info.Equals(TFirebaseAuthentication.Auth2Authenticator) then
+    btnGoogleOAuth.Enabled := true;
 end;
 
 procedure TAuthFra.OnUserResp(const Info: string; Response: IFirebaseResponse);
@@ -354,7 +357,9 @@ begin
     edtGoogleOAuthClientSecret.SetFocus
   else begin
     memUser.Lines.Text := 'Sign-In with Google Account:';
-    fAuth.SignInWithGoogleAccount(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text, OnUserResponse, OnUserError, edtEMail.Text);
+    fAuth.SignInWithGoogleAccount(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text, OnUserResponse,
+      OnUserError, edtEMail.Text);
+    btnGoogleOAuth.Enabled := false;
   end;
 end;
 
@@ -371,6 +376,7 @@ begin
   timRefresh.Enabled := false;
   btnLogin.Enabled := true;
   btnSignUpNewUser.Enabled := true;
+  btnGoogleOAuth.Enabled := true;
   memUser.Lines.Text := 'Logout';
 end;
 

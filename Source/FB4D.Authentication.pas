@@ -75,6 +75,9 @@ type
     procedure AddPairForTokenId(Data: TJSONObject);
     procedure OnAuthenticatorFinished(State: TGoogleOAuth2Authenticator.TAuthorizationState;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+  public const
+    GoogleProviderID: string = 'google.com';
+    Auth2Authenticator: string = 'Auth2 Authenticator';
   public
     constructor Create(const ApiKey: string);
     destructor Destroy; override;
@@ -359,13 +362,6 @@ begin
       Scope, OptionalGMailAdr);
   if fAuth2Authenticator.AuthorizationState in [idle, failed, timeOutOccured] then
     fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError)
-  else if fAuth2Authenticator.RequiresTokenRefresh then
-  begin
-    if fAuth2Authenticator.GetTokensFromAuthCode(true) then
-      OnAuthenticatorFinished(passed, OnUserResponse, OnError)
-    else
-      OnAuthenticatorFinished(fAuth2Authenticator.AuthorizationState, OnUserResponse, OnError);
-  end
   else if fAuth2Authenticator.AuthorizationState = passed then
   begin
     OnError('Sign in with Google Account', 'Already authorized');
@@ -377,7 +373,6 @@ end;
 procedure TFirebaseAuthentication.OnAuthenticatorFinished(State: TGoogleOAuth2Authenticator.TAuthorizationState;
   OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
 const
-  ProviderID: string = 'google.com';
   IDToken: string = 'id_token';
 var
   Data: TJSONObject;
@@ -387,11 +382,11 @@ begin
   if State = passed then
   begin
     Data := TJSONObject.Create;
-    Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL, Format(rsSignInWithOAuth, [ProviderID]));
+    Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL, Format(rsSignInWithOAuth, [GoogleProviderID]));
     Params := TQueryParams.Create;
     try
       Data.AddPair(TJSONPair.Create('postBody',
-        IDToken + '=' + fAuth2Authenticator.IDToken + '&providerId=' + ProviderID));
+        IDToken + '=' + fAuth2Authenticator.IDToken + '&providerId=' + GoogleProviderID));
       Data.AddPair(TJSONPair.Create('requestUri', fAuth2Authenticator.AuthorizationRequestURI));
       AddPairForTokenId(Data);
       Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
@@ -404,7 +399,7 @@ begin
       Data.Free;
     end;
   end else
-    OnError('Auth2 Authenticator', fAuth2Authenticator.AuthorizationStateInfo);
+    OnError(Auth2Authenticator, fAuth2Authenticator.AuthorizationStateInfo);
 end;
 
 function TFirebaseAuthentication.LinkOrSignInWithOAuthCredentialsSynchronous(
@@ -460,6 +455,7 @@ end;
 
 procedure TFirebaseAuthentication.SignOut;
 begin
+  FreeAndNil(fAuth2Authenticator);
   fCSForToken.Acquire;
   try
     fToken := '';
@@ -485,14 +481,14 @@ var
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
-    rsSendVerificationEMail);
+    rsSendVerificationEMail, self);
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('requestType', 'VERIFY_EMAIL'));
     Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
     Request.SendRequest(['accounts:sendOobCode'], rmPost, Data, Params,
-      tmNoToken, OnResponse, OnError, TOnSuccess.Create(nil));
+      tmAuthParam, OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Params.Free;
     Data.Free;
@@ -790,7 +786,7 @@ var
 begin
   Data := TJSONObject.Create;
   Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
-    Format(rsDeleteProviders, [Providers.CommaText]));
+    Format(rsDeleteProviders, [Providers.CommaText]), self);
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('idToken', Token));
@@ -799,7 +795,7 @@ begin
       DelArr.Add(Provider);
     Data.AddPair(TJSONPair.Create('deleteProvider', DelArr));
     Params.Add('key', [ApiKey]);
-    Request.SendRequest(['accounts:update'], rmPOST, Data, Params, tmNoToken,
+    Request.SendRequest(['accounts:update'], rmPOST, Data, Params, tmAuthParam,
       OnDeleteProvidersResp, onError, TOnSuccess.Create(OnProviderDeleted));
   finally
     Params.Free;
@@ -1086,8 +1082,8 @@ begin
     end;
     Params.Add('key', [ApiKey]);
     Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
-      Format(rsChangeProfile, [Info.CommaText]));
-    Request.SendRequest(['accounts:update'], rmPost, Data, Params, tmNoToken,
+      Format(rsChangeProfile, [Info.CommaText]), self);
+    Request.SendRequest(['accounts:update'], rmPost, Data, Params, tmAuthParam,
       OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Info.Free;
@@ -1253,9 +1249,8 @@ begin
   try
     Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
-    Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
-      rsDeleteCurrentUser);
-    Request.SendRequest(['accounts:delete'], rmPost, Data, Params, tmNoToken,
+    Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL, rsDeleteCurrentUser, self);
+    Request.SendRequest(['accounts:delete'], rmPost, Data, Params, tmAuthParam,
       OnResponse, OnError, TOnSuccess.Create(nil));
   finally
     Params.Free;
@@ -1271,12 +1266,12 @@ var
   Request: IFirebaseRequest;
 begin
   Data := TJSONObject.Create;
-  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL, rsRetriveUserList);
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL, rsRetriveUserList, self);
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('idToken', Token));
     Params.Add('key', [ApiKey]);
-    Request.SendRequest(['accounts:lookup'], rmPost, Data, Params, tmNoToken,
+    Request.SendRequest(['accounts:lookup'], rmPost, Data, Params, tmAuthParam,
       OnUserListResp, OnError, TOnSuccess.CreateGetUserData(OnGetUserData));
   finally
     Params.Free;
