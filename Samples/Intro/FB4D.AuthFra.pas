@@ -208,8 +208,8 @@ end;
 
 procedure TAuthFra.OnUserError(const Info, ErrMsg: string);
 begin
-  memUser.Lines.Add(Info + ' failed: ' + ErrMsg);
   ShowMessage(Info + ' failed: ' + ErrMsg);
+  memUser.Lines.Add(Info + ' failed: ' + ErrMsg);
 end;
 
 procedure TAuthFra.OnUserResp(const Info: string; Response: IFirebaseResponse);

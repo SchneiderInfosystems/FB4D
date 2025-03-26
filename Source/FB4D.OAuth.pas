@@ -38,9 +38,9 @@ type
   private const
     cAccessTokenEndpoint = 'https://www.googleapis.com/oauth2/v4/token';
     cAuthorizationEndpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-    cTimeout = 60000; // Number of milli seconds while the user has time to authorize in the browser window
+    cDefaultTimeoutInMS = 60000; // Number of milliseconds while the user has time to authorize in the browser window
   public type
-    TAuthorizationState = (idle, started, failed, noAuthorisationInTime, authCodeReceived, passed);
+    TAuthorizationState = (idle, started, failed, timeOutOccured, authCodeReceived, passed);
     TOnAuthenticatorFinished = procedure(State: TAuthorizationState; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError) of object;
   private
@@ -57,6 +57,7 @@ type
     fLocalServerPort: WORD;
     fAuthorizationState: TAuthorizationState;
     fAuthorizationError: string;
+    fTimeoutInMS: integer;
     fIDToken: string;
     fAccessTokenExpiry: TDateTime;
     fAuthCode: string;
@@ -67,6 +68,7 @@ type
     function GetMsgPageAsHtml(const errorStr: string = ''): string;
     procedure StartLocalServer;
     procedure StopLocalServer;
+    function GetTokensFromAuthCode: boolean;
     procedure onCommandGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo);
     procedure onCommandError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -76,11 +78,13 @@ type
     function CheckAccess(const ClientID, ClientSecret: string): boolean;
     procedure OpenDefaultBrowserForLogin(OnAuthenticatorFinished: TOnAuthenticatorFinished;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
-    function GetTokensFromAuthCode(RefreshFlag: boolean = false): boolean;
+    function AuthorizationStateInfo: string;
     property AuthorizationRequestURI: string read fAuthorizationRequestURI;
     property IDToken: string read fIDToken;
+    property AccessTokenExpiry: TDateTime read fAccessTokenExpiry;
     property AuthorizationState: TAuthorizationState read fAuthorizationState;
     property AuthorizationError: string read fAuthorizationError;
+    property TimeoutInMS: integer read fTimeoutInMS write fTimeoutInMS;
   end;
 
 {$IFDEF TOKENJWT}
@@ -114,7 +118,12 @@ uses
 {$R 'OAuth.res'}
 
 resourcestring
+  rsAuthorizationNotStarted = 'Authorization not started';
+  rsAuthorizationStarted = 'Authorization just started';
   rsAuthorizationFailed = 'Authorization process failed';
+  rsAuthorizationTimeout = 'Authorization not approved within the time limit';
+  rsAuthorizationFirstStepPassed = 'First step of authorization passed';
+  rsAuthorizationExpired = 'Authorization expired';
   // LanguageCode
   rsParam1 = 'en';
   // Title
@@ -128,7 +137,7 @@ resourcestring
   rsParam4Fail = 'The authorization has not been approved!';
   // Message
   rsParam5Ok = 'You can close this page and return to the application.';
-  rsParam5Fail = 'You can close this page and return to the application to try again.<br>';
+  rsParam5Fail = 'You can close this page and return to the application to try again.';
 
 { TGoogleOAuth2Authenticator }
 
@@ -150,6 +159,7 @@ begin
   fAuthorizationRequestURI := '';
   fRedirectionEndpoint := '';
   fLocalServer := nil;
+  fTimeoutInMS := cDefaultTimeoutInMS;
 end;
 
 function TGoogleOAuth2Authenticator.CheckAccess(const ClientID, ClientSecret: string): boolean;
@@ -216,24 +226,24 @@ begin
   TThread.CreateAnonymousThread(
     procedure
     const
-      cSliceTime = 10; // ms
+      cSliceTimeInMS = 10;
     var
       Timeout: integer;
     begin
       Timeout := 0;
       while fAuthorizationState = started do
       begin
-        Sleep(cSliceTime);
-        inc(Timeout, cSliceTime);
-        if Timeout > cTimeout then
-          fAuthorizationState := noAuthorisationInTime;
+        Sleep(cSliceTimeInMS);
+        inc(Timeout, cSliceTimeInMS);
+        if Timeout > fTimeoutInMS then
+          fAuthorizationState := timeOutOccured;
       end;
       TThread.Synchronize(nil,
         procedure
         begin
           StopLocalServer;
           if fAuthorizationState = authCodeReceived then
-            if not GetTokensFromAuthCode(false) then
+            if GetTokensFromAuthCode then
               fAuthorizationState := passed;
           if assigned(fOnAuthenticatorFinished) then
             fOnAuthenticatorFinished(fAuthorizationState, OnUserResponse, OnError);
@@ -241,7 +251,7 @@ begin
     end).Start;
 end;
 
-function TGoogleOAuth2Authenticator.GetTokensFromAuthCode(RefreshFlag: boolean): boolean;
+function TGoogleOAuth2Authenticator.GetTokensFromAuthCode: boolean;
 var
   restClient: TRestClient;
   restRequest: TRESTRequest;
@@ -258,15 +268,9 @@ begin
     restRequest.AddAuthParameter('client_id', fClientID, TRESTRequestParameterKind.pkGETorPOST);
     restRequest.AddAuthParameter('client_secret', fClientSecret, TRESTRequestParameterKind.pkGETorPOST);
     restRequest.AddAuthParameter('redirect_uri', fRedirectionEndpoint, TRESTRequestParameterKind.pkGETorPOST);
-    if not RefreshFlag then
-    begin
-      restRequest.AddAuthParameter('code', fAuthCode, TRESTRequestParameterKind.pkGETorPOST);
-      restRequest.AddAuthParameter('code_verifier', fCodeVerifier, TRESTRequestParameterKind.pkGETorPOST);     // Added for PKCE
-      restRequest.AddAuthParameter('grant_type', 'authorization_code', TRESTRequestParameterKind.pkGETorPOST);
-    end else begin
-      restRequest.AddAuthParameter('refresh_token', fRefreshToken, TRESTRequestParameterKind.pkGETorPOST);
-      restRequest.AddAuthParameter('grant_type', 'refresh_token', TRESTRequestParameterKind.pkGETorPOST);
-    end;
+    restRequest.AddAuthParameter('code', fAuthCode, TRESTRequestParameterKind.pkGETorPOST);
+    restRequest.AddAuthParameter('code_verifier', fCodeVerifier, TRESTRequestParameterKind.pkGETorPOST); // Added for PKCE
+    restRequest.AddAuthParameter('grant_type', 'authorization_code', TRESTRequestParameterKind.pkGETorPOST);
     restRequest.Execute;
     if restRequest.Response.GetSimpleValue('refresh_token', respValueStr) then
       fRefreshToken := respValueStr;
@@ -274,8 +278,10 @@ begin
     begin
       fIDToken := respValueStr;
       result := true;
-    end else
+    end else begin
       fAuthorizationError := 'id_token missing in response from ' + cAccessTokenEndpoint;
+      fAuthorizationState := failed;
+    end;
     if restRequest.Response.GetSimpleValue('expires_in', respValueStr) then
     begin
       expireSecs := StrToIntdef(respValueStr, -1);
@@ -286,6 +292,33 @@ begin
     end;
   finally
     restClient.Free;
+  end;
+end;
+
+function TGoogleOAuth2Authenticator.AuthorizationStateInfo: string;
+begin
+  case fAuthorizationState of
+    idle:
+      result := rsAuthorizationNotStarted;
+    started:
+      result := rsAuthorizationStarted;
+    failed:
+      begin
+        result := rsAuthorizationFailed;
+        if not fAuthorizationError.IsEmpty then
+          result := result + ': ' + fAuthorizationError;
+      end;
+    timeOutOccured:
+      result := rsAuthorizationTimeout;
+    authCodeReceived:
+      if fAccessTokenExpiry < now then
+        result := rsAuthorizationFirstStepPassed
+      else
+        result := rsAuthorizationExpired;
+    passed:
+      result := rsParam2Ok;
+    else
+      result := rsAuthorizationFailed + ': invalid authorization state';
   end;
 end;
 
@@ -340,7 +373,6 @@ function TGoogleOAuth2Authenticator.GetMsgPageAsHtml(const errorStr: string): st
 var
   ResStream: TResourceStream;
   HtmlDoc: TBytes;
-  p2, p3, p4, p5: string;
 begin
   ResStream := TResourceStream.Create(hInstance, 'OAuthResp', RT_RCDATA);
   try
@@ -351,18 +383,15 @@ begin
     ResStream.Free;
   end;
   if not errorStr.IsEmpty then
-  begin
-    p2 := rsParam2Fail;
-    p3 := rsParam3Fail;
-    p4 := THTMLEncoding.HTML.Encode(rsParam4Fail);
-    p5 := THTMLEncoding.HTML.Encode(rsParam5Fail + errorStr);
-  end else begin
-    p2 := rsParam2Ok;
-    p3 := rsParam3Ok;
-    p4 := THTMLEncoding.HTML.Encode(rsParam4Ok);
-    p5 := THTMLEncoding.HTML.Encode(rsParam5Ok);
-  end;
-  result := Format(UTF8ArrayToString(HtmlDoc), [rsParam1, p2, p3, p4, p5]);
+    result := Format(UTF8ArrayToString(HtmlDoc),
+      [rsParam1, rsParam2Fail, rsParam3Fail,
+       THTMLEncoding.HTML.Encode(rsParam4Fail),
+       THTMLEncoding.HTML.Encode(rsParam5Fail) + '<br>' +
+         THTMLEncoding.HTML.Encode(errorStr)])
+  else
+    result := Format(UTF8ArrayToString(HtmlDoc),
+      [rsParam1, rsParam2Ok, rsParam3Ok, THTMLEncoding.HTML.Encode(rsParam4Ok),
+       THTMLEncoding.HTML.Encode(rsParam5Ok)]);
 end;
 
 {$IFDEF TOKENJWT}

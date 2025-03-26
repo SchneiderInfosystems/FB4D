@@ -236,10 +236,8 @@ uses
   FB4D.Helpers;
 
 const
- GOOGLE_IDTOOLKIT_URL =
-   'https://identitytoolkit.googleapis.com/v1';
- GOOGLE_REFRESH_AUTH_URL =
-   'https://securetoken.googleapis.com/v1/token';
+ GOOGLE_IDTOOLKIT_URL = 'https://identitytoolkit.googleapis.com/v1';
+ GOOGLE_REFRESH_AUTH_URL = 'https://securetoken.googleapis.com/v1/token';
 
 resourcestring
   rsSignInAnonymously = 'Sign in anonymously';
@@ -327,8 +325,7 @@ var
 begin
   fAuthenticated := false;
   Data := TJSONObject.Create;
-  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
-    Format(rsSignInWithOAuth, [ProviderID]));
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL, Format(rsSignInWithOAuth, [ProviderID]));
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('postBody',
@@ -358,7 +355,12 @@ begin
   if not assigned(fAuth2Authenticator) then
     fAuth2Authenticator := TGoogleOAuth2Authenticator.Create(ClientID, ClientSecret,
       Scope, OptionalGMailAdr);
-  fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError);
+  if fAuth2Authenticator.AuthorizationState = idle then
+    fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError)
+  else if fAuth2Authenticator.AuthorizationState = passed then
+    OnError('Sign in with Google Account', 'Already authorized')
+  else
+    OnError('Sign in with Google Account', 'Unexpected state: ' + fAuth2Authenticator.AuthorizationStateInfo);
 end;
 
 procedure TFirebaseAuthentication.OnAuthenticatorFinished(State: TGoogleOAuth2Authenticator.TAuthorizationState;
@@ -371,24 +373,27 @@ var
   Params: TQueryParams;
   Request: IFirebaseRequest;
 begin
-  Data := TJSONObject.Create;
-  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL,
-    Format(rsSignInWithOAuth, [ProviderID]));
-  Params := TQueryParams.Create;
-  try
-    Data.AddPair(TJSONPair.Create('postBody',
-      IDToken + '=' + fAuth2Authenticator.IDToken + '&providerId=' + ProviderID));
-    Data.AddPair(TJSONPair.Create('requestUri', fAuth2Authenticator.AuthorizationRequestURI));
-    AddPairForTokenId(Data);
-    Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
-    Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
-    Params.Add('key', [ApiKey]);
-    Request.SendRequest(['accounts:signInWithIdp'], rmPost, Data, Params,
-      tmNoToken, OnUserResp, OnError, TOnSuccess.CreateUser(OnUserResponse));
-  finally
-    Params.Free;
-    Data.Free;
-  end;
+  if State = passed then
+  begin
+    Data := TJSONObject.Create;
+    Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_URL, Format(rsSignInWithOAuth, [ProviderID]));
+    Params := TQueryParams.Create;
+    try
+      Data.AddPair(TJSONPair.Create('postBody',
+        IDToken + '=' + fAuth2Authenticator.IDToken + '&providerId=' + ProviderID));
+      Data.AddPair(TJSONPair.Create('requestUri', fAuth2Authenticator.AuthorizationRequestURI));
+      AddPairForTokenId(Data);
+      Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
+      Data.AddPair(TJSONPair.Create('returnIdpCredential', 'true'));
+      Params.Add('key', [ApiKey]);
+      Request.SendRequest(['accounts:signInWithIdp'], rmPost, Data, Params,
+        tmNoToken, OnUserResp, OnError, TOnSuccess.CreateUser(OnUserResponse));
+    finally
+      Params.Free;
+      Data.Free;
+    end;
+  end else
+    OnError('Auth2 Authenticator', fAuth2Authenticator.AuthorizationStateInfo);
 end;
 
 function TFirebaseAuthentication.LinkOrSignInWithOAuthCredentialsSynchronous(
