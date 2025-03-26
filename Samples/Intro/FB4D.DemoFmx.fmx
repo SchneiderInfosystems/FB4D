@@ -58,6 +58,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         inherited TabControlUser: TTabControl
           Size.Width = 964.000000000000000000
           Size.Height = 719.000000000000000000
+          TabOrder = 10
           Sizes = (
             964s
             693s
@@ -73,42 +74,47 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Viewport.Height = 619.000000000000000000
             end
             inherited btnRefresh: TButton
-              Position.X = 884.000000000000000000
+              Position.X = 848.000000000000000000
             end
           end
           inherited tabUserProfile: TTabItem
             ExplicitSize.cx = 125.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited edtChangeEMail: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited edtChangeDisplayName: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited btnChange: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
             inherited btnChangeEMail: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
             inherited edtChangePassword: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited btnChangePwd: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
             inherited edtChangePhotoURL: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited btnChangePhotoURL: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
           end
         end
         inherited lblTokenExp: TLabel
           Size.Width = 599.000000000000000000
+          TabOrder = 9
+        end
+        inherited edtUID: TEdit
+          TabOrder = 7
         end
         inherited edtToken: TEdit
+          TabOrder = 8
           Size.Width = 651.000000000000000000
         end
         inherited edtPassword: TEdit
@@ -116,28 +122,33 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         end
         inherited btnSignUpNewUser: TButton
           Position.X = 476.000000000000000000
+          TabOrder = 2
         end
         inherited btnPasswordReset: TButton
           Position.X = 732.000000000000000000
+          TabOrder = 4
         end
         inherited btnLogin: TButton
           Position.X = 604.000000000000000000
+          TabOrder = 3
         end
         inherited btnLinkEMailPwd: TButton
           Position.X = 860.000000000000000000
-          TabOrder = 15
+          TabOrder = 13
         end
         inherited btnLogout: TButton
           Position.X = 922.000000000000000000
-          TabOrder = 17
+          TabOrder = 16
         end
         inherited btnGoogleOAuth: TButton
           TabOrder = 19
         end
         inherited edtGoogleOAuthClientID: TEdit
+          TabOrder = 5
           Size.Width = 332.000000000000000000
         end
         inherited edtGoogleOAuthClientSecret: TEdit
+          TabOrder = 6
           Position.X = 684.000000000000000000
         end
       end
@@ -916,7 +927,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Align = Left
       Images = imlFirebaseServices
       ImageIndex = 0
-      Size.Width = 169.000000000000000000
+      Size.Width = 176.000000000000000000
       Size.Height = 90.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
@@ -997,7 +1008,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 175.000000000000000000
+      Position.X = 184.000000000000000000
       Position.Y = 4.000000000000000000
       Size.Width = 180.000000000000000000
       Size.Height = 16.000000000000000000
@@ -1012,7 +1023,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Cursor = crHandPoint
       StyledSettings = [Family, Size, FontColor]
       HitTest = True
-      Position.X = 175.000000000000000000
+      Position.X = 184.000000000000000000
       Position.Y = 4.000000000000000000
       Size.Width = 180.000000000000000000
       Size.Height = 16.000000000000000000

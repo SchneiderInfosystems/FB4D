@@ -386,7 +386,7 @@ object AuthFra: TAuthFra
   object btnGoogleOAuth: TButton
     Position.X = 17.000000000000000000
     Position.Y = 76.000000000000000000
-    Size.Width = 184.000000000000000000
+    Size.Width = 192.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 7
@@ -398,9 +398,9 @@ object AuthFra: TAuthFra
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 8
-    Position.X = 264.000000000000000000
+    Position.X = 272.000000000000000000
     Position.Y = 76.000000000000000000
-    Size.Width = 368.000000000000000000
+    Size.Width = 360.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     TextPrompt = 
@@ -409,9 +409,10 @@ object AuthFra: TAuthFra
     object Label3: TLabel
       HelpType = htKeyword
       Position.X = -56.000000000000000000
-      Size.Width = 56.000000000000000000
+      Size.Width = 48.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
       Text = 'Client ID'
       TabOrder = 0
     end
@@ -429,10 +430,11 @@ object AuthFra: TAuthFra
     TextPrompt = 'Enter OAuth Client Secret from Google Cloud Console'
     object Label4: TLabel
       HelpType = htKeyword
-      Position.X = -71.000000000000000000
-      Size.Width = 71.000000000000000000
+      Position.X = -88.000000000000000000
+      Size.Width = 80.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
       Text = 'Client Secret'
       TabOrder = 0
     end
