@@ -488,8 +488,7 @@ begin
   {$IF Defined(LINUX) and (CompilerVersion < 35)}
   writeln(msg);  // Workaround for RSP-32303
   {$ELSE}
-  FMX.Types.Log.d(msg, []);
-  // there is a bug in DE 10.2 when the wrong method is calling?
+  FMX.Types.Log.d(msg);
   {$ENDIF}
 {$ELSEIF Defined(FGX)}
   TfgLog.Debug(msg);

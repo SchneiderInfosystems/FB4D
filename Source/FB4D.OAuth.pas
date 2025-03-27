@@ -225,7 +225,7 @@ begin
   if not TFirebaseHelpers.OpenURLinkInBrowser(fAuthorizationRequestURI) then
     raise EGoogleOAuth2Authenticator.Create('System browser failed to open ' + fAuthorizationRequestURI);
   fAuthorizationState := started;
-  TThread.CreateAnonymousThread(
+  with TThread.CreateAnonymousThread(
     procedure
     const
       cSliceTimeInMS = 10;
@@ -252,7 +252,13 @@ begin
           if assigned(fOnAuthenticatorFinished) then
             fOnAuthenticatorFinished(fAuthorizationState, OnUserResponse, OnError);
         end);
-    end).Start;
+    end) do
+  begin
+    {$IFNDEF LINUX64}
+    NameThreadForDebugging('FB4D.OpenDefaultBrowserForLogin', ThreadID);
+    {$ENDIF}
+    Start;
+  end;
 end;
 
 function TGoogleOAuth2Authenticator.GetTokensFromAuthCode(RefreshFlag: boolean): boolean;
