@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2023 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -96,7 +96,6 @@ type
     procedure lblOpenAIStudioClick(Sender: TObject);
   private
     function GetIniFileName: string;
-    procedure OpenURLinkInBrowser(const URL: string);
   end;
 
 var
@@ -109,12 +108,6 @@ implementation
 uses
   System.IniFiles, System.IOUtils, System.RTTI,
   Fmx.Platform,
-{$IFDEF MSWINDOWS}
-  Winapi.ShellAPI, Winapi.Windows,
-{$ENDIF MSWINDOWS}
-{$IFDEF POSIX}
-  Posix.Stdlib,
-{$ENDIF POSIX}
   FB4D.Helpers,
   FB4D.Configuration;
 
@@ -245,19 +238,6 @@ begin
   FloatAniToolbar.Inverse := not FloatAniToolbar.Inverse;
 end;
 
-procedure TfmxFirebaseDemo.OpenURLinkInBrowser(const URL: string);
-var
-  EncodedURL: string;
-begin
-  EncodedURL := ReplaceStr(ReplaceStr(URL, '(', '-'), ')', '-');
-{$IFDEF MSWINDOWS}
-  ShellExecute(0, 'OPEN', PChar(EncodedURL), '', '', SW_SHOWNORMAL);
-{$ENDIF MSWINDOWS}
-{$IFDEF POSIX}
-  _system(PAnsiChar('open ' + AnsiString(EncodedURL)));
-{$ENDIF POSIX}
-end;
-
 const
   cFBConsoleURL = 'https://console.firebase.google.com';
   cFBConsoleForProjectBase = cFBConsoleURL + '/u/0/project/%s/';
@@ -282,28 +262,28 @@ const
 procedure TfmxFirebaseDemo.imgLogoClick(Sender: TObject);
 begin
   if layToolbar.Height = FloatAniToolbar.StopValue then
-    OpenURLinkInBrowser(cFB4DIntroURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DIntroURL)
   else if TabControl.ActiveTab = tabAuth then
-    OpenURLinkInBrowser(cFB4DAuthURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DAuthURL)
   else if TabControl.ActiveTab = tabRealTimeDB then
-    OpenURLinkInBrowser(cFB4DRTDBURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DRTDBURL)
   else if TabControl.ActiveTab = tabFirestore then
-    OpenURLinkInBrowser(cFB4DFSURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DFSURL)
   else if TabControl.ActiveTab = tabStorage then
-    OpenURLinkInBrowser(cFB4DStorageURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DStorageURL)
   else if TabControl.ActiveTab = tabFunctions then
-    OpenURLinkInBrowser(cFB4DFunctsionURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DFunctsionURL)
   else if TabControl.ActiveTab = tabVisionML then
-    OpenURLinkInBrowser(cFB4DVisionMLURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DVisionMLURL)
   else if TabControl.ActiveTab = tabGeminiAI then
-    OpenURLinkInBrowser(cFB4DGeminiAIURL)
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DGeminiAIURL)
   else
-    OpenURLinkInBrowser(cFB4DWikiURL);
+    TFirebaseHelpers.OpenURLinkInBrowser(cFB4DWikiURL);
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleClick(Sender: TObject);
 begin
-  OpenURLinkInBrowser(cFBConsoleURL);
+  TFirebaseHelpers.OpenURLinkInBrowser(cFBConsoleURL);
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForProjectClick(Sender: TObject);
@@ -311,7 +291,7 @@ begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
   else
-    OpenURLinkInBrowser(Format(cFBConsoleForProjectURL, [edtProjectID.Text]));
+    TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForProjectURL, [edtProjectID.Text]));
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForAuthClick(Sender: TObject);
@@ -319,7 +299,7 @@ begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
   else
-    OpenURLinkInBrowser(Format(cFBConsoleForAuthURL, [edtProjectID.Text]));
+    TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForAuthURL, [edtProjectID.Text]));
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForRTDBClick(Sender: TObject);
@@ -327,17 +307,23 @@ begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
   else
-    OpenURLinkInBrowser(Format(cFBConsoleForRTDBURL,
+    TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForRTDBURL,
       [edtProjectID.Text, RTDBFra.GetDatabase]));
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForFSClick(Sender: TObject);
+
+  function EncodeURL(const URL: string): string;
+  begin
+    result := ReplaceStr(ReplaceStr(URL, '(', '-'), ')', '-');
+  end;
+
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
   else if FirestoreFra.CheckAndCreateFirestoreDBClass then
-    OpenURLinkInBrowser(Format(cFBConsoleForFSURL,
-      [edtProjectID.Text, FirestoreFra.Database.DatabaseID]));
+    TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForFSURL,
+      [edtProjectID.Text, EncodeURL(FirestoreFra.Database.DatabaseID)]));
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForStorageClick(Sender: TObject);
@@ -347,7 +333,7 @@ begin
   else if StorageFra.edtStorageBucket.Text.IsEmpty then
     StorageFra.edtStorageBucket.SetFocus
   else
-    OpenURLinkInBrowser(Format(cFBConsoleForStorageURL,
+    TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForStorageURL,
       [edtProjectID.Text, StorageFra.edtStorageBucket.Text]));
 end;
 
@@ -356,7 +342,7 @@ begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
   else
-    OpenURLinkInBrowser(Format(cFBConsoleForFunctionsURL, [edtProjectID.Text]));
+    TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForFunctionsURL, [edtProjectID.Text]));
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForVisionMLClick(Sender: TObject);
@@ -364,12 +350,12 @@ begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
   else
-    OpenURLinkInBrowser(Format(cFBConsoleForMLApisURL, [edtProjectID.Text]));
+    TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForMLApisURL, [edtProjectID.Text]));
 end;
 
 procedure TfmxFirebaseDemo.lblOpenAIStudioClick(Sender: TObject);
 begin
-  OpenURLinkInBrowser(cAIStudio);
+  TFirebaseHelpers.OpenURLinkInBrowser(cAIStudio);
 end;
 
 {$ENDREGION}
