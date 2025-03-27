@@ -1175,16 +1175,16 @@ begin
 end;
 
 class function TFirebaseHelpers.OpenURLinkInBrowser(const URL: string): boolean;
-var
-  EncodedURL: string;
 begin
-  EncodedURL := ReplaceStr(ReplaceStr(URL, '(', '-'), ')', '-');
 {$IFDEF MSWINDOWS}
-  result := ShellExecute(0, 'OPEN', PChar(EncodedURL), '', '', SW_SHOWNORMAL) > SE_ERR_DLLNOTFOUND;
+  result := ShellExecute(0, 'OPEN', PChar(URL), '', '', SW_SHOWNORMAL) > SE_ERR_DLLNOTFOUND;
 {$ENDIF MSWINDOWS}
 {$IFDEF POSIX}
-  result := _system(PAnsiChar('open ' + AnsiString(EncodedURL))) >= 0;
+  result := _system(PAnsiChar('open "' + AnsiString(URL)+ '"')) >= 0;
 {$ENDIF POSIX}
+{$IFDEF DEBUG}
+  Log(URL);
+{$ENDIF}
 end;
 
 class function TFirebaseHelpers.GetLanguageInEnglishFromCode(

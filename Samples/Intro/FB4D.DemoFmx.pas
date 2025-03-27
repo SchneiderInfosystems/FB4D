@@ -312,12 +312,18 @@ begin
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForFSClick(Sender: TObject);
+
+  function EncodeURL(const URL: string): string;
+  begin
+    result := ReplaceStr(ReplaceStr(URL, '(', '-'), ')', '-');
+  end;
+
 begin
   if edtProjectID.Text.IsEmpty then
     edtProjectID.SetFocus
   else if FirestoreFra.CheckAndCreateFirestoreDBClass then
     TFirebaseHelpers.OpenURLinkInBrowser(Format(cFBConsoleForFSURL,
-      [edtProjectID.Text, FirestoreFra.Database.DatabaseID]));
+      [edtProjectID.Text, EncodeURL(FirestoreFra.Database.DatabaseID)]));
 end;
 
 procedure TfmxFirebaseDemo.lblOpenFBConsoleForStorageClick(Sender: TObject);
