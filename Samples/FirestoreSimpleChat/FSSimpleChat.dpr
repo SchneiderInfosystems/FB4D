@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2023 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -30,6 +30,7 @@ uses
   FB4D.Interfaces in '..\..\Source\FB4D.Interfaces.pas',
   FB4D.Configuration in '..\..\Source\FB4D.Configuration.pas',
   FB4D.Authentication in '..\..\Source\FB4D.Authentication.pas',
+  FB4D.OAuth in '..\..\Source\FB4D.OAuth.pas',
   FB4D.Document in '..\..\Source\FB4D.Document.pas',
   FB4D.Firestore in '..\..\Source\FB4D.Firestore.pas',
   FB4D.FireStore.Listener in '..\..\Source\FB4D.FireStore.Listener.pas',

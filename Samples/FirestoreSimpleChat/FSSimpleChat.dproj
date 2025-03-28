@@ -286,6 +286,7 @@
         <DCCReference Include="..\..\Source\FB4D.Interfaces.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Configuration.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Authentication.pas"/>
+        <DCCReference Include="..\..\Source\FB4D.OAuth.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Document.pas"/>
         <DCCReference Include="..\..\Source\FB4D.Firestore.pas"/>
         <DCCReference Include="..\..\Source\FB4D.FireStore.Listener.pas"/>

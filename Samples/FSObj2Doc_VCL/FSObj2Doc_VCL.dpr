@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2023 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -41,7 +41,8 @@ uses
   FB4D.FireStore.Listener in '..\..\Source\FB4D.FireStore.Listener.pas',
   FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas',
   FB4D.VisionML in '..\..\Source\FB4D.VisionML.pas',
-  FB4D.GeminiAI in '..\..\source\FB4D.GeminiAI.pas';
+  FB4D.GeminiAI in '..\..\source\FB4D.GeminiAI.pas',
+  FB4D.OAuth in '..\..\Source\FB4D.OAuth.pas';
 
 {$R *.res}
 

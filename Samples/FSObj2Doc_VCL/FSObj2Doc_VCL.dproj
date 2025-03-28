@@ -148,6 +148,7 @@
         <DCCReference Include="..\..\Source\FB4D.RealTimeDB.Listener.pas"/>
         <DCCReference Include="..\..\Source\FB4D.VisionML.pas"/>
         <DCCReference Include="..\..\source\FB4D.GeminiAI.pas"/>
+        <DCCReference Include="..\..\Source\FB4D.OAuth.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -179,6 +180,18 @@
                 <DeployFile LocalName="Win32\Debug\FSObj2Doc_VCL.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>FSObj2Doc_VCL.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\FSObj2Doc_VCL.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>FSObj2Doc_VCL.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\FSObj2Doc_VCL.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>FSObj2Doc_VCL.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
