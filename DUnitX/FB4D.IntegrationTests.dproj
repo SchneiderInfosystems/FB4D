@@ -92,7 +92,7 @@
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
-        <DCC_UnitSearchPath>$(DUnitX);$(BDS)\source\DunitX;..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>$(DUnitX);$(BDS)\source\DunitX;..\Source;..\submodules\delphi-jose-jwt\Source\Common;..\submodules\delphi-jose-jwt\Source\JOSE;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <SanitizedProjectName>FB4D_IntegrationTests</SanitizedProjectName>
         <VerInfo_Locale>2055</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -218,8 +218,15 @@
                     <Source Name="MainSource">FB4D.IntegrationTests.dpr</Source>
                 </Source>
                 <Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\TB_SCHNEIDER.bpl">(untitled)</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\QRWDesignD11.bpl">QuickReport 6 Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclipworks20.bpl">/n software inc. - IPWorks 2020 - www.nsoftware.com</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\GitHubTrendingPlugin290.bpl">Ali Dehbansiahkarbon.(adehban@gmail.com)</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\CNClrWizard.bpl">CrystalNet Add-In</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\WebView4DelphiFMX_designtime.bpl">File C:\Users\Public\Documents\Embarcadero\Studio\23.0\Bpl\WebView4DelphiFMX_designtime.bpl not found</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k290.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp290.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Program Files (x86)\Deleaker\DeleakerRADStudioPackage290.bpl">Deleaker</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="5">
