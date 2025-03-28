@@ -1455,7 +1455,7 @@ begin
     for ObjName in OptionalItems.Keys do
       Properties.AddPair(ObjName, (OptionalItems.Items[ObjName] as TGeminiSchema).GetJSONObject);
   fSchema.AddPair('properties', Properties);
-  if not Required.IsEmpty then
+  if Required.Count > 0 then
     fSchema.AddPair('required', Required)
   else
     Required.Free;

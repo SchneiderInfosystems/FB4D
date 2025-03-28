@@ -33,9 +33,9 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 The sample projects are developed and prepared for **Delphi 12.3 Athens**.
 
-🔺 This library requires at least **Delphi 10.3 Rio Update 2** 🔺. 
+🔺 This library requires at least **Delphi 11.0 Alexandria ** 🔺. 
 
-#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier versions are no longer supported because of an issue in the RTL. 
+#### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier versions are no longer supported because of an issue in the RTL. Delphi 10.4 Support is removed since FB4D V1.8.0 because of missing TBase64StringEncoding. 
 
 Delphi is a registered trademark of [Embarcadero Technologies, Inc](https://www.embarcadero.com/de/products/delphi).
 
