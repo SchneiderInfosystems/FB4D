@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2024 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -70,6 +70,11 @@ type
     btnLinkEMailPwd: TButton;
     timRefresh: TTimer;
     btnLogout: TButton;
+    btnGoogleOAuth: TButton;
+    edtGoogleOAuthClientID: TEdit;
+    Label3: TLabel;
+    edtGoogleOAuthClientSecret: TEdit;
+    Label4: TLabel;
     procedure btnSignUpNewUserClick(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
     procedure btnLinkEMailPwdClick(Sender: TObject);
@@ -85,6 +90,7 @@ type
     procedure btnRefreshClick(Sender: TObject);
     procedure edtEmailAndPwdChange(Sender: TObject);
     procedure btnLogoutClick(Sender: TObject);
+    procedure btnGoogleOAuthClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
     function CheckAndCreateAuthenticationClass: boolean;
@@ -140,14 +146,18 @@ procedure TAuthFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtEmail.Text := IniFile.ReadString('Authentication', 'User', '');
   edtPassword.Text := IniFile.ReadString('Authentication', 'Pwd', '');
+  edtGoogleOAuthClientID.Text := IniFile.ReadString('GoogleOAuth2', 'ClientID', '');
+  edtGoogleOAuthClientSecret.Text := IniFile.ReadString('GoogleOAuth2', 'ClientSecret', '');
   edtEmailAndPwdChange(nil);
 end;
 
 procedure TAuthFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('Authentication', 'User', edtEmail.Text);
-  {$MESSAGE 'Attention: Password is stored in your file in plain text, but don''t do this in real application. Store the RefreshToken instead.'}
+  IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
+  {$MESSAGE 'Attention: Password and Google OAuth2 Client Secret is stored in your ini file in plain text, but don''t do this in real application. Store the RefreshToken instead of password.'}
   IniFile.WriteString('Authentication', 'Pwd', edtPassword.Text);
+  IniFile.WriteString('GoogleOAuth2', 'ClientSecret', edtGoogleOAuthClientSecret.Text);
 end;
 
 {$ENDREGION}
@@ -198,8 +208,11 @@ end;
 
 procedure TAuthFra.OnUserError(const Info, ErrMsg: string);
 begin
-  memUser.Lines.Add(Info + ' failed: ' + ErrMsg);
   ShowMessage(Info + ' failed: ' + ErrMsg);
+  memUser.Lines.Add(Info + ' failed: ' + ErrMsg);
+  if Info.Contains(TFirebaseAuthentication.GoogleProviderID) or
+     Info.Equals(TFirebaseAuthentication.Auth2Authenticator) then
+    btnGoogleOAuth.Enabled := true;
 end;
 
 procedure TAuthFra.OnUserResp(const Info: string; Response: IFirebaseResponse);
@@ -214,8 +227,12 @@ end;
 
 procedure TAuthFra.OnUserResponse(const Info: string; User: IFirebaseUser);
 begin
-  memUser.Lines.Clear;
   DisplayUser(memUser, User);
+  if User.IsEMailAvailable and not SameText(edtEmail.Text, User.EMail) then
+  begin
+    memUser.Lines.Add('User''s email has changed: ' + User.EMail);
+    edtEmail.Text := User.EMail;
+  end;
   edtToken.Text := fAuth.Token;
   edtUID.Text := User.UID;
   lblTokenExp.Text := 'expires at ' + DateTimeToStr(fAuth.TokenExpiryDT);
@@ -278,7 +295,7 @@ begin
     exit;
   if not CheckSignedIn(memUser) then
     exit;
-  memUser.Lines.Clear;
+  memUser.Lines.Text := 'Delete User Account:';
   TDialogService.MessageDialog('Do you realy wan''t delete the signed-in user?',
     TMsgDlgType.mtConfirmation, [TMsgDlgBtn.mbYes, TMsgDlgBtn.mbNo],
     TMsgDlgBtn.mbYes, 0,
@@ -290,7 +307,7 @@ begin
         edtToken.Text := '';
         fAuth.DeleteCurrentUser(OnUserResp, OnUserError)
       end else
-        memUser.Lines.Add('Delete aborted by user');
+        memUser.Lines.Add('Delete account aborted by user');
     end);
 end;
 
@@ -300,12 +317,13 @@ begin
     exit;
   if not CheckSignedIn(memUser) then
     exit;
-  memUser.Lines.Clear;
+  memUser.Lines.Text := 'Get User Data:';
   fAuth.GetUserData(OnGetUserData, OnUserError);
 end;
 
 procedure TAuthFra.btnLinkEMailPwdClick(Sender: TObject);
 begin
+  memUser.Lines.Text := 'Link EMail/Password:';
   fAuth.LinkWithEMailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
   btnLinkEMailPwd.Enabled := false;
@@ -318,12 +336,31 @@ begin
     exit;
   if edtEMail.Text.IsEmpty then
   begin
+    memUser.Lines.Text := 'Sign-In anonymously:';
     fAuth.SignInAnonymously(OnUserResponse, OnUserError);
     btnLinkEMailPwd.Enabled := true;
     btnSignUpNewUser.Enabled := false;
-  end else
+  end else begin
+    memUser.Lines.Text := 'Sign-In with email and password:';
     fAuth.SignInWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
       OnUserResponse, OnUserError);
+  end;
+end;
+
+procedure TAuthFra.btnGoogleOAuthClick(Sender: TObject);
+begin
+  if not CheckAndCreateAuthenticationClass then
+    exit;
+  if edtGoogleOAuthClientID.Text.IsEmpty then
+    edtGoogleOAuthClientID.SetFocus
+  else if edtGoogleOAuthClientSecret.Text.IsEmpty then
+    edtGoogleOAuthClientSecret.SetFocus
+  else begin
+    fAuth.SignInWithGoogleAccount(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text, OnUserResponse,
+      OnUserError, edtEMail.Text);
+    memUser.Lines.Text := 'Sign-In with Google Account on ' + fAuth.GetOAuthRedirectionEndpoint;
+    btnGoogleOAuth.Enabled := false;
+  end;
 end;
 
 procedure TAuthFra.btnLogoutClick(Sender: TObject);
@@ -334,7 +371,13 @@ begin
   edtToken.Text := fAuth.Token;
   edtUID.Text := '';
   btnLogout.Enabled := false;
-  memUser.Lines.Clear;
+  btnRefresh.Enabled := false;
+  btnPasswordReset.Enabled := true;
+  timRefresh.Enabled := false;
+  btnLogin.Enabled := true;
+  btnSignUpNewUser.Enabled := true;
+  btnGoogleOAuth.Enabled := true;
+  memUser.Lines.Text := 'Logout';
 end;
 
 procedure TAuthFra.btnPasswordResetClick(Sender: TObject);
@@ -363,6 +406,7 @@ procedure TAuthFra.btnSignUpNewUserClick(Sender: TObject);
 begin
   if not CheckAndCreateAuthenticationClass then
     exit;
+  memUser.Lines.Text := 'Sign-Up new user:';
   fAuth.SignUpWithEmailAndPassword(edtEmail.Text, edtPassword.Text,
     OnUserResponse, OnUserError);
 end;

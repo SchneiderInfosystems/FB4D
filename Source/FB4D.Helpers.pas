@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2024 Christoph Schneider                                 }
+{  Copyright (c) 2018-2025 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -69,6 +69,8 @@ type
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
     class function FirestorePath(const Path: string): TRequestResourceParam;
       deprecated 'Use TFirestorePath.ConvertToDocPath instead';
+    type TCharBaseSet = (BASE64, ID64, IDPUSH64);
+    class function CryptoRandom64(NoOfChars: integer; CharBaseSet: TCharBaseSet): string;
     // ID64 is based on charset cID64 (A..z,0..9,_-): Helpers and converter to GUID
     // PUSHID is based on same charset cPushID64 but supports chronological sorting
     type TIDKind = (FBID {random 22 ID64 chars},
@@ -111,10 +113,12 @@ type
     class function IsMainThread: boolean;
     class function GetConfigAndPlatform: string;
     class function GetPlatform: string;
-
+    class function OpenURLinkInBrowser(const URL: string): boolean;
     // ML helpers
     class function GetLanguageInEnglishFromCode(const Code: string): string;
   private const
+    cBase64 =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     cID64 =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
     // Base64 with exception of the last two chars '_' and '-' are not real Base64
@@ -285,8 +289,11 @@ implementation
 uses
   System.Character,
 {$IFDEF MSWINDOWS}
-  WinAPI.Windows,
+  WinAPI.Windows, WinAPI.Security.Cryptography, WinAPI.ShellAPI,
 {$ENDIF}
+{$IFDEF POSIX}
+  Posix.Stdlib,
+{$ENDIF POSIX}
 {$IF Defined(CONSOLE)}
 {$ELSEIF Defined(VCL)}
   VCL.Forms,
@@ -481,8 +488,7 @@ begin
   {$IF Defined(LINUX) and (CompilerVersion < 35)}
   writeln(msg);  // Workaround for RSP-32303
   {$ELSE}
-  FMX.Types.Log.d(msg, []);
-  // there is a bug in DE 10.2 when the wrong method is calling?
+  FMX.Types.Log.d(msg);
   {$ENDIF}
 {$ELSEIF Defined(FGX)}
   TfgLog.Debug(msg);
@@ -606,6 +612,62 @@ begin
   end;
 end;
 
+class function TFirebaseHelpers.CryptoRandom64(NoOfChars: integer;
+  CharBaseSet: TCharBaseSet): string;
+// Inspired by Jim McKeeth's MultiPlatformCryptoRando
+// https://gist.github.com/jimmckeeth/2c66e7c4fee55d56ad9928606f6cc197
+
+  function CryptoRandoCardinal: Cardinal;
+  {$IFDEF MSWindows}
+  var
+    Buffer: TCryptographicBuffer;
+  begin
+    Buffer := TCryptographicBuffer.Create;
+    try
+      result := Buffer.GenerateRandomNumber;
+    finally
+      Buffer.Free;
+    end;
+  end;
+  {$ENDIF}
+  {$IFDEF POSIX}
+  var RandomStream: TFileStream;
+  begin
+    RandomStream := TFileStream.Create('/dev/urandom', fmOpenRead);
+    try
+      RandomStream.Read(result, SizeOf(result));
+    finally
+      RandomStream.Free;
+    end;
+  end;
+  {$ENDIF}
+
+var
+  i: integer;
+  c: cardinal;
+  Base: string;
+begin
+  result := '';
+  c := 0;
+  case CharBaseSet of
+    BASE64:
+      Base := cBase64;
+    ID64:
+      Base := cID64;
+    IDPUSH64:
+      Base := cPushID64;
+    else
+      raise EID64.Create('Unsupported CharBaseSet');
+  end;
+  for i := 0 to NoOfChars - 1 do
+  begin
+    if i mod 5 = 0 then
+      c := CryptoRandoCardinal;
+    result := result + Base[integer(c and $3F) + low(Base)];
+    c := c shr 6;
+  end;
+end;
+
 class function TFirebaseHelpers.CreateAutoID(IDKind: TIDKind = FBID): string;
 
   function ShortenID64To20Chars(const ID: string): string;
@@ -635,43 +697,66 @@ class function TFirebaseHelpers.ConvertGUIDtoID64(Guid: TGuid): string;
 var
   D1: cardinal;
   D2, D3: Word;
+  Ind: integer;
 begin
   SetLength(result, 22);
   D1 := Guid.D1;
-  result[1] := GetID64Char(D1 and $FF);
+  Ind := Low(result);
+  result[Ind] := GetID64Char(D1 and $FF);
+  inc(Ind);
   D1 := D1 shr 6;
-  result[2] := GetID64Char(D1 and $FF);
+  result[Ind] := GetID64Char(D1 and $FF);
   D1 := D1 shr 6;
-  result[3] := GetID64Char(D1 and $FF);
+  inc(Ind);
+  result[Ind] := GetID64Char(D1 and $FF);
   D1 := D1 shr 6;
-  result[4] := GetID64Char(D1 and $FF);
+  inc(Ind);
+  result[Ind] := GetID64Char(D1 and $FF);
   D1 := D1 shr 6;
-  result[5] := GetID64Char(D1 and $FF);
+  inc(Ind);
+  result[Ind] := GetID64Char(D1 and $FF);
   D2 := Guid.D2;
-  result[6] := GetID64Char(D2 and $FF);
+  inc(Ind);
+  result[Ind] := GetID64Char(D2 and $FF);
   D2 := D2 shr 6;
-  result[7] := GetID64Char(D2 and $FF);
+  inc(Ind);
+  result[Ind] := GetID64Char(D2 and $FF);
   D2 := D2 shr 6;
-  result[8] := GetID64Char(D2 and $F + (D1 and $C0) shr 2);
+  inc(Ind);
+  result[Ind] := GetID64Char(D2 and $F + (D1 and $C0) shr 2);
   D3 := Guid.D3;
-  result[9] := GetID64Char(D3 and $FF);
+  inc(Ind);
+  result[Ind] := GetID64Char(D3 and $FF);
   D3 := D3 shr 6;
-  result[10] := GetID64Char(D3 and $FF);
+  inc(Ind);
+  result[Ind] := GetID64Char(D3 and $FF);
   D3 := D3 shr 6;
-  result[11] := GetID64Char(D3 and $F + (Guid.D4[0] and $C0) shr 2);
-  result[12] := GetID64Char(Guid.D4[0]);
-  result[13] := GetID64Char(Guid.D4[1]);
-  result[14] := GetID64Char(Guid.D4[2]);
-  result[15] := GetID64Char(Guid.D4[3]);
-  result[16] := GetID64Char(Guid.D4[4]);
-  result[17] := GetID64Char(Guid.D4[5]);
-  result[18] := GetID64Char(Guid.D4[6]);
-  result[19] := GetID64Char(Guid.D4[7]);
-  result[20] := GetID64Char((Guid.D4[1] and $C0) shr 6 +
+  inc(Ind);
+  result[Ind] := GetID64Char(D3 and $F + (Guid.D4[0] and $C0) shr 2);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[0]);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[1]);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[2]);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[3]);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[4]);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[5]);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[6]);
+  inc(Ind);
+  result[Ind] := GetID64Char(Guid.D4[7]);
+  inc(Ind);
+  result[Ind] := GetID64Char((Guid.D4[1] and $C0) shr 6 +
     (Guid.D4[2] and $C0) shr 4 + (Guid.D4[3] and $C0) shr 2);
-  result[21] := GetID64Char((Guid.D4[4] and $C0) shr 6 +
+  inc(Ind);
+  result[Ind] := GetID64Char((Guid.D4[4] and $C0) shr 6 +
     (Guid.D4[5] and $C0) shr 4 + (Guid.D4[6] and $C0) shr 2);
-  result[22] := GetID64Char((Guid.D4[7] and $C0) shr 6);
+  inc(Ind);
+  result[Ind] := GetID64Char((Guid.D4[7] and $C0) shr 6);
 end;
 
 class function TFirebaseHelpers.ConvertID64toGUID(const ID: string): TGuid;
@@ -1086,6 +1171,19 @@ begin
   result := 'Unknown Build/';
 {$ENDIF}
   result := result + GetPlatform;
+end;
+
+class function TFirebaseHelpers.OpenURLinkInBrowser(const URL: string): boolean;
+begin
+{$IFDEF MSWINDOWS}
+  result := ShellExecute(0, 'OPEN', PChar(URL), '', '', SW_SHOWNORMAL) > SE_ERR_DLLNOTFOUND;
+{$ENDIF MSWINDOWS}
+{$IFDEF POSIX}
+  result := _system(PAnsiChar('open "' + AnsiString(URL)+ '"')) >= 0;
+{$ENDIF POSIX}
+{$IFDEF DEBUG}
+  Log(URL);
+{$ENDIF}
 end;
 
 class function TFirebaseHelpers.GetLanguageInEnglishFromCode(
