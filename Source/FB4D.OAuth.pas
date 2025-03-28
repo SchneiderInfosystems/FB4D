@@ -28,7 +28,9 @@ uses
   System.Classes, System.SysUtils, System.Types,
   System.JSON, System.JSON.Types,
   REST.Types, REST.Client, REST.Utils, REST.Consts,
+{$IFDEF TOKENJWT}
   JOSE.Types.Bytes, JOSE.Context, JOSE.Core.JWT,
+{$ENDIF}
   IdCustomHTTPServer, IdHTTPServer, IdContext,
   FB4D.Interfaces;
 
@@ -114,7 +116,9 @@ implementation
 uses
   System.Generics.Collections, System.NetEncoding, System.DateUtils,
   System.Threading, System.Hash, System.Net.Socket,
+{$IFDEF TOKENJWT}
   JOSE.Core.JWS, JOSE.Signing.RSA,
+{$ENDIF}
   FB4D.Request, FB4D.Helpers;
 
 {$R 'OAuth.res'}
