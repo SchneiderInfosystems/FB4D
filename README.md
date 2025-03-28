@@ -80,7 +80,7 @@ For converting markdown formatted text into HTML this library uses the Delphi Ma
 
 # Sponsoring FB4D
 
-I recommend that anyone using this open-source library in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed.
+I recommend that anyone using this open-source library in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed. (Read more about the benefits of sponsoring here.)[https://github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D].
 
 Christoph Schneider, Schneider Infosystems AG, Switzerland
 [www.schneider-infosys.ch](https://www.schneider-infosys.ch)  
