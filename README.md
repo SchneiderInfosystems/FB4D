@@ -33,7 +33,7 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 The sample projects are developed and prepared for **Delphi 12.3 Athens**.
 
-🔺 This library requires at least **Delphi 11.0 Alexandria ** 🔺. 
+🔺 This library requires at least **Delphi 11.0 Alexandria**🔺. 
 
 #### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier versions are no longer supported because of an issue in the RTL. Delphi 10.4 Support is removed since FB4D V1.8.0 because of missing TBase64StringEncoding. 
 
@@ -49,22 +49,20 @@ In the _DemoFB4D_ app, the Edge web browser is used to display Markdown as HTML 
 
 #### Limitation on Android for VisionML
 
-AnnotateFile is limited to PDF only, as GIF support does not work due to [RSP-17682](https://quality.embarcadero.com/browse/RSP-17682), and the TIF image format is not yet supported.
+_AnnotateFile_ is limited to PDF only, as GIF support does not work due to [RSP-17682](https://quality.embarcadero.com/browse/RSP-17682), and the TIF image format is not yet supported.
 
 #### Limitation on iOS for VisionML
 
-AnnotateFile is limited to pdf only, as the gif and tif image format is not yet supported by FMX.Graphics. You cannot convert a TBitmap to one of the image formats required by VisionML with the standard library.
+_AnnotateFile_ is limited to PDF only, as the GIF and TOF image format is not yet supported by FMX.Graphics. You cannot convert a _TBitmap_ to one of the image formats required by VisionML with the standard library.
  
 #### Limitation on Linux64
 
 There are no restrictions when using Delphi 11 Alexandria or higher.
 
-For older versions up to 10.4.2, you must note the following RSP: Due to a bug in the Linux RTL, all HTTP requests that transfer data to the server by using the _Patch_ method are not working. _Put_ and _Post_ methods work. This affects the Realtime DB method _Patch_ and the Firestore method _InsertOrUpdateDocument_ for both synchronous and asynchronous accesses. [For more information see RSP-33177](https://quality.embarcadero.com/browse/RSP-33177).
-
 ### Submodules
 
 **Important note about path changes:** 
-Since the introduction of Gemini AI (V1.6.5.631) the folder JOSE has been moved to _submodules/delphi-jose-jwt_ because the additional submodule _Delphi-Markup_ was added. After GIT pull please update both submodules with the Git Bash command `git submodule update --remote --merge` or use your favorite Git tool for this update. 
+Since the introduction of Gemini AI (V1.6.5.631) the folder JOSE has been moved to _submodules/delphi-jose-jwt_ because the additional submodule _Delphi-Markup_ was added. After GIT pull, please update both submodules with the Git Bash command `git submodule update --remote --merge` or use your favorite Git tool for this update. 
 
 #### Delphi-JOSE-JWT
 
@@ -80,7 +78,7 @@ For converting markdown formatted text into HTML this library uses the Delphi Ma
 
 # Sponsoring FB4D
 
-I recommend that anyone using this open-source library in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed. (Read more about the benefits of sponsoring here.)[https://github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D].
+I recommend that anyone using this open-source library in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed. [Read more about the benefits of sponsoring here](github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D).
 
 Christoph Schneider, Schneider Infosystems AG, Switzerland
 [www.schneider-infosys.ch](https://www.schneider-infosys.ch)  
