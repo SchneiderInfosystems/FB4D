@@ -49,7 +49,6 @@ type
     fClientID: string;
     fClientSecret: string;
     fScope: string;
-    fLoginHint: string;
     fRedirectionEndpoint: string;
     fAuthorizationRequestURI: string;
     fLocalState: string;
@@ -63,10 +62,10 @@ type
     fIDToken: string;
     fAccessTokenExpiry: TDateTime;
     fAuthCode: string;
-    fRefreshToken: string;
-    fOnAuthenticatorFinished: TOnAuthenticatorFinished;
+    fRefreshOAuthToken: string;
     procedure SetRedirectionURI;
     function Encode_SHA256(const strBase64: string): string;
+    function GetTokensFromAuthCode(const LastRefreshOAuthToken: string = ''): boolean;
     function GetMsgPageAsHtml(const errorStr: string = ''): string;
     procedure StartLocalServer;
     procedure StopLocalServer;
@@ -75,13 +74,15 @@ type
     procedure onCommandError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
       AResponseInfo: TIdHTTPResponseInfo; AException: Exception);
   public
-    constructor Create(const ClientID, ClientSecret, Scope: string; const GMailAdr: string = '');
+    constructor Create(const ClientID, ClientSecret, Scope: string);
     function CheckAccess(const ClientID, ClientSecret: string): boolean;
     procedure OpenDefaultBrowserForLogin(OnAuthenticatorFinished: TOnAuthenticatorFinished;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError;
+      const GMailAdr: string = '');
+    procedure LoginWithRefreshOAuthToken(RefreshOAuthToken: string;
+      OnAuthenticatorFinished: TOnAuthenticatorFinished;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
-    function GetTokensFromAuthCode(RefreshFlag: boolean = false): boolean;
     function AuthorizationStateInfo: string;
-    function RequiresTokenRefresh: boolean;
     property AuthorizationRequestURI: string read fAuthorizationRequestURI;
     property IDToken: string read fIDToken;
     property AccessTokenExpiry: TDateTime read fAccessTokenExpiry;
@@ -89,6 +90,7 @@ type
     property AuthorizationError: string read fAuthorizationError;
     property TimeoutInMS: integer read fTimeoutInMS write fTimeoutInMS;
     property RedirectionEndpoint: string read fRedirectionEndpoint;
+    property RefreshOAuthToken: string read fRefreshOAuthToken;
   end;
 
 {$IFDEF TOKENJWT}
@@ -147,18 +149,17 @@ resourcestring
 
 { TGoogleOAuth2Authenticator }
 
-constructor TGoogleOAuth2Authenticator.Create(const ClientID, ClientSecret, Scope, GMailAdr: string);
+constructor TGoogleOAuth2Authenticator.Create(const ClientID, ClientSecret, Scope: string);
 begin
   inherited Create;
   fClientID := ClientID;
   fClientSecret := ClientSecret;
   fScope := Scope;
-  fLoginHint := GMailAdr;
   fLocalState := '';
   fCodeVerifier := '';
   fCodeChallenge := '';
   fAuthCode := '';
-  fRefreshToken := '';
+  fRefreshOAuthToken := '';
   fIDToken := '';
   fAuthorizationState := idle;
   fAuthorizationError := '';
@@ -206,10 +207,9 @@ begin
 end;
 
 procedure TGoogleOAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished: TOnAuthenticatorFinished;
-  OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+  OnUserResponse: TOnUserResponse; OnError: TOnRequestError; const GMailAdr: string = '');
 begin
-  fOnAuthenticatorFinished := OnAuthenticatorFinished;
-  if not assigned(fOnAuthenticatorFinished) then
+  if not assigned(OnAuthenticatorFinished) then
     raise EGoogleOAuth2Authenticator.Create('OnAuthenticatorFinished callback missing');
   if fClientID.IsEmpty then
     raise EGoogleOAuth2Authenticator.Create('ClientID missing');
@@ -223,8 +223,8 @@ begin
   fAuthorizationRequestURI := cAuthorizationEndpoint + '?response_type=code&client_id=' + URIEncode(fClientID) +
     '&redirect_uri='  + URIEncode(fRedirectionEndpoint) + '&scope=' + URIEncode(fScope) +
     '&state=' + URIEncode(fLocalState) + '&code_challenge_method=S256&code_challenge=' + URIEncode(fCodeChallenge);
-  if not fLoginHint.IsEmpty then
-    fAuthorizationRequestURI := fAuthorizationRequestURI + '&login_hint=' + URIEncode(fLoginHint);
+  if not GMailAdr.IsEmpty then
+    fAuthorizationRequestURI := fAuthorizationRequestURI + '&login_hint=' + URIEncode(GMailAdr);
   StartLocalServer;
   if not TFirebaseHelpers.OpenURLinkInBrowser(fAuthorizationRequestURI) then
     raise EGoogleOAuth2Authenticator.Create('System browser failed to open ' + fAuthorizationRequestURI);
@@ -246,15 +246,14 @@ begin
         if Timeout > fTimeoutInMS then
           fAuthorizationState := timeOutOccured;
       end;
+      if fAuthorizationState = authCodeReceived then
+        if GetTokensFromAuthCode then
+          fAuthorizationState := passed;
       TThread.Synchronize(nil,
         procedure
         begin
           StopLocalServer;
-          if fAuthorizationState = authCodeReceived then
-            if GetTokensFromAuthCode then
-              fAuthorizationState := passed;
-          if assigned(fOnAuthenticatorFinished) then
-            fOnAuthenticatorFinished(fAuthorizationState, OnUserResponse, OnError);
+          OnAuthenticatorFinished(fAuthorizationState, OnUserResponse, OnError);
         end);
     end) do
   begin
@@ -265,7 +264,40 @@ begin
   end;
 end;
 
-function TGoogleOAuth2Authenticator.GetTokensFromAuthCode(RefreshFlag: boolean): boolean;
+procedure TGoogleOAuth2Authenticator.LoginWithRefreshOAuthToken(RefreshOAuthToken: string;
+  OnAuthenticatorFinished: TOnAuthenticatorFinished; OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+begin
+  if not assigned(OnAuthenticatorFinished) then
+    raise EGoogleOAuth2Authenticator.Create('OnAuthenticatorFinished callback missing');
+  if fClientID.IsEmpty then
+    raise EGoogleOAuth2Authenticator.Create('ClientID missing');
+  if fClientSecret.IsEmpty then
+    raise EGoogleOAuth2Authenticator.Create('ClientSecret missing');
+  if RefreshOAuthToken.IsEmpty then
+    raise EGoogleOAuth2Authenticator.Create('RefreshOAuthToken missing');
+  fAuthorizationRequestURI := cAuthorizationEndpoint + '?response_type=code&client_id=' + URIEncode(fClientID) +
+    '&scope=' + URIEncode(fScope);
+  fAuthorizationState := started;
+  with TThread.CreateAnonymousThread(
+    procedure
+    begin
+      if GetTokensFromAuthCode(RefreshOAuthToken) then
+        fAuthorizationState := passed;
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          OnAuthenticatorFinished(fAuthorizationState, OnUserResponse, OnError);
+        end);
+    end) do
+  begin
+    {$IFNDEF LINUX64}
+    NameThreadForDebugging('FB4D.LoginWithRefreshOAuthToken', ThreadID);
+    {$ENDIF}
+    Start;
+  end;
+end;
+
+function TGoogleOAuth2Authenticator.GetTokensFromAuthCode(const LastRefreshOAuthToken: string): boolean;
 var
   restClient: TRestClient;
   restRequest: TRESTRequest;
@@ -273,7 +305,7 @@ var
   expireSecs: int64;
 begin
   result := false;
-  if fAuthCode.IsEmpty then
+  if fAuthCode.IsEmpty and LastRefreshOAuthToken.IsEmpty then
     exit;
   restClient := TRestClient.Create(cAccessTokenEndpoint);
   try
@@ -281,19 +313,20 @@ begin
     restRequest.Method := TRESTRequestMethod.rmPOST;
     restRequest.AddAuthParameter('client_id', fClientID, TRESTRequestParameterKind.pkGETorPOST);
     restRequest.AddAuthParameter('client_secret', fClientSecret, TRESTRequestParameterKind.pkGETorPOST);
-    restRequest.AddAuthParameter('redirect_uri', fRedirectionEndpoint, TRESTRequestParameterKind.pkGETorPOST);
-    if not RefreshFlag then
+    if LastRefreshOAuthToken.IsEmpty then
     begin
+      restRequest.AddAuthParameter('redirect_uri', fRedirectionEndpoint, TRESTRequestParameterKind.pkGETorPOST);
       restRequest.AddAuthParameter('code', fAuthCode, TRESTRequestParameterKind.pkGETorPOST);
       restRequest.AddAuthParameter('code_verifier', fCodeVerifier, TRESTRequestParameterKind.pkGETorPOST);     // Added for PKCE
       restRequest.AddAuthParameter('grant_type', 'authorization_code', TRESTRequestParameterKind.pkGETorPOST);
     end else begin
-      restRequest.AddAuthParameter('refresh_token', fRefreshToken, TRESTRequestParameterKind.pkGETorPOST);
+      restRequest.AddAuthParameter('refresh_token', LastRefreshOAuthToken, TRESTRequestParameterKind.pkGETorPOST);
       restRequest.AddAuthParameter('grant_type', 'refresh_token', TRESTRequestParameterKind.pkGETorPOST);
     end;
     restRequest.Execute;
-    if restRequest.Response.GetSimpleValue('refresh_token', respValueStr) then
-      fRefreshToken := respValueStr;
+    if LastRefreshOAuthToken.IsEmpty then
+      if restRequest.Response.GetSimpleValue('refresh_token', respValueStr) then
+        fRefreshOAuthToken := respValueStr;
     if restRequest.Response.GetSimpleValue('id_token', respValueStr) then
     begin
       fIDToken := respValueStr;
@@ -313,12 +346,6 @@ begin
   finally
     restClient.Free;
   end;
-end;
-
-function TGoogleOAuth2Authenticator.RequiresTokenRefresh: boolean;
-begin
-  result := (AuthorizationState in [passed, authCodeReceived]) and
-    (fAccessTokenExpiry < now) and not fRefreshToken.IsEmpty;
 end;
 
 function TGoogleOAuth2Authenticator.AuthorizationStateInfo: string;

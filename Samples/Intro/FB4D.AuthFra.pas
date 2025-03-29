@@ -71,10 +71,12 @@ type
     timRefresh: TTimer;
     btnLogout: TButton;
     btnGoogleOAuth: TButton;
-    edtGoogleOAuthClientID: TEdit;
+    edtOAuthRefreshToken: TEdit;
+    edtRefreshToken: TEdit;
     Label3: TLabel;
-    edtGoogleOAuthClientSecret: TEdit;
     Label4: TLabel;
+    btnReSignInWithGoogleAccount: TButton;
+    btnReSignInWithRefreshToken: TButton;
     procedure btnSignUpNewUserClick(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
     procedure btnLinkEMailPwdClick(Sender: TObject);
@@ -91,9 +93,13 @@ type
     procedure edtEmailAndPwdChange(Sender: TObject);
     procedure btnLogoutClick(Sender: TObject);
     procedure btnGoogleOAuthClick(Sender: TObject);
+    procedure btnReSignInWithGoogleAccountClick(Sender: TObject);
+    procedure btnReSignInWithRefreshTokenClick(Sender: TObject);
   private
     fAuth: IFirebaseAuthentication;
+    procedure Log(const Msg: string);
     function CheckAndCreateAuthenticationClass: boolean;
+    function CheckAndCreateAuthForGoogleClass: boolean;
     procedure OnUserResp(const Info: string; Response: IFirebaseResponse);
     procedure OnUserResponse(const Info: string; User: IFirebaseUser);
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
@@ -128,14 +134,42 @@ begin
   begin
     if fmxFirebaseDemo.edtKey.Text.IsEmpty then
     begin
-      memUser.Lines.Add('Enter Web API Key frist');
-      memUser.GoToTextEnd;
+      Log('Enter Web API Key frist');
+      fmxFirebaseDemo.edtKey.SetFocus;
       exit(false);
     end;
     fAuth := TFirebaseAuthentication.Create(fmxFirebaseDemo.edtKey.Text);
     fmxFirebaseDemo.edtKey.ReadOnly := true;
     fmxFirebaseDemo.rctKeyDisabled.Visible := true;
   end;
+end;
+
+function TAuthFra.CheckAndCreateAuthForGoogleClass: boolean;
+begin
+  result := false;
+  if not CheckAndCreateAuthenticationClass then
+    exit;
+  if fmxFirebaseDemo.edtGoogleOAuthClientID.Text.IsEmpty then
+  begin
+    Log('First enter the OAuth Client ID from the Google Cloud Console!');
+    fmxFirebaseDemo.edtGoogleOAuthClientID.SetFocus;
+  end
+  else if fmxFirebaseDemo.edtGoogleOAuthClientSecret.Text.IsEmpty then
+  begin
+    Log('First enter the OAuth Client Secret from the Google Cloud Console!');
+    fmxFirebaseDemo.edtGoogleOAuthClientSecret.SetFocus;
+  end else begin
+    fAuth.SetGoogleAuth2(fmxFirebaseDemo.edtGoogleOAuthClientID.Text,
+      fmxFirebaseDemo.edtGoogleOAuthClientSecret.Text);
+    result := true;
+  end;
+end;
+
+procedure TAuthFra.Log(const Msg: string);
+begin
+  memUser.Lines.Add(Msg);
+  memUser.GoToTextEnd;
+  memUser.GoToLineBegin;
 end;
 
 {$ENDREGION}
@@ -146,18 +180,22 @@ procedure TAuthFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtEmail.Text := IniFile.ReadString('Authentication', 'User', '');
   edtPassword.Text := IniFile.ReadString('Authentication', 'Pwd', '');
-  edtGoogleOAuthClientID.Text := IniFile.ReadString('GoogleOAuth2', 'ClientID', '');
-  edtGoogleOAuthClientSecret.Text := IniFile.ReadString('GoogleOAuth2', 'ClientSecret', '');
   edtEmailAndPwdChange(nil);
+  edtRefreshToken.Text := IniFile.ReadString('Authentication', 'RefreshToken', '');
+  btnReSignInWithRefreshToken.Enabled := not edtRefreshToken.Text.IsEmpty;
+  edtOAuthRefreshToken.Text := IniFile.ReadString('GoogleOAuth2', 'RefreshToken', '');
+  btnReSignInWithRefreshToken.Enabled := not edtOAuthRefreshToken.Text.IsEmpty;
 end;
 
 procedure TAuthFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('Authentication', 'User', edtEmail.Text);
-  IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
-  {$MESSAGE 'Attention: Password and Google OAuth2 Client Secret is stored in your ini file in plain text, but don''t do this in real application. Store the RefreshToken instead of password.'}
+  if assigned(fAuth) then
+    IniFile.WriteString('Authentication', 'RefreshToken', fAuth.GetRefreshToken);
+  if assigned(fAuth) and not fAuth.GetOAuthRefreshToken.IsEmpty then
+    IniFile.WriteString('GoogleOAuth2', 'RefreshToken', fAuth.GetOAuthRefreshToken);
+  {$MESSAGE 'Attention: Password is stored in your ini file in plain text, but don''t do this in real application. Store the RefreshToken instead of password.'}
   IniFile.WriteString('Authentication', 'Pwd', edtPassword.Text);
-  IniFile.WriteString('GoogleOAuth2', 'ClientSecret', edtGoogleOAuthClientSecret.Text);
 end;
 
 {$ENDREGION}
@@ -169,6 +207,7 @@ begin
   else begin
     Log.Lines.Add('Please sign in first!');
     Log.GoToTextEnd;
+    Log.GoToLineBegin;
     result := false;
   end;
 end;
@@ -180,7 +219,7 @@ begin
   begin
     lblTokenExp.Text := 'expires at ' + DateTimeToStr(fAuth.TokenExpiryDT);
     edtToken.Text := fAuth.Token;
-    memUser.Lines.Add('Token automatically refreshed ' + fAuth.GetRefreshToken);
+    Log('Token automatically refreshed ' + fAuth.GetRefreshToken);
     result := true;
   end;
 end;
@@ -197,19 +236,19 @@ procedure TAuthFra.OnTokenRefresh(TokenRefreshed: boolean);
 begin
   if TokenRefreshed then
   begin
-    memUser.Lines.Add('Token refreshed at ' + DateTimeToStr(now));
+    Log('Token refreshed at ' + DateTimeToStr(now));
     edtToken.Text := fAuth.Token;
     DisplayTokenJWT(memUser);
     lblTokenExp.Text := 'expires at ' + DateTimeToStr(fAuth.TokenExpiryDT);
-    memUser.Lines.Add('Refresh token ' + fAuth.GetRefreshToken);
+    Log('Refresh token ' + fAuth.GetRefreshToken);
   end else
-    memUser.Lines.Add('Token refresh failed at ' + DateTimeToStr(now));
+    Log('Token refresh failed at ' + DateTimeToStr(now));
 end;
 
 procedure TAuthFra.OnUserError(const Info, ErrMsg: string);
 begin
   ShowMessage(Info + ' failed: ' + ErrMsg);
-  memUser.Lines.Add(Info + ' failed: ' + ErrMsg);
+  Log(Info + ' failed: ' + ErrMsg);
   if Info.Contains(TFirebaseAuthentication.GoogleProviderID) or
      Info.Equals(TFirebaseAuthentication.Auth2Authenticator) then
     btnGoogleOAuth.Enabled := true;
@@ -218,11 +257,11 @@ end;
 procedure TAuthFra.OnUserResp(const Info: string; Response: IFirebaseResponse);
 begin
   if Response.StatusOk then
-    memUser.Lines.Add(Info + ' done')
+    Log(Info + ' done')
   else if not Response.ErrorMsg.IsEmpty then
-    memUser.Lines.Add(Info + ' failed: ' + Response.ErrorMsg)
+    Log(Info + ' failed: ' + Response.ErrorMsg)
   else
-    memUser.Lines.Add(Info + ' failed: ' + Response.StatusText);
+    Log(Info + ' failed: ' + Response.StatusText);
 end;
 
 procedure TAuthFra.OnUserResponse(const Info: string; User: IFirebaseUser);
@@ -230,12 +269,20 @@ begin
   DisplayUser(memUser, User);
   if User.IsEMailAvailable and not SameText(edtEmail.Text, User.EMail) then
   begin
-    memUser.Lines.Add('User''s email has changed: ' + User.EMail);
+    Log('User''s email has changed: ' + User.EMail);
     edtEmail.Text := User.EMail;
   end;
   edtToken.Text := fAuth.Token;
   edtUID.Text := User.UID;
+  edtRefreshToken.Text := fAuth.GetRefreshToken;
+  btnReSignInWithRefreshToken.Enabled := not edtRefreshToken.Text.IsEmpty;
   lblTokenExp.Text := 'expires at ' + DateTimeToStr(fAuth.TokenExpiryDT);
+  if not fAuth.GetOAuthRefreshToken.IsEmpty then
+  begin
+    edtOAuthRefreshToken.Text := fAuth.GetOAuthRefreshToken;
+    btnReSignInWithRefreshToken.Enabled := true;
+    Log('OAuth refresh token: ' + fAuth.GetOAuthRefreshToken);
+  end;
   btnRefresh.Enabled := fAuth.Authenticated;
   btnPasswordReset.Enabled := not fAuth.Authenticated;
   timRefresh.Enabled := btnRefresh.Enabled;
@@ -307,7 +354,7 @@ begin
         edtToken.Text := '';
         fAuth.DeleteCurrentUser(OnUserResp, OnUserError)
       end else
-        memUser.Lines.Add('Delete account aborted by user');
+        Log('Delete account canceled by user');
     end);
 end;
 
@@ -347,20 +394,33 @@ begin
   end;
 end;
 
-procedure TAuthFra.btnGoogleOAuthClick(Sender: TObject);
+procedure TAuthFra.btnReSignInWithRefreshTokenClick(Sender: TObject);
 begin
   if not CheckAndCreateAuthenticationClass then
     exit;
-  if edtGoogleOAuthClientID.Text.IsEmpty then
-    edtGoogleOAuthClientID.SetFocus
-  else if edtGoogleOAuthClientSecret.Text.IsEmpty then
-    edtGoogleOAuthClientSecret.SetFocus
+  if edtRefreshToken.Text.IsEmpty then
+    log('Refresh token is missing')
   else begin
-    fAuth.SignInWithGoogleAccount(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text, OnUserResponse,
-      OnUserError, edtEMail.Text);
-    memUser.Lines.Text := 'Sign-In with Google Account on ' + fAuth.GetOAuthRedirectionEndpoint;
-    btnGoogleOAuth.Enabled := false;
+    memUser.Lines.Text := 'Re-Sign-In with refresh token: ' + edtRefreshToken.Text;
+    fAuth.RefreshToken(edtRefreshToken.Text, OnTokenRefresh, OnUserError);
   end;
+end;
+
+procedure TAuthFra.btnGoogleOAuthClick(Sender: TObject);
+begin
+  if not CheckAndCreateAuthForGoogleClass then
+    exit;
+  memUser.Lines.Text := 'Sign-In with Google Account on ' + fAuth.GetOAuthRedirectionEndpoint;
+  fAuth.SignInWithGoogleAccount(OnUserResponse, OnUserError, edtEMail.Text);
+  btnGoogleOAuth.Enabled := false;
+end;
+
+procedure TAuthFra.btnReSignInWithGoogleAccountClick(Sender: TObject);
+begin
+  if not CheckAndCreateAuthForGoogleClass then
+    exit;
+  memUser.Lines.Text := 'Re-Sign-In with OAuth refresh token: ' + edtOAuthRefreshToken.Text;
+  fAuth.ReSignInWithGoogleAccount(edtOAuthRefreshToken.Text, OnUserResponse, OnUserError);
 end;
 
 procedure TAuthFra.btnLogoutClick(Sender: TObject);
@@ -417,12 +477,12 @@ var
 begin
   mem.Lines.Add('UID: ' + User.UID);
   if User.IsNewSignupUser then
-    memUser.Lines.Add('  User is newly created');
+    mem.Lines.Add('  User is newly created');
   case User.IsDisabled of
     tsbTrue:
-      memUser.Lines.Add('  User is disabled');
+      mem.Lines.Add('  User is disabled');
     tsbFalse:
-      memUser.Lines.Add('  User is not disabled');
+      mem.Lines.Add('  User is not disabled');
   end;
   if User.IsDisplayNameAvailable then
     mem.Lines.Add('Display name: ' + User.DisplayName);
@@ -431,9 +491,9 @@ begin
     mem.Lines.Add('EMail: ' + User.EMail);
     case User.IsEMailVerified of
       tsbTrue:
-        memUser.Lines.Add('  EMail is verified');
+        mem.Lines.Add('  EMail is verified');
       tsbFalse:
-        memUser.Lines.Add('  EMail is not verified');
+        mem.Lines.Add('  EMail is not verified');
     end;
   end;
   if User.IsCreatedAtAvailable then
@@ -483,6 +543,8 @@ begin
           [c + 1, User.Provider(c).ScreenName]));
     end;
   end;
+  mem.GoToTextEnd;
+  mem.GoToLineBegin;
 end;
 
 procedure TAuthFra.DisplayTokenJWT(mem: TMemo);

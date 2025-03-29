@@ -96,9 +96,14 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
-    procedure SignInWithGoogleAccount(const ClientID, ClientSecret: string;
-      OnUserResponse: TOnUserResponse; OnError: TOnRequestError;
-      const OptionalGMailAdr: string = '');
+    // Google Account via OAuth2
+    procedure SetGoogleAuth2(const ClientID, ClientSecret: string);
+    procedure SignInWithGoogleAccount(OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError; const OptionalGMailAdr: string = '');
+    function GetOAuthRedirectionEndpoint: string;
+    function GetOAuthRefreshToken: string;
+    procedure ReSignInWithGoogleAccount(const LastOAuthRefreshToken: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
     // Link new email/password access to anonymous user
     procedure LinkWithEMailAndPassword(const EMail, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
@@ -151,6 +156,10 @@ type
       OnError: TOnRequestError);
     function GetUserDataSynchronous: TFirebaseUserList;
     // Token refresh
+    function TokenExpiryDT: TDateTime;
+    function NeedTokenRefresh: boolean;
+    function GetRefreshToken: string;
+    function GetTokenRefreshCount: cardinal;
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
       OnError: TOnRequestError); overload;
     procedure RefreshToken(OnTokenRefresh: TOnTokenRefresh;
@@ -167,11 +176,6 @@ type
     {$IFDEF TOKENJWT}
     function TokenJWT: ITokenJWT;
     {$ENDIF}
-    function TokenExpiryDT: TDateTime;
-    function NeedTokenRefresh: boolean;
-    function GetRefreshToken: string;
-    function GetTokenRefreshCount: cardinal;
-    function GetOAuthRedirectionEndpoint: string;
     function GetLastServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     property ApiKey: string read fApiKey;
   end;
@@ -349,18 +353,23 @@ begin
   end;
 end;
 
-procedure TFirebaseAuthentication.SignInWithGoogleAccount(const ClientID, ClientSecret: string;
-  OnUserResponse: TOnUserResponse; OnError: TOnRequestError; const OptionalGMailAdr: string);
+procedure TFirebaseAuthentication.SetGoogleAuth2(const ClientID, ClientSecret: string);
 const
   Scope: string = 'openid email profile';
 begin
-  fAuthenticated := false;
-  if assigned(fAuth2Authenticator) then
-    if not fAuth2Authenticator.CheckAccess(ClientID, ClientSecret) then
-      FreeAndNil(fAuth2Authenticator);
+  if assigned(fAuth2Authenticator) and
+     not fAuth2Authenticator.CheckAccess(ClientID, ClientSecret) then
+    FreeAndNil(fAuth2Authenticator);
   if not assigned(fAuth2Authenticator) then
-    fAuth2Authenticator := TGoogleOAuth2Authenticator.Create(ClientID, ClientSecret,
-      Scope, OptionalGMailAdr);
+    fAuth2Authenticator := TGoogleOAuth2Authenticator.Create(ClientID, ClientSecret, Scope);
+end;
+
+procedure TFirebaseAuthentication.SignInWithGoogleAccount(OnUserResponse: TOnUserResponse;
+  OnError: TOnRequestError; const OptionalGMailAdr: string);
+begin
+  fAuthenticated := false;
+  if not assigned(fAuth2Authenticator) then
+    raise EGoogleOAuth2Authenticator.Create('SetGoogleAuth2 call missing');
   if fAuth2Authenticator.AuthorizationState in [idle, failed, timeOutOccured] then
     fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError)
   else if fAuth2Authenticator.AuthorizationState = passed then
@@ -369,6 +378,15 @@ begin
     fAuthenticated := true;
   end else
     OnError('Sign in with Google Account', 'Unexpected state: ' + fAuth2Authenticator.AuthorizationStateInfo);
+end;
+
+procedure TFirebaseAuthentication.ReSignInWithGoogleAccount(const LastOAuthRefreshToken: string;
+  OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+begin
+  if not assigned(fAuth2Authenticator) then
+    raise EGoogleOAuth2Authenticator.Create('SetGoogleAuth2 call missing');
+  fAuth2Authenticator.LoginWithRefreshOAuthToken(LastOAuthRefreshToken, OnAuthenticatorFinished,
+    OnUserResponse, OnError);
 end;
 
 procedure TFirebaseAuthentication.OnAuthenticatorFinished(State: TGoogleOAuth2Authenticator.TAuthorizationState;
@@ -1612,6 +1630,14 @@ begin
     result := fAuth2Authenticator.RedirectionEndpoint
   else
     result := 'n/a';
+end;
+
+function TFirebaseAuthentication.GetOAuthRefreshToken: string;
+begin
+  if assigned(fAuth2Authenticator) then
+    result := fAuth2Authenticator.RefreshOAuthToken
+  else
+    result := '';
 end;
 
 function TFirebaseAuthentication.Token: string;

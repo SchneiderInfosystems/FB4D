@@ -992,9 +992,13 @@ type
     function LinkWithEMailAndPasswordSynchronous(const EMail,
       Password: string): IFirebaseUser;
     // Login by using OAuth from Facebook, Twitter, Google, etc.
-    procedure SignInWithGoogleAccount(const ClientID, ClientSecret: string;
-      OnUserResponse: TOnUserResponse; OnError: TOnRequestError;
-      const OptionalGMailAdr: string = '');
+    procedure SetGoogleAuth2(const ClientID, ClientSecret: string);
+    procedure SignInWithGoogleAccount(OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError; const OptionalGMailAdr: string = '');
+    function GetOAuthRedirectionEndpoint: string;
+    function GetOAuthRefreshToken: string;
+    procedure ReSignInWithGoogleAccount(const LastOAuthRefreshToken: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
     procedure LinkOrSignInWithOAuthCredentials(const OAuthTokenName, OAuthToken,
       ProviderID, RequestUri: string; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
@@ -1047,8 +1051,11 @@ type
       OnErrorWithOnSuccess: TOnRequestErrorWithOnSuccess); overload;
     procedure RefreshToken(const LastRefreshToken: string;
       OnTokenRefresh: TOnTokenRefresh; OnError: TOnRequestError); overload;
-    function CheckAndRefreshTokenSynchronous(
-      IgnoreExpiryCheck: boolean = false): boolean;
+    function CheckAndRefreshTokenSynchronous(IgnoreExpiryCheck: boolean = false): boolean;
+    function TokenExpiryDT: TDateTime; // local time
+    function NeedTokenRefresh: boolean;
+    function GetRefreshToken: string;
+    function GetTokenRefreshCount: cardinal;
     // register call back in all circumstances when the token will be refreshed
     procedure InstallTokenRefreshNotification(OnTokenRefresh: TOnTokenRefresh);
     // Getter methods
@@ -1057,11 +1064,6 @@ type
 {$IFDEF TOKENJWT}
     function TokenJWT: ITokenJWT;
 {$ENDIF}
-    function TokenExpiryDT: TDateTime; // local time
-    function NeedTokenRefresh: boolean;
-    function GetRefreshToken: string;
-    function GetTokenRefreshCount: cardinal;
-    function GetOAuthRedirectionEndpoint: string;
     function GetLastServerTime(TimeZone: TTimeZone = tzLocalTime): TDateTime;
   end;
   {$ENDREGION}

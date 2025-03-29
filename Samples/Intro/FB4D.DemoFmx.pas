@@ -56,6 +56,10 @@ type
     Text2: TText;
     rctKeyDisabled: TRectangle;
     rctProjectIDDisabled: TRectangle;
+    edtGoogleOAuthClientID: TEdit;
+    Label3: TLabel;
+    edtGoogleOAuthClientSecret: TEdit;
+    Label4: TLabel;
     imgLogo: TImage;
     lblOpenFBConsole: TLabel;
     lblOpenFBConsoleForProject: TLabel;
@@ -122,8 +126,9 @@ begin
   IniFile := TIniFile.Create(GetIniFileName);
   try
     edtKey.Text := IniFile.ReadString('FBProjectSettings', 'APIKey', '');
-    edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID',
-      '');
+    edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
+    edtGoogleOAuthClientID.Text := IniFile.ReadString('GoogleOAuth2', 'ClientID', '');
+    edtGoogleOAuthClientSecret.Text := IniFile.ReadString('GoogleOAuth2', 'ClientSecret', '');
     AuthFra.LoadSettingsFromIniFile(IniFile);
     RTDBFra.LoadSettingsFromIniFile(IniFile, edtProjectID.Text);
     FirestoreFra.LoadSettingsFromIniFile(IniFile);
@@ -149,6 +154,8 @@ begin
   try
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
+    IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
+    IniFile.WriteString('GoogleOAuth2', 'ClientSecret', edtGoogleOAuthClientSecret.Text);
     AuthFra.SaveSettingsIntoIniFile(IniFile);
     RTDBFra.SaveSettingsIntoIniFile(IniFile);
     FirestoreFra.SaveSettingsIntoIniFile(IniFile);

@@ -11,7 +11,7 @@ object AuthFra: TAuthFra
     Size.Height = 543.000000000000000000
     Size.PlatformDefault = False
     TabIndex = 0
-    TabOrder = 13
+    TabOrder = 15
     TabPosition = PlatformDefault
     Sizes = (
       1000s
@@ -237,26 +237,26 @@ object AuthFra: TAuthFra
   object lblTokenExp: TLabel
     Anchors = [akLeft, akTop, akRight]
     Position.X = 385.000000000000000000
-    Position.Y = 106.000000000000000000
+    Position.Y = -20.000000000000000000
     Size.Width = 635.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.HorzAlign = Trailing
     TextSettings.Trimming = None
     Text = 'expires at ...'
-    TabOrder = 12
+    TabOrder = 13
     TabStop = False
   end
   object edtUID: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 10
+    TabOrder = 11
     Position.X = 17.000000000000000000
     Position.Y = 130.000000000000000000
-    Size.Width = 289.000000000000000000
+    Size.Width = 300.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     object Label6: TLabel
-      Position.Y = -24.000000000000000000
+      Position.Y = -20.000000000000000000
       Size.Width = 33.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
@@ -268,14 +268,14 @@ object AuthFra: TAuthFra
   object edtToken: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 11
+    TabOrder = 12
     Position.X = 329.000000000000000000
     Position.Y = 130.000000000000000000
-    Size.Width = 687.000000000000000000
+    Size.Width = 616.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     object Label5: TLabel
-      Position.Y = -24.000000000000000000
+      Position.Y = -20.000000000000000000
       Size.Width = 41.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
@@ -290,7 +290,7 @@ object AuthFra: TAuthFra
     TabOrder = 1
     Password = True
     Position.X = 328.000000000000000000
-    Position.Y = 40.000000000000000000
+    Position.Y = 30.000000000000000000
     Size.Width = 177.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -298,7 +298,7 @@ object AuthFra: TAuthFra
     Left = 9
     Top = 63
     object Label2: TLabel
-      Position.Y = -24.000000000000000000
+      Position.Y = -20.000000000000000000
       TextSettings.Trimming = None
       Text = 'Password'
       TabOrder = 3
@@ -308,15 +308,15 @@ object AuthFra: TAuthFra
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 0
     Position.X = 17.000000000000000000
-    Position.Y = 41.000000000000000000
-    Size.Width = 288.000000000000000000
+    Position.Y = 30.000000000000000000
+    Size.Width = 300.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     OnChange = edtEmailAndPwdChange
     Left = 9
     Top = 23
     object Label1: TLabel
-      Position.Y = -24.000000000000000000
+      Position.Y = -20.000000000000000000
       TextSettings.Trimming = None
       Text = 'User email adress'
       TabOrder = 2
@@ -325,11 +325,11 @@ object AuthFra: TAuthFra
   object btnSignUpNewUser: TButton
     Anchors = [akTop, akRight]
     Position.X = 512.000000000000000000
-    Position.Y = 40.000000000000000000
+    Position.Y = 30.000000000000000000
     Size.Width = 120.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 3
+    TabOrder = 2
     Text = 'Sign up new user'
     TextSettings.Trimming = None
     OnClick = btnSignUpNewUserClick
@@ -338,11 +338,11 @@ object AuthFra: TAuthFra
     Anchors = [akTop, akRight]
     Enabled = False
     Position.X = 768.000000000000000000
-    Position.Y = 40.000000000000000000
-    Size.Width = 120.000000000000000000
+    Position.Y = 30.000000000000000000
+    Size.Width = 113.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 5
+    TabOrder = 4
     Text = 'Reset Password'
     TextSettings.Trimming = None
     OnClick = btnPasswordResetClick
@@ -350,93 +350,102 @@ object AuthFra: TAuthFra
   object btnLogin: TButton
     Anchors = [akTop, akRight]
     Position.X = 640.000000000000000000
-    Position.Y = 40.000000000000000000
+    Position.Y = 30.000000000000000000
     Size.Width = 120.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 4
+    TabOrder = 3
     Text = 'Anonymous Login'
     TextSettings.Trimming = None
     OnClick = btnLoginClick
   end
   object btnLinkEMailPwd: TButton
     Anchors = [akTop, akRight]
-    Position.X = 896.000000000000000000
-    Position.Y = 40.000000000000000000
-    Size.Width = 120.000000000000000000
+    Position.X = 889.000000000000000000
+    Position.Y = 30.000000000000000000
+    Size.Width = 127.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 6
+    TabOrder = 5
     Text = 'Link EMail/Pwd'
     TextSettings.Trimming = None
     OnClick = btnLinkEMailPwdClick
   end
   object btnLogout: TButton
     Anchors = [akTop, akRight]
-    Position.X = 958.000000000000000000
-    Position.Y = 10.000000000000000000
-    Size.Width = 58.000000000000000000
+    Position.X = 953.000000000000000000
+    Position.Y = 130.000000000000000000
+    Size.Width = 63.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 2
+    TabOrder = 14
     Text = 'Logout'
     TextSettings.Trimming = None
     OnClick = btnLogoutClick
   end
   object btnGoogleOAuth: TButton
-    Position.X = 17.000000000000000000
-    Position.Y = 76.000000000000000000
-    Size.Width = 192.000000000000000000
+    Position.X = 512.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 161.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 7
-    Text = 'Login by using Google Account'
+    TabOrder = 8
+    Text = 'Login by Google Account'
     TextSettings.Trimming = None
     OnClick = btnGoogleOAuthClick
   end
-  object edtGoogleOAuthClientID: TEdit
+  object edtOAuthRefreshToken: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     Anchors = [akLeft, akTop, akRight]
-    TabOrder = 8
-    Position.X = 272.000000000000000000
-    Position.Y = 76.000000000000000000
-    Size.Width = 360.000000000000000000
+    TabOrder = 9
+    ReadOnly = True
+    Position.X = 688.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 193.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TextPrompt = 
-      'Enter OAuth Client ID from Google Cloud Console (apps.googleuser' +
-      'content.com)'
-    object Label3: TLabel
-      HelpType = htKeyword
-      Position.X = -56.000000000000000000
-      Size.Width = 48.000000000000000000
-      Size.Height = 22.000000000000000000
-      Size.PlatformDefault = False
-      TextSettings.HorzAlign = Trailing
-      Text = 'Client ID'
+    object Label4: TLabel
+      Position.Y = -20.000000000000000000
+      Text = 'OAuth Refresh Token'
       TabOrder = 0
     end
   end
-  object edtGoogleOAuthClientSecret: TEdit
+  object edtRefreshToken: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    Anchors = [akTop, akRight]
-    TabOrder = 9
-    Password = True
-    Position.X = 720.000000000000000000
-    Position.Y = 76.000000000000000000
-    Size.Width = 296.000000000000000000
+    TabOrder = 6
+    ReadOnly = True
+    Position.X = 17.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 300.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TextPrompt = 'Enter OAuth Client Secret from Google Cloud Console'
-    object Label4: TLabel
-      HelpType = htKeyword
-      Position.X = -88.000000000000000000
-      Size.Width = 80.000000000000000000
-      Size.Height = 22.000000000000000000
-      Size.PlatformDefault = False
-      TextSettings.HorzAlign = Trailing
-      Text = 'Client Secret'
+    object Label3: TLabel
+      Position.Y = -20.000000000000000000
+      Text = 'Refresh Token'
       TabOrder = 0
     end
+  end
+  object btnReSignInWithGoogleAccount: TButton
+    Anchors = [akTop, akRight]
+    Position.X = 889.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 127.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 10
+    Text = 'Re-Sign-In by Google'
+    TextSettings.Trimming = None
+    OnClick = btnReSignInWithGoogleAccountClick
+  end
+  object btnReSignInWithRefreshToken: TButton
+    Position.X = 329.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 175.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 7
+    Text = 'Re-Sign-In by Refresh Token'
+    TextSettings.Trimming = None
+    OnClick = btnReSignInWithRefreshTokenClick
   end
 end

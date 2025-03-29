@@ -58,7 +58,6 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         inherited TabControlUser: TTabControl
           Size.Width = 964.000000000000000000
           Size.Height = 719.000000000000000000
-          TabOrder = 10
           Sizes = (
             964s
             693s
@@ -74,82 +73,67 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Viewport.Height = 619.000000000000000000
             end
             inherited btnRefresh: TButton
-              Position.X = 848.000000000000000000
+              Position.X = 884.000000000000000000
             end
           end
           inherited tabUserProfile: TTabItem
             ExplicitSize.cx = 125.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited edtChangeEMail: TEdit
-              Size.Width = 648.000000000000000000
+              Size.Width = 684.000000000000000000
             end
             inherited edtChangeDisplayName: TEdit
-              Size.Width = 648.000000000000000000
+              Size.Width = 684.000000000000000000
             end
             inherited btnChange: TButton
-              Position.X = 703.000000000000000000
+              Position.X = 739.000000000000000000
             end
             inherited btnChangeEMail: TButton
-              Position.X = 703.000000000000000000
+              Position.X = 739.000000000000000000
             end
             inherited edtChangePassword: TEdit
-              Size.Width = 648.000000000000000000
+              Size.Width = 684.000000000000000000
             end
             inherited btnChangePwd: TButton
-              Position.X = 703.000000000000000000
+              Position.X = 739.000000000000000000
             end
             inherited edtChangePhotoURL: TEdit
-              Size.Width = 648.000000000000000000
+              Size.Width = 684.000000000000000000
             end
             inherited btnChangePhotoURL: TButton
-              Position.X = 703.000000000000000000
+              Position.X = 739.000000000000000000
             end
           end
         end
         inherited lblTokenExp: TLabel
           Size.Width = 599.000000000000000000
-          TabOrder = 9
-        end
-        inherited edtUID: TEdit
-          TabOrder = 7
         end
         inherited edtToken: TEdit
-          TabOrder = 8
-          Size.Width = 651.000000000000000000
+          Size.Width = 580.000000000000000000
         end
         inherited edtPassword: TEdit
           Size.Width = 141.000000000000000000
         end
         inherited btnSignUpNewUser: TButton
           Position.X = 476.000000000000000000
-          TabOrder = 2
         end
         inherited btnPasswordReset: TButton
           Position.X = 732.000000000000000000
-          TabOrder = 4
         end
         inherited btnLogin: TButton
           Position.X = 604.000000000000000000
-          TabOrder = 3
         end
         inherited btnLinkEMailPwd: TButton
-          Position.X = 860.000000000000000000
-          TabOrder = 13
+          Position.X = 853.000000000000000000
         end
         inherited btnLogout: TButton
-          Position.X = 922.000000000000000000
-          TabOrder = 16
+          Position.X = 917.000000000000000000
         end
-        inherited btnGoogleOAuth: TButton
-          TabOrder = 19
+        inherited edtOAuthRefreshToken: TEdit
+          Size.Width = 157.000000000000000000
         end
-        inherited edtGoogleOAuthClientID: TEdit
-          TabOrder = 5
-          Size.Width = 332.000000000000000000
-        end
-        inherited edtGoogleOAuthClientSecret: TEdit
-          TabOrder = 6
-          Position.X = 684.000000000000000000
+        inherited btnReSignInWithGoogleAccount: TButton
+          Position.X = 853.000000000000000000
         end
       end
     end
@@ -930,7 +914,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Size.Width = 176.000000000000000000
       Size.Height = 90.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 1
+      TabOrder = 0
       Text = 'Firebase Project Settings'
       TextSettings.Trimming = None
       OnClick = btnShowSettingsClick
@@ -938,11 +922,11 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     object edtKey: TEdit
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       Anchors = [akLeft, akTop, akRight]
-      TabOrder = 5
-      Position.X = 264.000000000000000000
-      Position.Y = 62.000000000000000000
+      TabOrder = 11
+      Position.X = 612.000000000000000000
+      Position.Y = 32.000000000000000000
       PopupMenu = popClipboard
-      Size.Width = 680.000000000000000000
+      Size.Width = 332.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextPrompt = 'Enter Web API key from Firebase Console>Settings>General'
@@ -968,12 +952,11 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     end
     object edtProjectID: TEdit
       Touch.InteractiveGestures = [LongTap, DoubleTap]
-      Anchors = [akLeft, akTop, akRight]
-      TabOrder = 0
+      TabOrder = 10
       Position.X = 264.000000000000000000
       Position.Y = 32.000000000000000000
       PopupMenu = popClipboard
-      Size.Width = 680.000000000000000000
+      Size.Width = 265.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextPrompt = 'Enter Project ID  from Firebase Console>Settings'
@@ -1015,7 +998,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {04040000000000000004000000}
       Text = 'Open Firebase Console'
-      TabOrder = 14
+      TabOrder = 1
       OnClick = lblOpenFBConsoleClick
     end
     object lblOpenFBConsoleForProject: TLabel
@@ -1031,7 +1014,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.Font.StyleExt = {04040000000000000004000000}
       Text = 'Firebase Console for Project'
       Visible = False
-      TabOrder = 12
+      TabOrder = 2
       OnClick = lblOpenFBConsoleForProjectClick
     end
     object lblOpenFBConsoleForAuth: TLabel
@@ -1048,7 +1031,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.Font.StyleExt = {04040000000000000004000000}
       TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Auth'
-      TabOrder = 11
+      TabOrder = 3
       OnClick = lblOpenFBConsoleForAuthClick
     end
     object lblOpenFBConsoleForRTDB: TLabel
@@ -1066,7 +1049,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for RTDB'
       Visible = False
-      TabOrder = 6
+      TabOrder = 4
       OnClick = lblOpenFBConsoleForRTDBClick
     end
     object lblOpenFBConsoleForFS: TLabel
@@ -1084,7 +1067,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Firestore'
       Visible = False
-      TabOrder = 8
+      TabOrder = 5
       OnClick = lblOpenFBConsoleForFSClick
     end
     object lblOpenFBConsoleForStorage: TLabel
@@ -1102,7 +1085,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Storage'
       Visible = False
-      TabOrder = 10
+      TabOrder = 6
       OnClick = lblOpenFBConsoleForStorageClick
     end
     object lblOpenFBConsoleForFunctions: TLabel
@@ -1120,7 +1103,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Functions'
       Visible = False
-      TabOrder = 9
+      TabOrder = 7
       OnClick = lblOpenFBConsoleForFunctionsClick
     end
     object lblOpenFBConsoleForVisionML: TLabel
@@ -1138,7 +1121,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.HorzAlign = Trailing
       Text = 'Firebase Console for Vision ML'
       Visible = False
-      TabOrder = 7
+      TabOrder = 8
       OnClick = lblOpenFBConsoleForVisionMLClick
     end
     object lblOpenAIStudio: TLabel
@@ -1156,8 +1139,51 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
       TextSettings.HorzAlign = Trailing
       Text = 'Open Google AI Studio'
       Visible = False
-      TabOrder = 13
+      TabOrder = 9
       OnClick = lblOpenAIStudioClick
+    end
+    object edtGoogleOAuthClientID: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Anchors = [akLeft, akTop, akRight]
+      TabOrder = 12
+      Position.X = 288.000000000000000000
+      Position.Y = 60.000000000000000000
+      Size.Width = 324.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TextPrompt = 'Enter OAuth Client ID from Google Cloud Console'
+      object Label3: TLabel
+        HelpType = htKeyword
+        Position.X = -128.000000000000000000
+        Size.Width = 120.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Trailing
+        Text = 'OAuth Client ID'
+        TabOrder = 0
+      end
+    end
+    object edtGoogleOAuthClientSecret: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Anchors = [akTop, akRight]
+      TabOrder = 13
+      Password = True
+      Position.X = 696.000000000000000000
+      Position.Y = 60.000000000000000000
+      Size.Width = 296.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TextPrompt = 'Enter OAuth Client Secret from Google Cloud Console'
+      object Label4: TLabel
+        HelpType = htKeyword
+        Position.X = -88.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Trailing
+        Text = 'Client Secret'
+        TabOrder = 0
+      end
     end
   end
   object imgLogo: TImage
@@ -1282,8 +1308,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
     OnClick = imgLogoClick
   end
   object popClipboard: TPopupMenu
-    Left = 672
-    Top = 40
+    Left = 728
+    Top = 8
     object mniFromClipboard: TMenuItem
       Text = 'Paste'
       OnClick = mniFromClipboardClick
