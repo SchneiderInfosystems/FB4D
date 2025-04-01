@@ -622,6 +622,7 @@ class function TFirebaseHelpers.CryptoRandom64(NoOfChars: integer;
   var
     Buffer: TCryptographicBuffer;
   begin
+    // Requires a CoInitialize beforehand (important for console applications)
     Buffer := TCryptographicBuffer.Create;
     try
       result := Buffer.GenerateRandomNumber;
