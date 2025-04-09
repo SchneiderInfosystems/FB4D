@@ -376,7 +376,7 @@ begin
   begin
     FileStream := TFileStream.Create(SaveDialogPictures.FileName, fmCreate);
     try
-      FileStream.CopyFrom(Img {$IF CompilerVersion < 34}, 0 {$ENDIF}); // Delphi 10.3 and before
+      FileStream.CopyFrom(Img);
     finally
       FileStream.Free;
     end;

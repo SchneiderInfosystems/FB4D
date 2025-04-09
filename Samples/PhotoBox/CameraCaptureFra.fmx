@@ -12,6 +12,7 @@ object fraCameraCapture: TfraCameraCapture
     Size.PlatformDefault = False
     TabOrder = 1
     Text = 'Take Photo from Camera'
+    TextSettings.Trimming = None
     OnClick = btnTakePhotoFromCameraClick
   end
   object CameraComponent: TCameraComponent
@@ -61,6 +62,7 @@ object fraCameraCapture: TfraCameraCapture
     Position.Y = 14.000000000000000000
     TabOrder = 3
     Text = 'Take Photo'
+    TextSettings.Trimming = None
     OnClick = btnTakeClick
   end
   object btnRestart: TButton
@@ -69,6 +71,7 @@ object fraCameraCapture: TfraCameraCapture
     Position.Y = 14.000000000000000000
     TabOrder = 5
     Text = 'Retry'
+    TextSettings.Trimming = None
     OnClick = btnRestartClick
   end
   object OpenDialogPictures: TOpenDialog

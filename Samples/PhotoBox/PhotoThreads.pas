@@ -197,11 +197,7 @@ begin
   Image.SaveToStream(fImage);
   fImage.Position := 0;
   fContentType := TFirebaseHelpers.ImageStreamToContentType(fImage);
-  {$IF CompilerVersion < 35} // Delphi 10.4 and before
-  if fContentType = ctNone then
-  {$ELSE}
-  if length(fContentType) = 0 then
-  {$ENDIF}
+  if fContentType.Length = 0 then
   begin
     // Unsupported image type: Convert to JPG!
     fImage.Free;

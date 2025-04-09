@@ -307,7 +307,7 @@
         <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
+        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
@@ -332,7 +332,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitor</AppDPIAwarenessMode>
+        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -453,6 +453,12 @@
                 <DeployFile LocalName="..\..\Source\LinuxTypeDec.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="..\..\Source\LinuxTypeImp.inc" Configuration="Debug" Class="ProjectFile"/>
                 <DeployFile LocalName="Linux64\Debug\DemoFB4D" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="Linux64\Debug\DemoFB4D" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Linux64">
+                        <RemoteName>DemoFB4D</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Linux64\Release\DemoFB4D" Configuration="Release" Class="ProjectOutput"/>
                 <DeployFile LocalName="Linux64\libcrypto" Configuration="Debug" Class="File">
                     <Platform Name="Linux64">
@@ -501,7 +507,6 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\DemoFB4D.rsm" Configuration="Debug" Class="DebugSymbols"/>
                 <DeployFile LocalName="Win64\Debug\DemoFB4D.rsm" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="Win64">
                         <RemoteName>DemoFB4D.rsm</RemoteName>

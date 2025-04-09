@@ -149,16 +149,13 @@ end;
 
 procedure TVisionMLFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
-  edtAnotateFileType.Text := IniFile.ReadString('MLVision', 'AnnotateFileType',
-    '');
+  edtAnotateFileType.Text := IniFile.ReadString('MLVision', 'AnnotateFileType', '');
   edtRefStorage.Text := IniFile.ReadString('MLVision', 'AnnotateStorage', '');
   lbiTextDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatTD', true);
-  lbiObjectLocalization.IsChecked := IniFile.ReadBool('MLVision', 'FeatOL',
-    true);
+  lbiObjectLocalization.IsChecked := IniFile.ReadBool('MLVision', 'FeatOL', true);
   lbiLabelDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatLD', true);
   lbiCropHints.IsChecked := IniFile.ReadBool('MLVision', 'FeatCH', false);
-  lbiLandmarkDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatLM',
-    false);
+  lbiLandmarkDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatLM', false);
   lbiFaceDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatFD', false);
   lbiDocTextDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatDD', false);
   lbiLogoDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatLO', false);
@@ -166,7 +163,6 @@ begin
   lbiWebDetection.IsChecked := IniFile.ReadBool('MLVision', 'FeatWD', false);
   lbiProductSearch.IsChecked := IniFile.ReadBool('MLVision', 'FeatPS', false);
   lbiSafeSearch.IsChecked := IniFile.ReadBool('MLVision', 'FeatSS', false);
-
   if FileExists(GetMLFileName) then
   begin
     memAnnotateFile.BeginUpdate;
@@ -197,12 +193,10 @@ begin
   IniFile.WriteBool('MLVision', 'FeatWD', lbiWebDetection.IsChecked);
   IniFile.WriteBool('MLVision', 'FeatPS', lbiProductSearch.IsChecked);
   IniFile.WriteBool('MLVision', 'FeatSS', lbiSafeSearch.IsChecked);
-
   if memAnnotateFile.Lines.Count > 0 then
     memAnnotateFile.Lines.SaveToFile(GetMLFileName)
   else
     System.SysUtils.DeleteFile(GetMLFileName);
-
   FreeAndNil(fMLResultAsJSON);
   FreeAndNil(fMLResultAsEvaluatedText);
 end;
@@ -337,11 +331,7 @@ end;
 procedure TVisionMLFra.btnVisionMLAnotateStorageClick(Sender: TObject);
 var
   ext: string;
-  {$IF CompilerVersion < 35} // Delphi 10.4 and before
-  ContentType: string;
-  {$ELSE}
   ContentType: TRESTContentType;
-  {$ENDIF}
 begin
   CheckAndCreateMLVisionClass;
   FreeAndNil(fMLResultAsJSON);
@@ -354,23 +344,11 @@ begin
   sptMLVision.Visible := false;
   ext := ExtractFileExt(edtRefStorage.Text);
   if SameText('.tiff', ext) or SameText('.tif', ext) then
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    ContentType := ContentTypeToString(TRESTContentType.ctIMAGE_TIFF)
-    {$ELSE}
     ContentType := TRESTContentType.ctIMAGE_TIFF
-    {$ENDIF}
   else if SameText('.gif', ext) then
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    ContentType := ContentTypeToString(TRESTContentType.ctIMAGE_GIF)
-    {$ELSE}
     ContentType := TRESTContentType.ctIMAGE_GIF
-    {$ENDIF}
   else if SameText('.pdf', ext) then
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    ContentType := ContentTypeToString(TRESTContentType.ctAPPLICATION_PDF)
-    {$ELSE}
     ContentType := TRESTContentType.ctAPPLICATION_PDF
-    {$ENDIF}
   else
     ContentType := edtAnotateFileType.Text;
   fVisionML.AnnotateStorage(edtRefStorage.Text, ContentType,

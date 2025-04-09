@@ -935,16 +935,6 @@ end;
 {$IF Defined(FMX) OR Defined(FGX)}
 class function TFirebaseHelpers.ContentTypeToFileExt(
   const ContentType: string): string;
-
-  {$IF CompilerVersion < 35} // Delphi 10.4 and before
-  function SameText(const ContentType: string;
-    AContentType: TRESTContentType): boolean;
-  begin
-    result := System.SysUtils.SameText(ContentType,
-      ContentTypeToString(AContentType));
-  end;
-  {$ENDIF}
-
 begin
   if SameText(ContentType, TRESTContentType.ctIMAGE_JPEG) then
     result := SJPGImageExtension
@@ -997,11 +987,7 @@ begin
     result := TRESTContentType.ctIMAGE_TIFF
   else // if ImgType = SBMPImageExtension then
     // Unsupported image type!
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    result := ctNone;
-    {$ELSE}
     result := '';
-    {$ENDIF}
 end;
 {$ENDIF}
 
@@ -1486,11 +1472,7 @@ var
   c: integer;
 begin
   TrimmedPath := TrimStartAndEndPathDelimiters(Path);
-  {$IF CompilerVersion < 34} // Delphi 10.3 and before
-  c := TrimmedPath.LastDelimiter('/\');
-  {$ELSE}
   c := TrimmedPath.LastDelimiter(['/', '\']);
-  {$ENDIF}
   if c < 0 then
     result := TrimmedPath
   else
@@ -1513,11 +1495,7 @@ var
   c: integer;
 begin
   TrimmedPath := TrimStartAndEndPathDelimiters(Path);
-  {$IF CompilerVersion < 34} // Delphi 10.3 and before
-  c := TrimmedPath.LastDelimiter('/\');
-  {$ELSE}
   c := TrimmedPath.LastDelimiter(['/', '\']);
-  {$ENDIF}
   if c < 0 then
     result := []
   else

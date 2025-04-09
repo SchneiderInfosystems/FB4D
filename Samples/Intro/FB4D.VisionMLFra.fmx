@@ -274,7 +274,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 39
+      TabOrder = 38
       Text = 'Object Localization'
     end
     object lbiTextDetection: TListBoxItem
@@ -292,7 +292,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 40
+      TabOrder = 39
       Text = 'Doc Text Detection'
     end
     object lbiFaceDetection: TListBoxItem
@@ -310,7 +310,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 37
+      TabOrder = 36
       Text = 'Logo Detection'
     end
     object lbiLandmarkDetection: TListBoxItem
@@ -327,7 +327,7 @@ object VisionMLFra: TVisionMLFra
       Size.Width = 229.000000000000000000
       Size.Height = 17.666666030883790000
       Size.PlatformDefault = False
-      TabOrder = 38
+      TabOrder = 37
       Text = 'Web Detection'
     end
     object lbiImageProp: TListBoxItem
@@ -378,8 +378,8 @@ object VisionMLFra: TVisionMLFra
     Size.Height = 82.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 5
-    Viewport.Width = 634.000000000000000000
-    Viewport.Height = 78.000000000000000000
+    Viewport.Width = 638.000000000000000000
+    Viewport.Height = 82.000000000000000000
   end
   object OpenDialogFileAnnotate: TOpenDialog
     Filter = 
