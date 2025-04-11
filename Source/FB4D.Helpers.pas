@@ -65,7 +65,7 @@ type
     // Encode token for URL based token transmission
     class function EncodeToken(const Token: string): string;
     // Array of string helpers
-    class function ArrStrToCommaStr(Arr: array of string): string;
+    class function ArrStrToCommaStr(Arr: array of string; AddSpaceAfterComma: boolean = false): string;
     class function ArrStrToQuotedCommaStr(Arr: array of string): string;
     class function FirestorePath(const Path: string): TRequestResourceParam;
       deprecated 'Use TFirestorePath.ConvertToDocPath instead';
@@ -101,6 +101,7 @@ type
     class function ContentTypeToFileExt(const ContentType: string): string;
     class function ImageStreamToContentType(Stream: TStream): TRESTContentType;
     {$ENDIF}
+    class function IsSupportImageType(const ContentType: string): boolean;
     // Miscellaneous functions
     class function IsEMailAdress(const EMail: string): boolean;
     class function IsPasswordPolicyFulfilled(const Password: string; Policy: TPasswordPolicy = [];
@@ -443,7 +444,7 @@ begin
     result := Path.Split(['/', '\']);
 end;
 
-class function TFirebaseHelpers.ArrStrToCommaStr(Arr: array of string): string;
+class function TFirebaseHelpers.ArrStrToCommaStr(Arr: array of string; AddSpaceAfterComma: boolean): string;
 var
   i: integer;
 begin
@@ -451,6 +452,8 @@ begin
   for i := low(Arr) to high(Arr) do
     if i = low(Arr) then
       result := Arr[i]
+    else if AddSpaceAfterComma then
+      result := result + ', ' + Arr[i]
     else
       result := result + ',' + Arr[i];
 end;
@@ -990,6 +993,21 @@ begin
     result := '';
 end;
 {$ENDIF}
+
+class function TFirebaseHelpers.IsSupportImageType(const ContentType: string): boolean;
+begin
+  if SameText(ContentType, TRESTContentType.ctIMAGE_JPEG) then
+    result := true
+  else if SameText(ContentType, TRESTContentType.ctIMAGE_GIF) then
+    result := true
+  else if SameText(ContentType, TRESTContentType.ctIMAGE_PNG) then
+    result := true
+  else if SameText(ContentType, TRESTContentType.ctIMAGE_TIFF) then
+    result := true
+  else // if SameText(ContentType, SBMPImageExtension) then
+    // Unsupported image type!
+    result := false;
+end;
 
 class function TFirebaseHelpers.IsEMailAdress(const EMail: string): boolean;
 // Returns True if the email address is valid
