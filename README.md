@@ -14,6 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about interface changes and significant library enhancements that need the attention of users of this library.
 
+- April 2025: _Gemini AI_: Add support for system instructions and modality request for text, image and audio
 - March 2025: Add authentication by using Google Accounts. The _DemoFB4D_ App demonstrates the functionality after setting up the Firebase Project for using this auth provider. Check the wiki for details.
 - October 2024: _GeminiAI_ service added, a new tab in the _DemoFB4D_ App demonstrates the functionality;
 - August 2024: Refactoring and many improvements in _DemoFB4D_ App;
@@ -57,7 +58,7 @@ _AnnotateFile_ is limited to PDF only, as the GIF and TOF image format is not ye
  
 #### Limitation on Linux64
 
-There are no restrictions when using Delphi 11 Alexandria or higher.
+Although FmxLinux is currently no longer offered in GetIt, the cross-plaform example applications can still be created with FmxLinux and are executable. Under Ubuntu 24, however, problems with the outdated web browser integration have been identified. We are eagerly awaiting an update from Embarcadero on this point.
 
 ### Submodules
 
