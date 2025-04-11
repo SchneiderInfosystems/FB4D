@@ -38,6 +38,7 @@ type
   TGeminiAI = class(TInterfacedObject, IGeminiAI)
   private const
     cModels = 'models/';
+    cDefaultTimeout = 180000; // 3 minutes
   private
     fApiKey: string;
     fAPIVersion: string;
@@ -121,6 +122,7 @@ type
     fRequest: TJSONObject;
     fContents: TJSONArray;
     fParts: TJSONArray;
+    fSystemInstructions: TJSONObject;
     fGenerationConfig: TJSONObject;
     fSavetySettings: TJSONArray;
     fTools: TJSONArray;
@@ -131,23 +133,23 @@ type
     constructor Create;
     destructor Destroy; override;
     function CloneWithoutCfgAndSettings(Request: IGeminiAIRequest): IGeminiAIRequest;
-    function Prompt(const PromptText: string): IGeminiAIRequest;
+    function Prompt(const PromptText: string; const SystemInstructions: string = ''): IGeminiAIRequest;
     function PromptWithMediaData(const PromptText, MimeType: string;
       MediaStream: TStream): IGeminiAIRequest;
-    {$IF CompilerVersion >= 35} // Delphi 11 and later
     {$IF Defined(FMX) OR Defined(FGX)}
     function PromptWithImgData(const PromptText: string;
       ImgStream: TStream): IGeminiAIRequest;
     {$ENDIF}
-    {$ENDIF}
+    function SetSystemInstruction(const SystemInstructions: string): IGeminiAIRequest;
     function ModelParameter(Temperature, TopP: double; MaxOutputTokens,
       TopK: cardinal): IGeminiAIRequest;
     function SetStopSequences(StopSequences: TStrings): IGeminiAIRequest;
     function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
     function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
-    procedure AddGroundingByGoogleSearch(Threshold: double);
-    procedure AddAnswerForNextRequest(const ResultAsMarkDown: string);
-    procedure AddQuestionForNextRequest(const PromptText: string);
+    function SetGroundingByGoogleSearch(Threshold: double): IGeminiAIRequest;
+    function SetResponseModalities(Modalities: TModalities): IGeminiAIRequest;
+    function AddAnswerForNextRequest(const ResultAsMarkDown: string): IGeminiAIRequest;
+    function AddQuestionForNextRequest(const PromptText: string): IGeminiAIRequest;
   public
     class function SafetyBlockLevelToStr(sbl: TSafetyBlockLevel): string;
   end;
@@ -263,8 +265,8 @@ begin
   Params := TQueryParams.Create;
   try
     Params.Add('key', [fApiKey]);
-    Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models').SendRequestSynchronous(
-      [], rmGet, nil, Params, tmNoToken);
+    Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models', nil, cDefaultTimeout).
+      SendRequestSynchronous([], rmGet, nil, Params, tmNoToken);
     if Response.StatusOk and Response.IsJSONObj then
     begin
       Resp := Response.GetContentAsJSONObj;
@@ -293,7 +295,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models');
+    Request := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Models', nil, cDefaultTimeout);
     Params.Add('key', [fApiKey]);
     Request.SendRequest([], rmGet, nil, Params, tmNoToken,
       OnFetchModelsResponse, OnFetchModelsErrorResp,
@@ -364,8 +366,8 @@ begin
     Params := TQueryParams.Create;
     try
       Params.Add('key', [fApiKey]);
-      Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model').SendRequestSynchronous(
-        [ModelName], rmGet, nil, Params, tmNoToken);
+      Response := TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model', nil, cDefaultTimeout).
+        SendRequestSynchronous([ModelName], rmGet, nil, Params, tmNoToken);
       if Response.StatusOk and Response.IsJSONObj then
       begin
         Model := Response.GetContentAsJSONObj;
@@ -425,9 +427,10 @@ begin
     Params := TQueryParams.Create;
     try
       Params.Add('key', [fApiKey]);
-      TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model').SendRequest([ModelName], rmGet, nil, Params, tmNoToken,
-        OnFetchModelDetailResponse, OnFetchModelDetailErrorResp,
-        TOnSuccess.CreateGeminiFetchModelDetail(OnFetchModelDetail));
+      TFirebaseRequest.Create(BaseURL(false), 'Gemini.Get.Model', nil, cDefaultTimeout).
+        SendRequest([ModelName], rmGet, nil, Params, tmNoToken,
+          OnFetchModelDetailResponse, OnFetchModelDetailErrorResp,
+          TOnSuccess.CreateGeminiFetchModelDetail(OnFetchModelDetail));
     finally
       Params.Free;
     end;
@@ -481,7 +484,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Generate.Content');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Generate.Content', nil, cDefaultTimeout);
     Params.Add('key', [fApiKey]);
     try
       result := TGeminiResponse.Create(Request.SendRequestSynchronous([':generateContent'],
@@ -526,7 +529,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.generate.Content');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Generate.Content', nil, cDefaultTimeout);
     Params.Add('key', [fApiKey]);
     Request.SendRequest([':generateContent'], rmPost, Body, Params, tmNoToken,
       OnGenerateContentResponse, OnGenerateContentError,
@@ -593,7 +596,7 @@ var
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token', nil, cDefaultTimeout);
     Params.Add('key', [fApiKey]);
     Request.SendRequest([':countTokens'], rmPost, Body, Params, tmNoToken,
       OnCountTokenResponse, OnCountTokenError,
@@ -673,7 +676,7 @@ begin
   ErrorMsg := '';
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token');
+    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Count.Token', nil, cDefaultTimeout);
     Params.Add('key', [fApiKey]);
     try
       JSONObj := Request.SendRequestSynchronous([':countTokens'], rmPost, Body, Params, tmNoToken).GetContentAsJSONObj;
@@ -720,6 +723,7 @@ begin
   fContents.Add(TJSONObject.Create.
     AddPair('parts', fParts).
     AddPair('role', 'user'));
+  fSystemInstructions := nil;
   fRequest := TJSONObject.Create;
   fRequest.AddPair('contents', fContents);
 end;
@@ -733,6 +737,7 @@ begin
   fRequest.RemovePair('generationConfig');
   fGenerationConfig := nil;
   fRequest.RemovePair('safetySettings');
+  fSystemInstructions := (Request as TGeminiAIRequest).fSystemInstructions;
   fSavetySettings := nil;
   fTools := nil;
   result := self;
@@ -744,13 +749,16 @@ begin
   inherited;
 end;
 
-function TGeminiAIRequest.Prompt(const PromptText: string): IGeminiAIRequest;
+function TGeminiAIRequest.Prompt(const PromptText, SystemInstructions: string): IGeminiAIRequest;
 begin
   Assert(not assigned(fParts.FindValue('[0].text')), 'Gemini AI support only one prompt per part');
   fParts.Add(
     TJSONObject.Create.
       AddPair('text', PromptText));
-  result := self;
+  if SystemInstructions.IsEmpty then
+    result := self
+  else
+    result := SetSystemInstruction(SystemInstructions);
 end;
 
 function TGeminiAIRequest.PromptWithMediaData(const PromptText, MimeType: string;
@@ -764,13 +772,8 @@ begin
   ms := TStringStream.Create;
   try
     MediaStream.Position := 0;
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    TNetEncoding.Base64.Encode(MediaStream, ms); // Base64String is without LF CR
-    Base64Str := StringReplace(ms.DataString, #13#10, '', [rfReplaceAll]);
-    {$ELSE}
     TNetEncoding.Base64String.Encode(MediaStream, ms); // Base64String is without LF CR
     Base64Str := ms.DataString;
-    {$ENDIF}
   finally
     ms.Free;
   end;
@@ -786,7 +789,6 @@ begin
   result := self;
 end;
 
-{$IF CompilerVersion >= 35} // Delphi 11 and later
 {$IF Defined(FMX) OR Defined(FGX)}
 function TGeminiAIRequest.PromptWithImgData(const PromptText: string;
   ImgStream: TStream): IGeminiAIRequest;
@@ -800,7 +802,18 @@ begin
   result := PromptWithMediaData(PromptText, MimeType, ImgStream);
 end;
 {$ENDIF}
-{$ENDIF}
+
+function TGeminiAIRequest.SetSystemInstruction(const SystemInstructions: string): IGeminiAIRequest;
+var
+  Parts: TJSONArray;
+begin
+  Assert(not assigned(fSystemInstructions), 'There is only one system instruction for one request allowed');
+  fSystemInstructions := TJSONObject.Create(TJSONPair.Create('text', SystemInstructions));
+  Parts := TJSONArray.Create(fSystemInstructions);
+  fRequest.AddPair('system_instruction',
+    TJSONObject.Create(TJSONPair.Create('parts', Parts)));
+  result := self;
+end;
 
 procedure TGeminiAIRequest.CheckAndCreateGenerationConfig;
 begin
@@ -829,17 +842,10 @@ begin
       [Temperature]);
   if (TopP < 0) and (TopP > 0) then
     raise EGeminiAIRequest.CreateFmt('TopP out of range 0..1: %f', [TopP]);
-  {$IF CompilerVersion >= 35} // Delphi 11 and later
   fGenerationConfig.AddPair('temperature', Temperature);
   fGenerationConfig.AddPair('topP', TopP);
   fGenerationConfig.AddPair('maxOutputTokens', MaxOutputTokens);
   fGenerationConfig.AddPair('topK', TopK);
-  {$ELSE}
-  fGenerationConfig.AddPair('temperature', FloatToStr(Temperature));
-  fGenerationConfig.AddPair('topP', FloatToStr(TopP));
-  fGenerationConfig.AddPair('maxOutputTokens', IntToStr(MaxOutputTokens));
-  fGenerationConfig.AddPair('topK', IntToStr(TopK));
-  {$ENDIF}
   result := self;
 end;
 
@@ -859,12 +865,26 @@ end;
 function TGeminiAIRequest.SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
 begin
   CheckAndCreateGenerationConfig;
-  {$IF CompilerVersion >= 35} // Delphi 11 and later
   fGenerationConfig.AddPair('response_mime_type', CONTENTTYPE_APPLICATION_JSON);
-  {$ELSE}
-  fGenerationConfig.AddPair('response_mime_type', 'application/json');
-  {$ENDIF}
   fGenerationConfig.AddPair('response_schema', (Schema as TGeminiSchema).GetJSONObject);
+  result := self;
+end;
+
+function TGeminiAIRequest.SetResponseModalities(Modalities: TModalities): IGeminiAIRequest;
+var
+  arr: TJSONArray;
+begin
+  if Modalities = [] then
+    exit(self);
+  CheckAndCreateGenerationConfig;
+  arr := TJSONArray.Create;
+  if mText in Modalities then
+    arr.Add('TEXT');
+  if mImage in Modalities then
+    arr.Add('IMAGE');
+  if mAudio in Modalities then
+    arr.Add('AUDIO');
+  fGenerationConfig.AddPair('responseModalities', arr);
 end;
 
 function TGeminiAIRequest.SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
@@ -883,16 +903,17 @@ begin
   result := self;
 end;
 
-procedure TGeminiAIRequest.AddGroundingByGoogleSearch(Threshold: double);
+function TGeminiAIRequest.SetGroundingByGoogleSearch(Threshold: double): IGeminiAIRequest;
 begin
   CheckAndCreateTools;
   fTools.Add(TJSONObject.Create(TJSONPair.Create('google_search_retrieval',
     TJSONObject.Create(TJSONPair.Create('dynamic_retrieval_config',
       TJSONObject.Create(TJSONPair.Create('mode', 'MODE_DYNAMIC')).
       AddPair('dynamic_threshold', Threshold))))));
+  result := self;
 end;
 
-procedure TGeminiAIRequest.AddAnswerForNextRequest(const ResultAsMarkDown: string);
+function TGeminiAIRequest.AddAnswerForNextRequest(const ResultAsMarkDown: string): IGeminiAIRequest;
 begin
   fParts := TJSONArray.Create.Add(
     TJSONObject.Create.
@@ -901,9 +922,10 @@ begin
     AddPair('role', 'model').
     AddPair('parts', fParts));
   fParts := nil;
+  result := self;
 end;
 
-procedure TGeminiAIRequest.AddQuestionForNextRequest(const PromptText: string);
+function TGeminiAIRequest.AddQuestionForNextRequest(const PromptText: string): IGeminiAIRequest;
 begin
   fParts := TJSONArray.Create.Add(
     TJSONObject.Create.
@@ -912,6 +934,7 @@ begin
     AddPair('role', 'user').
     AddPair('parts', fParts));
   fParts := nil;
+  result := self;
 end;
 
 function TGeminiAIRequest.AsJSON: TJSONObject;
@@ -1091,6 +1114,7 @@ function TGeminiResponse.ResultAsHTML: string;
 const
   cCodeHTMLStart = '```html'#$A;
   cCodeXMLStart = '```xml'#$A;
+  cCodeSVGStart = '```svg'#$A;
   cCodeEnd = '```';
 
   function ExtractCode(const CodeStart: string; var MarkDown: string): string;
@@ -1112,6 +1136,8 @@ begin
     result := ExtractCode(cCodeHTMLStart, result) + ConvertMarkDownToHTML(result)
   else if result.StartsWith(cCodeXMLStart, true) then
     result := ExtractCode(cCodeXMLStart, result) + ConvertMarkDownToHTML(result)
+  else if result.StartsWith(cCodeSVGStart, true) then
+    result := ExtractCode(cCodeSVGStart, result) + ConvertMarkDownToHTML(result)
   else
     result := ConvertMarkDownToHTML(result);
 end;
@@ -1136,6 +1162,7 @@ procedure TGeminiResponse.EvaluateResults;
 var
   Candidates, Parts, Arr, Arr2: TJSONArray;
   Ind, Ind2, Ind3: integer;
+  IndTxt, IndData: integer;
   Txt: string;
   Candidate, Obj, Obj2: TJSONObject;
   HarmCat: THarmCategory;
@@ -1157,9 +1184,20 @@ begin
           if Obj.TryGetValue<TJSONArray>('parts', Parts) then
           begin
             SetLength(fResults[Ind].PartText, Parts.Count);
+            SetLength(fResults[Ind].PartMediaData, Parts.Count);
+            IndTxt := 0;
+            IndData := 0;
             for Ind2 := 0 to Parts.Count - 1 do
-              (Parts.Items[Ind2] as TJSONObject).
-                TryGetValue<string>('text', fResults[Ind].PartText[Ind2]);
+            begin
+              if (Parts.Items[Ind2] as TJSONObject).
+                 TryGetValue<string>('text', fResults[Ind].PartText[IndTxt]) then
+                inc(IndTxt);
+              if (Parts.Items[Ind2] as TJSONObject).
+                 TryGetValue<TJSONObject>('inlineData', fResults[Ind].PartMediaData[IndData]) then
+                inc(IndData);
+            end;
+            SetLength(fResults[Ind].PartText, IndTxt);
+            SetLength(fResults[Ind].PartMediaData, IndData);
           end;
         end;
         if Candidate.TryGetValue<string>('finishReason', Txt) then

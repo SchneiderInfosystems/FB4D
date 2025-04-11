@@ -1446,6 +1446,11 @@ type
     PartText: array of string;
 
     /// <summary>
+    /// An array of JSON objects representing the generated images, audios and other medias.
+    /// </summary>
+    PartMediaData: array of TJSONObject;
+
+    /// <summary>
     /// An array of safety ratings for each harm category.
     /// </summary>
     SafetyRatings: array [THarmCategory] of TSafetyRating;
@@ -1466,6 +1471,16 @@ type
     /// Returns the finish reason as a string.
     /// </summary>
     function FinishReasonAsStr: string;
+
+    /// <summary>
+    /// Get the trimmed part of text.
+    /// </summary>
+    function GetPartText(PartIndex: cardinal = 0; RemoveEOL: boolean = false): string;
+
+    /// <summary>
+    /// Returns media file (document, picture, video, audio) as stream
+    /// </summary>
+    function ResultingMediaDataStream(var MimeType: string; PartIndex: cardinal = 0): TStream;
 
     /// <summary>
     /// Initialize the structure.
@@ -1567,6 +1582,12 @@ type
   );
 
   /// <summary>
+  /// Indicates the modality of the answer. In addition to text, embedded images and audio can also be queried.
+  /// </summary>
+  TModality = (mText, mImage, mAudio);
+  TModalities = set of TModality;
+
+  /// <summary>
   /// Class to hold schema items, where property names and an instances of the IGeminiSchema interface is stored in an
   /// Interface. This structure represents the JSON schema for the data structure definition.
   /// </summary>
@@ -1651,22 +1672,32 @@ type
   IGeminiAIRequest = interface(IInterface)
 
     /// <summary>
-    /// Use simple prompt text as request
+    /// Use a simple prompt text as request. Don't combine this method with an additional call
+    /// of PromptWithMediaData or PromptWithImgData.
+    /// <param name="PromptText">The question in natural language to the large language model.
+    /// </param>
+    /// <param name="SystemInstructions">Optional system instruction in addition to the question
+    ///   in natural language to the large language model.
+    /// </param>
     /// </summary>
-    function Prompt(const PromptText: string): IGeminiAIRequest;
+    function Prompt(const PromptText: string; const SystemInstructions: string = ''): IGeminiAIRequest;
 
     /// <summary>
     /// Use a media file (document, picture, video, audio) with a command prompt question
     /// </summary>
     function PromptWithMediaData(const PromptText, MimeType: string; MediaStream: TStream): IGeminiAIRequest;
 
-    {$IF CompilerVersion >= 35} // Delphi 11 and later
     {$IF Defined(FMX) OR Defined(FGX)}
     /// <summary>
     /// For images the MimeType can be evaluated automatically
     function PromptWithImgData(const PromptText: string; ImgStream: TStream): IGeminiAIRequest;
     {$ENDIF}
-    {$ENDIF}
+
+    /// <summary>
+    /// Set system instructions to a prompt to give clear instructions on how the question should be handled by the
+    /// large languae model.
+    /// </summary>
+    function SetSystemInstruction(const SystemInstructions: string): IGeminiAIRequest;
 
     /// <summary>
     /// Sets the model parameters for the request.
@@ -1712,17 +1743,22 @@ type
     /// might reduce recall.  For example, a threshold of 0.8 means only search results with a similarity
     /// score of 0.8 or greater will be used for grounding.
     /// </param>
-    procedure AddGroundingByGoogleSearch(Threshold: double);
+    function SetGroundingByGoogleSearch(Threshold: double): IGeminiAIRequest;
+
+    /// <summary>
+    /// Defines the modalities of the answer. In addition to text, embedded images and audio can also be queried.
+    /// </summary>
+    function SetResponseModalities(Modalities: TModalities): IGeminiAIRequest;
 
     /// <summary>
     /// For using in chats add the model answer to the next request.
     /// </summary>
-    procedure AddAnswerForNextRequest(const ResultAsMarkDown: string);
+    function AddAnswerForNextRequest(const ResultAsMarkDown: string): IGeminiAIRequest;
 
     /// <summary>
     /// In chats after adding the last answer from the model the next question from the user can be added.
     /// </summary>
-    procedure AddQuestionForNextRequest(const PromptText: string);
+    function AddQuestionForNextRequest(const PromptText: string): IGeminiAIRequest;
 
     /// <summary>
     /// Within a chat to calculated to number of tokens in the prompt this function allows get a working request.
@@ -1983,6 +2019,9 @@ const
 
 implementation
 
+uses
+  System.NetEncoding;
+
 {$IFDEF LINUX64}
 {$I LinuxTypeImpl.inc}
 {$ENDIF}
@@ -2230,10 +2269,10 @@ var
 begin
   case length(PartText) of
     0: result := '';
-    1: result := PartText[0];
+    1: result := trim(PartText[0]);
     else begin
       for c := 0 to length(PartText) - 1 do
-        result := result + '- ' + PartText[c] + sLineBreak;
+        result := result + '- ' + trim(PartText[c]) + sLineBreak;
     end;
   end;
 end;
@@ -2253,6 +2292,39 @@ begin
       result := 'Recitation';
     gfrOther:
       result := 'Other';
+  end;
+end;
+
+function TGeminiAIResult.GetPartText(PartIndex: cardinal; RemoveEOL: boolean): string;
+begin
+  result := '';
+  if PartIndex < Length(PartText) then
+  begin
+    result := trim(PartText[PartIndex]);
+    if RemoveEOL then
+      result := StringReplace(StringReplace(result, #10, ' ', [rfReplaceAll]), #13, ' ', [rfReplaceAll]);
+  end;
+end;
+
+function TGeminiAIResult.ResultingMediaDataStream(var MimeType: string; PartIndex: cardinal): TStream;
+var
+  Base64Str: string;
+  Buf: TBytes;
+begin
+  result := nil;
+  MimeType := '';
+  if (PartIndex < Length(PartMediaData)) and assigned(PartMediaData[PartIndex]) then
+  begin
+    if PartMediaData[PartIndex].TryGetValue<string>('mimeType', MimeType) then
+    begin
+      if PartMediaData[PartIndex].TryGetValue<string>('data', Base64Str) then
+      begin
+        result := TMemoryStream.Create;
+        Buf := TNetEncoding.Base64String.DecodeStringToBytes(Base64Str);
+        result.Write(Buf, length(Buf));
+        result.Position := 0;
+      end;
+    end;
   end;
 end;
 
