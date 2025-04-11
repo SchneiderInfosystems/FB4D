@@ -29,8 +29,9 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   System.IniFiles,
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
-  FMX.Memo.Types, FMX.WebBrowser, FMX.ScrollBox, FMX.Memo, FMX.Edit,
+  FMX.Memo.Types, FMX.WebBrowser, FMX.ScrollBox, FMX.Memo, FMX.Edit, FMX.ExtCtrls, 
   FMX.Controls.Presentation, FMX.ListBox, FMX.Objects, FMX.TabControl, FMX.Layouts,
+  FMX.Ani, 
   WebBrowserFmx,
   FB4D.Interfaces;
 
@@ -79,14 +80,9 @@ type
     lblTopP: TLabel;
     Label11: TLabel;
     Label12: TLabel;
-    layPrompt: TLayout;
-    Label13: TLabel;
-    Label14: TLabel;
-    Label15: TLabel;
-    Label16: TLabel;
+    layRequest: TLayout;
     memStopSequences: TMemo;
     Label17: TLabel;
-    Label18: TLabel;
     chbUseSafetySettings: TCheckBox;
     laySafetySettings: TLayout;
     cboHateSpeech: TComboBox;
@@ -130,8 +126,29 @@ type
     Label30: TLabel;
     Label31: TLabel;
     Label32: TLabel;
-    Label33: TLabel;
     cboAPIVersion: TComboBox;
+    expSystemInstruction: TExpander;
+    layPrompt: TLayout;
+    layCommandBar: TLayout;
+    memSystemInstruction: TMemo;
+    Splitter3: TSplitter;
+    btnModelDetails: TButton;
+    CalloutPanel: TCalloutPanel;
+    txtModelInfo: TText;
+    rctCalloutPanelBack: TRectangle;
+    txtModelTitle: TText;
+    FloatAnimationCallout: TFloatAnimation;
+    chbSetResponseModalities: TCheckBox;
+    layModalities: TLayout;
+    chbModalityText: TCheckBox;
+    chbModalityImage: TCheckBox;
+    chbModalityAudio: TCheckBox;
+    tabMediaData: TTabItem;
+    imgMediaRes: TImage;
+    SaveDialogImgFile: TSaveDialog;
+    Panel1: TPanel;
+    btnSaveImageToFile: TButton;
+    cboSelectMediaFile: TComboBox;
     procedure btnGeminiGenerateContentClick(Sender: TObject);
     procedure bntLoadImageClick(Sender: TObject);
     procedure trbMaxOutputTokenChange(Sender: TObject);
@@ -151,6 +168,16 @@ type
     procedure edtGeminiAPIKeyExit(Sender: TObject);
     procedure chbUseGoogleSearchChange(Sender: TObject);
     procedure cboAPIVersionChange(Sender: TObject);
+    procedure expSystemInstructionCheckChange(Sender: TObject);
+    procedure expSystemInstructionExpandedChanged(Sender: TObject);
+    procedure memSystemInstructionChange(Sender: TObject);
+    procedure btnModelDetailsClick(Sender: TObject);
+    procedure FloatAnimationCalloutFinish(Sender: TObject);
+    procedure chbSetResponseModalitiesChange(Sender: TObject);
+    procedure chbModalityTextChange(Sender: TObject);
+    procedure chbModalityImageOrAudioChange(Sender: TObject);
+    procedure btnSaveImageToFileClick(Sender: TObject);
+    procedure cboSelectMediaFileChange(Sender: TObject);
   private
     fGeminiAI: IGeminiAI;
     fModelName: string;
@@ -158,8 +185,11 @@ type
     fMediaStream: TFileStream;
     fPDFBrowser: TfmxWebBrowser;
     fHTMLResultBrowser: TfmxWebBrowser;
+    fImages: array of TBitmap;
     function CheckAndCreateGeminiAIClass: boolean;
+    procedure ClearMediaCache;
     procedure OnGeminiFetchModels(Models: TStrings; const ErrorMsg: string);
+    procedure OnGeminiFetchModel(Detail: TGeminiModelDetails; const ErrorMsg: string);
     procedure OnGeminiAIGenContent(Response: IGeminiAIResponse);
     procedure OnGeminiAITokenCount(PromptToken, CachedContentToken: integer; const ErrMsg: string);
     procedure OnHTMLLoaded(const FileName: string; ErrorFlag: boolean);
@@ -169,6 +199,7 @@ type
     procedure LoadSettingsFromIniFile(IniFile: TIniFile);
     procedure SaveSettingsIntoIniFile(IniFile: TIniFile);
     procedure FetchModelNameList;
+    procedure FetchModelDetails(AutoClose: boolean);
   end;
 
 implementation
@@ -182,6 +213,7 @@ uses
 
 resourcestring
   rsDefaultPrompt = 'Explain how Gemini AI works?';
+  rsImage = 'Image';
 
 { TGeminiAIFra }
 
@@ -199,9 +231,20 @@ begin
   result := true;
 end;
 
+procedure TGeminiAIFra.ClearMediaCache;
+var
+  c: integer;
+begin
+  for c := Low(fImages) to High(fImages) do
+    fImages[c].Free;
+  SetLength(fImages, 0);
+  cboSelectMediaFile.Clear;
+end;
+
 destructor TGeminiAIFra.Destroy;
 begin
   FreeAndNil(fMediaStream);
+  ClearMediaCache;
   if assigned(fPDFBrowser) then
     fPDFBrowser.Stop;
   if assigned(fHTMLResultBrowser) then
@@ -239,20 +282,58 @@ begin
   cboSexual.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Sexual', 4);
   cboDangerous.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Dangerous', 4);
   cboViolence.ItemIndex := IniFile.ReadInteger('GeminiAI', 'Violence', 4);
+  memSystemInstruction.Lines.Text := TNetEncoding.URL.Decode(IniFile.ReadString('GeminiAI', 'SystemInstructions', ''));
+  expSystemInstruction.IsChecked := not memSystemInstruction.Lines.IsEmpty;
+  expSystemInstruction.IsExpanded := expSystemInstruction.IsChecked;
   trbGoogleSearchThreshold.Value := IniFile.ReadFloat('GeminiAI', 'GoogleSearchThreshold', 0.3);
-  memGeminiPrompt.Lines.Text :=  TNetEncoding.URL.Decode(IniFile.ReadString('GeminiAI', 'Prompt', rsDefaultPrompt));
+  chbModalityText.IsChecked := IniFile.ReadBool('GeminiAI', 'ModalityText', true);
+  chbModalityImage.IsChecked := IniFile.ReadBool('GeminiAI', 'ModalityImage', false);
+  chbModalityAudio.IsChecked := IniFile.ReadBool('GeminiAI', 'ModalityAudio', false);
+  chbSetResponseModalities.IsChecked := not chbModalityText.IsChecked or chbModalityImage.IsChecked or
+    chbModalityAudio.IsChecked;
+  memGeminiPrompt.Lines.Text := TNetEncoding.URL.Decode(IniFile.ReadString('GeminiAI', 'Prompt', rsDefaultPrompt));
   lblGeminiPrompt.visible := memGeminiPrompt.Lines.Text.IsEmpty;
   memGeminiPrompt.TextSettings.Font.Size := IniFile.ReadInteger('GeminiAI', 'FontSize', 12);
   memRawJSONResult.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
   memMarkdown.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
   memMetaData.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
+  memSystemInstruction.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
+  if expSystemInstruction.IsExpanded then
+    expSystemInstruction.Height := expSystemInstruction.cDefaultHeaderHeight + memSystemInstruction.Lines.Count *
+      (memSystemInstruction.TextSettings.Font.Size + 10);
+  txtFile.Text := IniFile.ReadString('GeminiAI', 'MediaFile', '');
+  if not txtFile.Text.IsEmpty then
+  begin
+    if not FileExists(txtFile.Text) then
+      txtFile.Text := ''
+    else if SameText(ExtractFileExt(txtFile.Text), '.pdf') then
+    begin
+      txtNoAttachment.Text := 'PDF loading...';
+      txtNoAttachment.visible := true;
+      aniPDF.Enabled := true;
+      if not assigned(fPDFBrowser) then
+        fPDFBrowser := TfmxWebBrowser.Create(self);
+      fPDFBrowser.LoadFromFile(txtFile.Text, OnPDFLoaded);
+      fPDFBrowser.layChrome.Parent := rctImage;
+      fMediaStream := TFileStream.Create(txtFile.Text, fmOpenRead);
+      edtMediaFileType.Text := TRESTContentType.ctAPPLICATION_PDF;
+    end else begin
+      txtNoAttachment.visible := false;
+      imgMediaFile.Bitmap.LoadFromFile(txtFile.Text);
+      imgMediaFile.Visible := true;
+      fMediaStream := TFileStream.Create(txtFile.Text, fmOpenRead);
+      edtMediaFileType.Text := TFirebaseHelpers.ImageStreamToContentType(fMediaStream);
+    end;
+  end;
   chbUseModelParamsChange(nil);
   chbUseSafetySettingsChange(nil);
   chbUseGoogleSearchChange(nil);
+  chbSetResponseModalitiesChange(nil);
   trbMaxOutputTokenChange(nil);
   trbTemperatureChange(nil);
   trbTopKChange(nil);
   trbTopPChange(nil);
+  tabMediaData.visible := false;
   TabControlResult.ActiveTab := tabMetadata;
   FetchModelNameList;
 end;
@@ -281,10 +362,15 @@ begin
   IniFile.WriteInteger('GeminiAI', 'Sexual', cboSexual.ItemIndex);
   IniFile.WriteInteger('GeminiAI', 'Dangerous', cboDangerous.ItemIndex);
   IniFile.WriteInteger('GeminiAI', 'Violence', cboViolence.ItemIndex);
+  IniFile.WriteString('GeminiAI', 'SystemInstructions', TNetEncoding.URL.Encode(memSystemInstruction.Lines.Text));
   IniFile.WriteBool('GeminiAI', 'UseGoogleSearch', chbUseGoogleSearch.IsChecked);
   IniFile.WriteFloat('GeminiAI', 'GoogleSearchThreshold', trbGoogleSearchThreshold.Value);
+  IniFile.WriteBool('GeminiAI', 'ModalityText', chbModalityText.IsChecked);
+  IniFile.WriteBool('GeminiAI', 'ModalityImage', chbModalityImage.IsChecked);
+  IniFile.WriteBool('GeminiAI', 'ModalityAudio', chbModalityAudio.IsChecked);
   IniFile.WriteString('GeminiAI', 'Prompt', TNetEncoding.URL.Encode(memGeminiPrompt.Lines.Text));
   IniFile.WriteInteger('GeminiAI', 'FontSize', trunc(memGeminiPrompt.TextSettings.Font.Size));
+  IniFile.WriteString('GeminiAI', 'MediaFile', txtFile.Text);
 end;
 {$ENDREGION}
 
@@ -314,6 +400,18 @@ begin
   FetchModelNameList;
 end;
 
+procedure TGeminiAIFra.expSystemInstructionCheckChange(Sender: TObject);
+begin
+  expSystemInstruction.IsExpanded := expSystemInstruction.IsChecked;
+  Fmx.Types.Log.d('expSystemInstructionCheckChange');
+end;
+
+procedure TGeminiAIFra.expSystemInstructionExpandedChanged(Sender: TObject);
+begin
+  expSystemInstruction.IsChecked := expSystemInstruction.IsExpanded;
+  Fmx.Types.Log.d('expSystemInstructionExpandedChanged');
+end;
+
 procedure TGeminiAIFra.cboAPIVersionChange(Sender: TObject);
 begin
   if assigned(fGeminiAI) then
@@ -328,6 +426,61 @@ begin
   CheckAndCreateGeminiAIClass;
   fModelName := cboGeminiModel.Items[cboGeminiModel.ItemIndex];
   fGeminiAI.SetModel(fModelName);
+  btnModelDetails.Enabled := true;
+  FetchModelDetails(not CalloutPanel.Visible);
+end;
+
+procedure TGeminiAIFra.btnModelDetailsClick(Sender: TObject);
+begin
+  if not CalloutPanel.Visible then
+    FetchModelDetails(false)
+  else
+    FloatAnimationCalloutFinish(nil);
+end;
+
+procedure TGeminiAIFra.FetchModelDetails(AutoClose: boolean);
+begin
+  Assert(not fModelName.IsEmpty, 'Missing model name');
+  txtModelInfo.Text := 'processing...';
+  FloatAnimationCalloutFinish(nil);
+  if AutoClose then
+    FloatAnimationCallout.Start;
+  CalloutPanel.Visible := true;
+  fGeminiAI.FetchModelDetails(fModelName, OnGeminiFetchModel);
+end;
+
+procedure TGeminiAIFra.FloatAnimationCalloutFinish(Sender: TObject);
+begin
+  if sender = nil then
+    FloatAnimationCallout.Stop;
+  CalloutPanel.Visible := false;
+  rctCalloutPanelBack.Opacity := 1;
+end;
+
+procedure TGeminiAIFra.OnGeminiFetchModel(Detail: TGeminiModelDetails;
+  const ErrorMsg: string);
+var
+  Info: string;
+begin
+  txtModelTitle.Text := Detail.DisplayName;
+  if SameText(txtModelTitle.Text, Detail.Description) then
+    Info := ''
+  else
+    Info := Detail.Description;
+  Info := Info + LineFeed +
+    'Full Name: ' + Detail.ModelFullName + LineFeed +
+    'Version: ' + Detail.Version + LineFeed +
+    'Supported methods: ' +
+      TFirebaseHelpers.ArrStrToCommaStr(Detail.SupportedGenerationMethods, true) + LineFeed +
+    'Limits of token: input ' + Detail.InputTokenLimit.ToString +
+      ', output ' + Detail.OutputTokenLimit.ToString + LineFeed;
+  if not Detail.BaseModelId.IsEmpty then
+    Info := Info + 'Base Model Id: ' + Detail.BaseModelId;
+  Info := Info + 'Default values for temp: ' + Detail.Temperature.ToString +
+    ' ,topP: ' + Detail.TopP.ToString + ' ,topK: ' + Detail.TopK.ToString + LineFeed +
+    'Max temperature: ' + Detail.MaxTemperature.ToString;
+  txtModelInfo.Text := Info;
+  CalloutPanel.Height := txtModelInfo.Position.Y + txtModelInfo.Canvas.TextHeight(Info);
 end;
 
 procedure TGeminiAIFra.chbUseModelParamsChange(Sender: TObject);
@@ -364,6 +517,24 @@ procedure TGeminiAIFra.chbUseGoogleSearchChange(Sender: TObject);
 begin
   layGoogleSearch.Enabled := chbUseGoogleSearch.IsChecked;
 end;
+
+procedure TGeminiAIFra.chbSetResponseModalitiesChange(Sender: TObject);
+begin
+  layModalities.Enabled := chbSetResponseModalities.IsChecked;
+end;
+
+// Prevent empty Modalities
+procedure TGeminiAIFra.chbModalityImageOrAudioChange(Sender: TObject);
+begin
+  if not chbModalityImage.IsChecked and not chbModalityAudio.IsChecked then
+    chbModalityText.IsChecked := true;
+end;
+
+procedure TGeminiAIFra.chbModalityTextChange(Sender: TObject);
+begin
+  if not chbModalityText.IsChecked and not chbModalityAudio.IsChecked then
+    chbModalityImage.IsChecked := true;
+end;
 {$ENDREGION}
 
 {$REGION 'Gemini Prompt'}
@@ -385,6 +556,7 @@ begin
       if memGeminiPrompt.TextSettings.Font.Size > 8 then
         memGeminiPrompt.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size - 1;
     end;
+    memSystemInstruction.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
     memRawJSONResult.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
     memMarkdown.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
     memMetaData.TextSettings.Font.Size := memGeminiPrompt.TextSettings.Font.Size;
@@ -392,6 +564,11 @@ begin
       fHTMLResultBrowser.Zoom(memGeminiPrompt.TextSettings.Font.Size / 12);
     Handled := true;
   end;
+end;
+
+procedure TGeminiAIFra.memSystemInstructionChange(Sender: TObject);
+begin
+  expSystemInstruction.IsChecked := length(trim(memSystemInstruction.Lines.Text)) > 0;
 end;
 
 procedure TGeminiAIFra.bntLoadImageClick(Sender: TObject);
@@ -406,23 +583,7 @@ begin
     imgMediaFile.Bitmap.LoadFromFile(OpenDialogImgFile.FileName);
     imgMediaFile.Visible := true;
     fMediaStream := TFileStream.Create(OpenDialogImgFile.FileName, fmOpenRead);
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    case TFirebaseHelpers.ImageStreamToContentType(fMediaStream) of
-      TRESTContentType.ctIMAGE_JPEG:
-        edtMediaFileType.Text := 'image/jpeg';
-      TRESTContentType.ctIMAGE_GIF:
-        edtMediaFileType.Text := 'image/gif';
-      TRESTContentType.ctIMAGE_PNG:
-        edtMediaFileType.Text := 'image/png';
-      TRESTContentType.ctIMAGE_TIFF:
-        edtMediaFileType.Text := 'image/tiff';
-      else
-        edtMediaFileType.Text := '?';
-    end;
-    {$ELSE}
-    edtMediaFileType.Text := TFirebaseHelpers.ImageStreamToContentType(
-      fMediaStream);
-    {$ENDIF}
+    edtMediaFileType.Text := TFirebaseHelpers.ImageStreamToContentType(fMediaStream);
   end;
 end;
 
@@ -442,11 +603,7 @@ begin
     fPDFBrowser.LoadFromFile(OpenDialogPDF.FileName, OnPDFLoaded);
     fPDFBrowser.layChrome.Parent := rctImage;
     fMediaStream := TFileStream.Create(OpenDialogPDF.FileName, fmOpenRead);
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    edtMediaFileType.Text := 'application/pdf'
-    {$ELSE}
     edtMediaFileType.Text := TRESTContentType.ctAPPLICATION_PDF;
-    {$ENDIF}
   end;
 end;
 
@@ -480,8 +637,10 @@ const
   cProcessingHTML = '<html><body><h1>Processing %s...</h1></body></html>';
 var
   Info: string;
+  Modalities: TModalities;
 begin
   CheckAndCreateGeminiAIClass;
+  ClearMediaCache;
   if not assigned(fHTMLResultBrowser) then
   begin
     fHTMLResultBrowser := TfmxWebBrowser.Create(self);
@@ -498,27 +657,19 @@ begin
     if imgMediaFile.Visible then
     begin
       Info := 'prompt with image media';
-      {$IF CompilerVersion < 35} // Delphi 10.4 and before
-      fRequest := TGeminiAIRequest.Create.PromptWithMediaData(
-        memGeminiPrompt.Text, edtMediaFileType.Text, fMediaStream);
-      {$ELSE}
       fRequest := TGeminiAIRequest.Create.PromptWithImgData(
         memGeminiPrompt.Text, fMediaStream);
-      {$ENDIF}
     end else begin
       Info := 'prompt with PDF media';
-      {$IF CompilerVersion < 35} // Delphi 10.4 and before
-      fRequest := TGeminiAIRequest.Create.PromptWithMediaData(
-        memGeminiPrompt.Text, 'application/pdf', fMediaStream);
-      {$ELSE}
       fRequest := TGeminiAIRequest.Create.PromptWithMediaData(
         memGeminiPrompt.Text, TRESTContentType.ctAPPLICATION_PDF, fMediaStream);
-      {$ENDIF}
     end;
   end else begin
     Info := 'prompt';
     fRequest := TGeminiAIRequest.Create.Prompt(memGeminiPrompt.Text);
   end;
+  if expSystemInstruction.IsChecked then
+    fRequest.SetSystemInstruction(memSystemInstruction.Lines.Text);
   if chbUseModelParams.IsChecked then
     fRequest.ModelParameter(trbTemperature.Value / 100, trbTopP.Value / 100, round(trbMaxOutputToken.Value),
       round(trbTopK.Value));
@@ -541,7 +692,18 @@ begin
       fRequest.SetStopSequences(memStopSequences.Lines);
   end;
   if chbUseGoogleSearch.IsChecked then
-    fRequest.AddGroundingByGoogleSearch(trbGoogleSearchThreshold.Value);
+    fRequest.SetGroundingByGoogleSearch(trbGoogleSearchThreshold.Value);
+  if chbSetResponseModalities.IsChecked then
+  begin
+    Modalities := [];
+    if chbModalityText.IsChecked then
+      Include(Modalities, mText);
+    if chbModalityImage.IsChecked then
+      Include(Modalities, mImage);
+    if chbModalityAudio.IsChecked then
+      Include(Modalities, mAudio);
+    fRequest.SetResponseModalities(Modalities);
+  end;
   tabHTMLRes.Visible := true;
   TabControlResult.ActiveTab := tabHTMLRes;
   fHTMLResultBrowser.LoadFromStrings(Format(cProcessingHTML, [Info]), OnHTMLLoaded);
@@ -553,13 +715,16 @@ end;
 
 procedure TGeminiAIFra.OnGeminiAIGenContent(Response: IGeminiAIResponse);
 var
-  c: integer;
+  c, d, ImageInd: integer;
+  AIRes: TGeminiAIResult;
   Indent, s: string;
+  Media: TStream;
 begin
   tabHTMLRes.Visible := true;
   tabRawResult.Visible := true;
   tabMetadata.Visible := true;
   tabMarkdownRes.Visible := true;
+  tabMediaData.visible := true;
   memRawJSONResult.Lines.Text := Response.RawFormatedJSONResult;
   fHTMLResultBrowser.Stop;
   if Response.IsValid then
@@ -585,47 +750,78 @@ begin
     begin
       if Response.NumberOfResults > 1 then
         memMetaData.Lines.Add(Format('%sCandidate %d', [Indent, c + 1]));
-      memMetaData.Lines.Add(Indent + 'Finish reason: ' + Response.EvalResult(c).FinishReasonAsStr);
-      memMetaData.Lines.Add(Indent + 'Index: ' + Response.EvalResult(c).Index.ToString);
-      memMetaData.Lines.Add(Indent + 'SafetyRating');
-      if Response.EvalResult(c).SafetyRatings[hcHateSpeech].Probability > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Hate speech: Probability is ' +
-          Response.EvalResult(c).SafetyRatings[hcHateSpeech].ProbabilityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcHateSpeech].ProbabilityScore));
-      if Response.EvalResult(c).SafetyRatings[hcHateSpeech].Severity > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Hate speech: Severity is ' +
-          Response.EvalResult(c).SafetyRatings[hcHateSpeech].SeverityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcHateSpeech].SeverityScore));
-      if Response.EvalResult(c).SafetyRatings[hcHarassment].Probability > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Harassment: Probability is ' +
-          Response.EvalResult(c).SafetyRatings[hcHarassment].ProbabilityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcHarassment].ProbabilityScore));
-      if Response.EvalResult(c).SafetyRatings[hcHarassment].Severity > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Harassment: Severity is ' +
-          Response.EvalResult(c).SafetyRatings[hcHarassment].SeverityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcHarassment].SeverityScore));
-      if Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].Probability > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Sexually Explicit: Probability is ' +
-          Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].ProbabilityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].ProbabilityScore));
-      if Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].Severity > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Sexually Explicit: Severity is ' +
-          Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].SeverityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcSexuallyExplicit].SeverityScore));
-      if Response.EvalResult(c).SafetyRatings[hcDangerousContent].Probability > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Dangerous Content: Probability is ' +
-          Response.EvalResult(c).SafetyRatings[hcDangerousContent].ProbabilityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcDangerousContent].ProbabilityScore));
-      if Response.EvalResult(c).SafetyRatings[hcDangerousContent].Severity > psUnknown then
-        memMetaData.Lines.Add(Indent + Indent + 'Dangerous Content: Severity is ' +
-          Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityAsStr + ', Score: ' +
-          FloatToStr(Response.EvalResult(c).SafetyRatings[hcDangerousContent].SeverityScore));
-      if Response.EvalResult(c).GroundingMetadata.ActiveGrounding then
+      AIRes := Response.EvalResult(c);
+      memMetaData.Lines.Add(Indent + 'Finish reason: ' + AIRes.FinishReasonAsStr);
+      memMetaData.Lines.Add(Indent + 'Number of text parts: ' + length(AIRes.PartText).ToString);
+      if length(AIRes.PartText) > 1 then
+        for d := 0 to length(AIRes.PartText) - 1 do
+          if AIRes.PartText[d].Length > 80 then
+            memMetaData.Lines.Add(Indent + Indent + 'Part text[' + IntToStr(1 + d) + '] starts with: ' +
+              AIRes.GetPartText(d, true).Substring(0, 80) + '..')
+          else
+            memMetaData.Lines.Add(Indent + Indent + 'Part text[' + IntToStr(1 + d) + ']: ' + AIRes.GetPartText(d, true));
+      memMetaData.Lines.Add(Indent + 'Number of media data parts: ' + length(AIRes.PartMediaData).ToString);
+      for d := 0 to length(AIRes.PartMediaData) - 1 do
       begin
-        if length(Response.EvalResult(c).GroundingMetadata.WebSearchQuery) > 0 then
+        Media := AIRes.ResultingMediaDataStream(s, d);
+        try
+          if TFirebaseHelpers.IsSupportImageType(s) then
+          begin
+            memMetaData.Lines.Add(Indent + Indent + 'Media data type: ' + s);
+            ImageInd := length(fImages);
+            SetLength(fImages, ImageInd + 1);
+            fImages[ImageInd] := TBitmap.Create;
+            fImages[ImageInd].LoadFromStream(Media);
+            if ImageInd = 0 then
+              imgMediaRes.Bitmap.Assign(fImages[ImageInd]);
+            cboSelectMediaFile.Items.Add(Format(rsImage + ' %d', [ImageInd + 1]));
+          end else
+            memMetaData.Lines.Add(Indent + Indent + 'Unsupported media data type: ' + s);
+        finally
+          Media.Free;
+        end;
+      end;
+      memMetaData.Lines.Add(Indent + 'Finish reason: ' + AIRes.FinishReasonAsStr);
+      memMetaData.Lines.Add(Indent + 'Index: ' + AIRes.Index.ToString);
+      memMetaData.Lines.Add(Indent + 'SafetyRating');
+      if AIRes.SafetyRatings[hcHateSpeech].Probability > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Hate speech: Probability is ' +
+          AIRes.SafetyRatings[hcHateSpeech].ProbabilityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcHateSpeech].ProbabilityScore));
+      if AIRes.SafetyRatings[hcHateSpeech].Severity > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Hate speech: Severity is ' +
+          AIRes.SafetyRatings[hcHateSpeech].SeverityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcHateSpeech].SeverityScore));
+      if AIRes.SafetyRatings[hcHarassment].Probability > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Harassment: Probability is ' +
+          AIRes.SafetyRatings[hcHarassment].ProbabilityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcHarassment].ProbabilityScore));
+      if AIRes.SafetyRatings[hcHarassment].Severity > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Harassment: Severity is ' +
+          AIRes.SafetyRatings[hcHarassment].SeverityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcHarassment].SeverityScore));
+      if AIRes.SafetyRatings[hcSexuallyExplicit].Probability > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Sexually Explicit: Probability is ' +
+          AIRes.SafetyRatings[hcSexuallyExplicit].ProbabilityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcSexuallyExplicit].ProbabilityScore));
+      if AIRes.SafetyRatings[hcSexuallyExplicit].Severity > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Sexually Explicit: Severity is ' +
+          AIRes.SafetyRatings[hcSexuallyExplicit].SeverityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcSexuallyExplicit].SeverityScore));
+      if AIRes.SafetyRatings[hcDangerousContent].Probability > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Dangerous Content: Probability is ' +
+          AIRes.SafetyRatings[hcDangerousContent].ProbabilityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcDangerousContent].ProbabilityScore));
+      if AIRes.SafetyRatings[hcDangerousContent].Severity > psUnknown then
+        memMetaData.Lines.Add(Indent + Indent + 'Dangerous Content: Severity is ' +
+          AIRes.SafetyRatings[hcDangerousContent].SeverityAsStr + ', Score: ' +
+          FloatToStr(AIRes.SafetyRatings[hcDangerousContent].SeverityScore));
+      if AIRes.GroundingMetadata.ActiveGrounding then
+      begin
+        if length(AIRes.GroundingMetadata.WebSearchQuery) > 0 then
         begin
           memMetaData.Lines.Add(Indent + 'WebSearchQuery');
-          for s in Response.EvalResult(c).GroundingMetadata.WebSearchQuery do
+          for s in AIRes.GroundingMetadata.WebSearchQuery do
             memMetaData.Lines.Add(Indent + Indent + s);
         end;
       end;
@@ -640,6 +836,14 @@ begin
     fRequest.AddAnswerForNextRequest(Response.ResultAsMarkDown);
     btnNextQuestionInChat.Enabled := true;
     btnCalcRequestInChat.Enabled := true;
+    if length(fImages) > 0 then
+    begin
+      cboSelectMediaFile.visible := length(fImages) > 1;
+      cboSelectMediaFile.ItemIndex := 0;
+      imgMediaRes.visible := true;
+      tabMediaData.visible := true;
+      TabControlResult.ActiveTab := tabMediaData;
+    end;
     if not(gfrMaxToken in Response.FinishReasons) then
       fHTMLResultBrowser.LoadFromStrings(Response.ResultAsHTML, OnHTMLLoaded)
     else begin
@@ -660,7 +864,7 @@ procedure TGeminiAIFra.OnHTMLLoaded(const FileName: string; ErrorFlag: boolean);
 begin
   if ErrorFlag then
     TabControlResult.ActiveTab := tabMarkdownRes
-  else
+  else if length(fImages) = 0 then
     TabControlResult.ActiveTab := tabHTMLRes;
 end;
 
@@ -679,32 +883,50 @@ begin
 end;
 {$ENDREGION}
 
+{$REGION 'Result handling'}
+procedure TGeminiAIFra.btnSaveImageToFileClick(Sender: TObject);
+begin
+  if SaveDialogImgFile.Execute then
+    imgMediaRes.Bitmap.SaveToFile(SaveDialogImgFile.FileName);
+end;
+
+procedure TGeminiAIFra.cboSelectMediaFileChange(Sender: TObject);
+var
+  s: string;
+  Ind: integer;
+begin
+  s := cboSelectMediaFile.Items[cboSelectMediaFile.ItemIndex];
+  Ind := StrToIntDef(s.Substring(pos(' ', s)), 0) - 1;
+  if s.StartsWith(rsImage) then
+  begin
+    if (Ind >= 0) and (Ind < length(fImages)) then
+      imgMediaRes.Bitmap.Assign(fImages[Ind]);
+  end;
+end;
+{$ENDREGION}
+
 {$REGION 'Calc Prompt Token'}
 procedure TGeminiAIFra.btnCalcPromptTokenClick(Sender: TObject);
 var
   Request: IGeminiAIRequest;
 begin
   CheckAndCreateGeminiAIClass;
-  fHTMLResultBrowser.Stop;
+  if assigned(fHTMLResultBrowser) then
+    fHTMLResultBrowser.Stop;
   if assigned(fMediaStream) then
   begin
-    {$IF CompilerVersion < 35} // Delphi 10.4 and before
-    if imgMediaFile.Visible then
-      Request := TGeminiAIRequest.Create.PromptWithMediaData(
-        memGeminiPrompt.Text, edtMediaFileType.Text, fMediaStream)
-    else
-      Request := TGeminiAIRequest.Create.PromptWithMediaData(
-        memGeminiPrompt.Text, 'application/pdf', fMediaStream);
-    {$ELSE}
     if imgMediaFile.Visible then
       Request := TGeminiAIRequest.Create.PromptWithImgData(
         memGeminiPrompt.Text, fMediaStream)
     else
       Request := TGeminiAIRequest.Create.PromptWithMediaData(
         memGeminiPrompt.Text, TRESTContentType.ctAPPLICATION_PDF, fMediaStream);
-    {$ENDIF}
   end else
     Request := TGeminiAIRequest.Create.Prompt(memGeminiPrompt.Text);
+  if expSystemInstruction.IsChecked then
+    Request.SetSystemInstruction(memSystemInstruction.Lines.Text);
+  if chbUseGoogleSearch.IsChecked then
+    Request.SetGroundingByGoogleSearch(trbGoogleSearchThreshold.Value);
   fGeminiAI.CountTokenOfRequest(Request, OnGeminiAITokenCount);
   tabHTMLRes.Visible := false;
   tabRawResult.Visible := false;

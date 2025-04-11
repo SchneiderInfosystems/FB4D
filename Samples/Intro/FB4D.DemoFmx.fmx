@@ -64,6 +64,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             964s
             693s)
           inherited tabInfo: TTabItem
+            Size.Width = 82.000000000000000000
+            Size.Height = 26.000000000000000000
             ExplicitSize.cx = 83.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited memUser: TMemo
@@ -73,35 +75,37 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
               Viewport.Height = 619.000000000000000000
             end
             inherited btnRefresh: TButton
-              Position.X = 884.000000000000000000
+              Position.X = 848.000000000000000000
             end
           end
           inherited tabUserProfile: TTabItem
+            Size.Width = 125.000000000000000000
+            Size.Height = 26.000000000000000000
             ExplicitSize.cx = 125.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
             inherited edtChangeEMail: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited edtChangeDisplayName: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited btnChange: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
             inherited btnChangeEMail: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
             inherited edtChangePassword: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited btnChangePwd: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
             inherited edtChangePhotoURL: TEdit
-              Size.Width = 684.000000000000000000
+              Size.Width = 648.000000000000000000
             end
             inherited btnChangePhotoURL: TButton
-              Position.X = 739.000000000000000000
+              Position.X = 703.000000000000000000
             end
           end
         end
@@ -223,7 +227,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             end
           end
           inherited tabDelete: TTabItem
-            Size.Width = 54.000000000000000000
+            Size.Width = 55.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 55.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
@@ -409,7 +413,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cy = 26.000000000000000000
           end
           inherited tabDelete: TTabItem
-            Size.Width = 54.000000000000000000
+            Size.Width = 55.000000000000000000
             Size.Height = 26.000000000000000000
             ExplicitSize.cx = 54.000000000000000000
             ExplicitSize.cy = 26.000000000000000000
@@ -735,11 +739,8 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           inherited lbiObjectLocalization: TListBoxItem
             TabOrder = 36
           end
-          inherited lbiDocTextDetection: TListBoxItem
-            TabOrder = 38
-          end
-          inherited lbiLogoDetection: TListBoxItem
-            TabOrder = 35
+          inherited lbiWebDetection: TListBoxItem
+            TabOrder = 34
           end
           inherited lbiCropHints: TListBoxItem
             TabOrder = 45
@@ -785,16 +786,18 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
         Size.PlatformDefault = False
         inherited TabControlResult: TTabControl
           Size.Width = 1000.000000000000000000
-          Size.Height = 58.000000000000000000
+          Size.Height = 117.000000000000000000
           Sizes = (
             1000s
-            32s
+            91s
             1000s
-            32s
+            91s
             1000s
-            32s
+            91s
             1000s
-            32s)
+            91s
+            1000s
+            91s)
           inherited tabHTMLRes: TTabItem
             Size.Width = 139.000000000000000000
             Size.Height = 26.000000000000000000
@@ -808,9 +811,26 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cy = 26.000000000000000000
             inherited memMarkdown: TMemo
               Size.Width = 1000.000000000000000000
-              Size.Height = 32.000000000000000000
+              Size.Height = 91.000000000000000000
               Viewport.Width = 1000.000000000000000000
-              Viewport.Height = 32.000000000000000000
+              Viewport.Height = 91.000000000000000000
+            end
+          end
+          inherited tabMediaData: TTabItem
+            Size.Width = 81.000000000000000000
+            Size.Height = 26.000000000000000000
+            ExplicitSize.cx = 81.000000000000000000
+            ExplicitSize.cy = 26.000000000000000000
+            inherited imgMediaRes: TImage
+              Size.Width = 904.000000000000000000
+              Size.Height = 91.000000000000000000
+            end
+            inherited Panel1: TPanel
+              Position.X = 904.000000000000000000
+              Size.Height = 91.000000000000000000
+              inherited btnSaveImageToFile: TButton
+                Position.Y = 64.000000000000000000
+              end
             end
           end
           inherited tabMetadata: TTabItem
@@ -820,9 +840,9 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cy = 26.000000000000000000
             inherited memMetaData: TMemo
               Size.Width = 1000.000000000000000000
-              Size.Height = 32.000000000000000000
+              Size.Height = 91.000000000000000000
               Viewport.Width = 1000.000000000000000000
-              Viewport.Height = 32.000000000000000000
+              Viewport.Height = 91.000000000000000000
             end
           end
           inherited tabRawResult: TTabItem
@@ -832,58 +852,45 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             ExplicitSize.cy = 26.000000000000000000
             inherited memRawJSONResult: TMemo
               Size.Width = 1000.000000000000000000
-              Size.Height = 32.000000000000000000
+              Size.Height = 91.000000000000000000
               Viewport.Width = 1000.000000000000000000
-              Viewport.Height = 32.000000000000000000
+              Viewport.Height = 91.000000000000000000
             end
           end
         end
         inherited expGeminiCfg: TExpander
           Size.Width = 1000.000000000000000000
-          ContentSize = '493'
-          inherited layModelParams: TLayout
-            inherited Label13: TLabel
-              TextSettings.Font.StyleExt = {00040000000200000004000000}
-            end
-            inherited Label14: TLabel
-              TextSettings.Font.StyleExt = {00040000000200000004000000}
-            end
-            inherited Label15: TLabel
-              TextSettings.Font.StyleExt = {00040000000200000004000000}
-            end
-            inherited Label16: TLabel
-              TextSettings.Font.StyleExt = {00040000000200000004000000}
-            end
-          end
+          ContentSize = '392'
           inherited laySafetySettings: TLayout
-            inherited Label18: TLabel
-              TextSettings.Font.StyleExt = {00040000000200000004000000}
-            end
             inherited memStopSequences: TMemo
-              Viewport.Width = 334.000000000000000000
-              Viewport.Height = 47.000000000000000000
+              Viewport.Width = 330.000000000000000000
+              Viewport.Height = 43.000000000000000000
             end
           end
           inherited chbUseGoogleSearch: TCheckBox
-            TabOrder = 10
+            TabOrder = 8
           end
           inherited layGoogleSearch: TLayout
-            TabOrder = 11
-            inherited Label33: TLabel
-              TextSettings.Font.StyleExt = {00040000000200000004000000}
-            end
+            TabOrder = 10
           end
           inherited cboAPIVersion: TComboBox
             TabOrder = 13
           end
-        end
-        inherited layPrompt: TLayout
-          Size.Width = 1000.000000000000000000
-          inherited memGeminiPrompt: TMemo
-            Size.Width = 592.000000000000000000
-            Viewport.Width = 592.000000000000000000
-            Viewport.Height = 280.000000000000000000
+          inherited btnModelDetails: TButton
+            TabOrder = 7
           end
+          inherited CalloutPanel: TCalloutPanel
+            TabOrder = 9
+          end
+          inherited chbSetResponseModalities: TCheckBox
+            TabOrder = 11
+          end
+          inherited layModalities: TLayout
+            TabOrder = 15
+          end
+        end
+        inherited layRequest: TLayout
+          Size.Width = 1000.000000000000000000
           inherited layMedia: TLayout
             Position.X = 600.000000000000000000
             inherited btnClearMedia: TButton
@@ -892,6 +899,28 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
           inherited Splitter2: TSplitter
             Position.X = 592.000000000000000000
+          end
+          inherited layPrompt: TLayout
+            Size.Width = 592.000000000000000000
+            inherited expSystemInstruction: TExpander
+              Size.Width = 592.000000000000000000
+              ContentSize = '200'
+              inherited memSystemInstruction: TMemo
+                Viewport.Width = 200.000000000000000000
+                Viewport.Height = 200.000000000000000000
+              end
+            end
+            inherited memGeminiPrompt: TMemo
+              Size.Width = 592.000000000000000000
+              Viewport.Width = 588.000000000000000000
+              Viewport.Height = 284.000000000000000000
+            end
+            inherited layCommandBar: TLayout
+              Size.Width = 592.000000000000000000
+            end
+            inherited Splitter3: TSplitter
+              Size.Width = 592.000000000000000000
+            end
           end
         end
         inherited Splitter1: TSplitter

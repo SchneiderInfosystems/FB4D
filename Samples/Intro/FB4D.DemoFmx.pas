@@ -129,6 +129,11 @@ begin
     edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
     edtGoogleOAuthClientID.Text := IniFile.ReadString('GoogleOAuth2', 'ClientID', '');
     edtGoogleOAuthClientSecret.Text := IniFile.ReadString('GoogleOAuth2', 'ClientSecret', '');
+    try
+      TabControl.ActiveTab := TabControl.Tabs[IniFile.ReadInteger('GUI', 'ActiveTab', 0)];
+    except
+      TabControl.ActiveTab := tabAuth;
+    end;
     AuthFra.LoadSettingsFromIniFile(IniFile);
     RTDBFra.LoadSettingsFromIniFile(IniFile, edtProjectID.Text);
     FirestoreFra.LoadSettingsFromIniFile(IniFile);
@@ -156,6 +161,7 @@ begin
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
     IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
     IniFile.WriteString('GoogleOAuth2', 'ClientSecret', edtGoogleOAuthClientSecret.Text);
+    IniFile.WriteInteger('GUI', 'ActiveTab', TabControl.ActiveTab.Index);
     AuthFra.SaveSettingsIntoIniFile(IniFile);
     RTDBFra.SaveSettingsIntoIniFile(IniFile);
     FirestoreFra.SaveSettingsIntoIniFile(IniFile);

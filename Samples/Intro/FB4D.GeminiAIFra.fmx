@@ -6,26 +6,28 @@ object GeminiAIFra: TGeminiAIFra
   object TabControlResult: TTabControl
     Align = Client
     Size.Width = 1036.000000000000000000
-    Size.Height = 42.000000000000000000
+    Size.Height = 101.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 3
+    TabIndex = 0
     TabOrder = 3
     TabPosition = PlatformDefault
     Sizes = (
       1036s
-      16s
+      75s
       1036s
-      16s
+      75s
       1036s
-      16s
+      75s
       1036s
-      16s)
+      75s
+      1036s
+      75s)
     object tabHTMLRes: TTabItem
       CustomIcon = <
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = False
+      IsSelected = True
       Size.Width = 139.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
@@ -55,12 +57,62 @@ object GeminiAIFra: TGeminiAIFra
         StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 16.000000000000000000
+        Size.Height = 75.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
         Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 16.000000000000000000
+        Viewport.Height = 75.000000000000000000
+      end
+    end
+    object tabMediaData: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 81.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Media Data'
+      ExplicitSize.cx = 81.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object imgMediaRes: TImage
+        MultiResBitmap = <
+          item
+          end>
+        Align = Client
+        Size.Width = 940.000000000000000000
+        Size.Height = 75.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object Panel1: TPanel
+        Align = Right
+        Position.X = 940.000000000000000000
+        Size.Width = 96.000000000000000000
+        Size.Height = 75.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        object btnSaveImageToFile: TButton
+          Anchors = [akLeft, akBottom]
+          Position.X = 8.000000000000000000
+          Position.Y = 48.000000000000000000
+          TabOrder = 0
+          Text = 'Save to file'
+          TextSettings.Trimming = None
+          OnClick = btnSaveImageToFileClick
+        end
+        object cboSelectMediaFile: TComboBox
+          Position.X = 8.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 80.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          OnChange = cboSelectMediaFileChange
+        end
       end
     end
     object tabMetadata: TTabItem
@@ -83,12 +135,12 @@ object GeminiAIFra: TGeminiAIFra
         StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 16.000000000000000000
+        Size.Height = 75.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
         Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 16.000000000000000000
+        Viewport.Height = 75.000000000000000000
       end
     end
     object tabRawResult: TTabItem
@@ -96,7 +148,7 @@ object GeminiAIFra: TGeminiAIFra
         item
         end>
       TextSettings.Trimming = None
-      IsSelected = True
+      IsSelected = False
       Size.Width = 110.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
@@ -111,12 +163,12 @@ object GeminiAIFra: TGeminiAIFra
         StyledSettings = [Family, Style, FontColor]
         Align = Client
         Size.Width = 1036.000000000000000000
-        Size.Height = 16.000000000000000000
+        Size.Height = 75.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
         OnMouseWheel = memMouseWheel
         Viewport.Width = 1036.000000000000000000
-        Viewport.Height = 16.000000000000000000
+        Viewport.Height = 75.000000000000000000
       end
     end
   end
@@ -124,15 +176,15 @@ object GeminiAIFra: TGeminiAIFra
     Align = Top
     ShowCheck = False
     Size.Width = 1036.000000000000000000
-    Size.Height = 518.000000000000000000
+    Size.Height = 417.000000000000000000
     Size.PlatformDefault = False
     Text = 'Gemini Configuration'
     TabOrder = 4
-    ContentSize = '493'
+    ContentSize = '392'
     object chbUseModelParams: TCheckBox
       Position.X = 16.000000000000000000
       Position.Y = 34.000000000000000000
-      Size.Width = 161.000000000000000000
+      Size.Width = 193.000000000000000000
       Size.Height = 19.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
@@ -163,17 +215,19 @@ object GeminiAIFra: TGeminiAIFra
     object cboGeminiModel: TComboBox
       Position.X = 640.000000000000000000
       Position.Y = 2.000000000000000000
-      Size.Width = 333.000000000000000000
+      Size.Width = 313.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 3
+      ParentShowHint = False
+      ShowHint = False
       OnChange = cboGeminiModelChange
     end
     object layModelParams: TLayout
       Position.X = 16.000000000000000000
       Position.Y = 53.000000000000000000
       Size.Width = 956.000000000000000000
-      Size.Height = 228.000000000000000000
+      Size.Height = 124.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 4
       object lblMaxOutToken: TLabel
@@ -183,13 +237,20 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 1
       end
       object lblTempValue: TLabel
-        Position.X = 367.000000000000000000
-        Position.Y = 68.000000000000000000
+        Position.X = 838.000000000000000000
+        Position.Y = 10.000000000000000000
+        Size.Width = 115.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
         Text = 'lblTempValue'
         TabOrder = 3
       end
       object trbMaxOutputToken: TTrackBar
         CanParentFocus = True
+        Hint = 
+          'Controls the maximum length of the generated response, '#13#10'measure' +
+          'd in individual words or punctuation marks '#13#10'(in the unit "token' +
+          '").'
         Max = 4096.000000000000000000
         Min = 1.000000000000000000
         Orientation = Horizontal
@@ -200,18 +261,26 @@ object GeminiAIFra: TGeminiAIFra
         Size.PlatformDefault = False
         TabOrder = 5
         Value = 640.000000000000000000
+        ParentShowHint = False
+        ShowHint = True
         OnChange = trbMaxOutputTokenChange
       end
       object trbTemperature: TTrackBar
         CanParentFocus = True
+        Hint = 
+          'Controls the randomness, creativity and diversity of the '#13#10'gener' +
+          'ated text, where higher values make the output '#13#10'more surprising' +
+          ' and lower values make it more predictable.'
         Orientation = Horizontal
-        Position.X = 138.000000000000000000
-        Position.Y = 67.000000000000000000
+        Position.X = 609.000000000000000000
+        Position.Y = 9.000000000000000000
         Size.Width = 221.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 7
         Value = 80.000000000000000000
+        ParentShowHint = False
+        ShowHint = True
         OnChange = trbTemperatureChange
       end
       object Label1: TLabel
@@ -221,15 +290,15 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 8
       end
       object Label2: TLabel
-        Position.X = 24.000000000000000000
-        Position.Y = 66.000000000000000000
+        Position.X = 495.000000000000000000
+        Position.Y = 8.000000000000000000
         Text = 'Temperature'
         TabOrder = 9
       end
       object Label3: TLabel
-        Position.X = 49.000000000000000000
-        Position.Y = 93.000000000000000000
-        Size.Width = 189.000000000000000000
+        Position.X = 498.000000000000000000
+        Position.Y = 35.000000000000000000
+        Size.Width = 234.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
@@ -237,8 +306,8 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 14
       end
       object Label4: TLabel
-        Position.X = 269.000000000000000000
-        Position.Y = 93.000000000000000000
+        Position.X = 740.000000000000000000
+        Position.Y = 35.000000000000000000
         Size.Width = 178.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
@@ -261,8 +330,8 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 18
       end
       object Label7: TLabel
-        Position.X = 27.000000000000000000
-        Position.Y = 186.000000000000000000
+        Position.X = 495.000000000000000000
+        Position.Y = 64.000000000000000000
         Size.Width = 57.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
@@ -271,21 +340,27 @@ object GeminiAIFra: TGeminiAIFra
       end
       object trbTopK: TTrackBar
         CanParentFocus = True
+        Hint = 
+          'Controls the diversity and coherence: Limits the next '#13#10'token se' +
+          'lection to the top k most likely candidates, '#13#10'providing control' +
+          ' over the range of vocabulary used. '
         Max = 1024.000000000000000000
         Min = 1.000000000000000000
         Orientation = Horizontal
-        Position.X = 138.000000000000000000
-        Position.Y = 185.000000000000000000
+        Position.X = 606.000000000000000000
+        Position.Y = 63.000000000000000000
         Size.Width = 221.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 4
         Value = 10.000000000000000000
+        ParentShowHint = False
+        ShowHint = True
         OnChange = trbTopKChange
       end
       object lblTopK: TLabel
-        Position.X = 367.000000000000000000
-        Position.Y = 187.000000000000000000
+        Position.X = 835.000000000000000000
+        Position.Y = 65.000000000000000000
         Size.Width = 105.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
@@ -293,9 +368,9 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 0
       end
       object Label8: TLabel
-        Position.X = 49.000000000000000000
-        Position.Y = 212.000000000000000000
-        Size.Width = 189.000000000000000000
+        Position.X = 495.000000000000000000
+        Position.Y = 90.000000000000000000
+        Size.Width = 246.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
@@ -303,8 +378,8 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 10
       end
       object Label9: TLabel
-        Position.X = 269.000000000000000000
-        Position.Y = 212.000000000000000000
+        Position.X = 737.000000000000000000
+        Position.Y = 90.000000000000000000
         Size.Width = 178.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
@@ -314,7 +389,7 @@ object GeminiAIFra: TGeminiAIFra
       end
       object Label10: TLabel
         Position.X = 24.000000000000000000
-        Position.Y = 124.000000000000000000
+        Position.Y = 60.000000000000000000
         Size.Width = 57.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
@@ -323,26 +398,33 @@ object GeminiAIFra: TGeminiAIFra
       end
       object trbTopP: TTrackBar
         CanParentFocus = True
+        Hint = 
+          'Controls predictability and probability: Sets a probability thre' +
+          'shold and considers '#13#10'only the top tokens whose cumulative proba' +
+          'bility exceeds this threshold, '#13#10'offering a balance between dive' +
+          'rsity and quality. '
         Orientation = Horizontal
         Position.X = 138.000000000000000000
-        Position.Y = 126.000000000000000000
+        Position.Y = 62.000000000000000000
         Size.Width = 221.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 6
         Value = 80.000000000000000000
+        ParentShowHint = False
+        ShowHint = True
         OnChange = trbTopPChange
       end
       object lblTopP: TLabel
         Position.X = 367.000000000000000000
-        Position.Y = 128.000000000000000000
+        Position.Y = 64.000000000000000000
         Text = 'lblTopP'
         TabOrder = 2
       end
       object Label11: TLabel
-        Position.X = 49.000000000000000000
-        Position.Y = 153.000000000000000000
-        Size.Width = 189.000000000000000000
+        Position.X = 27.000000000000000000
+        Position.Y = 89.000000000000000000
+        Size.Width = 234.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
@@ -351,73 +433,13 @@ object GeminiAIFra: TGeminiAIFra
       end
       object Label12: TLabel
         Position.X = 269.000000000000000000
-        Position.Y = 153.000000000000000000
+        Position.Y = 89.000000000000000000
         Size.Width = 178.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
         Text = 'most creative and random'
         TabOrder = 13
-      end
-      object Label13: TLabel
-        StyledSettings = [Family, Size, FontColor]
-        Position.X = 475.000000000000000000
-        Position.Y = 8.000000000000000000
-        Size.Width = 473.000000000000000000
-        Size.Height = 44.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.StyleExt = {00040000000200000004000000}
-        TextSettings.VertAlign = Leading
-        Text = 
-          'Controls the maximum length of the generated response, measured ' +
-          'in individual words or punctuation marks (in the unit "token").'
-        TabOrder = 26
-      end
-      object Label14: TLabel
-        StyledSettings = [Family, Size, FontColor]
-        Position.X = 475.000000000000000000
-        Position.Y = 66.000000000000000000
-        Size.Width = 473.000000000000000000
-        Size.Height = 50.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.StyleExt = {00040000000200000004000000}
-        TextSettings.VertAlign = Leading
-        Text = 
-          'Controls the randomness, creativity and diversity of the generat' +
-          'ed text, where higher values make the output more surprising and' +
-          ' lower values make it more predictable.'
-        TabOrder = 25
-      end
-      object Label15: TLabel
-        StyledSettings = [Family, Size, FontColor]
-        Position.X = 475.000000000000000000
-        Position.Y = 124.000000000000000000
-        Size.Width = 473.000000000000000000
-        Size.Height = 65.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.StyleExt = {00040000000200000004000000}
-        TextSettings.VertAlign = Leading
-        Text = 
-          'Controls predictability and probability: Sets a probability thre' +
-          'shold and considers only the top tokens whose cumulative probabi' +
-          'lity exceeds this threshold, offering a balance between diversit' +
-          'y and quality. '
-        TabOrder = 24
-      end
-      object Label16: TLabel
-        StyledSettings = [Family, Size, FontColor]
-        Position.X = 475.000000000000000000
-        Position.Y = 186.000000000000000000
-        Size.Width = 473.000000000000000000
-        Size.Height = 44.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.StyleExt = {00040000000200000004000000}
-        TextSettings.VertAlign = Leading
-        Text = 
-          'Controls the diversity and coherence: Limits the next token sele' +
-          'ction to the top k most likely candidates, providing control ove' +
-          'r the range of vocabulary used. '
-        TabOrder = 23
       end
     end
     object lblGeminiAPIKey: TLabel
@@ -428,21 +450,21 @@ object GeminiAIFra: TGeminiAIFra
     end
     object chbUseSafetySettings: TCheckBox
       Position.X = 16.000000000000000000
-      Position.Y = 289.000000000000000000
-      Size.Width = 151.000000000000000000
+      Position.Y = 185.000000000000000000
+      Size.Width = 202.000000000000000000
       Size.Height = 19.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 7
+      TabOrder = 5
       Text = 'Use Safety Settings'
       OnChange = chbUseSafetySettingsChange
     end
     object laySafetySettings: TLayout
       Position.X = 16.000000000000000000
-      Position.Y = 310.000000000000000000
+      Position.Y = 206.000000000000000000
       Size.Width = 956.000000000000000000
       Size.Height = 101.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 9
+      TabOrder = 6
       object cboHateSpeech: TComboBox
         Items.Strings = (
           'Don'#39't block'
@@ -690,59 +712,54 @@ object GeminiAIFra: TGeminiAIFra
         Position.X = 12.000000000000000000
         Position.Y = 50.000000000000000000
         Size.Width = 103.000000000000000000
-        Size.Height = 36.000000000000000000
+        Size.Height = 43.000000000000000000
         Size.PlatformDefault = False
         Text = 'Stop words or sequences'
-        TabOrder = 30
-      end
-      object Label18: TLabel
-        StyledSettings = [Family, Size, FontColor]
-        Position.X = 475.000000000000000000
-        Position.Y = 48.000000000000000000
-        Size.Width = 473.000000000000000000
-        Size.Height = 51.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.StyleExt = {00040000000200000004000000}
-        TextSettings.VertAlign = Leading
-        Text = 
-          'Set a stop sequence to tell the model that it should no longer g' +
-          'enerate content when it generates this word or sequence. A stop ' +
-          'sequence can be any sequence of characters.  Note that the outpu' +
-          't stops at the sequence and the sentence may not be completed. '
-        TabOrder = 27
+        TabOrder = 29
       end
       object memStopSequences: TMemo
         Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
         DataDetectorTypes = []
+        Hint = 
+          'Set a stop sequence to tell the model that it should no longer g' +
+          'enerate content when it'#13#10'generates this word or sequence. A stop' +
+          ' sequence can be any sequence of characters.'#13#10'Note that the outp' +
+          'ut stops at the sequence and the sentence may not be completed. '
         Position.X = 123.000000000000000000
         Position.Y = 50.000000000000000000
         Size.Width = 334.000000000000000000
         Size.Height = 47.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 29
+        TabOrder = 28
+        ParentShowHint = False
+        ShowHint = True
         Viewport.Width = 330.000000000000000000
         Viewport.Height = 43.000000000000000000
       end
     end
     object chbUseGoogleSearch: TCheckBox
       Position.X = 16.000000000000000000
-      Position.Y = 419.000000000000000000
-      Size.Width = 313.000000000000000000
+      Position.Y = 315.000000000000000000
+      Size.Width = 472.000000000000000000
       Size.Height = 19.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 11
+      TabOrder = 7
       Text = 'Use Grounding with Google Search'
       OnChange = chbUseGoogleSearchChange
     end
     object layGoogleSearch: TLayout
       Position.X = 16.000000000000000000
-      Position.Y = 440.000000000000000000
-      Size.Width = 956.000000000000000000
-      Size.Height = 53.000000000000000000
+      Position.Y = 336.000000000000000000
+      Size.Width = 476.000000000000000000
+      Size.Height = 56.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 13
+      TabOrder = 9
       object trbGoogleSearchThreshold: TTrackBar
         CanParentFocus = True
+        Hint = 
+          'The threshold enables dynamic retrieval, where the model uses Go' +
+          'ogle Search only '#13#10'when it is beneficial to the response.'#13#10'It he' +
+          'lps to reduce hallucinations and improve the accuracy.'
         Max = 1.000000000000000000
         Orientation = Horizontal
         Position.X = 138.000000000000000000
@@ -763,9 +780,9 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 1
       end
       object Label31: TLabel
-        Position.X = 74.000000000000000000
+        Position.X = 53.000000000000000000
         Position.Y = 31.000000000000000000
-        Size.Width = 144.000000000000000000
+        Size.Width = 185.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
@@ -773,29 +790,14 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 3
       end
       object Label32: TLabel
-        Position.X = 269.000000000000000000
+        Position.X = 257.000000000000000000
         Position.Y = 31.000000000000000000
-        Size.Width = 169.000000000000000000
+        Size.Width = 181.000000000000000000
         Size.Height = 17.000000000000000000
         Size.PlatformDefault = False
         TextSettings.HorzAlign = Center
         Text = 'Use never google search'
         TabOrder = 2
-      end
-      object Label33: TLabel
-        StyledSettings = [Family, Size, FontColor]
-        Position.X = 475.000000000000000000
-        Position.Y = 4.000000000000000000
-        Size.Width = 478.000000000000000000
-        Size.Height = 44.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Font.StyleExt = {00040000000200000004000000}
-        TextSettings.VertAlign = Leading
-        Text = 
-          'The threshold enables dynamic retrieval, where the model uses Go' +
-          'ogle Search only when it is beneficial to the response. It helps' +
-          ' to reduce hallucinations and improve the accuracy.'
-        TabOrder = 23
       end
     end
     object cboAPIVersion: TComboBox
@@ -804,33 +806,122 @@ object GeminiAIFra: TGeminiAIFra
       Size.Width = 79.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 14
+      TabOrder = 10
       OnChange = cboAPIVersionChange
     end
+    object btnModelDetails: TButton
+      Position.X = 952.000000000000000000
+      Position.Y = 2.000000000000000000
+      Size.Width = 20.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 11
+      Text = '?'
+      TextSettings.Trimming = None
+      OnClick = btnModelDetailsClick
+    end
+    object CalloutPanel: TCalloutPanel
+      Padding.Top = 10.000000000000000000
+      Position.X = 491.000000000000000000
+      Position.Y = 24.000000000000000000
+      Size.Width = 481.000000000000000000
+      Size.Height = 257.000000000000000000
+      Size.PlatformDefault = False
+      Visible = False
+      TabOrder = 13
+      CalloutWidth = 10.000000000000000000
+      CalloutLength = 10.000000000000000000
+      CalloutOffset = -5.000000000000000000
+      object rctCalloutPanelBack: TRectangle
+        Align = Client
+        Fill.Color = claPapayawhip
+        Size.Width = 481.000000000000000000
+        Size.Height = 247.000000000000000000
+        Size.PlatformDefault = False
+        Stroke.Kind = None
+        object txtModelInfo: TText
+          Align = Client
+          Margins.Left = 5.000000000000000000
+          Margins.Right = 5.000000000000000000
+          Margins.Bottom = 5.000000000000000000
+          Size.Width = 471.000000000000000000
+          Size.Height = 209.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.Trimming = Word
+          TextSettings.HorzAlign = Leading
+          TextSettings.VertAlign = Leading
+          PrefixStyle = NoPrefix
+        end
+        object txtModelTitle: TText
+          Align = Top
+          Margins.Left = 5.000000000000000000
+          Margins.Top = 5.000000000000000000
+          Margins.Right = 5.000000000000000000
+          Position.X = 5.000000000000000000
+          Position.Y = 5.000000000000000000
+          Size.Width = 471.000000000000000000
+          Size.Height = 28.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.Font.Size = 20.000000000000000000
+        end
+        object FloatAnimationCallout: TFloatAnimation
+          Delay = 5.000000000000000000
+          Duration = 0.500000000000000000
+          OnFinish = FloatAnimationCalloutFinish
+          PropertyName = 'Opacity'
+          StartValue = 1.000000000000000000
+          StopValue = 0.000000000000000000
+        end
+      end
+    end
+    object chbSetResponseModalities: TCheckBox
+      Position.X = 496.000000000000000000
+      Position.Y = 315.000000000000000000
+      Size.Width = 476.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 15
+      Text = 'Define Response Modalities'
+      OnChange = chbSetResponseModalitiesChange
+    end
+    object layModalities: TLayout
+      Position.X = 496.000000000000000000
+      Position.Y = 336.000000000000000000
+      Size.Width = 476.000000000000000000
+      Size.Height = 56.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 18
+      object chbModalityText: TCheckBox
+        IsChecked = True
+        Position.X = 8.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 2
+        Text = 'Generate Text'
+        OnChange = chbModalityTextChange
+      end
+      object chbModalityImage: TCheckBox
+        Position.X = 136.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 1
+        Text = 'Generate Image'
+        OnChange = chbModalityImageOrAudioChange
+      end
+      object chbModalityAudio: TCheckBox
+        Position.X = 264.000000000000000000
+        Position.Y = 8.000000000000000000
+        TabOrder = 0
+        Text = 'Generate Audio'
+        OnChange = chbModalityImageOrAudioChange
+      end
+    end
   end
-  object layPrompt: TLayout
+  object layRequest: TLayout
     Align = Top
-    Position.Y = 518.000000000000000000
+    Position.Y = 425.000000000000000000
     Size.Width = 1036.000000000000000000
-    Size.Height = 320.000000000000000000
+    Size.Height = 362.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 7
-    object memGeminiPrompt: TMemo
-      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-      CheckSpelling = True
-      DataDetectorTypes = []
-      StyledSettings = [Family, Style, FontColor]
-      Align = Client
-      Margins.Bottom = 40.000000000000000000
-      Size.Width = 628.000000000000000000
-      Size.Height = 280.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 3
-      OnKeyUp = memGeminiPromptKeyUp
-      OnMouseWheel = memMouseWheel
-      Viewport.Width = 624.000000000000000000
-      Viewport.Height = 276.000000000000000000
-    end
     object OpenDialogImgFile: TOpenDialog
       Filter = 
         'PNG (*.png)|*.png|JPEG (*.jpg or *.jpeg)|*.jpg;*.jpeg|GIF (*.gif' +
@@ -838,30 +929,18 @@ object GeminiAIFra: TGeminiAIFra
       Left = 776
       Top = 482
     end
-    object btnGeminiGenerateContent: TButton
-      Anchors = [akLeft, akBottom]
-      Position.X = 37.000000000000000000
-      Position.Y = 290.000000000000000000
-      Size.Width = 133.000000000000000000
-      Size.Height = 22.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 4
-      Text = 'Ask Gemini AI'
-      TextSettings.Trimming = None
-      OnClick = btnGeminiGenerateContentClick
-    end
     object layMedia: TLayout
       Align = Right
       Position.X = 636.000000000000000000
       Size.Width = 400.000000000000000000
-      Size.Height = 320.000000000000000000
+      Size.Height = 362.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 5
+      TabOrder = 2
       object rctImage: TRectangle
         Align = Client
         Margins.Bottom = 40.000000000000000000
         Size.Width = 400.000000000000000000
-        Size.Height = 280.000000000000000000
+        Size.Height = 322.000000000000000000
         Size.PlatformDefault = False
         object imgMediaFile: TImage
           MultiResBitmap = <
@@ -876,7 +955,7 @@ object GeminiAIFra: TGeminiAIFra
         object txtNoAttachment: TText
           Align = Client
           Size.Width = 400.000000000000000000
-          Size.Height = 280.000000000000000000
+          Size.Height = 322.000000000000000000
           Size.PlatformDefault = False
           Text = 'No media file'
         end
@@ -888,7 +967,7 @@ object GeminiAIFra: TGeminiAIFra
       object btnLoadPDF: TButton
         Anchors = [akRight, akBottom]
         Position.X = 87.000000000000000000
-        Position.Y = 290.000000000000000000
+        Position.Y = 332.000000000000000000
         TabOrder = 1
         Text = 'Load PDF'
         TextSettings.Trimming = None
@@ -897,7 +976,7 @@ object GeminiAIFra: TGeminiAIFra
       object bntLoadImage: TButton
         Anchors = [akRight, akBottom]
         Position.X = 175.000000000000000000
-        Position.Y = 290.000000000000000000
+        Position.Y = 332.000000000000000000
         Size.Width = 80.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -912,14 +991,14 @@ object GeminiAIFra: TGeminiAIFra
         TabOrder = 4
         ReadOnly = True
         Position.X = 304.000000000000000000
-        Position.Y = 290.000000000000000000
+        Position.Y = 332.000000000000000000
         Size.Width = 90.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
       end
       object txtFile: TText
         Anchors = [akLeft, akRight, akBottom]
-        Position.Y = 288.000000000000000000
+        Position.Y = 330.000000000000000000
         Size.Width = 79.000000000000000000
         Size.Height = 24.000000000000000000
         Size.PlatformDefault = False
@@ -929,7 +1008,7 @@ object GeminiAIFra: TGeminiAIFra
       object btnClearMedia: TButton
         Anchors = [akRight, akBottom]
         Position.X = 263.000000000000000000
-        Position.Y = 290.000000000000000000
+        Position.Y = 332.000000000000000000
         Size.Width = 33.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
@@ -945,76 +1024,156 @@ object GeminiAIFra: TGeminiAIFra
       MinSize = 20.000000000000000000
       Position.X = 628.000000000000000000
       Size.Width = 8.000000000000000000
-      Size.Height = 320.000000000000000000
+      Size.Height = 362.000000000000000000
       Size.PlatformDefault = False
     end
-    object aniHTML: TAniIndicator
-      Anchors = [akLeft, akBottom]
-      Position.X = 4.000000000000000000
-      Position.Y = 282.000000000000000000
-      Size.Width = 28.000000000000000000
-      Size.Height = 32.000000000000000000
+    object layPrompt: TLayout
+      Align = Client
+      Size.Width = 628.000000000000000000
+      Size.Height = 362.000000000000000000
       Size.PlatformDefault = False
-    end
-    object btnCalcPromptToken: TButton
-      Anchors = [akLeft, akBottom]
-      Position.X = 319.000000000000000000
-      Position.Y = 290.000000000000000000
-      Size.Width = 132.000000000000000000
-      Size.Height = 22.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 7
-      Text = 'Calc Token of Prompt'
-      TextSettings.Trimming = None
-      OnClick = btnCalcPromptTokenClick
-    end
-    object lblGeminiPrompt: TLabel
-      AutoSize = True
-      StyledSettings = [Family, Size, Style]
-      Position.X = 8.000000000000000000
-      Position.Y = 8.000000000000000000
-      Size.Width = 343.000000000000000000
-      Size.Height = 32.000000000000000000
-      Size.PlatformDefault = False
-      TextSettings.FontColor = claGray
-      TextSettings.WordWrap = False
-      Text = 
-        'Gemini prompt'#10'Use the mouse wheel together with the Ctrl key to ' +
-        'zoom the text'
-      TabOrder = 2
-    end
-    object btnNextQuestionInChat: TButton
-      Anchors = [akLeft, akBottom]
-      Enabled = False
-      Position.X = 178.000000000000000000
-      Position.Y = 290.000000000000000000
-      Size.Width = 133.000000000000000000
-      Size.Height = 22.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 8
-      Text = 'Next Question in Chat'
-      TextSettings.Trimming = None
-      OnClick = btnNextQuestionInChatClick
-    end
-    object btnCalcRequestInChat: TButton
-      Anchors = [akLeft, akBottom]
-      Enabled = False
-      Position.X = 459.000000000000000000
-      Position.Y = 290.000000000000000000
-      Size.Width = 132.000000000000000000
-      Size.Height = 22.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 6
-      Text = 'Calc Token in Chat'
-      TextSettings.Trimming = None
-      OnClick = btnCalcRequestInChatClick
+      TabOrder = 3
+      object expSystemInstruction: TExpander
+        Align = Bottom
+        IsChecked = False
+        IsExpanded = False
+        Position.Y = 297.000000000000000000
+        ShowCheck = True
+        Size.Width = 628.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'System Instructions'
+        TabOrder = 0
+        OnCheckChange = expSystemInstructionCheckChange
+        OnExpandedChanged = expSystemInstructionExpandedChanged
+        ContentSize = '200'
+        object memSystemInstruction: TMemo
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          DataDetectorTypes = []
+          StyledSettings = [Family, Style, FontColor]
+          OnChange = memSystemInstructionChange
+          Align = Client
+          Size.Width = 200.000000000000000000
+          Size.Height = 200.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          OnMouseWheel = memMouseWheel
+          Viewport.Width = 200.000000000000000000
+          Viewport.Height = 200.000000000000000000
+        end
+      end
+      object memGeminiPrompt: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        CheckSpelling = True
+        DataDetectorTypes = []
+        StyledSettings = [Family, Style, FontColor]
+        Align = Client
+        Size.Width = 628.000000000000000000
+        Size.Height = 288.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        OnKeyUp = memGeminiPromptKeyUp
+        OnMouseWheel = memMouseWheel
+        Viewport.Width = 624.000000000000000000
+        Viewport.Height = 284.000000000000000000
+      end
+      object layCommandBar: TLayout
+        Align = MostBottom
+        Position.Y = 322.000000000000000000
+        Size.Width = 628.000000000000000000
+        Size.Height = 40.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        object aniHTML: TAniIndicator
+          Anchors = [akLeft, akBottom]
+          Position.X = 4.000000000000000000
+          Position.Y = 2.000000000000000000
+          Size.Width = 28.000000000000000000
+          Size.Height = 32.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object btnCalcPromptToken: TButton
+          Anchors = [akLeft, akBottom]
+          Position.X = 319.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 132.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 6
+          Text = 'Calc Token of Prompt'
+          TextSettings.Trimming = None
+          OnClick = btnCalcPromptTokenClick
+        end
+        object btnCalcRequestInChat: TButton
+          Anchors = [akLeft, akBottom]
+          Enabled = False
+          Position.X = 459.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 132.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 5
+          Text = 'Calc Token in Chat'
+          TextSettings.Trimming = None
+          OnClick = btnCalcRequestInChatClick
+        end
+        object btnGeminiGenerateContent: TButton
+          Anchors = [akLeft, akBottom]
+          Position.X = 37.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 133.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 4
+          Text = 'Ask Gemini AI'
+          TextSettings.Trimming = None
+          OnClick = btnGeminiGenerateContentClick
+        end
+        object btnNextQuestionInChat: TButton
+          Anchors = [akLeft, akBottom]
+          Enabled = False
+          Position.X = 178.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 133.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 8
+          Text = 'Next Question in Chat'
+          TextSettings.Trimming = None
+          OnClick = btnNextQuestionInChatClick
+        end
+      end
+      object lblGeminiPrompt: TLabel
+        AutoSize = True
+        StyledSettings = [Family, Size, Style]
+        Position.X = 8.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 342.857147216796900000
+        Size.Height = 32.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.FontColor = claGray
+        TextSettings.WordWrap = False
+        Text = 
+          'Gemini prompt'#10'Use the mouse wheel together with the Ctrl key to ' +
+          'zoom the text'
+        TabOrder = 2
+      end
+      object Splitter3: TSplitter
+        Align = Bottom
+        Cursor = crVSplit
+        MinSize = 20.000000000000000000
+        Position.Y = 288.000000000000000000
+        Size.Width = 628.000000000000000000
+        Size.Height = 9.000000000000000000
+        Size.PlatformDefault = False
+      end
     end
   end
   object Splitter1: TSplitter
     Align = Top
     Cursor = crVSplit
     MinSize = 20.000000000000000000
-    Position.Y = 838.000000000000000000
+    Position.Y = 417.000000000000000000
     Size.Width = 1036.000000000000000000
     Size.Height = 8.000000000000000000
     Size.PlatformDefault = False
@@ -1024,5 +1183,13 @@ object GeminiAIFra: TGeminiAIFra
     Filter = 'PDF File (*.pdf)|*.pdf'
     Left = 777
     Top = 546
+  end
+  object SaveDialogImgFile: TSaveDialog
+    DefaultExt = '.png'
+    Filter = 
+      'PNG (*.png)|*.png|JPEG (*.jpg or *.jpeg)|*.jpg;*.jpeg|GIF (*.gif' +
+      ')|*.gif|TIFF (*.tif or *.tiff)|*.tiff;*.tif|PDF (*.pdf)|*.pdf'
+    Left = 880
+    Top = 837
   end
 end
