@@ -64,9 +64,10 @@ type
     fBaseURI: string;
     fRequestID: string;
     fAuth: IFirebaseAuthentication;
+    fTimeoutInMs: integer;
   public
     constructor Create(const BaseURI: string; const RequestID: string = '';
-      Auth: IFirebaseAuthentication = nil);
+      Auth: IFirebaseAuthentication = nil; DefaultTimeout: integer = cRestDefaultTimeout);
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
       QueryParams: TQueryParams; TokenMode: TTokenMode;
@@ -97,6 +98,7 @@ type
       Method: TRESTRequestMethod; Data: TStream; ContentType: TRESTContentType;
       QueryParams: TQueryParams = nil;
       TokenMode: TTokenMode = tmBearer): IFirebaseResponse; overload;
+    property TimeoutInMs: integer read fTimeoutInMs;
   end;
 
   TResendRequest = class
@@ -294,12 +296,13 @@ end;
 { TFirestoreRequest }
 
 constructor TFirebaseRequest.Create(const BaseURI, RequestID: string;
-  Auth: IFirebaseAuthentication);
+  Auth: IFirebaseAuthentication; DefaultTimeout: integer);
 begin
   inherited Create;
   fBaseURI := BaseURI;
   fRequestID := RequestID;
   fAuth := Auth;
+  fTimeoutInMs := DefaultTimeout;
 end;
 
 function TFirebaseRequest.InternalSendRequestSynchronous(
@@ -327,6 +330,7 @@ begin
     TFirebasehelpers.Log('FirebaseRequest.InternalSendRequestSynchronous ' +
       GetEnumName(TypeInfo(TRESTRequestMethod), ord(Method)) + ': ' + URL);
     {$ENDIF}
+    Client.ConnectionTimeout := fTimeoutInMs;
     case Method of
       rmPut:
         LResp := Client.Put(URL, Data);
@@ -373,6 +377,7 @@ begin
   Request.Client := Client;
   Request.Method := Method;
   Request.Response := Response;
+  Request.Timeout := fTimeoutInMs;
   if assigned(fAuth) and (TokenMode = tmBearer) and fAuth.Authenticated then
     Request.AddAuthParameter('Authorization', 'Bearer ' + EncodeToken,
       pkHTTPHEADER, [poDoNotEncode]);
@@ -469,6 +474,7 @@ begin
   Request.Client := Client;
   Request.Method := Method;
   Request.Response := Response;
+  Request.Timeout := fTimeoutInMs;
   if assigned(fAuth) and (TokenMode = tmBearer) and fAuth.Authenticated then
     Request.AddAuthParameter('Authorization', 'Bearer ' + EncodeToken,
       pkHTTPHEADER, [poDoNotEncode]);
