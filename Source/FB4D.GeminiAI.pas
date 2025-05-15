@@ -147,6 +147,7 @@ type
     function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
     function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
     function SetGroundingByGoogleSearch(Threshold: double): IGeminiAIRequest;
+    function SetNewGroundingByGoogleSearch: IGeminiAIRequest;
     function SetResponseModalities(Modalities: TModalities): IGeminiAIRequest;
     function AddAnswerForNextRequest(const ResultAsMarkDown: string): IGeminiAIRequest;
     function AddQuestionForNextRequest(const PromptText: string): IGeminiAIRequest;
@@ -191,7 +192,7 @@ type
 implementation
 
 uses
-  System.RTTI, System.NetEncoding,
+  System.RTTI, System.NetEncoding, System.StrUtils,
   FB4D.Helpers;
 
 const
@@ -312,6 +313,7 @@ var
   Model: TJSONValue;
   ModelName: string;
   ModelNames: TStringList;
+  Details: TGeminiModelDetails;
 begin
   if Response.StatusOk then
     try
@@ -325,8 +327,12 @@ begin
           ModelName := (Model as TJSONObject).GetValue<string>('name');
           if ModelName.StartsWith(cModels) then
             ModelName := Modelname.Substring(length(cModels));
-          ModelNames.Add(ModelName);
-          fModelDetails.AddOrSetValue(ModelName, GetModulDetails(Model as TJSONObject));
+          Details := GetModulDetails(Model as TJSONObject);
+          if MatchStr('generateContent', Details.SupportedGenerationMethods) then
+          begin
+            ModelNames.Add(ModelName);
+            fModelDetails.AddOrSetValue(ModelName, Details);
+          end;
         end;
         if assigned(Response.OnSuccess.OnFetchModels) then
           Response.OnSuccess.OnFetchModels(ModelNames, '');
@@ -906,10 +912,19 @@ end;
 function TGeminiAIRequest.SetGroundingByGoogleSearch(Threshold: double): IGeminiAIRequest;
 begin
   CheckAndCreateTools;
+  // For older models like gemini 1.5 pro
   fTools.Add(TJSONObject.Create(TJSONPair.Create('google_search_retrieval',
     TJSONObject.Create(TJSONPair.Create('dynamic_retrieval_config',
       TJSONObject.Create(TJSONPair.Create('mode', 'MODE_DYNAMIC')).
       AddPair('dynamic_threshold', Threshold))))));
+  result := self;
+end;
+
+function TGeminiAIRequest.SetNewGroundingByGoogleSearch: IGeminiAIRequest;
+begin
+  CheckAndCreateTools;
+  // For newer models like gemini 2.5 pro
+  fTools.Add(TJSONObject.Create(TJSONPair.Create('googleSearch', TJSONObject.Create)));
   result := self;
 end;
 

@@ -149,6 +149,7 @@ type
     Panel1: TPanel;
     btnSaveImageToFile: TButton;
     cboSelectMediaFile: TComboBox;
+    chbUseNewGoogleSearch: TCheckBox;
     procedure btnGeminiGenerateContentClick(Sender: TObject);
     procedure bntLoadImageClick(Sender: TObject);
     procedure trbMaxOutputTokenChange(Sender: TObject);
@@ -178,6 +179,7 @@ type
     procedure chbModalityImageOrAudioChange(Sender: TObject);
     procedure btnSaveImageToFileClick(Sender: TObject);
     procedure cboSelectMediaFileChange(Sender: TObject);
+    procedure chbUseNewGoogleSearchChange(Sender: TObject);
   private
     fGeminiAI: IGeminiAI;
     fModelName: string;
@@ -420,6 +422,9 @@ begin
 end;
 
 procedure TGeminiAIFra.cboGeminiModelChange(Sender: TObject);
+var
+  ModelVersion: double;
+  ModelNameParts: TStringDynArray;
 begin
   if cboGeminiModel.ItemIndex < 0 then
     exit;
@@ -428,6 +433,20 @@ begin
   fGeminiAI.SetModel(fModelName);
   btnModelDetails.Enabled := true;
   FetchModelDetails(not CalloutPanel.Visible);
+  ModelNameParts := fModelName.Split(['-']);
+  if (length(ModelNameParts) > 1) and SameText(ModelNameParts[0], 'gemini') then
+    ModelVersion := StrToFloatDef(ModelNameParts[1], 0)
+  else
+    ModelVersion := 0;
+  if chbUseGoogleSearch.IsChecked and (ModelVersion >= 2.0) then
+    chbUseNewGoogleSearch.IsChecked := true
+  else if chbUseNewGoogleSearch.IsChecked and (ModelVersion = 1.5) then
+    chbUseGoogleSearch.IsChecked := true;
+  if ModelVersion = 1.0 then
+  begin
+    chbUseNewGoogleSearch.IsChecked := false;
+    chbUseGoogleSearch.IsChecked := false;
+  end;
 end;
 
 procedure TGeminiAIFra.btnModelDetailsClick(Sender: TObject);
@@ -516,6 +535,14 @@ end;
 procedure TGeminiAIFra.chbUseGoogleSearchChange(Sender: TObject);
 begin
   layGoogleSearch.Enabled := chbUseGoogleSearch.IsChecked;
+  if chbUseGoogleSearch.IsChecked then
+    chbUseNewGoogleSearch.IsChecked := false;
+end;
+
+procedure TGeminiAIFra.chbUseNewGoogleSearchChange(Sender: TObject);
+begin
+  if chbUseNewGoogleSearch.IsChecked then
+    chbUseGoogleSearch.IsChecked := false;
 end;
 
 procedure TGeminiAIFra.chbSetResponseModalitiesChange(Sender: TObject);
@@ -692,7 +719,10 @@ begin
       fRequest.SetStopSequences(memStopSequences.Lines);
   end;
   if chbUseGoogleSearch.IsChecked then
-    fRequest.SetGroundingByGoogleSearch(trbGoogleSearchThreshold.Value);
+    fRequest.SetGroundingByGoogleSearch(trbGoogleSearchThreshold.Value)
+  else if chbUseNewGoogleSearch.IsChecked then
+    fRequest.SetNewGroundingByGoogleSearch;
+
   if chbSetResponseModalities.IsChecked then
   begin
     Modalities := [];
@@ -853,16 +883,18 @@ begin
       memMetaData.Lines.Insert(0, 'Increase max output token in the model parameters!');
       TabControlResult.ActiveTab := tabMetadata;
     end;
-  end else
+  end else begin
+    TabControlResult.ActiveTab := tabRawResult;
     fHTMLResultBrowser.LoadFromStrings('<h1>REST API Call failed</h1><p>' + Response.FailureDetail + '</p>',
       OnHTMLLoaded);
+  end;
   aniHTML.Enabled := false;
   aniHTML.Visible := false;
 end;
 
 procedure TGeminiAIFra.OnHTMLLoaded(const FileName: string; ErrorFlag: boolean);
 begin
-  if ErrorFlag then
+  if ErrorFlag and not memMarkdown.Lines.Text.IsEmpty then
     TabControlResult.ActiveTab := tabMarkdownRes
   else if length(fImages) = 0 then
     TabControlResult.ActiveTab := tabHTMLRes;

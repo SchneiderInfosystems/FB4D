@@ -738,6 +738,9 @@ object GeminiAIFra: TGeminiAIFra
       end
     end
     object chbUseGoogleSearch: TCheckBox
+      Hint = 
+        'Use this approach for older models like gemini-1.5-pro.'#13#10'Check t' +
+        'he Gemini AI model specification for details.'
       Position.X = 16.000000000000000000
       Position.Y = 315.000000000000000000
       Size.Width = 472.000000000000000000
@@ -745,6 +748,8 @@ object GeminiAIFra: TGeminiAIFra
       Size.PlatformDefault = False
       TabOrder = 7
       Text = 'Use Grounding with Google Search'
+      ParentShowHint = False
+      ShowHint = True
       OnChange = chbUseGoogleSearchChange
     end
     object layGoogleSearch: TLayout
@@ -753,7 +758,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.Width = 476.000000000000000000
       Size.Height = 56.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 9
+      TabOrder = 8
       object trbGoogleSearchThreshold: TTrackBar
         CanParentFocus = True
         Hint = 
@@ -806,7 +811,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.Width = 79.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 10
+      TabOrder = 9
       OnChange = cboAPIVersionChange
     end
     object btnModelDetails: TButton
@@ -815,7 +820,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.Width = 20.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 11
+      TabOrder = 10
       Text = '?'
       TextSettings.Trimming = None
       OnClick = btnModelDetailsClick
@@ -828,7 +833,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.Height = 257.000000000000000000
       Size.PlatformDefault = False
       Visible = False
-      TabOrder = 13
+      TabOrder = 12
       CalloutWidth = 10.000000000000000000
       CalloutLength = 10.000000000000000000
       CalloutOffset = -5.000000000000000000
@@ -880,7 +885,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.Width = 476.000000000000000000
       Size.Height = 19.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 15
+      TabOrder = 14
       Text = 'Define Response Modalities'
       OnChange = chbSetResponseModalitiesChange
     end
@@ -913,6 +918,21 @@ object GeminiAIFra: TGeminiAIFra
         Text = 'Generate Audio'
         OnChange = chbModalityImageOrAudioChange
       end
+    end
+    object chbUseNewGoogleSearch: TCheckBox
+      Hint = 
+        'Use this approach for newer models like gemini-2.5-pro. '#13#10'Check ' +
+        'the Gemini AI model specification for details.'
+      Position.X = 255.000000000000000000
+      Position.Y = 315.000000000000000000
+      Size.Width = 233.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 19
+      Text = 'Use Google Search (new approach)'
+      ParentShowHint = False
+      ShowHint = True
+      OnChange = chbUseNewGoogleSearchChange
     end
   end
   object layRequest: TLayout

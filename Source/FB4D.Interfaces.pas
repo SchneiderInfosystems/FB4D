@@ -1743,7 +1743,23 @@ type
     /// might reduce recall.  For example, a threshold of 0.8 means only search results with a similarity
     /// score of 0.8 or greater will be used for grounding.
     /// </param>
+    /// <remark>
+    /// Use this method only for older models like gemini 1.5 pro.
+    /// Check the official documentation of the requested gemini model to see whether and in which version the search
+    /// grounding is applicable!
+    /// </remark>
     function SetGroundingByGoogleSearch(Threshold: double): IGeminiAIRequest;
+
+    /// <summary>
+    /// Augments the grounding process by incorporating Google Search results. This allows the system to
+    /// consider real-world information and context from the web when grounding concepts or entities.
+    /// </summary>
+    /// <remark>
+    /// Use this method only for newer models like gemini 2.5 pro.
+    /// Check the official documentation of the requested gemini model to see whether and in which version the search
+    /// grounding is applicable!
+    /// </remark>
+    function SetNewGroundingByGoogleSearch: IGeminiAIRequest;
 
     /// <summary>
     /// Defines the modalities of the answer. In addition to text, embedded images and audio can also be queried.
