@@ -261,6 +261,7 @@ var
   Models: TJSONArray;
   Model: TJSONValue;
   ModelName: string;
+  Details: TGeminiModelDetails;
 begin
   ModelNames.Clear;
   Params := TQueryParams.Create;
@@ -277,8 +278,13 @@ begin
         begin
           ModelName := (Model as TJSONObject).GetValue<string>('name');
           if ModelName.StartsWith(cModels) then
+            ModelName := ModelName.Substring(length(cModels));
+          Details := GetModulDetails(Model as TJSONObject);
+          if MatchStr('generateContent', Details.SupportedGenerationMethods) then
+          begin
             ModelNames.Add(Modelname.Substring(length(cModels)));
-          fModelDetails.AddOrSetValue(ModelName, GetModulDetails(Model as TJSONObject));
+            fModelDetails.AddOrSetValue(ModelName, GetModulDetails(Model as TJSONObject));
+          end;
         end;
       finally
         Resp.Free;
@@ -326,7 +332,7 @@ begin
         begin
           ModelName := (Model as TJSONObject).GetValue<string>('name');
           if ModelName.StartsWith(cModels) then
-            ModelName := Modelname.Substring(length(cModels));
+            ModelName := ModelName.Substring(length(cModels));
           Details := GetModulDetails(Model as TJSONObject);
           if MatchStr('generateContent', Details.SupportedGenerationMethods) then
           begin
