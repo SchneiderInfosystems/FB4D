@@ -739,6 +739,9 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           inherited lbiObjectLocalization: TListBoxItem
             TabOrder = 36
           end
+          inherited lbiDocTextDetection: TListBoxItem
+            TabOrder = 37
+          end
           inherited lbiWebDetection: TListBoxItem
             TabOrder = 34
           end
@@ -874,7 +877,7 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
             TabOrder = 10
           end
           inherited cboAPIVersion: TComboBox
-            TabOrder = 13
+            TabOrder = 12
           end
           inherited btnModelDetails: TButton
             TabOrder = 7
@@ -887,6 +890,9 @@ object fmxFirebaseDemo: TfmxFirebaseDemo
           end
           inherited layModalities: TLayout
             TabOrder = 15
+          end
+          inherited chbUseNewGoogleSearch: TCheckBox
+            TabOrder = 16
           end
         end
         inherited layRequest: TLayout

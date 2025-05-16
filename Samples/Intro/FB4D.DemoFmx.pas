@@ -119,12 +119,24 @@ uses
 procedure TfmxFirebaseDemo.FormShow(Sender: TObject);
 var
   IniFile: TIniFile;
+  PosL, PosT, SizW, SizH: integer;
 begin
   Caption := Caption + ' - ' + TFirebaseHelpers.GetPlatform +
     ' [' + TFirebaseConfiguration.GetLibVersionInfo + ']';
   TabControl.ActiveTab := tabAuth;
   IniFile := TIniFile.Create(GetIniFileName);
   try
+    PosL := IniFile.ReadInteger('Window', 'Left', -maxint);
+    PosT := IniFile.ReadInteger('Window', 'Top', -maxint);
+    SizW := IniFile.ReadInteger('Window', 'Width', 0);
+    SizH := IniFile.ReadInteger('Window', 'Height', 0);
+    if (SizW * SizH > 0) and Screen.DesktopRect.Contains(RectF(PosL, PosT, PosL + SizW, PosT + SizH)) then
+    begin
+      Left := PosL;
+      Top := PosT;
+      Width := SizW;
+      Height := SizH;
+    end;
     edtKey.Text := IniFile.ReadString('FBProjectSettings', 'APIKey', '');
     edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
     edtGoogleOAuthClientID.Text := IniFile.ReadString('GoogleOAuth2', 'ClientID', '');
@@ -157,6 +169,10 @@ var
 begin
   IniFile := TIniFile.Create(GetIniFileName);
   try
+    IniFile.WriteInteger('Window', 'Left', Left);
+    IniFile.WriteInteger('Window', 'Top', Top);
+    IniFile.WriteInteger('Window', 'Width', Width);
+    IniFile.WriteInteger('Window', 'Height', Height);
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
     IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
