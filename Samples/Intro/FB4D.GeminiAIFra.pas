@@ -364,7 +364,7 @@ begin
   IniFile.WriteInteger('GeminiAI', 'Sexual', cboSexual.ItemIndex);
   IniFile.WriteInteger('GeminiAI', 'Dangerous', cboDangerous.ItemIndex);
   IniFile.WriteInteger('GeminiAI', 'Violence', cboViolence.ItemIndex);
-  IniFile.WriteString('GeminiAI', 'SystemInstructions', TNetEncoding.URL.Encode(memSystemInstruction.Lines.Text));
+  IniFile.WriteString('GeminiAI', 'SystemInstructions', TNetEncoding.URL.Encode(trim(memSystemInstruction.Lines.Text)));
   IniFile.WriteBool('GeminiAI', 'UseGoogleSearch', chbUseGoogleSearch.IsChecked);
   IniFile.WriteFloat('GeminiAI', 'GoogleSearchThreshold', trbGoogleSearchThreshold.Value);
   IniFile.WriteBool('GeminiAI', 'ModalityText', chbModalityText.IsChecked);

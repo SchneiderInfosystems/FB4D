@@ -895,7 +895,7 @@ object GeminiAIFra: TGeminiAIFra
       Size.Width = 476.000000000000000000
       Size.Height = 56.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 18
+      TabOrder = 16
       object chbModalityText: TCheckBox
         IsChecked = True
         Position.X = 8.000000000000000000
@@ -1193,7 +1193,7 @@ object GeminiAIFra: TGeminiAIFra
     Align = Top
     Cursor = crVSplit
     MinSize = 20.000000000000000000
-    Position.Y = 417.000000000000000000
+    Position.Y = 779.000000000000000000
     Size.Width = 1036.000000000000000000
     Size.Height = 8.000000000000000000
     Size.PlatformDefault = False
