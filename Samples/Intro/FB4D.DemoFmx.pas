@@ -117,9 +117,11 @@ uses
 
 {$REGION 'Form Handling'}
 procedure TfmxFirebaseDemo.FormShow(Sender: TObject);
+const
+  cBorderTol = 8;
 var
   IniFile: TIniFile;
-  PosL, PosT, SizW, SizH: integer;
+  PosL, PosT, SizW, SizH, State: integer;
 begin
   Caption := Caption + ' - ' + TFirebaseHelpers.GetPlatform +
     ' [' + TFirebaseConfiguration.GetLibVersionInfo + ']';
@@ -130,12 +132,16 @@ begin
     PosT := IniFile.ReadInteger('Window', 'Top', -maxint);
     SizW := IniFile.ReadInteger('Window', 'Width', 0);
     SizH := IniFile.ReadInteger('Window', 'Height', 0);
-    if (SizW * SizH > 0) and Screen.DesktopRect.Contains(RectF(PosL, PosT, PosL + SizW, PosT + SizH)) then
+    State := IniFile.ReadInteger('Window', 'State', 0);
+    if (SizW * SizH > 0) and Screen.DesktopRect.Contains(
+      RectF(PosL + cBorderTol, PosT + cBorderTol, PosL + SizW - cBorderTol, PosT + SizH - cBorderTol)) then
     begin
       Left := PosL;
       Top := PosT;
       Width := SizW;
       Height := SizH;
+      if State = ord(TWindowState.wsMaximized) then
+        WindowState := TWindowState.wsMaximized;
     end;
     edtKey.Text := IniFile.ReadString('FBProjectSettings', 'APIKey', '');
     edtProjectID.Text := IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
@@ -173,6 +179,7 @@ begin
     IniFile.WriteInteger('Window', 'Top', Top);
     IniFile.WriteInteger('Window', 'Width', Width);
     IniFile.WriteInteger('Window', 'Height', Height);
+    IniFile.WriteInteger('Window', 'State', ord(WindowState));
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
     IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
