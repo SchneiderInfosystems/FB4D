@@ -283,7 +283,7 @@ begin
     Assert.AreEqual(JO.GetValue<extended>('Tax'), 632.60,
       'Unexpected Tax: ' + JO.GetValue<string>('Tax'));
     Assert.AreEqual(JO.GetValue<extended>('TaxRate'), 8.1,
-      'Unexpected Tax: ' + JO.GetValue<string>('Tax'));
+      'Unexpected Tax: ' + JO.GetValue<string>('TaxRate'));
     Status('All JSON field check passed');
     Status('PromptTokenCount: ' + Resp.UsageMetaData.PromptTokenCount.ToString);
     Status('GeneratedTokenCount: ' + Resp.UsageMetaData.GeneratedTokenCount.ToString);
