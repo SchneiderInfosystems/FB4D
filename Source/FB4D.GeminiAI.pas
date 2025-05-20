@@ -897,6 +897,7 @@ begin
   if mAudio in Modalities then
     arr.Add('AUDIO');
   fGenerationConfig.AddPair('responseModalities', arr);
+  result := self;
 end;
 
 function TGeminiAIRequest.SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
@@ -960,6 +961,7 @@ end;
 
 function TGeminiAIRequest.AsJSON: TJSONObject;
 begin
+  Assert(assigned(fRequest), 'Missing request in TGeminiAIRequest.AsJSON');
   {$IFDEF DEBUG}
   TFirebaseHelpers.Log('Request as JSON: ' + fRequest.ToJSON);
   {$ENDIF}
