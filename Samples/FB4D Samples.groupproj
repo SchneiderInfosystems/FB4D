@@ -24,6 +24,9 @@
         <Projects Include="FSObject2Doc\FSObj2Doc.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="GeminiAIBusinessApp\GeminiAIBusinessApp.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -95,14 +98,23 @@
     <Target Name="FSObj2Doc:Make">
         <MSBuild Projects="FSObject2Doc\FSObj2Doc.dproj" Targets="Make"/>
     </Target>
+    <Target Name="GeminiAIBusinessApp">
+        <MSBuild Projects="GeminiAIBusinessApp\GeminiAIBusinessApp.dproj"/>
+    </Target>
+    <Target Name="GeminiAIBusinessApp:Clean">
+        <MSBuild Projects="GeminiAIBusinessApp\GeminiAIBusinessApp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="GeminiAIBusinessApp:Make">
+        <MSBuild Projects="GeminiAIBusinessApp\GeminiAIBusinessApp.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard;FSSimpleChat;PhotoBox;FSObj2Doc"/>
+        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard;FSSimpleChat;PhotoBox;FSObj2Doc;GeminiAIBusinessApp"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean;FSSimpleChat:Clean;PhotoBox:Clean;FSObj2Doc:Clean"/>
+        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean;FSSimpleChat:Clean;PhotoBox:Clean;FSObj2Doc:Clean;GeminiAIBusinessApp:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make;FSSimpleChat:Make;PhotoBox:Make;FSObj2Doc:Make"/>
+        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make;FSSimpleChat:Make;PhotoBox:Make;FSObj2Doc:Make;GeminiAIBusinessApp:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

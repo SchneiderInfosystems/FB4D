@@ -1,0 +1,1117 @@
+object fmxMain: TfmxMain
+  Left = 0
+  Top = 0
+  Caption = 'Gemini AI Demo Business App'
+  ClientHeight = 1000
+  ClientWidth = 1024
+  Position = ScreenCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnClose = FormClose
+  OnShow = FormShow
+  DesignerMasterStyle = 0
+  object TabControl: TTabControl
+    Align = Client
+    Size.Width = 1024.000000000000000000
+    Size.Height = 1000.000000000000000000
+    Size.PlatformDefault = False
+    TabIndex = 1
+    TabOrder = 0
+    TabPosition = PlatformDefault
+    Sizes = (
+      1024s
+      974s
+      1024s
+      974s
+      1024s
+      974s
+      1024s
+      974s)
+    object tabSettings: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 62.999984741210940000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Settings'
+      ExplicitSize.cx = 62.999984741210940000
+      ExplicitSize.cy = 26.000000000000000000
+      object btnSave: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 929.000000000000000000
+        Position.Y = 89.000000000000000000
+        TabOrder = 10
+        Text = 'Save'
+        TextSettings.Trimming = None
+        OnClick = btnSaveClick
+      end
+      object cboAPIVersion: TComboBox
+        Items.Strings = (
+          'V1 Beta')
+        ItemIndex = 0
+        Position.X = 16.000000000000000000
+        Position.Y = 89.000000000000000000
+        Size.Width = 79.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 8
+      end
+      object edtGeminiAPIKey: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 2
+        Position.X = 16.000000000000000000
+        Position.Y = 34.000000000000000000
+        Size.Width = 993.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 'Enter your API Key generated in AIStudio.Google.com'
+        object rctGeminiAPIKeyDisabled: TRectangle
+          Align = Client
+          Fill.Color = x0A040404
+          HitTest = False
+          Size.Width = 905.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          Visible = False
+        end
+      end
+      object edtModelName: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        TabOrder = 9
+        Position.X = 120.000000000000000000
+        Position.Y = 89.000000000000000000
+        Size.Width = 281.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 'Enter the gemini model name'
+      end
+      object Label1: TLabel
+        Position.X = 120.000000000000000000
+        Position.Y = 64.000000000000000000
+        Text = 'Model Name'
+        TabOrder = 11
+      end
+      object Label2: TLabel
+        Position.X = 16.000000000000000000
+        Position.Y = 64.000000000000000000
+        Text = 'API Version'
+        TabOrder = 12
+      end
+      object lblGeminiAPIKey: TLabel
+        Position.X = 16.000000000000000000
+        Position.Y = 9.000000000000000000
+        Text = 'Gemini API Key:'
+        TabOrder = 0
+      end
+    end
+    object TabCustomerEmailInterpretation: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = True
+      Size.Width = 179.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Customer Email Interpretation'
+      ExplicitSize.cx = 179.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object layCustomerMail: TLayout
+        Align = Top
+        Size.Width = 1024.000000000000000000
+        Size.Height = 726.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        object aniCustomerMail: TAniIndicator
+          Anchors = [akRight, akBottom]
+          Position.X = 871.000000000000000000
+          Position.Y = 637.000000000000000000
+        end
+        object btnCreateDemoMail: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 73.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 49.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 7
+          Text = 'Generate Fictitious Email for '#13#10'Testing the Mail Interpretation'
+          TextSettings.WordWrap = True
+          TextSettings.Trimming = None
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnCreateDemoMailClick
+        end
+        object btnStartMailInterpretation: TButton
+          Anchors = [akRight, akBottom]
+          Position.X = 777.000000000000000000
+          Position.Y = 695.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 3
+          Text = 'Start Mail Interpretation'
+          TextSettings.Trimming = None
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnStartMailInterpretationClick
+        end
+        object Label3: TLabel
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 41.000000000000000000
+          Position.Y = 20.000000000000000000
+          Size.Width = 728.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Customer EMail:'
+          TabOrder = 5
+        end
+        object memCustomerMail: TMemo
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          DataDetectorTypes = []
+          Lines.Strings = (
+            'Write here a customer email or load one from text file.')
+          StyledSettings = [Family, Style, FontColor]
+          TextSettings.Font.Size = 18.000000000000000000
+          TextSettings.WordWrap = True
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          Position.X = 41.000000000000000000
+          Position.Y = 40.000000000000000000
+          Size.Width = 728.000000000000000000
+          Size.Height = 677.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 4
+          Viewport.Width = 724.000000000000000000
+          Viewport.Height = 673.000000000000000000
+        end
+        object btnSaveEMail: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 160.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 8
+          Text = 'Save EMail'
+          TextSettings.Trimming = None
+          OnClick = btnSaveEMailClick
+        end
+        object btnLoadEMail: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 130.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 9
+          Text = 'Load EMail'
+          TextSettings.Trimming = None
+          OnClick = btnLoadEMailClick
+        end
+        object cboEMailSubject: TComboBox
+          Anchors = [akTop, akRight]
+          DropDownCount = 6
+          Items.Strings = (
+            'Request a quote'
+            'Ordering licenses according to quote'
+            'Problems in the invoice'
+            'Customer complaint'
+            'Technical question about the CRM'
+            'Bug report')
+          ItemIndex = 0
+          Position.X = 777.000000000000000000
+          Position.Y = 40.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 10
+          OnChange = cboEMailSubjectChange
+        end
+        object Rectangle1: TRectangle
+          Align = Left
+          Fill.Color = claLightgreen
+          Size.Width = 33.000000000000000000
+          Size.Height = 726.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          object Text1: TText
+            Align = Center
+            RotationAngle = 270.000000000000000000
+            Size.Width = 100.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Input'
+            TextSettings.Font.Size = 24.000000000000000000
+            TextSettings.FontColor = claWhite
+          end
+        end
+        object btnClear: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 190.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 11
+          Text = 'Clear'
+          TextSettings.Trimming = None
+          OnClick = btnClearClick
+        end
+      end
+      object layMailInterpretation: TLayout
+        Align = Client
+        Size.Width = 1024.000000000000000000
+        Size.Height = 240.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+        object edtMailPrio: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 14
+          ReadOnly = True
+          Position.X = 301.000000000000000000
+          Position.Y = 145.000000000000000000
+          Size.Width = 132.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object Label5: TLabel
+          Position.X = 238.000000000000000000
+          Position.Y = 148.000000000000000000
+          Size.Width = 64.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Priority:'
+          TabOrder = 16
+        end
+        object Label6: TLabel
+          Position.X = 452.000000000000000000
+          Position.Y = 148.000000000000000000
+          Size.Width = 69.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Category:'
+          TabOrder = 17
+        end
+        object edtRef: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 18
+          ReadOnly = True
+          Position.X = 777.000000000000000000
+          Position.Y = 113.000000000000000000
+          Size.Width = 128.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 'Invoice, Quote, Order '
+        end
+        object Label7: TLabel
+          Position.X = 729.000000000000000000
+          Position.Y = 118.000000000000000000
+          Size.Width = 40.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Ref:'
+          TabOrder = 19
+        end
+        object edtRoleTitle: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 22
+          ReadOnly = True
+          Position.X = 529.000000000000000000
+          Position.Y = 113.000000000000000000
+          Size.Width = 176.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object Label9: TLabel
+          Position.X = 452.000000000000000000
+          Position.Y = 118.000000000000000000
+          Size.Width = 63.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Role title:'
+          TabOrder = 23
+        end
+        object Label10: TLabel
+          Position.X = 729.000000000000000000
+          Position.Y = 148.000000000000000000
+          Size.Width = 88.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Emotionality:'
+          TabOrder = 24
+        end
+        object edtEmotionality: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 25
+          ReadOnly = True
+          Position.X = 816.000000000000000000
+          Position.Y = 145.000000000000000000
+          Size.Width = 197.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object edtRefKind: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 26
+          ReadOnly = True
+          Position.X = 916.000000000000000000
+          Position.Y = 113.000000000000000000
+          Size.Width = 97.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 'Reference Kind'
+        end
+        object edtCategory: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 27
+          ReadOnly = True
+          Position.X = 529.000000000000000000
+          Position.Y = 145.000000000000000000
+          Size.Width = 176.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object Rectangle2: TRectangle
+          Align = Left
+          Fill.Color = claLightblue
+          Size.Width = 33.000000000000000000
+          Size.Height = 240.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          object Text2: TText
+            Align = Center
+            RotationAngle = 270.000000000000000000
+            Size.Width = 100.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Output'
+            TextSettings.Font.Size = 24.000000000000000000
+            TextSettings.FontColor = claWhite
+          end
+        end
+        object Label8: TLabel
+          Position.X = 41.000000000000000000
+          Position.Y = 175.000000000000000000
+          Size.Width = 80.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Action Queue for Email Processing:'
+          TabOrder = 21
+        end
+        object lstActions: TListBox
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          Position.X = 130.000000000000000000
+          Position.Y = 175.000000000000000000
+          Size.Width = 883.000000000000000000
+          Size.Height = 57.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 20
+          DisableFocusEffect = True
+          DefaultItemStyles.ItemStyle = ''
+          DefaultItemStyles.GroupHeaderStyle = ''
+          DefaultItemStyles.GroupFooterStyle = ''
+          Viewport.Width = 879.000000000000000000
+          Viewport.Height = 53.000000000000000000
+        end
+        object edtMailSender: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 11
+          ReadOnly = True
+          Position.X = 130.000000000000000000
+          Position.Y = 115.000000000000000000
+          Size.Width = 303.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object edtMailDate: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          TabOrder = 13
+          ReadOnly = True
+          Position.X = 130.000000000000000000
+          Position.Y = 145.000000000000000000
+          Size.Width = 100.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object Label4: TLabel
+          Position.X = 42.000000000000000000
+          Position.Y = 148.000000000000000000
+          Size.Width = 80.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Date of mail:'
+          TabOrder = 15
+        end
+        object lblMailSender: TLabel
+          Position.X = 41.000000000000000000
+          Position.Y = 120.000000000000000000
+          Size.Width = 81.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'E-Mail Sender:'
+          TabOrder = 10
+        end
+        object memMailSummary: TMemo
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          DataDetectorTypes = []
+          ReadOnly = True
+          StyledSettings = [Family, Style, FontColor]
+          TextSettings.Font.Size = 18.000000000000000000
+          TextSettings.WordWrap = True
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 41.000000000000000000
+          Position.Y = 57.000000000000000000
+          Size.Width = 972.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 12
+          Viewport.Width = 968.000000000000000000
+          Viewport.Height = 46.000000000000000000
+        end
+        object lblMailDescription: TLabel
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 41.000000000000000000
+          Position.Y = 36.000000000000000000
+          Size.Width = 975.000000000000000000
+          Size.Height = 16.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.VertAlign = Leading
+          Text = 'Summary of the mail:'
+          TabOrder = 9
+        end
+        object lblMailTitle: TLabel
+          Anchors = [akLeft, akTop, akRight]
+          StyledSettings = [Family, Style, FontColor]
+          Position.X = 41.000000000000000000
+          Position.Y = 4.000000000000000000
+          Size.Width = 975.000000000000000000
+          Size.Height = 32.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.Font.Size = 20.000000000000000000
+          Text = 'Mail Title'
+          TabOrder = 8
+          object edtCompanyName: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Anchors = [akTop, akRight]
+            TabOrder = 4
+            ReadOnly = True
+            Position.X = 807.000000000000000000
+            Position.Y = 2.000000000000000000
+            Size.Width = 168.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            TextPrompt = 'Company Name'
+          end
+        end
+      end
+      object Splitter1: TSplitter
+        Align = Top
+        Cursor = crVSplit
+        MinSize = 230.000000000000000000
+        Position.Y = 726.000000000000000000
+        Size.Width = 1024.000000000000000000
+        Size.Height = 8.000000000000000000
+        Size.PlatformDefault = False
+      end
+    end
+    object TabInvoice: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 109.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Invoice Use Case'
+      ExplicitSize.cx = 109.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object layInvoiceRequest: TLayout
+        Align = Top
+        Size.Width = 1024.000000000000000000
+        Size.Height = 772.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object Rectangle3: TRectangle
+          Align = Left
+          Fill.Color = claLightgreen
+          Size.Width = 33.000000000000000000
+          Size.Height = 772.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          object Text3: TText
+            Align = Center
+            RotationAngle = 270.000000000000000000
+            Size.Width = 100.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Input'
+            TextSettings.Font.Size = 24.000000000000000000
+            TextSettings.FontColor = claWhite
+          end
+        end
+        object lblPrompt: TLabel
+          Position.X = 41.000000000000000000
+          Position.Y = 52.000000000000000000
+          Size.Width = 103.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Prompt:'
+          TabOrder = 7
+        end
+        object memInvoicePrompt: TMemo
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          DataDetectorTypes = []
+          Lines.Strings = (
+            
+              'Take from this invoice the reason for payment, the invoice amoun' +
+              't with the tax amount and tax rate and the currency, '
+            
+              'the IBAN number and the payment date, the address of the invoice' +
+              ' issuer and the recipient as well as the invoice number. '
+            'In case of multiline fields seperate by ; character.')
+          StyledSettings = [Family, Style, FontColor]
+          TextSettings.Font.Size = 15.000000000000000000
+          TextSettings.WordWrap = True
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 41.000000000000000000
+          Position.Y = 72.000000000000000000
+          Size.Width = 968.000000000000000000
+          Size.Height = 65.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 6
+          Viewport.Width = 964.000000000000000000
+          Viewport.Height = 61.000000000000000000
+        end
+        object aniInvoice: TAniIndicator
+          Anchors = [akRight, akBottom]
+          Position.X = 903.000000000000000000
+          Position.Y = 684.000000000000000000
+        end
+        object btnLoadInvoicePDF: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 848.000000000000000000
+          Position.Y = 22.000000000000000000
+          Size.Width = 161.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = 'Load Invoice PDF'
+          TextSettings.Trimming = None
+          OnClick = btnLoadInvoicePDFClick
+        end
+        object btnStartInvoice: TButton
+          Anchors = [akRight, akBottom]
+          Position.X = 848.000000000000000000
+          Position.Y = 742.000000000000000000
+          Size.Width = 162.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 4
+          Text = 'Start Invoice Interpretation'
+          TextSettings.Trimming = None
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnStartInvoiceClick
+          object OpenDialogPDF: TOpenDialog
+            DefaultExt = '.pdf'
+            Filter = 'PDF File (*.pdf)|*.pdf'
+            Left = 764
+            Top = 4
+          end
+        end
+        object edtInvoicePDF: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akLeft, akTop, akRight]
+          TabOrder = 1
+          Position.X = 41.000000000000000000
+          Position.Y = 22.000000000000000000
+          Size.Width = 799.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TextPrompt = 'Enter file path of an invoice as PDF'
+        end
+        object WebBrowser: TWebBrowser
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          Size.Width = 799.000000000000000000
+          Size.Height = 619.000000000000000000
+          Size.PlatformDefault = False
+          Position.X = 41.000000000000000000
+          Position.Y = 145.000000000000000000
+          WindowsEngine = EdgeOnly
+        end
+      end
+      object Splitter2: TSplitter
+        Align = Top
+        Cursor = crVSplit
+        MinSize = 230.000000000000000000
+        Position.Y = 772.000000000000000000
+        Size.Width = 1024.000000000000000000
+        Size.Height = 8.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object layInvoiceResult: TLayout
+        Align = Client
+        Size.Width = 1024.000000000000000000
+        Size.Height = 194.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        object memInvoice: TMemo
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          DataDetectorTypes = []
+          StyledSettings = [Style, FontColor]
+          TextSettings.Font.Family = 'Consolas'
+          TextSettings.Font.Size = 15.000000000000000000
+          TextSettings.WordWrap = True
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          Position.X = 41.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 968.000000000000000000
+          Size.Height = 178.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 2
+          Viewport.Width = 964.000000000000000000
+          Viewport.Height = 174.000000000000000000
+        end
+        object Rectangle4: TRectangle
+          Align = Left
+          Fill.Color = claLightblue
+          Size.Width = 33.000000000000000000
+          Size.Height = 194.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          object Text4: TText
+            Align = Center
+            RotationAngle = 270.000000000000000000
+            Size.Width = 100.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Output'
+            TextSettings.Font.Size = 24.000000000000000000
+            TextSettings.FontColor = claWhite
+          end
+        end
+      end
+    end
+    object TabItemLogisticGoodInspection: TTabItem
+      CustomIcon = <
+        item
+        end>
+      TextSettings.Trimming = None
+      IsSelected = False
+      Size.Width = 151.000000000000000000
+      Size.Height = 26.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'Logistic Good Inspection'
+      ExplicitSize.cx = 151.000000000000000000
+      ExplicitSize.cy = 26.000000000000000000
+      object Layout1: TLayout
+        Align = Top
+        Size.Width = 1024.000000000000000000
+        Size.Height = 726.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 3
+        object aniGoodInspection: TAniIndicator
+          Anchors = [akRight, akBottom]
+          Position.X = 871.000000000000000000
+          Position.Y = 637.000000000000000000
+        end
+        object btnCreateItemListAndPhoto: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 73.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 64.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 7
+          Text = 
+            'Generate Fictitious Item List'#13#10'and a photorealistic image'#13#10'of th' +
+            'e warehouse inspection table'
+          TextSettings.WordWrap = True
+          TextSettings.Trimming = None
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnCreateItemListAndPhotoClick
+        end
+        object btnStartGoodInspection: TButton
+          Anchors = [akRight, akBottom]
+          Position.X = 777.000000000000000000
+          Position.Y = 695.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 3
+          Text = 'Start Good Inspection'
+          TextSettings.Trimming = None
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnStartGoodInspectionClick
+        end
+        object Label11: TLabel
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 41.000000000000000000
+          Position.Y = 20.000000000000000000
+          Size.Width = 728.000000000000000000
+          Size.Height = 17.000000000000000000
+          Size.PlatformDefault = False
+          Text = 'Photo Description:'
+          TabOrder = 5
+        end
+        object memPhotoDesc: TMemo
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          DataDetectorTypes = []
+          Lines.Strings = (
+            '')
+          ReadOnly = True
+          StyledSettings = [Family, Style, FontColor]
+          TextSettings.Font.Size = 18.000000000000000000
+          TextSettings.WordWrap = True
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 41.000000000000000000
+          Position.Y = 40.000000000000000000
+          Size.Width = 728.000000000000000000
+          Size.Height = 127.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 4
+          Viewport.Width = 724.000000000000000000
+          Viewport.Height = 123.000000000000000000
+        end
+        object btnSavePackage: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 239.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 8
+          Text = 'Save Package'
+          TextSettings.Trimming = None
+          OnClick = btnSavePackageClick
+        end
+        object btnLoadPackage: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 209.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 9
+          Text = 'Load Package'
+          TextSettings.Trimming = None
+          OnClick = btnLoadPackageClick
+        end
+        object cboSzenario: TComboBox
+          Anchors = [akTop, akRight]
+          DropDownCount = 6
+          Items.Strings = (
+            'Laptop and accessories')
+          ItemIndex = 0
+          Position.X = 777.000000000000000000
+          Position.Y = 40.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 10
+          OnChange = cboEMailSubjectChange
+        end
+        object Rectangle5: TRectangle
+          Align = Left
+          Fill.Color = claLightgreen
+          Size.Width = 33.000000000000000000
+          Size.Height = 726.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          object Text5: TText
+            Align = Center
+            RotationAngle = 270.000000000000000000
+            Size.Width = 100.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Input'
+            TextSettings.Font.Size = 24.000000000000000000
+            TextSettings.FontColor = claWhite
+          end
+        end
+        object btnClearPackage: TButton
+          Anchors = [akTop, akRight]
+          Position.X = 777.000000000000000000
+          Position.Y = 269.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 11
+          Text = 'Clear'
+          TextSettings.Trimming = None
+        end
+        object imgPackageContent: TImage
+          MultiResBitmap = <
+            item
+            end>
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          Position.X = 41.000000000000000000
+          Position.Y = 175.000000000000000000
+          Size.Width = 728.000000000000000000
+          Size.Height = 543.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object edtMimeType: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Anchors = [akTop, akRight]
+          TabOrder = 13
+          ReadOnly = True
+          Position.X = 777.000000000000000000
+          Position.Y = 179.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 22.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object lstItemList: TListBox
+          Anchors = [akTop, akRight, akBottom]
+          Position.X = 777.000000000000000000
+          Position.Y = 299.000000000000000000
+          Size.Width = 239.000000000000000000
+          Size.Height = 318.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 14
+          DisableFocusEffect = True
+          DefaultItemStyles.ItemStyle = ''
+          DefaultItemStyles.GroupHeaderStyle = ''
+          DefaultItemStyles.GroupFooterStyle = ''
+          Viewport.Width = 235.000000000000000000
+          Viewport.Height = 314.000000000000000000
+        end
+      end
+      object Layout2: TLayout
+        Align = Client
+        Size.Width = 1024.000000000000000000
+        Size.Height = 240.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+        object Rectangle6: TRectangle
+          Align = Left
+          Fill.Color = claLightblue
+          Size.Width = 33.000000000000000000
+          Size.Height = 240.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+          object Text6: TText
+            Align = Center
+            RotationAngle = 270.000000000000000000
+            Size.Width = 100.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Output'
+            TextSettings.Font.Size = 24.000000000000000000
+            TextSettings.FontColor = claWhite
+          end
+        end
+        object lblOperatorHint: TLabel
+          Anchors = [akLeft, akTop, akRight]
+          StyledSettings = [Family, Size, FontColor]
+          Position.X = 41.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 972.000000000000000000
+          Size.Height = 24.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.Font.StyleExt = {00070000000000000004000000}
+          Text = 'Hint for operator:'
+          TabOrder = 9
+        end
+        object memGoodInspectionResult: TMemo
+          Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+          DataDetectorTypes = []
+          ReadOnly = True
+          StyledSettings = [Family, Style, FontColor]
+          TextSettings.Font.Size = 18.000000000000000000
+          TextSettings.WordWrap = True
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 41.000000000000000000
+          Position.Y = 30.000000000000000000
+          Size.Width = 972.000000000000000000
+          Size.Height = 65.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 8
+          Viewport.Width = 968.000000000000000000
+          Viewport.Height = 61.000000000000000000
+        end
+        object CircleState: TCircle
+          Position.X = 41.000000000000000000
+          Position.Y = 113.000000000000000000
+          Size.Width = 50.000000000000000000
+          Size.Height = 50.000000000000000000
+          Size.PlatformDefault = False
+        end
+        object Layout3: TLayout
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          Position.X = 99.000000000000000000
+          Position.Y = 103.000000000000000000
+          Size.Width = 917.000000000000000000
+          Size.Height = 129.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 11
+          object GridPanelLayout1: TGridPanelLayout
+            Align = Client
+            Padding.Left = 5.000000000000000000
+            Padding.Right = 5.000000000000000000
+            Size.Width = 917.000000000000000000
+            Size.Height = 129.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 0
+            ColumnCollection = <
+              item
+                Value = 33.334999084472660000
+              end
+              item
+                Value = 33.334999084472660000
+              end
+              item
+                Value = 33.330000000000000000
+              end>
+            ControlCollection = <
+              item
+                Column = 0
+                Control = Label15
+                Row = 0
+              end
+              item
+                Column = 1
+                Control = Label16
+                Row = 0
+              end
+              item
+                Column = 2
+                Control = Label17
+                Row = 0
+              end
+              item
+                Column = 0
+                Control = lstMissingItems
+                Row = 1
+              end
+              item
+                Column = 1
+                Control = lstFoundItems
+                Row = 1
+              end
+              item
+                Column = 2
+                Control = lstSurplusItems
+                Row = 1
+              end>
+            RowCollection = <
+              item
+                SizeStyle = Absolute
+                Value = 20.000000000000000000
+              end
+              item
+                Value = 100.000000000000000000
+              end>
+            object Label15: TLabel
+              Align = Client
+              Size.Width = 295.681945800781300000
+              Size.Height = 20.000000000000000000
+              Size.PlatformDefault = False
+              TextSettings.HorzAlign = Center
+              Text = 'Missing Items'
+              TabOrder = 0
+            end
+            object Label16: TLabel
+              Align = Client
+              Size.Width = 295.681945800781300000
+              Size.Height = 20.000000000000000000
+              Size.PlatformDefault = False
+              TextSettings.HorzAlign = Center
+              Text = 'Found Items'
+              TabOrder = 1
+            end
+            object Label17: TLabel
+              Align = Client
+              Size.Width = 295.636108398437500000
+              Size.Height = 20.000000000000000000
+              Size.PlatformDefault = False
+              TextSettings.HorzAlign = Center
+              Text = 'Surplus Items'
+              TabOrder = 2
+            end
+            object lstMissingItems: TListBox
+              Align = Client
+              Size.Width = 295.681945800781300000
+              Size.Height = 109.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 3
+              DisableFocusEffect = True
+              DefaultItemStyles.ItemStyle = ''
+              DefaultItemStyles.GroupHeaderStyle = ''
+              DefaultItemStyles.GroupFooterStyle = ''
+              Viewport.Width = 291.700000000000000000
+              Viewport.Height = 105.000000000000000000
+            end
+            object lstFoundItems: TListBox
+              Align = Client
+              Size.Width = 295.681945800781300000
+              Size.Height = 109.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 4
+              DisableFocusEffect = True
+              DefaultItemStyles.ItemStyle = ''
+              DefaultItemStyles.GroupHeaderStyle = ''
+              DefaultItemStyles.GroupFooterStyle = ''
+              Viewport.Width = 291.700000000000000000
+              Viewport.Height = 105.000000000000000000
+            end
+            object lstSurplusItems: TListBox
+              Align = Client
+              Size.Width = 295.636108398437500000
+              Size.Height = 109.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 5
+              DisableFocusEffect = True
+              DefaultItemStyles.ItemStyle = ''
+              DefaultItemStyles.GroupHeaderStyle = ''
+              DefaultItemStyles.GroupFooterStyle = ''
+              Viewport.Width = 291.600000000000000000
+              Viewport.Height = 105.000000000000000000
+            end
+          end
+        end
+      end
+      object Splitter3: TSplitter
+        Align = Top
+        Cursor = crVSplit
+        MinSize = 230.000000000000000000
+        Position.Y = 726.000000000000000000
+        Size.Width = 1024.000000000000000000
+        Size.Height = 8.000000000000000000
+        Size.PlatformDefault = False
+      end
+    end
+  end
+  object OpenDialogTxt: TOpenDialog
+    DefaultExt = '.txt'
+    Filter = 'Text File (*.txt)|*.txt'
+    Left = 856
+    Top = 8
+  end
+  object SaveDialogTxt: TSaveDialog
+    DefaultExt = '.txt'
+    Filter = 'Text File (*.txt)|*.txt'
+    Left = 944
+    Top = 8
+  end
+end
