@@ -111,6 +111,17 @@ object fmxMain: TfmxMain
         Text = 'Gemini API Key:'
         TabOrder = 0
       end
+      object btnResetUseCaseData: TButton
+        Position.X = 15.000000000000000000
+        Position.Y = 134.000000000000000000
+        Size.Width = 162.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 13
+        Text = 'Reset all Use Case Data'
+        TextSettings.Trimming = None
+        OnClick = btnResetUseCaseDataClick
+      end
     end
     object TabCustomerEmailInterpretation: TTabItem
       CustomIcon = <
@@ -118,7 +129,7 @@ object fmxMain: TfmxMain
         end>
       TextSettings.Trimming = None
       IsSelected = True
-      Size.Width = 179.000000000000000000
+      Size.Width = 180.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -532,12 +543,12 @@ object fmxMain: TfmxMain
         end>
       TextSettings.Trimming = None
       IsSelected = False
-      Size.Width = 109.000000000000000000
+      Size.Width = 118.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
       TabOrder = 0
-      Text = 'Invoice Use Case'
+      Text = 'Invoice Processing'
       ExplicitSize.cx = 109.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
       object layInvoiceRequest: TLayout
@@ -679,13 +690,13 @@ object fmxMain: TfmxMain
           TextSettings.WordWrap = True
           Anchors = [akLeft, akTop, akRight, akBottom]
           Position.X = 41.000000000000000000
-          Position.Y = 8.000000000000000000
-          Size.Width = 968.000000000000000000
-          Size.Height = 178.000000000000000000
+          Position.Y = 7.000000000000000000
+          Size.Width = 976.000000000000000000
+          Size.Height = 180.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 2
-          Viewport.Width = 964.000000000000000000
-          Viewport.Height = 174.000000000000000000
+          Viewport.Width = 972.000000000000000000
+          Viewport.Height = 176.000000000000000000
         end
         object Rectangle4: TRectangle
           Align = Left

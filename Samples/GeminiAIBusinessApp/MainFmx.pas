@@ -131,6 +131,7 @@ type
     lstSurplusItems: TListBox;
     Layout3: TLayout;
     WebBrowser: TWebBrowser;
+    btnResetUseCaseData: TButton;
     procedure FormShow(Sender: TObject);
     procedure btnSaveClick(Sender: TObject);
     procedure btnStartInvoiceClick(Sender: TObject);
@@ -146,6 +147,7 @@ type
     procedure btnSavePackageClick(Sender: TObject);
     procedure btnLoadPackageClick(Sender: TObject);
     procedure btnStartGoodInspectionClick(Sender: TObject);
+    procedure btnResetUseCaseDataClick(Sender: TObject);
   private
     fGeminiAI: IGeminiAI;
     procedure CreateGeminiAI(const UseAlternativeModelName: string = '');
@@ -262,6 +264,31 @@ begin
   TabControl.ActiveTab := TabInvoice;
 end;
 
+procedure TfmxMain.btnResetUseCaseDataClick(Sender: TObject);
+begin
+  edtInvoicePDF.Text := ExpandFileName(cDefInvoicePDF);
+  WebBrowser.Navigate('file:/' + StringReplace(edtInvoicePDF.Text, '\', '/', [rfReplaceAll]));
+  memCustomerMail.Lines.Text := TNetEncoding.URL.Decode(cDefaultCustomerMail);
+  edtCompanyName.Text := '';
+  memMailSummary.Lines.Clear;
+  edtMailSender.Text := '';
+  edtRoleTitle.Text := '';
+  edtMailDate.Text := '';
+  edtMailPrio.Text := '';
+  edtCategory.Text := '';
+  edtEmotionality.Text := '';
+  lstActions.Clear;
+  memInvoicePrompt.Lines.Text := TNetEncoding.URL.Decode(cInvoicePrompt);
+  memInvoice.Lines.Clear;
+  memPhotoDesc.Lines.Clear;
+  lstItemList.Clear;
+  memGoodInspectionResult.Lines.Clear;
+  lstMissingItems.Clear;
+  lstFoundItems.Clear;
+  lstSurplusItems.Clear;
+  CircleState.Fill.Color := TAlphaColorRec.Gray;
+end;
+
 function TfmxMain.GetSettingFilename: string;
 begin
   result := IncludeTrailingPathDelimiter(
@@ -310,6 +337,7 @@ begin
   begin
     edtInvoicePDF.Text := OpenDialogPDF.FileName;
     WebBrowser.Navigate('file:/' + StringReplace(edtInvoicePDF.Text, '\', '/', [rfReplaceAll]));
+    memInvoice.Lines.Clear;
   end;
 end;
 
@@ -329,13 +357,19 @@ begin
        TSchemaItems.CreateItem('Amount', TGeminiSchema.FloatType),
        TSchemaItems.CreateItem('Currency', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('Tax', TGeminiSchema.FloatType),
-       TSchemaItems.CreateItem('TaxRate', TGeminiSchema.FloatType),
+       TSchemaItems.CreateItem('TaxRate', TGeminiSchema.FloatType.SetDescription('Format %')),
        TSchemaItems.CreateItem('IBAN', TGeminiSchema.StringType),
+       TSchemaItems.CreateItem('BankAccountNumber', TGeminiSchema.StringType.
+         SetDescription('Only fill in this field if no IBAN is available')),
+       TSchemaItems.CreateItem('SWIFTNumber', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('InvoiceIssuerNameAndAddress', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('ReceiverNameAndAddress', TGeminiSchema.StringType),
+       TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.StringType),
+//     TGeminiSchema.DateTimeType is currently (1-June-2025 with Gemini 2.5/1.5 Pro) not working properly
+//     TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.DateTimeType.
+//       SetDescription('If payment date is not given, calculate it from the invoice date and the payment deadline')),
        TSchemaItems.CreateItem('InvoiceNumber', TGeminiSchema.StringType),
-       TSchemaItems.CreateItem('InvoiceDate', TGeminiSchema.StringType),
-       TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.StringType)])));
+       TSchemaItems.CreateItem('InvoiceDate', TGeminiSchema.DateTimeType)])));
     fGeminiAI.GenerateContentByRequest(Request, OnInvoiceInterpreted);
     aniInvoice.Enabled := true;
     aniInvoice.visible := true;
@@ -347,48 +381,42 @@ end;
 procedure TfmxMain.OnInvoiceInterpreted(Response: IGeminiAIResponse);
 var
   JO: TJSONObject;
-  DelayedScrollDown: integer;
 begin
+  aniInvoice.Enabled := false;
+  aniInvoice.visible := false;
   if not Response.IsValid then
-  begin
-    memInvoice.Lines.Text := 'Failed: ' + Response.FailureDetail;
-    aniInvoice.Enabled := false;
-    aniInvoice.visible := false;
-  end else begin
+    memInvoice.Lines.Text := 'Failed: ' + Response.FailureDetail
+  else begin
+    memInvoice.Lines.Add('Invoice processed . : ' + Response.ResultStateStr);
     JO := Response.ResultAsJSON as TJSONObject;
-    memInvoice.TextSettings.Font.Size := 12;
-    memInvoice.Lines.Text := 'JSON = ' + JO.Format;
-    DelayedScrollDown := memInvoice.Lines.Count;
-    memInvoice.Lines.Add('Invoice processed');
-    memInvoice.Lines.Add('Reason of Payment . : ' + JO.GetValue<string>('ReasonOfPayment'));
-    memInvoice.Lines.Add('Amount ............ : ' + JO.GetValue<extended>('Amount').ToString + ' ' +
-      JO.GetValue<string>('Currency'));
-    memInvoice.Lines.Add('Tax and Tax rate .. : ' + JO.GetValue<extended>('Tax').ToString + ' / ' +
-      JO.GetValue<extended>('TaxRate').ToString);
-    memInvoice.Lines.Add('Invoice issuer .... : ' + JO.GetValue<string>('InvoiceIssuerNameAndAddress'));
-    memInvoice.Lines.Add('Receiver .......... : ' + JO.GetValue<string>('ReceiverNameAndAddress'));
-    memInvoice.Lines.Add('Due date of payment : ' + JO.GetValue<string>('DateOfPayment'));
-    memInvoice.Lines.Add('Interbanking number : ' + JO.GetValue<string>('IBAN'));
-    memInvoice.Lines.Add('Invoice Number .... : ' + JO.GetValue<string>('InvoiceNumber'));
-    memInvoice.Lines.Add('Invoice Date ...... : ' + JO.GetValue<string>('InvoiceDate'));
-    TThread.CreateAnonymousThread(
-      procedure
-      begin
-        for var c := 0 to 10 do
-        begin
-          Sleep(300);
-          if Application.Terminated then
-            exit;
-        end;
-        TThread.Queue(nil,
-          procedure
-          begin
-            aniInvoice.Enabled := false;
-            aniInvoice.visible := false;
-            memInvoice.TextSettings.Font.Size := 15;
-            memInvoice.ScrollBy(0, 9999);
-          end);
-      end).Start;
+    {$IFDEF DEBUG}
+    FMX.Types.Log.d(JO.Format(4));
+    {$ENDIF}
+    try
+      memInvoice.Lines.Add('Reason of Payment . : ' + JO.GetValue<string>('ReasonOfPayment'));
+      memInvoice.Lines.Add('Invoice Number .... : ' + JO.GetValue<string>('InvoiceNumber'));
+      memInvoice.Lines.Add('Invoice Date ...... : ' +  FormatDateTime('DD-MMM-YYY',
+        TFirebaseHelpers.DecodeRFC3339DateTime(JO.GetValue<string>('InvoiceDate'))));
+      memInvoice.Lines.Add('Amount ............ : ' + JO.GetValue<extended>('Amount').ToString + ' ' +
+        JO.GetValue<string>('Currency'));
+      memInvoice.Lines.Add('Tax amount and rate : ' + JO.GetValue<extended>('Tax').ToString + ' ' +
+        JO.GetValue<string>('Currency') + ' / ' +
+        JO.GetValue<extended>('TaxRate').ToString + ' %');
+      memInvoice.Lines.Add('Invoice issuer .... : ' + JO.GetValue<string>('InvoiceIssuerNameAndAddress'));
+      memInvoice.Lines.Add('Receiver .......... : ' + JO.GetValue<string>('ReceiverNameAndAddress'));
+//      memInvoice.Lines.Add('Due date of payment : ' + FormatDateTime('DD-MMM-YYY',
+//        TFirebaseHelpers.DecodeRFC3339DateTime(JO.GetValue<string>('DateOfPayment'))));
+      memInvoice.Lines.Add('Due date of payment : ' + JO.GetValue<string>('DateOfPayment'));
+      if not JO.GetValue<string>('IBAN').IsEmpty then
+        memInvoice.Lines.Add('Interbanking number : ' + JO.GetValue<string>('IBAN'))
+      else begin
+        memInvoice.Lines.Add('Bank account number : ' + JO.GetValue<string>('BankAccountNumber'));
+        memInvoice.Lines.Add('SWIFT Code ........ : ' + JO.GetValue<string>('SWIFTNumber'));
+      end;
+    except
+      on e: Exception do
+        memInvoice.Lines.Add('Failure while processing the JSON: ' + e.Message);
+    end;
   end;
 end;
 {$ENDREGION}
@@ -693,4 +721,5 @@ begin
 end;
 
 {$ENDREGION}
+
 end.
