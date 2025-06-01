@@ -369,7 +369,8 @@ begin
 //     TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.DateTimeType.
 //       SetDescription('If payment date is not given, calculate it from the invoice date and the payment deadline')),
        TSchemaItems.CreateItem('InvoiceNumber', TGeminiSchema.StringType),
-       TSchemaItems.CreateItem('InvoiceDate', TGeminiSchema.DateTimeType)])));
+       TSchemaItems.CreateItem('InvoiceDate', TGeminiSchema.StringType)])));
+//       TSchemaItems.CreateItem('InvoiceDate', TGeminiSchema.DateTimeType)])));
     fGeminiAI.GenerateContentByRequest(Request, OnInvoiceInterpreted);
     aniInvoice.Enabled := true;
     aniInvoice.visible := true;
@@ -395,8 +396,9 @@ begin
     try
       memInvoice.Lines.Add('Reason of Payment . : ' + JO.GetValue<string>('ReasonOfPayment'));
       memInvoice.Lines.Add('Invoice Number .... : ' + JO.GetValue<string>('InvoiceNumber'));
-      memInvoice.Lines.Add('Invoice Date ...... : ' +  FormatDateTime('DD-MMM-YYY',
-        TFirebaseHelpers.DecodeRFC3339DateTime(JO.GetValue<string>('InvoiceDate'))));
+      memInvoice.Lines.Add('Invoice Date ...... : ' +  JO.GetValue<string>('InvoiceDate'));
+//      memInvoice.Lines.Add('Invoice Date ...... : ' +  FormatDateTime('DD-MMM-YYY',
+//        TFirebaseHelpers.DecodeRFC3339DateTime(JO.GetValue<string>('InvoiceDate'))));
       memInvoice.Lines.Add('Amount ............ : ' + JO.GetValue<extended>('Amount').ToString + ' ' +
         JO.GetValue<string>('Currency'));
       memInvoice.Lines.Add('Tax amount and rate : ' + JO.GetValue<extended>('Tax').ToString + ' ' +
@@ -408,11 +410,11 @@ begin
 //        TFirebaseHelpers.DecodeRFC3339DateTime(JO.GetValue<string>('DateOfPayment'))));
       memInvoice.Lines.Add('Due date of payment : ' + JO.GetValue<string>('DateOfPayment'));
       if not JO.GetValue<string>('IBAN').IsEmpty then
-        memInvoice.Lines.Add('Interbanking number : ' + JO.GetValue<string>('IBAN'))
-      else begin
+        memInvoice.Lines.Add('Interbanking number : ' + JO.GetValue<string>('IBAN'));
+      if not JO.GetValue<string>('BankAccountNumber').IsEmpty then
         memInvoice.Lines.Add('Bank account number : ' + JO.GetValue<string>('BankAccountNumber'));
+      if not JO.GetValue<string>('SWIFTNumber').IsEmpty then
         memInvoice.Lines.Add('SWIFT Code ........ : ' + JO.GetValue<string>('SWIFTNumber'));
-      end;
     except
       on e: Exception do
         memInvoice.Lines.Add('Failure while processing the JSON: ' + e.Message);
