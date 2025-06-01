@@ -99,20 +99,26 @@ type
     constructor Create;
     destructor Destroy; override;
     function SetStringType: IGeminiSchema;
-    function SetFloatType: IGeminiSchema;
     function SetIntegerType: IGeminiSchema;
+    function SetInt64Type: IGeminiSchema;
+    function SetFloatType: IGeminiSchema;
+    function SetDoubleType: IGeminiSchema;
     function SetBooleanType: IGeminiSchema;
     function SetEnumType(EnumValues: TStringDynArray): IGeminiSchema;
+    function SetDateTimeType: IGeminiSchema;
     function SetArrayType(ArrayElement: IGeminiSchema; MinItems: integer = -1; MaxItems: integer = -1): IGeminiSchema;
     function SetObjectType(RequiredItems: TSchemaItems; OptionalItems: TSchemaItems = nil): IGeminiSchema;
     function SetDescription(const Description: string): IGeminiSchema;
     function SetNullable(IsNullable: boolean): IGeminiSchema;
     // Class helpers
     class function StringType: IGeminiSchema;
-    class function FloatType: IGeminiSchema;
     class function IntegerType: IGeminiSchema;
+    class function Int64Type: IGeminiSchema;
+    class function FloatType: IGeminiSchema;
+    class function DoubleType: IGeminiSchema;
     class function BooleanType: IGeminiSchema;
     class function EnumType(EnumValues: TStringDynArray): IGeminiSchema;
+    class function DateTimeType: IGeminiSchema;
     class function ArrayType(ArrayElement: IGeminiSchema; MinItems: integer = -1; MaxItems: integer = -1): IGeminiSchema;
     class function ObjectType(RequiredItems: TSchemaItems; OptionalItems: TSchemaItems = nil): IGeminiSchema;
   end;
@@ -1447,9 +1453,23 @@ begin
   result := self;
 end;
 
+function TGeminiSchema.SetInt64Type: IGeminiSchema;
+begin
+  fSchema.AddPair('type', 'INTEGER');
+  fSchema.AddPair('format', 'int64');
+  result := self;
+end;
+
 function TGeminiSchema.SetFloatType: IGeminiSchema;
 begin
   fSchema.AddPair('type', 'NUMBER');
+  result := self;
+end;
+
+function TGeminiSchema.SetDoubleType: IGeminiSchema;
+begin
+  fSchema.AddPair('type', 'NUMBER');
+  fSchema.AddPair('format', 'double');
   result := self;
 end;
 
@@ -1470,6 +1490,13 @@ begin
   for Enum in EnumValues do
     Arr.Add(Enum);
   fSchema.AddPair('enum', Arr);
+  result := self;
+end;
+
+function TGeminiSchema.SetDateTimeType: IGeminiSchema;
+begin
+  fSchema.AddPair('type', 'STRING');
+  fSchema.AddPair('format', 'date-time');
   result := self;
 end;
 
@@ -1530,9 +1557,24 @@ begin
   result := TGeminiSchema.Create.SetStringType;
 end;
 
+class function TGeminiSchema.IntegerType: IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetIntegerType;
+end;
+
+class function TGeminiSchema.Int64Type: IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetInt64Type;
+end;
+
 class function TGeminiSchema.FloatType: IGeminiSchema;
 begin
   result := TGeminiSchema.Create.SetFloatType;
+end;
+
+class function TGeminiSchema.DoubleType: IGeminiSchema;
+begin
+  result := TGeminiSchema.Create.SetDoubleType;
 end;
 
 class function TGeminiSchema.BooleanType: IGeminiSchema;
@@ -1545,9 +1587,9 @@ begin
   result := TGeminiSchema.Create.SetEnumType(EnumValues);
 end;
 
-class function TGeminiSchema.IntegerType: IGeminiSchema;
+class function TGeminiSchema.DateTimeType: IGeminiSchema;
 begin
-  result := TGeminiSchema.Create.SetIntegerType;
+  result := TGeminiSchema.Create.SetDateTimeType;
 end;
 
 class function TGeminiSchema.ObjectType(RequiredItems, OptionalItems: TSchemaItems): IGeminiSchema;

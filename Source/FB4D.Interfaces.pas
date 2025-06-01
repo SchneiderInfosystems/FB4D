@@ -70,7 +70,7 @@ const
   cGeminiAIPro1_0 = 'gemini-1.0-pro';
   cGeminiAIPro1_5 = 'gemini-1.5-pro';
   cGeminiAIFlash1_5 = 'gemini-1.5-flash';
-  cGeminiAIPro2_5 = 'gemini-2.5-pro';
+  cGeminiAIPro2_5 = 'gemini-2.5-pro';         // Still not available (1-June-2025)
   cGeminiAIDefaultModel = cGeminiAIPro1_5;
 
 type
@@ -1611,9 +1611,19 @@ type
     function SetFloatType: IGeminiSchema;
 
     /// <summary>
+    /// Sets the schema item type to floating-point number in precision double.
+    /// </summary>
+    function SetDoubleType: IGeminiSchema;
+
+    /// <summary>
     /// Sets the schema item type to integer.
     /// </summary>
     function SetIntegerType: IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to large integer (Int64).
+    /// </summary>
+    function SetInt64Type: IGeminiSchema;
 
     /// <summary>
     /// Sets the schema item type to boolean.
@@ -1625,6 +1635,15 @@ type
     /// EnumValues: An array of strings representing the allowed enum values.
     /// </summary>
     function SetEnumType(EnumValues: TStringDynArray): IGeminiSchema;
+
+    /// <summary>
+    /// Sets the schema item type to DateTime in RFC3339 format.
+    /// <remark>
+    /// Check carefully whether the returned date time is correct, as there were still problems with this format
+    /// at the time of implementation on June 1, 2025.
+    /// </remark>
+    /// </summary>
+    function SetDateTimeType: IGeminiSchema;
 
     /// <summary>
     /// Sets the schema item type to an array.
