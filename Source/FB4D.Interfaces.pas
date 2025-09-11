@@ -70,7 +70,7 @@ const
   cGeminiAIPro1_0 = 'gemini-1.0-pro';
   cGeminiAIPro1_5 = 'gemini-1.5-pro';
   cGeminiAIFlash1_5 = 'gemini-1.5-flash';
-  cGeminiAIPro2_5 = 'gemini-2.5-pro';         // Still not available (1-June-2025)
+  cGeminiAIPro2_5 = 'gemini-2.5-pro';
   cGeminiAIDefaultModel = cGeminiAIPro1_5;
 
 type
