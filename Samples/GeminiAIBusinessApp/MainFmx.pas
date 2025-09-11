@@ -365,7 +365,7 @@ begin
        TSchemaItems.CreateItem('InvoiceIssuerNameAndAddress', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('ReceiverNameAndAddress', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.StringType),
-//     TGeminiSchema.DateTimeType is currently (1-June-2025 with Gemini 2.5/1.5 Pro) not working properly
+//     TGeminiSchema.DateTimeType is currently (Sep-2025 with Gemini 2.5 Pro) not working properly
 //     TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.DateTimeType.
 //       SetDescription('If payment date is not given, calculate it from the invoice date and the payment deadline')),
        TSchemaItems.CreateItem('InvoiceNumber', TGeminiSchema.StringType),
