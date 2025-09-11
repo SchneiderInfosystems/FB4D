@@ -197,7 +197,12 @@ begin
   Image.SaveToStream(fImage);
   fImage.Position := 0;
   fContentType := TFirebaseHelpers.ImageStreamToContentType(fImage);
+  {$IFDEF VER370}
+  // Workaround for RSS-4058 Delphi 13 Compiler Failure "Undeclared identifier"
+  if length(fContentType) = 0 then
+  {$ELSE}
   if fContentType.Length = 0 then
+  {$ENDIF}
   begin
     // Unsupported image type: Convert to JPG!
     fImage.Free;
