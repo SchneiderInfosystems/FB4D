@@ -221,6 +221,7 @@ procedure TfmxMain.FormShow(Sender: TObject);
 var
   IniFile: TIniFile;
 begin
+  Caption := Caption + ' - ' + TFirebaseHelpers.GetPlatform;
   IniFile := TIniFile.Create(GetSettingFilename);
   try
     edtGeminiAPIKey.Text := IniFile.ReadString('GeminiAI', 'APIKey', '');
@@ -351,7 +352,7 @@ begin
   FileStream := TFileStream.Create(edtInvoicePDF.Text, fmOpenRead);
   try
     Request := TGeminiAIRequest.Create.PromptWithMediaData(memInvoicePrompt.Lines.Text, CONTENTTYPE_APPLICATION_PDF,
-      FileStream);
+      FileStream, TThread.GetTickCount.ToString);
     Request.SetJSONResponseSchema(TGeminiSchema.Create.SetObjectType(TSchemaItems.Create(
       [TSchemaItems.CreateItem('ReasonOfPayment', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('Amount', TGeminiSchema.FloatType),
@@ -364,10 +365,11 @@ begin
        TSchemaItems.CreateItem('SWIFTNumber', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('InvoiceIssuerNameAndAddress', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('ReceiverNameAndAddress', TGeminiSchema.StringType),
-       TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.StringType),
-//     TGeminiSchema.DateTimeType is currently (Sep-2025 with Gemini 2.5 Pro) not working properly
-//     TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.DateTimeType.
-//       SetDescription('If payment date is not given, calculate it from the invoice date and the payment deadline')),
+//     TGeminiSchema.DateTimeType is currently (Sep-2025 with Gemini 2.5 Pro) still not working properly
+//       TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.DateTimeType.
+//         SetDescription('If payment date is not given, calculate it from the invoice date and the payment deadline')),
+       TSchemaItems.CreateItem('DateOfPayment', TGeminiSchema.StringType.
+         SetDescription('If payment date is not given, calculate it from the invoice date and the payment deadline')),
        TSchemaItems.CreateItem('InvoiceNumber', TGeminiSchema.StringType),
        TSchemaItems.CreateItem('InvoiceDate', TGeminiSchema.StringType)])));
 //       TSchemaItems.CreateItem('InvoiceDate', TGeminiSchema.DateTimeType)])));
@@ -382,13 +384,16 @@ end;
 procedure TfmxMain.OnInvoiceInterpreted(Response: IGeminiAIResponse);
 var
   JO: TJSONObject;
+  ProcessDuration: extended;
 begin
   aniInvoice.Enabled := false;
   aniInvoice.visible := false;
+  ProcessDuration := (TThread.GetTickCount - StrToInt64(Response.RequestID)) / 1000;
   if not Response.IsValid then
     memInvoice.Lines.Text := 'Failed: ' + Response.FailureDetail
   else begin
-    memInvoice.Lines.Add('Invoice processed . : ' + Response.ResultStateStr);
+    memInvoice.Lines.Add('Invoice processed . : ' + Response.ResultStateStr +
+      ' (processing time: ' + Format('%3.1f', [ProcessDuration]) + ' sec)');
     JO := Response.ResultAsJSON as TJSONObject;
     {$IFDEF DEBUG}
     FMX.Types.Log.d(JO.Format(4));
@@ -397,6 +402,7 @@ begin
       memInvoice.Lines.Add('Reason of Payment . : ' + JO.GetValue<string>('ReasonOfPayment'));
       memInvoice.Lines.Add('Invoice Number .... : ' + JO.GetValue<string>('InvoiceNumber'));
       memInvoice.Lines.Add('Invoice Date ...... : ' +  JO.GetValue<string>('InvoiceDate'));
+//      TGeminiSchema.DateTimeType is currently (Sep-2025 with Gemini 2.5 Pro) still not working properly
 //      memInvoice.Lines.Add('Invoice Date ...... : ' +  FormatDateTime('DD-MMM-YYY',
 //        TFirebaseHelpers.DecodeRFC3339DateTime(JO.GetValue<string>('InvoiceDate'))));
       memInvoice.Lines.Add('Amount ............ : ' + JO.GetValue<extended>('Amount').ToString + ' ' +

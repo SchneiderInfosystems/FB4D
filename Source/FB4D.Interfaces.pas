@@ -1569,6 +1569,13 @@ type
     /// Returns the raw JSON response from the API as formated string or an error.
     /// </summary>
     function RawFormatedJSONResult: string;
+
+    /// <summary>
+    /// Returns the request ID that was over taken in TGeminiAIRequest.Create.
+    /// </summary>
+    function GetRequestID: string;
+
+    property RequestID: string read GetRequestID;
   end;
 
   /// <summary>
@@ -1694,23 +1701,52 @@ type
     /// <summary>
     /// Use a simple prompt text as request. Don't combine this method with an additional call
     /// of PromptWithMediaData or PromptWithImgData.
+    /// </summary>
     /// <param name="PromptText">The question in natural language to the large language model.
     /// </param>
     /// <param name="SystemInstructions">Optional system instruction in addition to the question
     ///   in natural language to the large language model.
     /// </param>
-    /// </summary>
-    function Prompt(const PromptText: string; const SystemInstructions: string = ''): IGeminiAIRequest;
+    /// <param name="RequestID">Optional request id to identify the response in case of
+    ///   concurrent running requests.
+    /// </param>
+    function Prompt(const PromptText: string; const SystemInstructions: string = '';
+      const RequestID: string = ''): IGeminiAIRequest;
 
     /// <summary>
     /// Use a media file (document, picture, video, audio) with a command prompt question
     /// </summary>
-    function PromptWithMediaData(const PromptText, MimeType: string; MediaStream: TStream): IGeminiAIRequest;
+    /// <param name="PromptText">The question in natural language to the large language model.
+    /// </param>
+    /// <param name="MimeType">The mime type of the media stream e.g. "image/png" or "application/pdf"
+    /// </param>
+    /// <param name="MediaStream">The stream shall contain a file.
+    /// Supported document formats is PDF
+    /// Supported image formats are: PNG, JPEG, WebP, HEIC, HEIF, GIF, BMP
+    /// Supported video formats are: MP4, MPEG, MOV, AVI, FLV, WEBM, WMV, 3GP
+    /// Supported audio formats are: MP3, AAC, OGG, FLAC
+    /// </param>
+    /// <param name="RequestID">Optional request id to identify the response in case of
+    ///   concurrent running requests.
+    /// </param>
+    function PromptWithMediaData(const PromptText, MimeType: string; MediaStream: TStream;
+      const RequestID: string = ''): IGeminiAIRequest;
 
     {$IF Defined(FMX) OR Defined(FGX)}
     /// <summary>
-    /// For images the MimeType can be evaluated automatically
-    function PromptWithImgData(const PromptText: string; ImgStream: TStream): IGeminiAIRequest;
+    /// Create a reuqest with a prompt type and an image. The MimeType can be evaluated automatically
+    /// from the image.
+    /// </summary>
+    /// <param name="PromptText">The question in natural language to the large language model.
+    /// </param>
+    /// <param name="ImgStream">The stream shall contain an image file.
+    /// Supported image formats are: PNG, JPEG, WebP, HEIC, HEIF, GIF, BMP
+    /// </param>
+    /// <param name="RequestID">Optional request id to identify the response in case of
+    ///   concurrent running requests.
+    /// </param>
+    function PromptWithImgData(const PromptText: string; ImgStream: TStream;
+      const RequestID: string = ''): IGeminiAIRequest;
     {$ENDIF}
 
     /// <summary>
@@ -1800,6 +1836,13 @@ type
     /// Within a chat to calculated to number of tokens in the prompt this function allows get a working request.
     /// </summary>
     function CloneWithoutCfgAndSettings(Request: IGeminiAIRequest): IGeminiAIRequest;
+
+    /// <summary>
+    /// Returns the request ID that was over taken in create.
+    /// </summary>
+    function GetRequestID: string;
+
+    property RequestID: string read GetRequestID;
   end;
 
   /// <summary>
@@ -1828,7 +1871,7 @@ type
 
     /// <summary>
     /// Returns model details for a Gemini model. If data is already fetched from the webservices returns cached 
-	/// value otherwise start a request on webservices. Use this blocking function not in the main thread of a GUI
+    /// value otherwise start a request on webservices. Use this blocking function not in the main thread of a GUI
     /// application but in threads, services or console applications.
     /// </summary>
     /// <param name="ModelName">The name of the model (without "models/" of the full model name).
@@ -1838,9 +1881,9 @@ type
     function FetchModelDetailsSynchronous(const ModelName: string): TGeminiModelDetails;
 
     /// <summary>
-    /// Returns model details for a Gemini model. If data is already fetched from the webservices returns cached 
-	/// value otherwise start a request on webservices. Use this none blocking function in the main thread of a GUI 
-	/// application.
+    /// Returns model details for a Gemini model. If data is already fetched from the webservices returns cached
+  	/// value otherwise start a request on webservices. Use this none blocking function in the main thread of a GUI
+	  /// application.
     /// </summary>
     /// <param name="ModelName">The name of the model (without "models/" of the full model name).
     /// </param>
@@ -1873,8 +1916,11 @@ type
     /// </param>
     /// <param name="OnRespone">A callback function to invoke when the response is ready.
     /// </param>
+    /// <param name="RequestID">Optional request id to identify the response in case of
+    ///   concurrent running requests.
+    /// </param>
     procedure GenerateContentbyPrompt(const Prompt: string;
-      OnRespone: TOnGeminiGenContent);
+      OnRespone: TOnGeminiGenContent; const RequestID: string = '');
 
     /// <summary>
     /// GenerateContentByRequestSynchronous generates content based on the provided IGeminiAIRequest.

@@ -32,7 +32,6 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 62.999984741210940000
       Size.Height = 26.000000000000000000
@@ -48,7 +47,6 @@ object fmxMain: TfmxMain
         Position.Y = 89.000000000000000000
         TabOrder = 10
         Text = 'Save'
-        TextSettings.Trimming = None
         OnClick = btnSaveClick
       end
       object cboAPIVersion: TComboBox
@@ -119,7 +117,6 @@ object fmxMain: TfmxMain
         Size.PlatformDefault = False
         TabOrder = 13
         Text = 'Reset all Use Case Data'
-        TextSettings.Trimming = None
         OnClick = btnResetUseCaseDataClick
       end
     end
@@ -127,7 +124,6 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      TextSettings.Trimming = None
       IsSelected = True
       Size.Width = 180.000000000000000000
       Size.Height = 26.000000000000000000
@@ -158,7 +154,6 @@ object fmxMain: TfmxMain
           TabOrder = 7
           Text = 'Generate Fictitious Email for '#13#10'Testing the Mail Interpretation'
           TextSettings.WordWrap = True
-          TextSettings.Trimming = None
           ParentShowHint = False
           ShowHint = True
           OnClick = btnCreateDemoMailClick
@@ -172,7 +167,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 3
           Text = 'Start Mail Interpretation'
-          TextSettings.Trimming = None
           ParentShowHint = False
           ShowHint = True
           OnClick = btnStartMailInterpretationClick
@@ -214,7 +208,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 8
           Text = 'Save EMail'
-          TextSettings.Trimming = None
           OnClick = btnSaveEMailClick
         end
         object btnLoadEMail: TButton
@@ -226,7 +219,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 9
           Text = 'Load EMail'
-          TextSettings.Trimming = None
           OnClick = btnLoadEMailClick
         end
         object cboEMailSubject: TComboBox
@@ -275,7 +267,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 11
           Text = 'Clear'
-          TextSettings.Trimming = None
           OnClick = btnClearClick
         end
       end
@@ -541,7 +532,6 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 118.000000000000000000
       Size.Height = 26.000000000000000000
@@ -622,7 +612,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 0
           Text = 'Load Invoice PDF'
-          TextSettings.Trimming = None
           OnClick = btnLoadInvoicePDFClick
         end
         object btnStartInvoice: TButton
@@ -634,7 +623,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 4
           Text = 'Start Invoice Interpretation'
-          TextSettings.Trimming = None
           ParentShowHint = False
           ShowHint = True
           OnClick = btnStartInvoiceClick
@@ -722,7 +710,6 @@ object fmxMain: TfmxMain
       CustomIcon = <
         item
         end>
-      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 151.000000000000000000
       Size.Height = 26.000000000000000000
@@ -755,7 +742,6 @@ object fmxMain: TfmxMain
             'Generate Fictitious Item List'#13#10'and a photorealistic image'#13#10'of th' +
             'e warehouse inspection table'
           TextSettings.WordWrap = True
-          TextSettings.Trimming = None
           ParentShowHint = False
           ShowHint = True
           OnClick = btnCreateItemListAndPhotoClick
@@ -769,7 +755,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 3
           Text = 'Start Good Inspection'
-          TextSettings.Trimming = None
           ParentShowHint = False
           ShowHint = True
           OnClick = btnStartGoodInspectionClick
@@ -812,7 +797,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 8
           Text = 'Save Package'
-          TextSettings.Trimming = None
           OnClick = btnSavePackageClick
         end
         object btnLoadPackage: TButton
@@ -824,7 +808,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 9
           Text = 'Load Package'
-          TextSettings.Trimming = None
           OnClick = btnLoadPackageClick
         end
         object cboSzenario: TComboBox
@@ -868,7 +851,6 @@ object fmxMain: TfmxMain
           Size.PlatformDefault = False
           TabOrder = 11
           Text = 'Clear'
-          TextSettings.Trimming = None
         end
         object imgPackageContent: TImage
           MultiResBitmap = <

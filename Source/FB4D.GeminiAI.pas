@@ -55,7 +55,8 @@ type
     procedure OnCountTokenError(const RequestID, ErrMsg: string; OnSuccess: TOnSuccess);
     function CreateBodyByPrompt(const Prompt: string): TJSONObject;
     function GenerateContentSynchronous(Body: TJSONObject): IGeminiAIResponse;
-    procedure GenerateContent(Body: TJSONObject; OnResponse: TOnGeminiGenContent);
+    procedure GenerateContent(Body: TJSONObject; OnResponse: TOnGeminiGenContent;
+      const RequestID : string = '');
     function CountTokenSynchronous(Body: TJSONObject; out ErrorMsg: string;
       out CachedContentToken: integer): integer;
     procedure CountToken(Body: TJSONObject; OnResponse: TOnGeminiCountToken);
@@ -77,7 +78,8 @@ type
     procedure SetModel(const ModelName: string);
 
     function GenerateContentByPromptSynchronous(const Prompt: string): IGeminiAIResponse;
-    procedure GenerateContentByPrompt(const Prompt: string; OnResponse: TOnGeminiGenContent);
+    procedure GenerateContentByPrompt(const Prompt: string; OnResponse: TOnGeminiGenContent;
+      const RequestID: string = '');
 
     function GenerateContentByRequestSynchronous(GeminiAIRequest: IGeminiAIRequest): IGeminiAIResponse;
     procedure GenerateContentByRequest(GeminiAIRequest: IGeminiAIRequest; OnResponse: TOnGeminiGenContent);
@@ -126,6 +128,7 @@ type
   TGeminiAIRequest = class(TInterfacedObject, IGeminiAIRequest)
   private
     fRequest: TJSONObject;
+    fRequestID: string;
     fContents: TJSONArray;
     fParts: TJSONArray;
     fSystemInstructions: TJSONObject;
@@ -136,15 +139,16 @@ type
     procedure CheckAndCreateGenerationConfig;
     procedure CheckAndCreateTools;
   public
-    constructor Create;
+    constructor Create(const RequestID: string = '');
     destructor Destroy; override;
     function CloneWithoutCfgAndSettings(Request: IGeminiAIRequest): IGeminiAIRequest;
-    function Prompt(const PromptText: string; const SystemInstructions: string = ''): IGeminiAIRequest;
+    function GetRequestID: string;
+    function Prompt(const PromptText: string; const SystemInstructions: string = ''; const RequestID: string = ''): IGeminiAIRequest;
     function PromptWithMediaData(const PromptText, MimeType: string;
-      MediaStream: TStream): IGeminiAIRequest;
+      MediaStream: TStream; const RequestID: string = ''): IGeminiAIRequest;
     {$IF Defined(FMX) OR Defined(FGX)}
     function PromptWithImgData(const PromptText: string;
-      ImgStream: TStream): IGeminiAIRequest;
+      ImgStream: TStream; const RequestID: string = ''): IGeminiAIRequest;
     {$ENDIF}
     function SetSystemInstruction(const SystemInstructions: string): IGeminiAIRequest;
     function ModelParameter(Temperature, TopP: double; MaxOutputTokens,
@@ -170,11 +174,12 @@ type
     fResults: array of TGeminiAIResult;
     fFinishReasons: TGeminiAIFinishReasons;
     fModelVersion: string;
+    fRequestID: string;
     procedure EvaluateResults;
     constructor CreateError(const RequestID, ErrMsg: string);
     function ConvertMarkDownToHTML(const MarkDown: string): string;
   public
-    constructor Create(Response: IFirebaseResponse);
+    constructor Create(Response: IFirebaseResponse; const RequestID: string = '');
     destructor Destroy; override;
     function ResultAsMarkDown: string;
     function ResultAsHTML: string;
@@ -191,6 +196,7 @@ type
     function ModelVersion: string;
     function RawFormatedJSONResult: string;
     function RawJSONResult: TJSONValue;
+    function GetRequestID: string;
     class function HarmCategoryToStr(hc: THarmCategory): string;
     class function HarmCategoryFromStr(const txt: string): THarmCategory;
   end;
@@ -540,14 +546,18 @@ begin
   end;
 end;
 
-procedure TGeminiAI.GenerateContent(Body: TJSONObject; OnResponse: TOnGeminiGenContent);
+procedure TGeminiAI.GenerateContent(Body: TJSONObject; OnResponse: TOnGeminiGenContent;
+  const RequestID : string);
 var
   Params: TQueryParams;
   Request: IFirebaseRequest;
 begin
   Params := TQueryParams.Create;
   try
-    Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Generate.Content', nil, cDefaultTimeout);
+    if RequestID.IsEmpty then
+      Request := TFirebaseRequest.Create(BaseURL(true), 'Gemini.Generate.Content', nil, cDefaultTimeout)
+    else
+      Request := TFirebaseRequest.Create(BaseURL(true), RequestID, nil, cDefaultTimeout);
     Params.Add('key', [fApiKey]);
     Request.SendRequest([':generateContent'], rmPost, Body, Params, tmNoToken,
       OnGenerateContentResponse, OnGenerateContentError,
@@ -558,13 +568,13 @@ begin
 end;
 
 procedure TGeminiAI.GenerateContentByPrompt(const Prompt: string;
-  OnResponse: TOnGeminiGenContent);
+  OnResponse: TOnGeminiGenContent; const RequestID: string);
 var
   Body: TJSONObject;
 begin
   Body := CreateBodyByPrompt(Prompt);
   try
-    GenerateContent(Body, OnResponse);
+    GenerateContent(Body, OnResponse, RequestID);
   finally
     Body.Free;
   end;
@@ -573,7 +583,8 @@ end;
 procedure TGeminiAI.GenerateContentByRequest(GeminiAIRequest: IGeminiAIRequest;
   OnResponse: TOnGeminiGenContent);
 begin
-  GenerateContent((GeminiAIRequest as TGeminiAIRequest).asJSON, OnResponse);
+  GenerateContent((GeminiAIRequest as TGeminiAIRequest).asJSON, OnResponse,
+    GeminiAIRequest.RequestID);
 end;
 
 function TGeminiAI.GenerateContentByRequestSynchronous(GeminiAIRequest: IGeminiAIRequest): IGeminiAIResponse;
@@ -587,7 +598,7 @@ var
   Res: IGeminiAIResponse;
 begin
   try
-    Res := TGeminiResponse.Create(Response);
+    Res := TGeminiResponse.Create(Response, RequestID);
     if assigned(Response.OnSuccess.OnGenerateContent) then
       Response.OnSuccess.OnGenerateContent(Res);
   except
@@ -734,8 +745,9 @@ end;
 
 { TGeminiAIRequest }
 
-constructor TGeminiAIRequest.Create;
+constructor TGeminiAIRequest.Create(const RequestID: string = '');
 begin
+  fRequestID := RequestID;
   fContents := TJSONArray.Create;
   fParts := TJSONArray.Create;
   fContents.Add(TJSONObject.Create.
@@ -748,6 +760,7 @@ end;
 
 function TGeminiAIRequest.CloneWithoutCfgAndSettings(Request: IGeminiAIRequest): IGeminiAIRequest;
 begin
+  fRequestID := Request.RequestID;
   fRequest := (Request as TGeminiAIRequest).fRequest.Clone as TJSONObject;
   fContents := fRequest.FindValue('contents') as TJSONArray;
   if assigned(fContents) then
@@ -767,9 +780,15 @@ begin
   inherited;
 end;
 
-function TGeminiAIRequest.Prompt(const PromptText, SystemInstructions: string): IGeminiAIRequest;
+function TGeminiAIRequest.GetRequestID: string;
+begin
+  result := fRequestID;
+end;
+
+function TGeminiAIRequest.Prompt(const PromptText, SystemInstructions, RequestID: string): IGeminiAIRequest;
 begin
   Assert(not assigned(fParts.FindValue('[0].text')), 'Gemini AI support only one prompt per part');
+  fRequestID := RequestID;
   fParts.Add(
     TJSONObject.Create.
       AddPair('text', PromptText));
@@ -780,13 +799,14 @@ begin
 end;
 
 function TGeminiAIRequest.PromptWithMediaData(const PromptText, MimeType: string;
-  MediaStream: TStream): IGeminiAIRequest;
+  MediaStream: TStream; const RequestID: string): IGeminiAIRequest;
 var
   ms: TStringStream;
   Base64Str: string;
 begin
   Assert(not assigned(fParts.FindValue('[0].text')), 'Gemini AI support only one prompt per part');
   Assert(not assigned(fParts.FindValue('[0].inline_data')), 'Gemini AI support only one prompt per part');
+  fRequestID := RequestID;
   ms := TStringStream.Create;
   try
     MediaStream.Position := 0;
@@ -809,7 +829,7 @@ end;
 
 {$IF Defined(FMX) OR Defined(FGX)}
 function TGeminiAIRequest.PromptWithImgData(const PromptText: string;
-  ImgStream: TStream): IGeminiAIRequest;
+  ImgStream: TStream; const RequestID: string): IGeminiAIRequest;
 var
   MimeType: string;
 begin
@@ -817,7 +837,7 @@ begin
   MimeType := TFirebaseHelpers.ImageStreamToContentType(ImgStream);
   if MimeType.IsEmpty then
     raise EGeminiAIRequest.Create('Unknown mime type of image');
-  result := PromptWithMediaData(PromptText, MimeType, ImgStream);
+  result := PromptWithMediaData(PromptText, MimeType, ImgStream, RequestID);
 end;
 {$ENDIF}
 
@@ -992,8 +1012,10 @@ end;
 
 { TGeminiResponse }
 
-constructor TGeminiResponse.Create(Response: IFirebaseResponse);
+constructor TGeminiResponse.Create(Response: IFirebaseResponse;
+  const RequestID: string);
 begin
+  fRequestID := RequestID;
   response.CheckForJSONObj;
   fContentResponse := response.GetContentAsJSONObj;
   {$IFDEF DEBUG}
@@ -1380,6 +1402,11 @@ begin
       fFailureDetail := e.message;
     end;
   end;
+end;
+
+function TGeminiResponse.GetRequestID: string;
+begin
+  result := fRequestID;
 end;
 
 class function TGeminiResponse.HarmCategoryToStr(hc: THarmCategory): string;
