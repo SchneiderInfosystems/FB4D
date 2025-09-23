@@ -12,7 +12,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 ### Major Change log
 
-This log informs about interface changes and significant library enhancements that need the attention of users of this library.
+This log informs about major interface changes and significant library enhancements that need the attention of users of this library.
 
 - April 2025: _Gemini AI_: Add support for system instructions and modality request for text, image and audio
 - March 2025: Add authentication by using Google Accounts. The _DemoFB4D_ App demonstrates the functionality after setting up the Firebase Project for using this auth provider. Check the wiki for details.
@@ -32,7 +32,7 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 ### Prerequisites
 
-The sample projects are developed and prepared for **Delphi 12.3 Athens**.
+The sample projects are developed and prepared for **Delphi 13 Florence**.
 
 🔺 This library requires at least **Delphi 11.0 Alexandria**🔺. 
 
@@ -58,7 +58,7 @@ _AnnotateFile_ is limited to PDF only, as the GIF and TOF image format is not ye
  
 #### Limitation on Linux64
 
-Although FmxLinux is currently no longer offered in GetIt, the cross-plaform example applications can still be created with FmxLinux and are executable. Under Ubuntu 24, however, problems with the outdated web browser integration have been identified. We are eagerly awaiting an update from Embarcadero on this point.
+FmxLinux is once again available in GetIt. This means that cross-platform applications can continue to be created with FmxLinux and are executable. However, problems with outdated web browser integration have been identified in Ubuntu 24. 
 
 ### Submodules
 
@@ -85,3 +85,4 @@ Christoph Schneider, Schneider Infosystems AG, Switzerland
 [www.schneider-infosys.ch](https://www.schneider-infosys.ch)  
 
 ![Logo FB4D](logoFB4D.png)
+
