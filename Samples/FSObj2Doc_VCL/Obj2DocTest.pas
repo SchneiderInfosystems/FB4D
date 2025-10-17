@@ -254,66 +254,70 @@ begin
   if edtDocID.Text = '' then
     edtDocID.Text := TFirebaseHelpers.CreateAutoID(FSID);
   Doc := TMyFSDoc.Create([cDocs, edtDocID.Text], GetDatabase);
-  Doc.fMyPrivate := 'Private field content';
-  Doc.fMyProtected := 'Protected field content';
-  Doc.DocTitle := edtDocTitle.Text;
-  Doc.Msg := AnsiString(edtMsg.Text);
-  if edtCh.Text > '' then
-    Doc.Ch := edtCh.Text[1]
-  else
-    Doc.Ch := #0;
-  Doc.CreationDateTime := now;
-  Doc.TestInt := integer(edtTestInt.Value);
-  Doc.LargeNumber := StrToInt64Def(edtLargeNumber.Text, -1);
-  Doc.B := random(255);
-  lblByte.Caption := Doc.B.ToString;
-  Doc.MyEnum := TMyEnum(cboEnum.ItemIndex);
-  Doc.MySet := [];
-  if chbAlpha.Checked then
-    Doc.MySet := Doc.MySet + [_Alpha];
-  if chbBeta.Checked then
-    Doc.MySet := Doc.MySet + [_Beta];
-  if chbGamma.Checked then
-    Doc.MySet := Doc.MySet + [_Gamma];
-  SetLength(Doc.MyArr, 3);
-  Doc.MyArr[0] := 11; Doc.MyArr[1] := 33; Doc.MyArr[2] := 35;
-  if edtArrStr0.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, 1);
-    Doc.MyArrStr[0] := edtArrStr0.Text;
-  end else
-    SetLength(Doc.MyArrStr, 0);
-  if edtArrStr1.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr1.Text;
-  end;
-  if edtArrStr2.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr2.Text;
-  end;
-  if edtArrStr3.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr3.Text;
-  end;
-  if edtArrStr4.Text > '' then
-  begin
-    SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
-    Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr4.Text;
-  end;
-  SetLength(Doc.MyArrTime, 2);
-  Doc.MyArrTime[0] := now; Doc.MyArrTime[1] := trunc(Now) + 1;
-  lblMyArrTime.Caption := '0: ' + DateTimeToStr(Doc.MyArrTime[0]) +
-    ' 1: ' + DateTimeToStr(Doc.MyArrTime[1]);
-  GetDatabase.InsertOrUpdateDocument(Doc.SaveObjectToDocument(GetOptions),
-    nil, OnDocument, OnError);
-  ind := lstDocID.Items.IndexOf(Doc.DocumentName(false));
-  if ind >= 0 then
-  begin
-    (lstDocID.Items.Objects[ind] as TMyFSDoc).Free;
-    lstDocID.Items.Objects[ind] := Doc;
+  try
+    Doc.fMyPrivate := 'Private field content';
+    Doc.fMyProtected := 'Protected field content';
+    Doc.DocTitle := edtDocTitle.Text;
+    Doc.Msg := AnsiString(edtMsg.Text);
+    if edtCh.Text > '' then
+      Doc.Ch := edtCh.Text[1]
+    else
+      Doc.Ch := #0;
+    Doc.CreationDateTime := now;
+    Doc.TestInt := integer(edtTestInt.Value);
+    Doc.LargeNumber := StrToInt64Def(edtLargeNumber.Text, -1);
+    Doc.B := random(255);
+    lblByte.Caption := Doc.B.ToString;
+    Doc.MyEnum := TMyEnum(cboEnum.ItemIndex);
+    Doc.MySet := [];
+    if chbAlpha.Checked then
+      Doc.MySet := Doc.MySet + [_Alpha];
+    if chbBeta.Checked then
+      Doc.MySet := Doc.MySet + [_Beta];
+    if chbGamma.Checked then
+      Doc.MySet := Doc.MySet + [_Gamma];
+    SetLength(Doc.MyArr, 3);
+    Doc.MyArr[0] := 11; Doc.MyArr[1] := 33; Doc.MyArr[2] := 35;
+    if edtArrStr0.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, 1);
+      Doc.MyArrStr[0] := edtArrStr0.Text;
+    end else
+      SetLength(Doc.MyArrStr, 0);
+    if edtArrStr1.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr1.Text;
+    end;
+    if edtArrStr2.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr2.Text;
+    end;
+    if edtArrStr3.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr3.Text;
+    end;
+    if edtArrStr4.Text > '' then
+    begin
+      SetLength(Doc.MyArrStr, length(Doc.MyArrStr) + 1);
+      Doc.MyArrStr[length(Doc.MyArrStr) - 1] := edtArrStr4.Text;
+    end;
+    SetLength(Doc.MyArrTime, 2);
+    Doc.MyArrTime[0] := now; Doc.MyArrTime[1] := trunc(Now) + 1;
+    lblMyArrTime.Caption := '0: ' + DateTimeToStr(Doc.MyArrTime[0]) +
+      ' 1: ' + DateTimeToStr(Doc.MyArrTime[1]);
+    GetDatabase.InsertOrUpdateDocument(Doc.SaveObjectToDocument(GetOptions),
+      nil, OnDocument, OnError);
+    ind := lstDocID.Items.IndexOf(Doc.DocumentName(false));
+    if ind >= 0 then
+    begin
+      (lstDocID.Items.Objects[ind] as TMyFSDoc).Free;
+      lstDocID.Items.Objects[ind] := Doc;
+    end;
+  finally
+    Doc.Free;
   end;
 end;
 
@@ -407,13 +411,9 @@ end;
 procedure TfrmObj2Doc.ClearDocIdList;
 var
   c: integer;
-  Doc: TMyFSDoc;
 begin
   for c := 0 to lstDocID.Items.Count - 1 do
-  begin
-    Doc := lstDocID.Items.Objects[c] as TMyFSDoc;
-    Doc.Free;
-  end;
+    (lstDocID.Items.Objects[c] as TMyFSDoc).Free;
   lstDocID.Clear;
 end;
 

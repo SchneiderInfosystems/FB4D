@@ -2380,7 +2380,7 @@ end;
 function TGeminiAIResult.GetPartText(PartIndex: cardinal; RemoveEOL: boolean): string;
 begin
   result := '';
-  if PartIndex < Length(PartText) then
+  if PartIndex < cardinal(Length(PartText)) then
   begin
     result := trim(PartText[PartIndex]);
     if RemoveEOL then
@@ -2395,7 +2395,7 @@ var
 begin
   result := nil;
   MimeType := '';
-  if (PartIndex < Length(PartMediaData)) and assigned(PartMediaData[PartIndex]) then
+  if (PartIndex < cardinal(Length(PartMediaData))) and assigned(PartMediaData[PartIndex]) then
   begin
     if PartMediaData[PartIndex].TryGetValue<string>('mimeType', MimeType) then
     begin

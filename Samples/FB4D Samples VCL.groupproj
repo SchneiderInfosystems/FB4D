@@ -12,6 +12,9 @@
         <Projects Include="FSObj2Doc_VCL\FSObj2Doc_VCL.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="FS_Encrypted_Notes_VCL\FS_Encrypted_Notes_VCL.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -47,14 +50,23 @@
     <Target Name="FSObj2Doc_VCL:Make">
         <MSBuild Projects="FSObj2Doc_VCL\FSObj2Doc_VCL.dproj" Targets="Make"/>
     </Target>
+    <Target Name="FS_Encrypted_Notes_VCL">
+        <MSBuild Projects="FS_Encrypted_Notes_VCL\FS_Encrypted_Notes_VCL.dproj"/>
+    </Target>
+    <Target Name="FS_Encrypted_Notes_VCL:Clean">
+        <MSBuild Projects="FS_Encrypted_Notes_VCL\FS_Encrypted_Notes_VCL.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FS_Encrypted_Notes_VCL:Make">
+        <MSBuild Projects="FS_Encrypted_Notes_VCL\FS_Encrypted_Notes_VCL.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Auth_SelfReg_VCL;RTDB_PerUserReadWrite_VCL;FSObj2Doc_VCL"/>
+        <CallTarget Targets="Auth_SelfReg_VCL;RTDB_PerUserReadWrite_VCL;FSObj2Doc_VCL;FS_Encrypted_Notes_VCL"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Auth_SelfReg_VCL:Clean;RTDB_PerUserReadWrite_VCL:Clean;FSObj2Doc_VCL:Clean"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Clean;RTDB_PerUserReadWrite_VCL:Clean;FSObj2Doc_VCL:Clean;FS_Encrypted_Notes_VCL:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Auth_SelfReg_VCL:Make;RTDB_PerUserReadWrite_VCL:Make;FSObj2Doc_VCL:Make"/>
+        <CallTarget Targets="Auth_SelfReg_VCL:Make;RTDB_PerUserReadWrite_VCL:Make;FSObj2Doc_VCL:Make;FS_Encrypted_Notes_VCL:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
