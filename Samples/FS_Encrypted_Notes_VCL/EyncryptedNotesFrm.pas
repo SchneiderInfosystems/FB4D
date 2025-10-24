@@ -193,7 +193,7 @@ end;
 
 procedure TfrmEncryptedNotes.btnSaveClick(Sender: TObject);
 begin
-  if not((length(edtProjectID.Text) = 0) or btnGenerateKey.Enabled) then
+  if not((length(edtProjectID.Text) = 0) or (edtAESKey.Text = '')) then
   begin
     SaveSettings;
     SplitViewSettings.Hide;
