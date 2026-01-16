@@ -139,7 +139,7 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>CloudClipBoard</SanitizedProjectName>
-        <DCC_UnitSearchPath>..\..\JOSE\Source\Common;..\..\JOSE\Source\JOSE;..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\submodules\delphi-jose-jwt\Source\Common;..\..\submodules\delphi-jose-jwt\Source\JOSE;..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_Define>$(FrameworkType);$(DCC_Define)</DCC_Define>
         <DCC_DUPLICATE_CTOR_DTOR>false</DCC_DUPLICATE_CTOR_DTOR>
     </PropertyGroup>
