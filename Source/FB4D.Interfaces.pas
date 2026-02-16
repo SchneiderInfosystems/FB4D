@@ -509,7 +509,7 @@ type
   {$REGION 'General used Firebase Request'}
   TQueryParams = TDictionary<string, TStringDynArray>;
   TTokenMode = (tmNoToken, tmBearer, tmAuthParam);
-  IFirebaseRequest = interface;
+
   IFirebaseRequest = interface(IInterface)
     procedure SendRequest(ResourceParams: TRequestResourceParam;
       Method: TRESTRequestMethod; Data: TJSONValue;
@@ -631,6 +631,7 @@ type
     omEliminateFieldPrefixF,      // Eliminate F and f as field prefix
     omSaveEnumAsString);          // Convert Enum to string instead of ord number
   TOTDMapperOptions = Set of TOTDMapperOption;
+
   IFirestoreDocument = interface(IInterface)
     function DocumentName(FullPath: boolean): string;
     function DocumentFullPath: TRequestResourceParam;
@@ -716,6 +717,7 @@ type
 
   TCompostiteOperation = (coUnspecific, coAnd);
   TOrderDirection = (odUnspecified, odAscending, odDescending);
+
   IStructuredQuery = interface(IInterface)
     function Select(FieldRefs: TRequestResourceParam): IStructuredQuery;
     function Collection(const CollectionId: string;
@@ -1071,6 +1073,7 @@ type
 
   {$REGION 'Cloud Functions'}
   EFirebaseFunctions = class(Exception);
+
   IFirebaseFunctions = interface(IInterface)
     procedure CallFunction(OnSuccess: TOnFunctionSuccess;
       OnRequestError: TOnRequestError; const FunctionName: string;
@@ -1086,7 +1089,9 @@ type
     Obj: IStorageObject) of object;
   TOnDownloadError = procedure(Obj: IStorageObject;
     const ErrorMsg: string) of object;
+
   EStorageObject = class(Exception);
+
   IStorageObject = interface(IInterface)
     procedure DownloadToStream(Stream: TStream;
       OnSuccess: TOnDownload; OnError: TOnDownloadError); overload;
@@ -1150,6 +1155,7 @@ type
 
   {$REGION 'Vision ML'}
   EVisionML = class(Exception);
+
   TVisionMLFeature = (vmlUnspecific, vmlFaceDetection, vmlLandmarkDetection,
     vmlLogoDetection, vmlLabelDetection, vmlTextDetection, vmlDocTextDetection,
     vmlSafeSearchDetection, vmlImageProperties, vmlCropHints, vmlWebDetection,
