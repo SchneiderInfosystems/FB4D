@@ -272,7 +272,7 @@ uses
 
 const
   GOOGLE_FIRESTORE_API_URL =
-    'https://firestore.googleapis.com/v1beta1';
+    'https://firestore.googleapis.com/v1';
   GOOGLE_FIRESTORE_API_URL_DOCUMENTS =
     GOOGLE_FIRESTORE_API_URL + '/projects/%0:s/databases/%1:s/documents';
   METHODE_RUNQUERY = ':runQuery';
