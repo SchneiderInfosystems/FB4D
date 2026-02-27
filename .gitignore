@@ -69,3 +69,4 @@ modules/
 
 # Project specific files
 /DUnitX/Win64/Debug/FB4D.IntegrationTests.ini
+/DUnitX/FBConfig.inc
