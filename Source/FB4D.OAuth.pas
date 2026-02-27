@@ -38,7 +38,7 @@ type
   EGoogleOAuth2Authenticator = class(Exception);
   TGoogleOAuth2Authenticator = class
   private const
-    cAccessTokenEndpoint = 'https://www.googleapis.com/oauth2/v4/token';
+    cAccessTokenEndpoint = 'https://oauth2.googleapis.com/token';
     cAuthorizationEndpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
     cDefaultTimeoutInMS = 60000; // Number of milliseconds while the user has time to authorize in the browser window
   public type
