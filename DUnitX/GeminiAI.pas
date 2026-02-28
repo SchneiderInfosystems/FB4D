@@ -88,8 +88,9 @@ begin
   Assert.IsTrue(Resp.UsageMetaData.GeneratedTokenCount < 3, 'GeneratedTokenCount to large: ' +
     Resp.UsageMetaData.GeneratedTokenCount.ToString);
   Status('GeneratedTokenCount: ' + Resp.UsageMetaData.GeneratedTokenCount.ToString);
-  Assert.AreEqual(Resp.UsageMetaData.PromptTokenCount + Resp.UsageMetaData.GeneratedTokenCount,
-    Resp.UsageMetaData.TotalTokenCount, 'TotalTokenCount is not the sum of PromptTokenCount and GeneratedTokenCount: ' +
+  // TotalTokenCount may include thinking tokens (Gemini 2.5+) in addition to Prompt+Generated
+  Assert.IsTrue(Resp.UsageMetaData.TotalTokenCount >= Resp.UsageMetaData.PromptTokenCount +
+    Resp.UsageMetaData.GeneratedTokenCount, 'TotalTokenCount below Prompt+Generated: ' +
     Resp.UsageMetaData.TotalTokenCount.ToString);
   Status('Simple math calc prompt succeded');
 end;
@@ -116,8 +117,9 @@ begin
   Assert.IsTrue(Resp.UsageMetaData.GeneratedTokenCount < 4, 'GeneratedTokenCount to large: ' +
     Resp.UsageMetaData.GeneratedTokenCount.ToString);
   Status('GeneratedTokenCount: ' + Resp.UsageMetaData.GeneratedTokenCount.ToString);
-  Assert.AreEqual(Resp.UsageMetaData.PromptTokenCount + Resp.UsageMetaData.GeneratedTokenCount,
-    Resp.UsageMetaData.TotalTokenCount, 'TotalTokenCount is not the sum of PromptTokenCount and GeneratedTokenCount: ' +
+  // TotalTokenCount may include thinking tokens (Gemini 2.5+) in addition to Prompt+Generated
+  Assert.IsTrue(Resp.UsageMetaData.TotalTokenCount >= Resp.UsageMetaData.PromptTokenCount +
+    Resp.UsageMetaData.GeneratedTokenCount, 'TotalTokenCount below Prompt+Generated: ' +
     Resp.UsageMetaData.TotalTokenCount.ToString);
   Status('Simple color prompt succeded');
 end;
@@ -146,8 +148,9 @@ begin
     Assert.IsTrue(SameText(Res, cExpectedOCR), 'Unexpected result: ' + Res);
     Status('PromptTokenCount: ' + Resp.UsageMetaData.PromptTokenCount.ToString);
     Status('GeneratedTokenCount: ' + Resp.UsageMetaData.GeneratedTokenCount.ToString);
-    Assert.AreEqual(Resp.UsageMetaData.PromptTokenCount + Resp.UsageMetaData.GeneratedTokenCount,
-      Resp.UsageMetaData.TotalTokenCount, 'TotalTokenCount is not the sum of PromptTokenCount and GeneratedTokenCount: ' +
+    // TotalTokenCount may include thinking tokens (Gemini 2.5+) in addition to Prompt+Generated
+    Assert.IsTrue(Resp.UsageMetaData.TotalTokenCount >= Resp.UsageMetaData.PromptTokenCount +
+      Resp.UsageMetaData.GeneratedTokenCount, 'TotalTokenCount below Prompt+Generated: ' +
       Resp.UsageMetaData.TotalTokenCount.ToString);
   finally
     FileStream.Free;
@@ -267,9 +270,11 @@ begin
     Assert.AreEqual(JO.GetValue<string>('Currency'), 'CHF',
       'Unexpected Currency: ' + JO.GetValue<string>('Currency'));
     Addr := StringReplace(JO.GetValue<string>('InvoiceIssuerNameAndAddress'), #$A, ';', [rfReplaceAll]);
+    Addr := StringReplace(Addr, '; ', ';', [rfReplaceAll]); // normalize spacing
     Assert.AreEqual(Addr, 'Schneider Infosystems AG;Mühlegasse 18;CH-6340 Baar',
       'Unexpected InvoiceIssuerNameAndAddress: ' + Addr);
     Addr := StringReplace(JO.GetValue<string>('ReceiverNameAndAddress'), #$A, ';', [rfReplaceAll]);
+    Addr := StringReplace(Addr, '; ', ';', [rfReplaceAll]); // normalize spacing
     Assert.AreEqual(Addr, 'Northern Lights Software Inc.;Mr. James Bob;100 King Street West;M5X 1A9 Toronto, ON;Canada',
       'Unexpected ReceiverNameAndAddress: ' + Addr);
     Assert.AreEqual(JO.GetValue<string>('DateOfPayment'), '18-Feb-2025',
@@ -287,8 +292,9 @@ begin
     Status('All JSON field check passed');
     Status('PromptTokenCount: ' + Resp.UsageMetaData.PromptTokenCount.ToString);
     Status('GeneratedTokenCount: ' + Resp.UsageMetaData.GeneratedTokenCount.ToString);
-    Assert.AreEqual(Resp.UsageMetaData.PromptTokenCount + Resp.UsageMetaData.GeneratedTokenCount,
-      Resp.UsageMetaData.TotalTokenCount, 'TotalTokenCount is not the sum of PromptTokenCount and GeneratedTokenCount: ' +
+    // TotalTokenCount may include thinking tokens (Gemini 2.5+) in addition to Prompt+Generated
+    Assert.IsTrue(Resp.UsageMetaData.TotalTokenCount >= Resp.UsageMetaData.PromptTokenCount +
+      Resp.UsageMetaData.GeneratedTokenCount, 'TotalTokenCount below Prompt+Generated: ' +
       Resp.UsageMetaData.TotalTokenCount.ToString);
   finally
     FileStream.Free;

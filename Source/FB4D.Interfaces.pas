@@ -55,7 +55,7 @@ const
   cRegionEUWest1 = 'europe-west1';            // Belgium
   cRegionEUWest2 = 'europe-west2';            // London
   cRegionEUWest3 = 'europe-west3';            // Frankfurt
-  cRegionEUWest6 = 'europe-west6';            // Z�rich
+  cRegionEUWest6 = 'europe-west6';            // Zürich
   cRegionEUCent2 = 'europe-central2';         // Warsaw
   cRegionAUSoEa1 = 'australia-southeast1';    // Sydney
   cRegionASEast1 = 'asia-east1';              // Taiwan
@@ -67,11 +67,26 @@ const
   cRegionASSoEa2 = 'asia-southeast2';         // Jakarta
   cRegionASSoEa3 = 'asia-southeast3';         // Seoul
 
+  // Gemini 1.0 (legacy)
   cGeminiAIPro1_0 = 'gemini-1.0-pro';
+  // Gemini 1.5 (stable)
   cGeminiAIPro1_5 = 'gemini-1.5-pro';
+  cGeminiAIPro1_5_001 = 'gemini-1.5-pro-001';
+  cGeminiAIPro1_5_002 = 'gemini-1.5-pro-002';
   cGeminiAIFlash1_5 = 'gemini-1.5-flash';
-  cGeminiAIPro2_5 = 'gemini-2.5-pro';
-  cGeminiAIDefaultModel = cGeminiAIPro1_5;
+  cGeminiAIFlash1_5_001 = 'gemini-1.5-flash-001';
+  cGeminiAIFlash1_5_002 = 'gemini-1.5-flash-002';
+  // Gemini 2.0 (stable, GA Feb 2025)
+  cGeminiAIFlash2_0 = 'gemini-2.0-flash';           // unversioned alias (may be deprecated for new projects)
+  cGeminiAIFlash2_0_001 = 'gemini-2.0-flash-001';   // stable versioned — use this
+  cGeminiAIFlashLite2_0_001 = 'gemini-2.0-flash-lite-001'; // cost-optimised, GA Feb 2025
+  // Gemini 2.5 (stable, GA Jun 2025)
+  cGeminiAIFlash2_5 = 'gemini-2.5-flash';           // best latency/intelligence balance
+  cGeminiAIFlashLite2_5 = 'gemini-2.5-flash-lite';  // ultra-low cost & latency
+  cGeminiAIPro2_5 = 'gemini-2.5-pro';               // highest intelligence
+  // Default: use latest stable Flash model (fast, affordable, multimodal)
+  cGeminiAIDefaultModel = cGeminiAIFlash2_5;
+
 
 type
   TGeminiAPIVersion = (V1, V1Beta);
