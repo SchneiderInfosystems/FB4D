@@ -858,8 +858,8 @@ begin
         QueryForFieldFilter(
           TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
             trunc(trbAggregationMin.Value))),
-      [TAggregationField.Count, TAggregationField.Sum('testInt'),
-       TAggregationField.Avg('testInt')],
+      [TAggregationField.Count('Count'), TAggregationField.Sum('testInt', 'Summation'),
+       TAggregationField.Avg('testInt', 'Average')],
       OnFirestoreAggregation, OnFirestoreError);
   end else begin
     memFirestore.Lines.Add(
@@ -870,8 +870,8 @@ begin
         QueryForFieldFilter(
           TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
             trunc(trbAggregationMin.Value))),
-      [TAggregationField.Count, TAggregationField.Sum('testInt'),
-       TAggregationField.Avg('testInt')],
+      [TAggregationField.Count('Count'), TAggregationField.Sum('testInt', 'Summation'),
+       TAggregationField.Avg('testInt', 'Average')],
       OnFirestoreAggregation, OnFirestoreError);
   end;
 end;
