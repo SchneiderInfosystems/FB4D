@@ -328,7 +328,7 @@ object FirestoreFra: TFirestoreFra
       Size.PlatformDefault = False
       StyleLookup = ''
       TabOrder = 0
-      Text = 'Batch Get'
+      Text = 'Batch Op'
       ExplicitSize.cx = 63.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
       object btnBatchGet: TButton
@@ -342,16 +342,34 @@ object FirestoreFra: TFirestoreFra
         OnClick = btnBatchGetClick
       end
       object lblBatchGetInfo: TLabel
-        Position.X = 313.000000000000000000
-        Position.Y = 8.000000000000000000
+        Position.X = 145.000000000000000000
+        Position.Y = 16.000000000000000000
         Size.Width = 400.000000000000000000
-        Size.Height = 35.000000000000000000
+        Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextSettings.Trimming = None
-        Text = 
-          'Creates 2 test documents in the collection and gets them via Bat' +
-          'chGet'
+        Text = 'Creates 2 test documents in the collection and gets them via BatchGet'
         TabOrder = 1
+      end
+      object btnBatchWrite: TButton
+        Position.X = 16.000000000000000000
+        Position.Y = 46.000000000000000000
+        Size.Width = 121.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Batch Write Docs'
+        OnClick = btnBatchWriteClick
+      end
+      object lblBatchWriteInfo: TLabel
+        Position.X = 145.000000000000000000
+        Position.Y = 46.000000000000000000
+        Size.Width = 400.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Trimming = None
+        Text = 'Writes two test documents to the collection'
+        TabOrder = 3
       end
     end
     object tabQuery: TTabItem

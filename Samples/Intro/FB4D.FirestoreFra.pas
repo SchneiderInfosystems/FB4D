@@ -96,6 +96,8 @@ type
     tabBatchGet: TTabItem;
     btnBatchGet: TButton;
     lblBatchGetInfo: TLabel;
+    btnBatchWrite: TButton;
+    lblBatchWriteInfo: TLabel;
     procedure edtDocumentChangeTracking(Sender: TObject);
     procedure btnGetClick(Sender: TObject);
     procedure btnCreateDocumentClick(Sender: TObject);
@@ -106,6 +108,7 @@ type
     procedure trbMinTestIntChange(Sender: TObject);
     procedure btnRunQueryClick(Sender: TObject);
     procedure btnBatchGetClick(Sender: TObject);
+    procedure btnBatchWriteClick(Sender: TObject);
     procedure btnRunAggregationClick(Sender: TObject);
     procedure btnStartWriteTransactionClick(Sender: TObject);
     procedure btnStartReadTransactionClick(Sender: TObject);
@@ -142,6 +145,9 @@ type
     // Aggregation Query
     procedure OnFirestoreAggregation(const Info: string;
       Result: IAggregationResult);
+
+    // BatchWrite Callback
+    procedure OnFirestoreBatchWrite(Commit: IFirestoreCommitTransaction);
 
     // Delete Document
     procedure OnFirestoreDeleted(const DeleteDocumentPath: string;
@@ -685,6 +691,44 @@ begin
 
   memFirestore.Lines.Add('Calling BatchGet asynchronously for ' + DocPaths[0][1] + ' and ' + DocPaths[1][1]);
   fDatabase.BatchGet(DocPaths, OnFirestoreGet, OnFirestoreError);
+end;
+
+procedure TFirestoreFra.btnBatchWriteClick(Sender: TObject);
+var
+  DocNames: array[0..1] of string;
+  DocPaths: TRequestResourceParams;
+  i: integer;
+  Doc: IFirestoreDocument;
+  WriteTrans: IFirestoreWriteTransaction;
+begin
+  if length(edtCollection.Text) = 0 then
+  begin
+    OnFirestoreError('Usage Check', 'Please enter a collection name first');
+    exit;
+  end;
+  
+  SetLength(DocPaths, 2);
+  memFirestore.Lines.Add('Setup: Preparing 2 test documents for BatchWrite inside ' + edtCollection.Text);
+  WriteTrans := fDatabase.BeginWriteTransaction;
+  for i := 0 to 1 do
+  begin
+    DocNames[i] := TFirebaseHelpers.CreateAutoID;
+    DocPaths[i] := [edtCollection.Text, DocNames[i]];
+    Doc := TFirestoreDocument.Create(DocPaths[i], fDatabase.ProjectID);
+    Doc.AddOrUpdateField(TJSONObject.SetInteger('batchWriteValue', i));
+    WriteTrans.UpdateDoc(Doc);
+  end;
+
+  memFirestore.Lines.Add('Calling BatchWrite asynchronously for ' + DocPaths[0][1] + ' and ' + DocPaths[1][1]);
+  fDatabase.BatchWrite(WriteTrans, OnFirestoreBatchWrite, OnFirestoreError);
+end;
+
+procedure TFirestoreFra.OnFirestoreBatchWrite(Commit: IFirestoreCommitTransaction);
+begin
+  if assigned(Commit) then
+    memFirestore.Lines.Add('BatchWrite successfully committed at ' + DateTimeToStr(Commit.CommitTime))
+  else
+    memFirestore.Lines.Add('BatchWrite succeeded but commit is nil');
 end;
 
 {$ENDREGION}
