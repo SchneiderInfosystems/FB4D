@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -664,6 +664,10 @@ begin
       OnFirestoreError);
 end;
 
+{$ENDREGION}
+
+{$REGION 'BatchGet and BatchWrite'}
+
 procedure TFirestoreFra.btnBatchGetClick(Sender: TObject);
 var
   DocNames: array[0..1] of string;
@@ -671,12 +675,11 @@ var
   i: integer;
   Doc: IFirestoreDocument;
 begin
-  if length(edtCollection.Text) = 0 then
-  begin
-    OnFirestoreError('Usage Check', 'Please enter a collection name first');
+  if not CheckAndCreateFirestoreDBClass then
     exit;
-  end;
-  
+  if not CheckFirestoreFields(false) then
+    exit;
+
   SetLength(DocPaths, 2);
   memFirestore.Lines.Add('Setup: Creating 2 test documents for batchGet inside ' + edtCollection.Text);
   // Setup: create 2 documents
@@ -701,12 +704,11 @@ var
   Doc: IFirestoreDocument;
   WriteTrans: IFirestoreWriteTransaction;
 begin
-  if length(edtCollection.Text) = 0 then
-  begin
-    OnFirestoreError('Usage Check', 'Please enter a collection name first');
+  if not CheckAndCreateFirestoreDBClass then
     exit;
-  end;
-  
+  if not CheckFirestoreFields(false) then
+    exit;
+
   SetLength(DocPaths, 2);
   memFirestore.Lines.Add('Setup: Preparing 2 test documents for BatchWrite inside ' + edtCollection.Text);
   WriteTrans := fDatabase.BeginWriteTransaction;
@@ -716,7 +718,7 @@ begin
     DocPaths[i] := [edtCollection.Text, DocNames[i]];
     Doc := TFirestoreDocument.Create(DocPaths[i], fDatabase.ProjectID);
     Doc.AddOrUpdateField(TJSONObject.SetInteger('batchWriteValue', i));
-    WriteTrans.UpdateDoc(Doc);
+    WriteTrans.CreateDoc(Doc);
   end;
 
   memFirestore.Lines.Add('Calling BatchWrite asynchronously for ' + DocPaths[0][1] + ' and ' + DocPaths[1][1]);
@@ -835,6 +837,10 @@ begin
   lblMinTestInt.Text := 'Min testInt Val: ' +
     IntToStr(trunc(trbMinTestInt.Value));
 end;
+
+{$ENDREGION}
+
+{$REGION 'Aggregation Query'}
 
 procedure TFirestoreFra.trbAggregationMinChange(Sender: TObject);
 begin

@@ -1,7 +1,7 @@
 ﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -249,6 +249,8 @@ type
     constructor Create;
     destructor Destroy; override;
     function NumberOfTransactions: cardinal;
+    procedure SetDoc(Document: IFirestoreDocument);
+    procedure CreateDoc(Document: IFirestoreDocument);
     procedure UpdateDoc(Document: IFirestoreDocument);
     procedure PatchDoc(Document: IFirestoreDocument;
       UpdateMask: TStringDynArray);
@@ -859,7 +861,7 @@ var
   Request: IFirebaseRequest;
   Data: TJSONObject;
 begin
-  Request := TFirebaseRequest.Create(BaseURI + METHODE_BATCHWRITE, rsBatchWrite, fAuth);
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS {METHODE_BATCHWRITE}, rsBatchWrite, fAuth);
   Data := TJSONObject.Create;
   Data.AddPair('writes',
     (Writes as TFirestoreWriteTransaction).GetWritesObjArray.Clone as TJSONArray);
@@ -1969,17 +1971,39 @@ begin
       TJSONObject.Create(TJSONPair.Create('fieldPaths', Arr)));
   end;
   Obj.AddPair('update', TJSONObject.ParseJSONValue(Document.AsJSON.ToJSON));
-  // Document need to be cloned here;
   fWritesObjArray.Add(Obj);
 end;
 
-procedure TFirestoreWriteTransaction.UpdateDoc(Document: IFirestoreDocument);
+procedure TFirestoreWriteTransaction.SetDoc(Document: IFirestoreDocument);
 var
   Obj: TJSONObject;
 begin
   Obj := TJSONObject.Create;
   Obj.AddPair('update', TJSONObject.ParseJSONValue(Document.AsJSON.ToJSON));
-  // Document need to be cloned here;
+  fWritesObjArray.Add(Obj);
+end;
+
+procedure TFirestoreWriteTransaction.CreateDoc(Document: IFirestoreDocument);
+var
+  Obj, PreCond: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('update', TJSONObject.ParseJSONValue(Document.AsJSON.ToJSON));
+  PreCond := TJSONObject.Create;
+  PreCond.AddPair('exists', TJSONBool.Create(False));
+  Obj.AddPair('currentDocument', PreCond);
+  fWritesObjArray.Add(Obj);
+end;
+
+procedure TFirestoreWriteTransaction.UpdateDoc(Document: IFirestoreDocument);
+var
+  Obj, PreCond: TJSONObject;
+begin
+  Obj := TJSONObject.Create;
+  Obj.AddPair('update', TJSONObject.ParseJSONValue(Document.AsJSON.ToJSON));
+  PreCond := TJSONObject.Create;
+  PreCond.AddPair('exists', TJSONBool.Create(True));
+  Obj.AddPair('currentDocument', PreCond);
   fWritesObjArray.Add(Obj);
 end;
 
@@ -1991,7 +2015,6 @@ begin
   Obj := TJSONObject.Create;
   Obj.AddPair('transform', TJSONObject.ParseJSONValue(
     TFirestoreDocTransform(Transform).AsJSON(FullDocumentName)));
-  // Document need to be cloned here;
   fWritesObjArray.Add(Obj);
 end;
 
