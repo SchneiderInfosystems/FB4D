@@ -946,33 +946,29 @@ var
 begin
   SetLength(DocPaths, 2);
   
-  // 1. Setup: Create documents outside transaction first
   for i := 0 to 1 do
   begin
     DocNames[i] := TFirebaseHelpers.CreateAutoID;
     DocPaths[i] := [cDBPath, DocNames[i]];
-    Doc := TFirestoreDocument.Create(DocPaths[i], fConfig.ProjectID);
-    Doc.AddOrUpdateField(TJSONObject.SetInteger(cField, 0)); // Initial value
-    fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
   end;
-  Status('Created 2 test docs for BatchWrite update tests');
+  Status('Prepared 2 test docs paths for BatchWrite tests');
 
   Writes := fConfig.Database.BeginWriteTransaction;
   
-  // 2. Setup: Prepare update operations in batch
+  // 1. Create a document in batch
   Doc := TFirestoreDocument.Create(DocPaths[0], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetInteger(cField, 100)); // Updated value
-  Writes.UpdateDoc(Doc);
-  Status('Scheduled Update inside BatchWrite for: ' + DocNames[0]);
+  Writes.CreateDoc(Doc);
+  Status('Scheduled Create inside BatchWrite for: ' + DocNames[0]);
 
+  // 2. Set another document in batch
   Doc := TFirestoreDocument.Create(DocPaths[1], fConfig.ProjectID);
   Doc.AddOrUpdateField(TJSONObject.SetInteger(cField, 200)); // Updated value
-  Writes.UpdateDoc(Doc);
-  Status('Scheduled Update inside BatchWrite for: ' + DocNames[1]);
+  Writes.SetDoc(Doc);
+  Status('Scheduled Set inside BatchWrite for: ' + DocNames[1]);
 
   // 3. Run BatchWrite (Expect Atomicity response, meaning it parsed the response as Commit results)
-  // We use CommitWriteTransactionSynchronous temporarily to see if the 403 error is isolated only to batchWrite
-  CommitResponse := fConfig.Database.CommitWriteTransactionSynchronous(Writes);
+  CommitResponse := fConfig.Database.BatchWriteSynchronous(Writes);
   Assert.IsNotNull(CommitResponse, 'BatchWrite Commit Response result is nil');
   Assert.AreEqual(CommitResponse.NoUpdates, cardinal(2), 'BatchWrite should return exactly 2 result statuses');
   
