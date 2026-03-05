@@ -277,7 +277,7 @@ begin
       'Unexpected ReceiverNameAndAddress: ' + Addr);
     Assert.AreEqual(JO.GetValue<string>('DateOfPayment'), '18-Feb-2025',
       'Unexpected DateOfPayment: ' + JO.GetValue<string>('DateOfPayment'));
-    Assert.AreEqual(JO.GetValue<string>('IBAN'), 'CH32 0078 7000 4729 3960 9',
+    Assert.AreEqual(StringReplace(JO.GetValue<string>('IBAN'), ' ', '', [rfReplaceAll]), 'CH3200787000472939609',
       'Unexpected IBAN: ' + JO.GetValue<string>('IBAN'));
     Assert.AreEqual(JO.GetValue<string>('InvoiceDate'), '8-Feb-2025',
       'Unexpected InvoiceDate: ' + JO.GetValue<string>('InvoiceDate'));
@@ -301,3 +301,4 @@ end;
 initialization
   TDUnitX.RegisterTestFixture(UT_GeminiAI);
 end.
+

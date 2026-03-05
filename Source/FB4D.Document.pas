@@ -263,7 +263,10 @@ begin
            (Obj.Pairs[1].JsonString.Value = 'skippedResults') then
           fSkippedResults := (Obj.Pairs[1].JsonValue as TJSONNumber).AsInt;
       end
-      else if Obj.Pairs[0].JsonString.Value <> 'document' then
+      else if Obj.Pairs[0].JsonString.Value = 'missing' then
+        continue
+      else if (Obj.Pairs[0].JsonString.Value <> 'document') and
+              (Obj.Pairs[0].JsonString.Value <> 'found') then
         raise EFirestoreDocument.CreateFmt(rsInvalidDocNode,
           [Obj.Pairs[0].JsonString.ToString])
       else if not(Obj.Pairs[0].JsonValue is TJSONObject) then

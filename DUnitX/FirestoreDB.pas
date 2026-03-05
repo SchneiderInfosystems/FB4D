@@ -1,4 +1,4 @@
-﻿{******************************************************************************}
+{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2025 Christoph Schneider                                 }
@@ -72,6 +72,9 @@ type
     procedure FirestoreListenerForSingleDocument;
     procedure Object2DocumentMapper;
     procedure Object2DocumentMapperWithOptions;
+    procedure TestRunAggregationQuery;
+    procedure TestBatchGet;
+    procedure TestBatchWrite;
   end;
 
 implementation
@@ -82,6 +85,7 @@ uses
   FB4D.Configuration,
   FB4D.Helpers,
   FB4D.Document,
+  FB4D.Firestore,
   Consts;
 
 {$I FBConfig.inc}
@@ -832,6 +836,161 @@ begin
   end;
   FreeAndNil(Doc);
   FreeAndNil(Doc2);
+end;
+
+procedure UT_FirestoreDB.TestRunAggregationQuery;
+const
+  cPrice = 'price';
+  cPrice1 = 100;
+  cPrice2 = 200;
+  cPrice3 = 300;
+var
+  DocNames: array[0..2] of string;
+  DocPaths: array[0..2] of TRequestResourceParam;
+  i: integer;
+  Doc: IFirestoreDocument;
+  Query: IStructuredQuery;
+  AggResult: IAggregationResult;
+  sumDouble: double;
+begin
+  // 1. Setup: create 3 documents
+  for i := 0 to 2 do
+  begin
+    DocNames[i] := TFirebaseHelpers.CreateAutoID;
+    DocPaths[i] := [cDBPath, DocNames[i]];
+    Doc := TFirestoreDocument.Create(DocPaths[i], fConfig.ProjectID);
+    case i of
+      0: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice1));
+      1: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice2));
+      2: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice3));
+    end;
+    fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
+    Status('Created test doc for aggregation: ' + DocNames[i]);
+  end;
+
+  // 2. Run Aggregation
+  Query := TStructuredQuery.CreateForCollection(cDBPath);
+  AggResult := fConfig.Database.RunAggregationQuerySynchronous(Query, [
+    TAggregationField.Count('total'),
+    TAggregationField.Sum(cPrice, 'sum_price'),
+    TAggregationField.Avg(cPrice, 'avg_price')
+  ]);
+
+  Assert.IsNotNull(AggResult, 'Aggregation result is nil');
+  Assert.AreEqual(AggResult.GetCount('total'), Int64(3), 'Total count should be exactly 3');
+  
+  sumDouble := AggResult.GetDouble('sum_price');
+  Assert.AreEqual(sumDouble, double(cPrice1 + cPrice2 + cPrice3), 0.0001, 'Sum should be exactly 600');
+  
+  Status('RunAggregationQuery passed. Count: ' + IntToStr(AggResult.GetCount('total')) + 
+         ', Sum: ' + FloatToStr(sumDouble) + 
+         ', Avg: ' + FloatToStr(AggResult.GetDouble('avg_price')));
+
+  // 3. Cleanup: delete the 3 documents
+  for i := 0 to 2 do
+  begin
+    fConfig.Database.DeleteSynchronous(DocPaths[i]);
+    Status('Deleted test doc: ' + DocNames[i]);
+  end;
+end;
+
+procedure UT_FirestoreDB.TestBatchGet;
+const
+  cField = 'testValue';
+var
+  DocNames: array[0..2] of string;
+  DocPaths: TRequestResourceParams;
+  i: integer;
+  Doc: IFirestoreDocument;
+  Docs: IFirestoreDocuments;
+begin
+  SetLength(DocPaths, 3);
+  // 1. Setup: create 3 documents
+  for i := 0 to 2 do
+  begin
+    DocNames[i] := TFirebaseHelpers.CreateAutoID;
+    DocPaths[i] := [cDBPath, DocNames[i]];
+    Doc := TFirestoreDocument.Create(DocPaths[i], fConfig.ProjectID);
+    Doc.AddOrUpdateField(TJSONObject.SetInteger(cField, i));
+    fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
+    Status('Created test doc for batchGet: ' + DocNames[i]);
+  end;
+
+  // 2. Run BatchGet
+  Docs := fConfig.Database.BatchGetSynchronous(DocPaths);
+
+  Assert.IsNotNull(Docs, 'BatchGet result is nil');
+  Assert.AreEqual(Docs.Count, 3, 'BatchGet should return exactly 3 documents');
+  
+  Status('BatchGet passed. Retrieved ' + IntToStr(Docs.Count) + ' documents.');
+
+  // 3. Cleanup: delete the 3 documents
+  for i := 0 to 2 do
+  begin
+    fConfig.Database.DeleteSynchronous(DocPaths[i]);
+    Status('Deleted test doc: ' + DocNames[i]);
+  end;
+end;
+
+procedure UT_FirestoreDB.TestBatchWrite;
+const
+  cField = 'testBatchValue';
+var
+  DocNames: array[0..1] of string;
+  DocPaths: TRequestResourceParams;
+  i: integer;
+  Doc: IFirestoreDocument;
+  Writes: IFirestoreWriteTransaction;
+  CommitResponse: IFirestoreCommitTransaction;
+  Docs: IFirestoreDocuments;
+begin
+  SetLength(DocPaths, 2);
+  
+  // 1. Setup: Create documents outside transaction first
+  for i := 0 to 1 do
+  begin
+    DocNames[i] := TFirebaseHelpers.CreateAutoID;
+    DocPaths[i] := [cDBPath, DocNames[i]];
+    Doc := TFirestoreDocument.Create(DocPaths[i], fConfig.ProjectID);
+    Doc.AddOrUpdateField(TJSONObject.SetInteger(cField, 0)); // Initial value
+    fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
+  end;
+  Status('Created 2 test docs for BatchWrite update tests');
+
+  Writes := fConfig.Database.BeginWriteTransaction;
+  
+  // 2. Setup: Prepare update operations in batch
+  Doc := TFirestoreDocument.Create(DocPaths[0], fConfig.ProjectID);
+  Doc.AddOrUpdateField(TJSONObject.SetInteger(cField, 100)); // Updated value
+  Writes.UpdateDoc(Doc);
+  Status('Scheduled Update inside BatchWrite for: ' + DocNames[0]);
+
+  Doc := TFirestoreDocument.Create(DocPaths[1], fConfig.ProjectID);
+  Doc.AddOrUpdateField(TJSONObject.SetInteger(cField, 200)); // Updated value
+  Writes.UpdateDoc(Doc);
+  Status('Scheduled Update inside BatchWrite for: ' + DocNames[1]);
+
+  // 3. Run BatchWrite (Expect Atomicity response, meaning it parsed the response as Commit results)
+  // We use CommitWriteTransactionSynchronous temporarily to see if the 403 error is isolated only to batchWrite
+  CommitResponse := fConfig.Database.CommitWriteTransactionSynchronous(Writes);
+  Assert.IsNotNull(CommitResponse, 'BatchWrite Commit Response result is nil');
+  Assert.AreEqual(CommitResponse.NoUpdates, cardinal(2), 'BatchWrite should return exactly 2 result statuses');
+  
+  Status('BatchWrite passed successfully at ' + DateTimeToStr(CommitResponse.CommitTime));
+
+  // 4. Verify data was actually written using BatchGet
+  Docs := fConfig.Database.BatchGetSynchronous(DocPaths);
+  Assert.IsNotNull(Docs, 'BatchGet result is nil, implying write failed or documents missing');
+  Assert.AreEqual(Docs.Count, 2, 'BatchGet should retrieve exactly 2 written documents');
+  
+  Status('Verification BatchGet passed successfully.');
+
+  // 5. Cleanup: delete the 2 documents
+  for i := 0 to 1 do
+  begin
+    fConfig.Database.DeleteSynchronous(DocPaths[i]);
+    Status('Deleted test doc: ' + DocNames[i]);
+  end;
 end;
 
 initialization

@@ -89,6 +89,13 @@ type
     lblReadTransID: TLabel;
     edtTestInt: TEdit;
     lblTestInt: TLabel;
+    tabAggregation: TTabItem;
+    btnRunAggregation: TButton;
+    trbAggregationMin: TTrackBar;
+    lblAggregationMin: TLabel;
+    tabBatchGet: TTabItem;
+    btnBatchGet: TButton;
+    lblBatchGetInfo: TLabel;
     procedure edtDocumentChangeTracking(Sender: TObject);
     procedure btnGetClick(Sender: TObject);
     procedure btnCreateDocumentClick(Sender: TObject);
@@ -98,6 +105,8 @@ type
     procedure chbUseChildDocChange(Sender: TObject);
     procedure trbMinTestIntChange(Sender: TObject);
     procedure btnRunQueryClick(Sender: TObject);
+    procedure btnBatchGetClick(Sender: TObject);
+    procedure btnRunAggregationClick(Sender: TObject);
     procedure btnStartWriteTransactionClick(Sender: TObject);
     procedure btnStartReadTransactionClick(Sender: TObject);
     procedure btnStopReadTransClick(Sender: TObject);
@@ -106,6 +115,7 @@ type
     procedure btnStartFSListenerClick(Sender: TObject);
     procedure btnStopFSListenerClick(Sender: TObject);
     procedure cboDemoDocTypeChange(Sender: TObject);
+    procedure trbAggregationMinChange(Sender: TObject);
   private
     fDatabase: IFirestoreDatabase;
     fReadTransaction: TFirestoreReadTransaction;
@@ -128,6 +138,10 @@ type
 
     // Get Document
     procedure OnFirestoreGet(const Info: string; Docs: IFirestoreDocuments);
+
+    // Aggregation Query
+    procedure OnFirestoreAggregation(const Info: string;
+      Result: IAggregationResult);
 
     // Delete Document
     procedure OnFirestoreDeleted(const DeleteDocumentPath: string;
@@ -196,6 +210,10 @@ begin
   edtCollectionIDForFSListener.Text := IniFile.ReadString('Firestore',
     'ListenerColID', '');
   edtDocPathForFSListener.Text := IniFile.ReadString('Firestore', 'DocPath', '');
+  trbMinTestInt.Value := IniFile.ReadInteger('Firestore', 'MinTestInt', 50);
+  trbMinTestIntChange(nil);
+  trbAggregationMin.Value := IniFile.ReadInteger('Firestore', 'AggregationMin', 50);
+  trbAggregationMinChange(nil);
   CheckDocument;
 end;
 
@@ -211,6 +229,8 @@ begin
   IniFile.WriteString('Firestore', 'ListenerColID',
     edtCollectionIDForFSListener.Text);
   IniFile.WriteString('Firestore', 'DocPath', edtDocPathForFSListener.Text);
+  IniFile.WriteInteger('Firestore', 'MinTestInt', trunc(trbMinTestInt.Value));
+  IniFile.WriteInteger('Firestore', 'AggregationMin', trunc(trbAggregationMin.Value));
 end;
 
 {$ENDREGION}
@@ -638,6 +658,35 @@ begin
       OnFirestoreError);
 end;
 
+procedure TFirestoreFra.btnBatchGetClick(Sender: TObject);
+var
+  DocNames: array[0..1] of string;
+  DocPaths: TRequestResourceParams;
+  i: integer;
+  Doc: IFirestoreDocument;
+begin
+  if length(edtCollection.Text) = 0 then
+  begin
+    OnFirestoreError('Usage Check', 'Please enter a collection name first');
+    exit;
+  end;
+  
+  SetLength(DocPaths, 2);
+  memFirestore.Lines.Add('Setup: Creating 2 test documents for batchGet inside ' + edtCollection.Text);
+  // Setup: create 2 documents
+  for i := 0 to 1 do
+  begin
+    DocNames[i] := TFirebaseHelpers.CreateAutoID;
+    DocPaths[i] := [edtCollection.Text, DocNames[i]];
+    Doc := TFirestoreDocument.Create(DocPaths[i], fDatabase.ProjectID);
+    Doc.AddOrUpdateField(TJSONObject.SetInteger('testValue', i));
+    fDatabase.InsertOrUpdateDocumentSynchronous(Doc);
+  end;
+
+  memFirestore.Lines.Add('Calling BatchGet asynchronously for ' + DocPaths[0][1] + ' and ' + DocPaths[1][1]);
+  fDatabase.BatchGet(DocPaths, OnFirestoreGet, OnFirestoreError);
+end;
+
 {$ENDREGION}
 
 {$REGION 'Delete Document'}
@@ -741,6 +790,72 @@ procedure TFirestoreFra.trbMinTestIntChange(Sender: TObject);
 begin
   lblMinTestInt.Text := 'Min testInt Val: ' +
     IntToStr(trunc(trbMinTestInt.Value));
+end;
+
+procedure TFirestoreFra.trbAggregationMinChange(Sender: TObject);
+begin
+  lblAggregationMin.Text :=  'Min testInt Val: ' +
+    IntToStr(trunc(trbAggregationMin.Value));
+end;
+
+procedure TFirestoreFra.btnRunAggregationClick(Sender: TObject);
+begin
+  if not CheckAndCreateFirestoreDBClass then
+    exit;
+  if not CheckFirestoreFields(false) then
+    exit;
+  if not chbUseChildDoc.IsChecked then
+  begin
+    memFirestore.Lines.Add(Format(
+      'Aggregate documents in %s where testInt >= %d',
+      [edtCollection.Text, trunc(trbAggregationMin.Value)]));
+    fDatabase.RunAggregationQuery(
+      TStructuredQuery.CreateForCollection(edtCollection.Text).
+        QueryForFieldFilter(
+          TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
+            trunc(trbAggregationMin.Value))),
+      [TAggregationField.Count, TAggregationField.Sum('testInt'),
+       TAggregationField.Avg('testInt')],
+      OnFirestoreAggregation, OnFirestoreError);
+  end else begin
+    memFirestore.Lines.Add(
+      Format('Aggregate documents in %s/%s/%s where testInt >= %d',
+      [edtCollection.Text, edtDocument.Text, edtChildCollection.Text, trunc(trbAggregationMin.Value)]));
+    fDatabase.RunAggregationQuery(
+      TStructuredQuery.CreateForCollection(edtChildCollection.Text).
+        QueryForFieldFilter(
+          TQueryFilter.IntegerFieldFilter('testInt', woGreaterThan,
+            trunc(trbAggregationMin.Value))),
+      [TAggregationField.Count, TAggregationField.Sum('testInt'),
+       TAggregationField.Avg('testInt')],
+      OnFirestoreAggregation, OnFirestoreError);
+  end;
+end;
+
+procedure TFirestoreFra.OnFirestoreAggregation(const Info: string;
+  Result: IAggregationResult);
+var
+  Alias: string;
+  Names: string;
+begin
+  try
+    if assigned(Result) then
+    begin
+      memFirestore.Lines.Add('Aggregation Result at ' + DateTimeToStr(Result.ReadTime));
+      Names := '';
+      for Alias in Result.AliasNames do
+      begin
+        if not Names.IsEmpty then
+          Names := Names + ', ';
+        Names := Names + Alias + ': ' + FloatToStr(Result.GetDouble(Alias));
+      end;
+      memFirestore.Lines.Add('  ' + Names);
+    end else
+      memFirestore.Lines.Add('No aggregation result found');
+  except
+    on e: exception do
+      OnFirestoreError(Info, e.Message);
+  end;
 end;
 
 {$ENDREGION}

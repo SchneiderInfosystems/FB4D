@@ -103,6 +103,7 @@ type
   IVisionMLResponse = interface;
   IGeminiAIResponse = interface;
   IGeminiSchema = interface;
+  IAggregationResult = interface;
 
   /// <summary>
   /// Firebase returns timestamps in UTC time zone (tzUTC). FB4D offers the
@@ -128,6 +129,11 @@ type
   /// Each string in the array represents a segment of the resource path.
   /// </summary>
   TRequestResourceParam = TStringDynArray;
+
+  /// <summary>
+  /// Type alias for an array of resource parameters representing multiple document paths.
+  /// </summary>
+  TRequestResourceParams = array of TRequestResourceParam;
 
   /// <summary>
   /// Event handler type for successful Firebase responses.
@@ -229,6 +235,14 @@ type
   /// <param name="Info">Additional information about the document retrieval.</param>
   /// <param name="Documents">The retrieved Firestore documents.</param>
   TOnDocuments = procedure(const Info: string; Documents: IFirestoreDocuments) of object;
+
+  /// <summary>
+  /// Callback invoked when a runAggregationQuery request completes successfully.
+  /// </summary>
+  /// <param name="Info">The query info string (collection path or description).</param>
+  /// <param name="Result">The aggregation result providing typed access to COUNT/SUM/AVG values.</param>
+  TOnAggregationResult = procedure(const Info: string;
+    Result: IAggregationResult) of object;
 
   /// <summary>
   /// Event handler type for receiving a changed Firestore document.
@@ -768,6 +782,70 @@ type
       Value: TJSONObject): IFirestoreDocTransform;
   end;
 
+
+  {$REGION 'Firestore Aggregation Query Types'}
+  /// <summary>
+  /// Specifies which server-side aggregation function to apply in a Firestore aggregation query.
+  /// </summary>
+  TAggregationOperator = (aoCount, aoSum, aoAvg);
+
+  /// <summary>
+  /// Describes one aggregation step in a runAggregationQuery request.
+  /// Use the class factory functions <c>Count</c>, <c>Sum</c>, and <c>Avg</c> to create instances.
+  /// </summary>
+  TAggregationField = record
+    /// <summary>The aggregation operator to apply.</summary>
+    Operator: TAggregationOperator;
+    /// <summary>The Firestore field path to aggregate (required for Sum and Avg; ignored for Count).</summary>
+    FieldPath: string;
+    /// <summary>The alias that identifies this result in IAggregationResult. Firestore auto-assigns if empty.</summary>
+    Alias: string;
+    /// <summary>Optional upper bound for a Count aggregation. Zero means no limit.</summary>
+    CountUpTo: Int64;
+    /// <summary>Creates a COUNT(*) aggregation step.</summary>
+    /// <param name="Alias">Result alias key. If empty Firestore assigns one automatically.</param>
+    /// <param name="CountUpTo">Optional upper bound (0 = unlimited).</param>
+    class function Count(const Alias: string = '';
+      CountUpTo: Int64 = 0): TAggregationField; static;
+    /// <summary>Creates a SUM aggregation step for the given field.</summary>
+    /// <param name="FieldPath">The dot-separated Firestore field path to sum.</param>
+    /// <param name="Alias">Result alias key. If empty Firestore assigns one automatically.</param>
+    class function Sum(const FieldPath: string;
+      const Alias: string = ''): TAggregationField; static;
+    /// <summary>Creates an AVG aggregation step for the given field.</summary>
+    /// <param name="FieldPath">The dot-separated Firestore field path to average.</param>
+    /// <param name="Alias">Result alias key. If empty Firestore assigns one automatically.</param>
+    class function Avg(const FieldPath: string;
+      const Alias: string = ''): TAggregationField; static;
+  end;
+
+  /// <summary>
+  /// Provides typed access to the aggregateFields map returned by a Firestore runAggregationQuery response.
+  /// Each aggregation result is addressed by the alias that was specified in the request.
+  /// </summary>
+  IAggregationResult = interface
+    /// <summary>Returns the integer value of a COUNT aggregation addressed by its alias.</summary>
+    /// <param name="Alias">The alias name assigned to the COUNT aggregation. Defaults to Firestore''s auto-assigned 'field_1'.</param>
+    /// <returns>The document count as Int64.</returns>
+    function GetCount(const Alias: string = 'field_1'): Int64;
+    /// <summary>Returns the numeric value of a SUM or AVG aggregation addressed by its alias as a Double.</summary>
+    /// <param name="Alias">The alias name assigned to the SUM or AVG aggregation.</param>
+    /// <returns>The aggregated value as Double (also works for integer SUM results).</returns>
+    function GetDouble(const Alias: string): double;
+    /// <summary>Returns the integer value of a SUM aggregation addressed by its alias (only valid when result fits Int64).</summary>
+    /// <param name="Alias">The alias name assigned to the SUM aggregation.</param>
+    /// <returns>The aggregated integer sum as Int64.</returns>
+    function GetInt64(const Alias: string): Int64;
+    /// <summary>Returns True when the specified alias key is present in the aggregation result.</summary>
+    /// <param name="Alias">The alias name to test.</param>
+    function HasField(const Alias: string): boolean;
+    /// <summary>Returns the server-side read timestamp of the aggregation snapshot.</summary>
+    function ReadTime: TDateTime;
+    /// <summary>Returns all alias names present in this aggregation result.</summary>
+    function AliasNames: TArray<string>;
+  end;
+  {$ENDREGION}
+
   IFirestoreWriteTransaction = interface
     function NumberOfTransactions: cardinal;
     procedure UpdateDoc(Document: IFirestoreDocument);
@@ -802,6 +880,17 @@ type
       OnDocuments: TOnDocuments; OnRequestError: TOnRequestError);
     function GetSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirestoreDocuments;
+    procedure BatchGet(const DocumentPaths: TRequestResourceParams;
+      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
+      const ReadTransaction: TFirestoreReadTransaction = ''); overload;
+    function BatchGetSynchronous(
+      const DocumentPaths: TRequestResourceParams;
+      const ReadTransaction: TFirestoreReadTransaction = ''): IFirestoreDocuments; overload;
+
+    procedure BatchWrite(const Writes: IFirestoreWriteTransaction;
+      OnSuccess: TOnCommitWriteTransaction; OnRequestError: TOnRequestError); overload;
+    function BatchWriteSynchronous(
+      const Writes: IFirestoreWriteTransaction): IFirestoreCommitTransaction; overload;
     function GetAndAddSynchronous(var Docs: IFirestoreDocuments;
       Params: TRequestResourceParam; QueryParams: TQueryParams = nil): boolean;
 
@@ -854,6 +943,31 @@ type
     function SubscribeDocument(DocumentPath: TRequestResourceParam;
       OnChangedDoc: TOnChangedDocument;
       OnDeletedDoc: TOnDeletedDocument): cardinal;
+
+    // Aggregation queries
+    /// <summary>
+    /// Runs a server-side aggregation query (COUNT/SUM/AVG) asynchronously.
+    /// Results are returned via <c>OnResult</c> without transferring full document data.
+    /// Firebase allows 1–5 aggregations per query.
+    /// </summary>
+    /// <param name="StructuredQuery">The base query that defines the document set to aggregate over.</param>
+    /// <param name="Aggregations">Array of TAggregationField specifying which aggregations to compute.</param>
+    /// <param name="OnResult">Callback invoked with the IAggregationResult on success.</param>
+    /// <param name="OnRequestError">Callback invoked if the request fails.</param>
+    procedure RunAggregationQuery(StructuredQuery: IStructuredQuery;
+      const Aggregations: array of TAggregationField;
+      OnResult: TOnAggregationResult; OnRequestError: TOnRequestError);
+    /// <summary>
+    /// Runs a server-side aggregation query (COUNT/SUM/AVG) synchronously.
+    /// Returns nil if the result set is empty.
+    /// Firebase allows 1–5 aggregations per query.
+    /// </summary>
+    /// <param name="StructuredQuery">The base query that defines the document set to aggregate over.</param>
+    /// <param name="Aggregations">Array of TAggregationField specifying which aggregations to compute.</param>
+    /// <returns>An IAggregationResult providing typed access to COUNT/SUM/AVG values, or nil if no result.</returns>
+    function RunAggregationQuerySynchronous(StructuredQuery: IStructuredQuery;
+      const Aggregations: array of TAggregationField): IAggregationResult;
+
     function SubscribeQuery(Query: IStructuredQuery;
       OnChangedDoc: TOnChangedDocument;
       OnDeletedDoc: TOnDeletedDocument;
@@ -2128,6 +2242,35 @@ uses
 {$IFDEF LINUX64}
 {$I LinuxTypeImpl.inc}
 {$ENDIF}
+
+{ TAggregationField }
+
+class function TAggregationField.Count(const Alias: string;
+  CountUpTo: Int64): TAggregationField;
+begin
+  result.Operator := aoCount;
+  result.FieldPath := '';
+  result.Alias := Alias;
+  result.CountUpTo := CountUpTo;
+end;
+
+class function TAggregationField.Sum(const FieldPath: string;
+  const Alias: string): TAggregationField;
+begin
+  result.Operator := aoSum;
+  result.FieldPath := FieldPath;
+  result.Alias := Alias;
+  result.CountUpTo := 0;
+end;
+
+class function TAggregationField.Avg(const FieldPath: string;
+  const Alias: string): TAggregationField;
+begin
+  result.Operator := aoAvg;
+  result.FieldPath := FieldPath;
+  result.Alias := Alias;
+  result.CountUpTo := 0;
+end;
 
 { TOnSuccess }
 

@@ -60,6 +60,11 @@ type
       Response: IFirebaseResponse);
     procedure CommitWriteTransactionResp(const RequestID: string;
       Response: IFirebaseResponse);
+    /// <summary>Builds the structuredAggregationQuery JSON request body.</summary>
+    function BuildAggregationJSON(StructuredQuery: IStructuredQuery;
+      const Aggregations: array of TAggregationField): TJSONObject;
+    /// <summary>Extracts the IAggregationResult from a runAggregationQuery streaming response.</summary>
+    function ParseAggregationResponse(Response: IFirebaseResponse): IAggregationResult;
   public
     constructor Create(const ProjectID: string; Auth: IFirebaseAuthentication;
       const DatabaseID: string = cDefaultDatabaseID);
@@ -121,6 +126,22 @@ type
       overload;
     function DeleteSynchronous(Params: TRequestResourceParam;
       QueryParams: TQueryParams = nil): IFirebaseResponse;
+    procedure BatchGet(const DocumentPaths: TRequestResourceParams;
+      OnDocuments: TOnDocuments; OnRequestError: TOnRequestError;
+      const ReadTransaction: TFirestoreReadTransaction = ''); overload;
+    function BatchGetSynchronous(
+      const DocumentPaths: TRequestResourceParams;
+      const ReadTransaction: TFirestoreReadTransaction = ''): IFirestoreDocuments; overload;
+    procedure BatchWrite(const Writes: IFirestoreWriteTransaction;
+      OnSuccess: TOnCommitWriteTransaction; OnRequestError: TOnRequestError); overload;
+    function BatchWriteSynchronous(
+      const Writes: IFirestoreWriteTransaction): IFirestoreCommitTransaction; overload;
+    // Aggregation queries
+    procedure RunAggregationQuery(StructuredQuery: IStructuredQuery;
+      const Aggregations: array of TAggregationField;
+      OnResult: TOnAggregationResult; OnRequestError: TOnRequestError);
+    function RunAggregationQuerySynchronous(StructuredQuery: IStructuredQuery;
+      const Aggregations: array of TAggregationField): IAggregationResult;
     // Listener subscription
     function SubscribeDocument(DocPath: TRequestResourceParam;
       OnChangedDoc: TOnChangedDocument;
@@ -237,6 +258,21 @@ type
     function GetWritesObjArray: TJSONArray;
   end;
 
+  TAggregationResult = class(TInterfacedObject, IAggregationResult)
+  private
+    fFields: TJSONObject;  // the aggregateFields JSON object
+    fReadTime: TDateTime;
+  public
+    constructor Create(AggregateFields: TJSONObject; const ReadTimeStr: string);
+    destructor Destroy; override;
+    function GetCount(const Alias: string = 'field_1'): Int64;
+    function GetDouble(const Alias: string): double;
+    function GetInt64(const Alias: string): Int64;
+    function HasField(const Alias: string): boolean;
+    function ReadTime: TDateTime;
+    function AliasNames: TArray<string>;
+  end;
+
   TFirestoreDocTransform = class(TInterfacedObject, IFirestoreDocTransform)
   private
     fFieldTransforms: TJSONArray;
@@ -268,6 +304,7 @@ type
 implementation
 
 uses
+  System.IOUtils,
   FB4D.Helpers;
 
 const
@@ -276,6 +313,9 @@ const
   GOOGLE_FIRESTORE_API_URL_DOCUMENTS =
     GOOGLE_FIRESTORE_API_URL + '/projects/%0:s/databases/%1:s/documents';
   METHODE_RUNQUERY = ':runQuery';
+  METHODE_BATCHGET = ':batchGet';
+  METHODE_BATCHWRITE = ':batchWrite';
+  METHODE_RUNAGGREGATIONQUERY = ':runAggregationQuery';
   METHODE_BEGINTRANS = ':beginTransaction';
   METHODE_COMMITTRANS = ':commit';
   METHODE_ROLLBACK = ':rollback';
@@ -290,6 +330,9 @@ const
 
 resourcestring
   rsRunQuery = 'Run query for ';
+  rsBatchGet = 'Batch get documents';
+  rsBatchWrite = 'Batch write documents';
+  rsRunAggQuery = 'Run aggregation query for ';
   rsGetDocument = 'Get document for ';
   rsCreateDoc = 'Create document for ';
   rsInsertOrUpdateDoc = 'Insert or update document for ';
@@ -421,6 +464,261 @@ begin
   result := TFirestoreDocuments.CreateFromJSONArr(Response);
 end;
 
+{ TAggregationResult }
+
+constructor TAggregationResult.Create(AggregateFields: TJSONObject;
+  const ReadTimeStr: string);
+begin
+  inherited Create;
+  // Take ownership of the JSON object if we cloned it, else clone here
+  fFields := AggregateFields.Clone as TJSONObject;
+  fReadTime := TFirebaseHelpers.DecodeRFC3339DateTime(ReadTimeStr);
+end;
+
+destructor TAggregationResult.Destroy;
+begin
+  fFields.Free;
+  inherited;
+end;
+
+function TAggregationResult.HasField(const Alias: string): boolean;
+begin
+  result := Assigned(fFields) and Assigned(fFields.GetValue(Alias));
+end;
+
+function TAggregationResult.GetCount(const Alias: string): Int64;
+var
+  ValObj: TJSONObject;
+begin
+  result := 0;
+  if not Assigned(fFields) then exit;
+  ValObj := fFields.GetValue(Alias) as TJSONObject;
+  if not Assigned(ValObj) then exit;
+  // Firestore returns integerValue as a JSON string
+  result := ValObj.GetValue<string>('integerValue').ToInt64;
+end;
+
+function TAggregationResult.GetInt64(const Alias: string): Int64;
+begin
+  result := GetCount(Alias);
+end;
+
+function TAggregationResult.GetDouble(const Alias: string): double;
+var
+  ValObj: TJSONObject;
+  IntStr: string;
+begin
+  result := 0;
+  if not Assigned(fFields) then exit;
+  ValObj := fFields.GetValue(Alias) as TJSONObject;
+  if not Assigned(ValObj) then exit;
+  if Assigned(ValObj.GetValue('doubleValue')) then
+    result := ValObj.GetValue<double>('doubleValue')
+  else if Assigned(ValObj.GetValue('integerValue')) then
+  begin
+    IntStr := ValObj.GetValue<string>('integerValue');
+    result := IntStr.ToInt64;
+  end;
+end;
+
+function TAggregationResult.ReadTime: TDateTime;
+begin
+  result := fReadTime;
+end;
+
+function TAggregationResult.AliasNames: TArray<string>;
+var
+  i: integer;
+begin
+  if not Assigned(fFields) then
+  begin
+    result := [];
+    exit;
+  end;
+  SetLength(result, fFields.Count);
+  for i := 0 to fFields.Count - 1 do
+    result[i] := fFields.Pairs[i].JsonString.Value;
+end;
+
+{ TFirestoreDatabase.RunAggregationQuery }
+
+function TFirestoreDatabase.BuildAggregationJSON(StructuredQuery: IStructuredQuery;
+  const Aggregations: array of TAggregationField): TJSONObject;
+var
+  Root, SAQ, QueryRoot, InnerQuery: TJSONObject;
+  AggArr: TJSONArray;
+  AggObj, OpObj, FieldObj: TJSONObject;
+  Field: TAggregationField;
+begin
+  if Length(Aggregations) < 1 then
+    raise EArgumentException.Create('At least one aggregation is required');
+  if Length(Aggregations) > 5 then
+    raise EArgumentException.Create('Firebase allows at most 5 aggregations per query');
+
+  SAQ := TJSONObject.Create;
+  // Embed the existing StructuredQuery without double-nesting
+  QueryRoot := StructuredQuery.AsJSON;
+  try
+    if Assigned(QueryRoot) then
+    begin
+      InnerQuery := QueryRoot.GetValue('structuredQuery') as TJSONObject;
+      if Assigned(InnerQuery) then
+        SAQ.AddPair('structuredQuery', InnerQuery.Clone as TJSONObject);
+    end;
+  finally
+    QueryRoot.Free;
+  end;
+
+  // Build aggregations array
+  AggArr := TJSONArray.Create;
+  for Field in Aggregations do
+  begin
+    AggObj := TJSONObject.Create;
+    if not Field.Alias.IsEmpty then
+      AggObj.AddPair('alias', Field.Alias);
+    case Field.Operator of
+      aoCount:
+        begin
+          OpObj := TJSONObject.Create;
+          if Field.CountUpTo > 0 then
+            OpObj.AddPair('upTo', TJSONString.Create(Field.CountUpTo.ToString));
+          AggObj.AddPair('count', OpObj);
+        end;
+      aoSum:
+        begin
+          FieldObj := TJSONObject.Create;
+          FieldObj.AddPair('fieldPath', Field.FieldPath);
+          OpObj := TJSONObject.Create;
+          OpObj.AddPair('field', FieldObj);
+          AggObj.AddPair('sum', OpObj);
+        end;
+      aoAvg:
+        begin
+          FieldObj := TJSONObject.Create;
+          FieldObj.AddPair('fieldPath', Field.FieldPath);
+          OpObj := TJSONObject.Create;
+          OpObj.AddPair('field', FieldObj);
+          AggObj.AddPair('avg', OpObj);
+        end;
+    end;
+    AggArr.Add(AggObj);
+  end;
+  SAQ.AddPair('aggregations', AggArr);
+
+  Root := TJSONObject.Create;
+  Root.AddPair('structuredAggregationQuery', SAQ);
+  result := Root;
+end;
+
+function TFirestoreDatabase.ParseAggregationResponse(
+  Response: IFirebaseResponse): IAggregationResult;
+var
+  RespArr: TJSONArray;
+  Element: TJSONValue;
+  ResultObj, AggFields: TJSONObject;
+  ReadTimeStr: string;
+begin
+  result := nil;
+  RespArr := Response.GetContentAsJSONArr;
+
+  if not Assigned(RespArr) then
+    exit;
+
+  // The response is a JSON array; find first element that has 'result'
+  for Element in RespArr do
+  begin
+    if not (Element is TJSONObject) then
+      continue;
+    ResultObj := (Element as TJSONObject).GetValue('result') as TJSONObject;
+    if not Assigned(ResultObj) then
+      continue;
+    AggFields := ResultObj.GetValue('aggregateFields') as TJSONObject;
+    if not Assigned(AggFields) then
+      continue;
+    ReadTimeStr := (Element as TJSONObject).GetValue<string>('readTime', '');
+    result := TAggregationResult.Create(AggFields, ReadTimeStr);
+    break;
+  end;
+end;
+
+procedure TFirestoreDatabase.RunAggregationQuery(
+  StructuredQuery: IStructuredQuery;
+  const Aggregations: array of TAggregationField;
+  OnResult: TOnAggregationResult; OnRequestError: TOnRequestError);
+var
+  LocalSelf: TFirestoreDatabase;
+  LocalQuery: IStructuredQuery;
+  LocalAggs: TArray<TAggregationField>;
+  LocalAuth: IFirebaseAuthentication;
+  LocalBaseURI: string;
+  i: integer;
+begin
+  LocalSelf := Self;
+  LocalQuery := StructuredQuery;
+  // Copy open-array into a dynamic array so the closure can capture it
+  SetLength(LocalAggs, Length(Aggregations));
+  for i := 0 to High(Aggregations) do
+    LocalAggs[i] := Aggregations[i];
+  LocalAuth := fAuth;
+  LocalBaseURI := BaseURI + METHODE_RUNAGGREGATIONQUERY;
+  TThread.CreateAnonymousThread(
+    procedure
+    var
+      Request: IFirebaseRequest;
+      Body: TJSONObject;
+      Response: IFirebaseResponse;
+      Res: IAggregationResult;
+      RequestID, ErrMsg: string;
+    begin
+      try
+        Request := TFirebaseRequest.Create(LocalBaseURI,
+          rsRunAggQuery + LocalQuery.GetInfo, LocalAuth);
+        Body := LocalSelf.BuildAggregationJSON(LocalQuery, LocalAggs);
+        Response := Request.SendRequestSynchronous([], rmPost, Body, nil);
+        LocalSelf.fLastReceivedMsg := now;
+        Res := LocalSelf.ParseAggregationResponse(Response);
+        RequestID := rsRunAggQuery + LocalQuery.GetInfo;
+        if Assigned(OnResult) then
+          TThread.Queue(nil,
+            procedure
+            begin
+              OnResult(RequestID, Res);
+            end);
+      except
+        on e: Exception do
+        begin
+          ErrMsg := e.Message;
+          if Assigned(OnRequestError) then
+            TThread.Queue(nil,
+              procedure
+              begin
+                OnRequestError(rsRunAggQuery, ErrMsg);
+              end)
+          else
+            TFirebaseHelpers.LogFmt(rsFBFailureIn,
+              ['FirestoreDatabase.RunAggregationQuery', '', ErrMsg]);
+        end;
+      end;
+    end).Start;
+end;
+
+function TFirestoreDatabase.RunAggregationQuerySynchronous(
+  StructuredQuery: IStructuredQuery;
+  const Aggregations: array of TAggregationField): IAggregationResult;
+var
+  Request: IFirebaseRequest;
+  Body: TJSONObject;
+  Response: IFirebaseResponse;
+begin
+  result := nil;
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_RUNAGGREGATIONQUERY,
+    '', fAuth);
+  Body := BuildAggregationJSON(StructuredQuery, Aggregations);
+  Response := Request.SendRequestSynchronous([], rmPost, Body, nil);
+  fLastReceivedMsg := now;
+  result := ParseAggregationResponse(Response);
+end;
+
 procedure TFirestoreDatabase.Get(Params: TRequestResourceParam;
   QueryParams: TQueryParams; OnDocuments: TOnDocuments;
   OnRequestError: TOnRequestError);
@@ -500,6 +798,104 @@ begin
     result := true;
   end else
     result := false;
+end;
+
+procedure TFirestoreDatabase.BatchGet(
+  const DocumentPaths: TRequestResourceParams; OnDocuments: TOnDocuments;
+  OnRequestError: TOnRequestError; const ReadTransaction: TFirestoreReadTransaction);
+var
+  Request: IFirebaseRequest;
+  Data: TJSONObject;
+  DocArr: TJSONArray;
+  Path: TRequestResourceParam;
+begin
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_BATCHGET, rsBatchGet, fAuth);
+  Data := TJSONObject.Create;
+  DocArr := TJSONArray.Create;
+  for Path in DocumentPaths do
+    DocArr.AddElement(TJSONString.Create(TFirestoreDocument.GetDocFullPath(Path, fProjectID, fDatabaseID)));
+  Data.AddPair('documents', DocArr);
+  if not ReadTransaction.IsEmpty then
+    Data.AddPair('transaction', TJSONString.Create(ReadTransaction));
+  Request.SendRequest([], rmPOST, Data, nil, tmBearer, OnQueryResponse,
+    OnRequestError, TOnSuccess.CreateFirestoreDocs(OnDocuments));
+end;
+
+function TFirestoreDatabase.BatchGetSynchronous(
+  const DocumentPaths: TRequestResourceParams; const ReadTransaction: TFirestoreReadTransaction): IFirestoreDocuments;
+var
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+  Data: TJSONObject;
+  DocArr: TJSONArray;
+  Path: TRequestResourceParam;
+begin
+  result := nil;
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_BATCHGET, '', fAuth);
+  Data := TJSONObject.Create;
+  DocArr := TJSONArray.Create;
+  for Path in DocumentPaths do
+    DocArr.AddElement(TJSONString.Create(TFirestoreDocument.GetDocFullPath(Path, fProjectID, fDatabaseID)));
+  Data.AddPair('documents', DocArr);
+  if not ReadTransaction.IsEmpty then
+    Data.AddPair('transaction', TJSONString.Create(ReadTransaction));
+  try
+    Response := Request.SendRequestSynchronous([], rmPOST, Data, nil);
+    fLastReceivedMsg := now;
+    if not Response.StatusNotFound then
+    begin
+      Response.CheckForJSONArr;
+      result := TFirestoreDocuments.CreateFromJSONArr(Response);
+    end;
+  finally
+    Data.Free;
+  end;
+end;
+
+procedure TFirestoreDatabase.BatchWrite(
+  const Writes: IFirestoreWriteTransaction; OnSuccess: TOnCommitWriteTransaction;
+  OnRequestError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+  Data: TJSONObject;
+begin
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_BATCHWRITE, rsBatchWrite, fAuth);
+  Data := TJSONObject.Create;
+  Data.AddPair('writes',
+    (Writes as TFirestoreWriteTransaction).GetWritesObjArray.Clone as TJSONArray);
+  Request.SendRequest([], rmPOST, Data, nil, tmBearer, CommitWriteTransactionResp,
+    OnRequestError, TOnSuccess.CreateFirestoreCommitWriteTransaction(OnSuccess)); // Notice we use CommitWriteTransactionResp as it parses identically
+end;
+
+function TFirestoreDatabase.BatchWriteSynchronous(
+  const Writes: IFirestoreWriteTransaction): IFirestoreCommitTransaction;
+var
+  Request: IFirebaseRequest;
+  Response: IFirebaseResponse;
+  Data, Res: TJSONObject;
+begin
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_BATCHWRITE,
+    rsBatchWrite, fAuth);
+  Data := TJSONObject.Create;
+  Data.AddPair('database', TJSONString.Create('projects/' + fProjectID + '/databases/' + fDatabaseID));
+  Data.AddPair('writes',
+    (Writes as TFirestoreWriteTransaction).GetWritesObjArray.Clone as TJSONArray);
+  try
+    Response := Request.SendRequestSynchronous([], rmPOST, Data, nil);
+    fLastReceivedMsg := now;
+    if Response.StatusOk then
+    begin
+      Res := Response.GetContentAsJSONObj;
+      try
+        result := TFirestoreCommitTransaction.Create(Response);
+      finally
+        Res.Free;
+      end;
+    end else
+      raise EFirebaseResponse.Create(Response.ErrorMsgOrStatusText);
+  finally
+    Data.Free;
+  end;
 end;
 
 function TFirestoreDatabase.GetDatabaseID: string;
