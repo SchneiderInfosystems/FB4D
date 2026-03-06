@@ -12,100 +12,90 @@ This document tracks open items and planned enhancements for the FB4D library.
 
 ## 🟡 Medium Priority
 
-### 2. Authentication: Implement `signInWithCustomToken`
+### 1. Authentication: Implement `signInWithCustomToken`
 - **Firebase API:** `POST /accounts:signInWithCustomToken`
 - **Purpose:** Sign in with a custom backend-generated JWT token (for apps with their own authentication server)
 - **Effort:** Small — new method in `TFirebaseAuthentication`
-
-### 4. Firestore: Implement `batchWrite`
-- **Firebase API:** `POST /documents:batchWrite`
-- **Purpose:** Multiple write operations in a single request (without rollback guarantee, unlike transactions)
-- **Effort:** Medium
-
-### 5. Realtime Database: Implement Conditional Requests (ETag / `if-match`)
-- **Firebase feature:** `GET` returns an `ETag` header; subsequent `PUT`/`PATCH`/`DELETE` with `if-match: <etag>` only succeeds if data hasn't changed — the REST equivalent of SDK transactions
-- **Purpose:** Optimistic locking to avoid race conditions (counter increments, seat reservations, etc.)
-- **Effort:** Medium — new methods like `GetWithETag` / `PutConditional` needed, plus response header handling in `FB4D.RealTimeDB.pas`
 
 ---
 
 ## 🟢 Low Priority
 
-### 6. Authentication: Implement `fetchProvidersForEmail` (`createAuthUri`)
+### 2. Authentication: Implement `fetchProvidersForEmail` (`createAuthUri`)
 - **Firebase API:** `POST /accounts:createAuthUri`
 - **Purpose:** Query which auth providers (google.com, password, etc.) are registered for a given email address
 - **Effort:** Small
 
-### 7. Authentication: Implement `unlinkProvider`
+### 3. Authentication: Implement `unlinkProvider`
 - **Firebase API:** `POST /accounts:update` with `deleteProvider`
 - **Purpose:** Detach an OAuth provider from a user account
 - **Effort:** Small
 
-### 8. Firestore: Implement `listCollectionIds`
+### 4. Firestore: Implement `listCollectionIds`
 - **Firebase API:** `POST /documents:listCollectionIds`
 - **Purpose:** List all sub-collections of a document
 - **Effort:** Small
 
-### 9. Firestore: Implement `partitionQuery`
+### 5. Firestore: Implement `partitionQuery`
 - **Firebase API:** `POST /documents:partitionQuery`
 - **Purpose:** Split large queries into cursors for parallel reading
 - **Effort:** Medium
 - **Relevance:** Only meaningful for very large datasets
 
-### 10. Realtime Database: Add `writeSizeLimit` query parameter constant
+### 6. Realtime Database: Add `writeSizeLimit` query parameter constant
 - **Firebase feature:** `writeSizeLimit=tiny|small|medium|large|unlimited` — protects against accidental large deletes
 - **Effort:** Tiny — add a typed constant or helper to the existing `QueryParams` mechanism
 
-### 11. Realtime Database: Security Rules read/write via REST
+### 7. Realtime Database: Security Rules read/write via REST
 - **Firebase feature:** `GET`/`PUT` to `/.settings/rules.json` for programmatic rule management
 - **Effort:** Small — but requires a Firebase Admin secret (not regular user token), may be out of scope for a client library
 
-### 12. Storage: Resumable (multipart) uploads for large files
+### 8. Storage: Resumable (multipart) uploads for large files
 - **GCS API:** `POST /upload/storage/v1/b/{bucket}/o?uploadType=resumable`
 - **Purpose:** Upload large files reliably with progress tracking and pause/resume capability
 - **Effort:** Medium — FB4D currently only supports simple (single-request) uploads
 
-### 13. Storage: List objects with prefix/delimiter filtering
+### 9. Storage: List objects with prefix/delimiter filtering
 - **GCS API:** `GET /storage/v1/b/{bucket}/o?prefix=...&delimiter=...`
 - **Purpose:** Browse "folders" in a bucket by simulating a directory structure
 - **Effort:** Small — the API call exists, just needs query param support in `IFirebaseStorage`
 
-### 14. Storage: Copy / Move object
+### 10. Storage: Copy / Move object
 - **GCS API:** `POST /storage/v1/b/{srcBucket}/o/{srcObject}/copyTo/b/{dstBucket}/o/{dstObject}`
 - **Purpose:** Server-side copy without re-uploading the file content
 - **Effort:** Small
 
-### 15. Storage: Update object metadata without re-upload
+### 11. Storage: Update object metadata without re-upload
 - **GCS API:** `PATCH /storage/v1/b/{bucket}/o/{object}` with only metadata fields
 - **Purpose:** Change content-type, custom metadata, cache-control etc. without re-uploading the file
 - **Effort:** Small — `TStorageObject` already has metadata fields; needs a `PATCH` implementation
 
-### 16. Cloud Functions: Support 2nd generation / Cloud Run URLs
+### 12. Cloud Functions: Support 2nd generation / Cloud Run URLs
 - **Firebase feature:** 2nd gen functions are deployed as Cloud Run services with URL pattern `https://{functionName}-{hash}-{region}.a.run.app`
 - **Current:** `FB4D.Functions.pas` uses the 1st gen `cloudfunctions.net` URL pattern only
 - **Effort:** Small — allow passing a custom base URL or auto-detect gen2 URL format
 
-### 17. Cloud Functions: Support HTTP-triggered (non-callable) functions
+### 13. Cloud Functions: Support HTTP-triggered (non-callable) functions
 - **Firebase feature:** HTTP-triggered functions accept any HTTP method/body, not just the `{"data": ...}` callable wrapper
 - **Current:** FB4D wraps everything in `{"data": ...}` and expects `{"result": ...}` — only works for Callable Functions
 - **Effort:** Medium — new method variants that send raw bodies and receive raw responses
 
-### 18. Gemini AI: Implement `embedContent` / `batchEmbedContents`
+### 14. Gemini AI: Implement `embedContent` / `batchEmbedContents`
 - **Gemini API:** `POST /v1beta/models/{model}:embedContent` and `:batchEmbedContents`
 - **Purpose:** Generate text embedding vectors for semantic search, RAG pipelines, clustering
 - **Effort:** Medium — new interface + implementation; no UI needed, pure data
 
-### 19. Gemini AI: Implement Context Caching API (`cachedContent`)
+### 15. Gemini AI: Implement Context Caching API (`cachedContent`)
 - **Gemini API:** `POST /v1beta/cachedContents`, `GET`, `PATCH`, `DELETE`
 - **Purpose:** Cache large, reusable context (system prompts, docs) server-side to reduce cost & latency (new in 2024)
 - **Effort:** Medium — needs new `IGeminiCachedContent` interface
 
-### 20. Gemini AI: Implement Files API
+### 16. Gemini AI: Implement Files API
 - **Gemini API:** `POST /upload/v1beta/files`, `GET /v1beta/files/{name}`, `DELETE /v1beta/files/{name}`
 - **Purpose:** Upload audio/video/PDF files to Gemini for use in multimodal prompts without base64 encoding
 - **Effort:** Medium — currently only base64 inline is supported for media
 
-### 21. Vision ML: Implement async batch annotation
+### 17. Vision ML: Implement async batch annotation
 - **Cloud Vision API:** `POST /v1/images:asyncBatchAnnotate` and `POST /v1/files:asyncBatchAnnotate`
 - **Purpose:** Process large sets of images or multi-page PDFs (>20 pages) asynchronously; results written to GCS
 - **Effort:** Medium — needs polling or callback for long-running operation status

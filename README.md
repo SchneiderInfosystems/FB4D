@@ -15,8 +15,8 @@ You can find more learning videos on the following [YouTube channel](https://www
 This log informs about major interface changes and significant library enhancements that need the attention of users of this library.
 
 - March 2026: _Firestore_ extended Methods: Add support for batch operations (BatchWrite, BatchGet), aggregation queries (Count, Sum, Avg), and resolve memory leaks in asynchronous Firebase requests;
-- April 2025: _Gemini AI_: Add support for system instructions and modality request for text, image and audio
-- March 2025: Add authentication by using Google Accounts. The _DemoFB4D_ App demonstrates the functionality after setting up the Firebase Project for using this auth provider. Check the wiki for details.
+- April 2025: _Gemini AI_: Add support for system instructions and modality request for text, image and audio;
+- March 2025: Add authentication by using Google Accounts. The _DemoFB4D_ App demonstrates the functionality after setting up the Firebase Project for using this auth provider. Check the wiki for details;
 - October 2024: _GeminiAI_ service added, a new tab in the _DemoFB4D_ App demonstrates the functionality;
 - August 2024: Refactoring and many improvements in _DemoFB4D_ App;
 - June 2024: Adding _TOTDMapperOptions_ to control the behavior of the Object-To-Doc mapper. The simple FMX demo application _FSObj2Doc_ demonstrates the Object-To-Document Mapper and has been added to the FB4D Samples project group. Add _IFirestoreWriteTransaction.TransformDoc_ for SetServerTime, Increment, Maximum, Minimum;
