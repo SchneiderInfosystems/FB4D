@@ -687,12 +687,14 @@ begin
   for c := 0 to 1 do
   begin
     DocNames[c] := TFirebaseHelpers.CreateAutoID;
+    edtDocument.Items.Add(DocNames[c]);
     fBatchDocPaths[c] := [edtCollection.Text, DocNames[c]];
     Doc := TFirestoreDocument.Create(fBatchDocPaths[c], fDatabase.ProjectID);
     Doc.AddOrUpdateField(TJSONObject.SetInteger('batchWriteValue', c));
     Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('createDateTime', now));
     WriteTrans.CreateDoc(Doc);
   end;
+  edtDocument.ItemIndex := 0;
 
   memFirestore.Lines.Add('Calling BatchWrite asynchronously for ' + fBatchDocPaths[0][1] + ' and ' + fBatchDocPaths[1][1]);
   fDatabase.BatchWrite(WriteTrans, OnFirestoreBatchWrite, OnFirestoreError);
