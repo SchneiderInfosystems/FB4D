@@ -150,8 +150,8 @@ begin
   if not CheckAndCreateFunctionClass then
     exit;
   memFunctionResp.Lines.Add('Call: ' + edtFunctionName.Text);
+  Data := TJSONObject.Create;
   try
-    Data := TJSONObject.Create;
     if cboParams.ItemIndex > 0 then
     begin
       Data.AddPair(edtParam1.Text, edtParam1Val.Text);
@@ -166,16 +166,20 @@ begin
         end;
       end;
     end;
-    Res := fFirebaseFunction.CallFunctionSynchronous(edtFunctionName.Text, Data);
     try
-      memFunctionResp.Lines.Add('Result: ' + Res.ToJSON);
-    finally
-      Res.Free;
+      Res := fFirebaseFunction.CallFunctionSynchronous(edtFunctionName.Text, Data);
+      try
+        memFunctionResp.Lines.Add('Result: ' + Res.ToJSON);
+      finally
+        Res.Free;
+      end;
+    except
+      on e: exception do
+        memFunctionResp.Lines.Add('Call ' + edtFunctionName.Text + ' failed: ' +
+          e.Message);
     end;
-  except
-    on e: exception do
-      memFunctionResp.Lines.Add('Call ' + edtFunctionName.Text + ' failed: ' +
-        e.Message);
+  finally
+    Data.Free;
   end;
 end;
 
@@ -187,8 +191,8 @@ begin
   if not CheckAndCreateFunctionClass then
     exit;
   memFunctionResp.Lines.Add('Call: ' + edtFunctionName.Text);
+  Data := TJSONObject.Create;
   try
-    Data := TJSONObject.Create;
     if cboParams.ItemIndex > 0 then
     begin
       Data.AddPair(edtParam1.Text, edtParam1Val.Text);
@@ -203,12 +207,16 @@ begin
         end;
       end;
     end;
-    fFirebaseFunction.CallFunction(onFunctionSuccess, OnFunctionError,
-      edtFunctionName.Text, Data);
-  except
-    on e: exception do
-      memFunctionResp.Lines.Add('Call ' + edtFunctionName.Text +
-        ' failed: ' + e.Message);
+    try
+      fFirebaseFunction.CallFunction(onFunctionSuccess, OnFunctionError,
+        edtFunctionName.Text, Data);
+    except
+      on e: exception do
+        memFunctionResp.Lines.Add('Call ' + edtFunctionName.Text +
+          ' failed: ' + e.Message);
+    end;
+  finally
+    Data.Free;
   end;
 end;
 
