@@ -205,7 +205,7 @@ end;
 procedure TFirestoreFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtCollection.Text := IniFile.ReadString('Firestore', 'Collection', '');
-  edtDocument.Items.Text := IniFile.ReadString('Firestore', 'Document', '');
+  edtDocument.Items.CommaText := IniFile.ReadString('Firestore', 'Document', '');
   edtDocument.ItemIndex := 0;
   chbUseChildDoc.IsChecked := IniFile.ReadBool('Firestore', 'UseChild', false);
   chbLimitTo10Docs.IsChecked := IniFile.ReadBool('Firestore', 'Limited', false);
@@ -225,7 +225,7 @@ end;
 procedure TFirestoreFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('Firestore', 'Collection', edtCollection.Text);
-  IniFile.WriteString('Firestore', 'Document', edtDocument.Items.Text);
+  IniFile.WriteString('Firestore', 'Document', edtDocument.Items.CommaText);
   IniFile.WriteBool('Firestore', 'UseChild', chbUseChildDoc.IsChecked);
   IniFile.WriteBool('Firestore', 'Limited', chbLimitTo10Docs.IsChecked);
   IniFile.WriteString('Firestore', 'ChildCol', edtChildCollection.Text);
@@ -687,7 +687,7 @@ begin
   for c := 0 to 1 do
   begin
     DocNames[c] := TFirebaseHelpers.CreateAutoID;
-    edtDocument.Items.Add(DocNames[c]);
+    edtDocument.Items.Insert(c, DocNames[c]);
     fBatchDocPaths[c] := [edtCollection.Text, DocNames[c]];
     Doc := TFirestoreDocument.Create(fBatchDocPaths[c], fDatabase.ProjectID);
     Doc.AddOrUpdateField(TJSONObject.SetInteger('batchWriteValue', c));

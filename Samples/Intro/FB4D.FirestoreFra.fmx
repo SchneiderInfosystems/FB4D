@@ -352,7 +352,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 7
+        TabOrder = 6
         Text = 'Run Query'
         OnClick = btnRunQueryClick
       end
