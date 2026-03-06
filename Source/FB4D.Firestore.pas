@@ -560,15 +560,11 @@ begin
   SAQ := TJSONObject.Create;
   // Embed the existing StructuredQuery without double-nesting
   QueryRoot := StructuredQuery.AsJSON;
-  try
-    if Assigned(QueryRoot) then
-    begin
-      InnerQuery := QueryRoot.GetValue('structuredQuery') as TJSONObject;
-      if Assigned(InnerQuery) then
-        SAQ.AddPair('structuredQuery', InnerQuery.Clone as TJSONObject);
-    end;
-  finally
-    QueryRoot.Free;
+  if Assigned(QueryRoot) then
+  begin
+    InnerQuery := QueryRoot.GetValue('structuredQuery') as TJSONObject;
+    if Assigned(InnerQuery) then
+      SAQ.AddPair('structuredQuery', InnerQuery.Clone as TJSONObject);
   end;
 
   // Build aggregations array
