@@ -2400,7 +2400,7 @@ constructor TOnSuccess.CreateFirestoreCommitWriteTransaction(
 begin
   Create(nil);
   OnSuccessCase := oscCommitWriteTransaction;
-  OnCommitTransaction := OnCommitTransaction;
+  OnCommitWriteTransaction := OnCommitTransaction;
 end;
 
 constructor TOnSuccess.CreateStorage(OnStorageResp: TOnStorage);
