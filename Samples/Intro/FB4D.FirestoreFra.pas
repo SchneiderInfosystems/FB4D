@@ -59,7 +59,6 @@ type
     Label28: TLabel;
     edtCollection: TEdit;
     Label4: TLabel;
-    edtDocument: TEdit;
     Label7: TLabel;
     lblMinTestInt: TLabel;
     memFirestore: TMemo;
@@ -94,10 +93,9 @@ type
     trbAggregationMin: TTrackBar;
     lblAggregationMin: TLabel;
     tabBatchGet: TTabItem;
-    btnBatchGet: TButton;
-    lblBatchGetInfo: TLabel;
-    btnBatchWrite: TButton;
-    lblBatchWriteInfo: TLabel;
+    btnBatchWriteAndGet: TButton;
+    lblBatchInfo: TLabel;
+    edtDocument: TComboBox;
     procedure edtDocumentChangeTracking(Sender: TObject);
     procedure btnGetClick(Sender: TObject);
     procedure btnCreateDocumentClick(Sender: TObject);
@@ -107,8 +105,7 @@ type
     procedure chbUseChildDocChange(Sender: TObject);
     procedure trbMinTestIntChange(Sender: TObject);
     procedure btnRunQueryClick(Sender: TObject);
-    procedure btnBatchGetClick(Sender: TObject);
-    procedure btnBatchWriteClick(Sender: TObject);
+    procedure btnBatchWriteAndGetClick(Sender: TObject);
     procedure btnRunAggregationClick(Sender: TObject);
     procedure btnStartWriteTransactionClick(Sender: TObject);
     procedure btnStartReadTransactionClick(Sender: TObject);
@@ -123,6 +120,7 @@ type
     fDatabase: IFirestoreDatabase;
     fReadTransaction: TFirestoreReadTransaction;
     fWriteTransaction: IFirestoreWriteTransaction;
+    fBatchDocPaths: TRequestResourceParams;
 
     function CheckFirestoreFields(InsUpdGetWF: boolean): boolean;
 
@@ -207,7 +205,8 @@ end;
 procedure TFirestoreFra.LoadSettingsFromIniFile(IniFile: TIniFile);
 begin
   edtCollection.Text := IniFile.ReadString('Firestore', 'Collection', '');
-  edtDocument.Text := IniFile.ReadString('Firestore', 'Document', '');
+  edtDocument.Items.Text := IniFile.ReadString('Firestore', 'Document', '');
+  edtDocument.ItemIndex := 0;
   chbUseChildDoc.IsChecked := IniFile.ReadBool('Firestore', 'UseChild', false);
   chbLimitTo10Docs.IsChecked := IniFile.ReadBool('Firestore', 'Limited', false);
   edtChildCollection.Text := IniFile.ReadString('Firestore', 'ChildCol', '');
@@ -226,7 +225,7 @@ end;
 procedure TFirestoreFra.SaveSettingsIntoIniFile(IniFile: TIniFile);
 begin
   IniFile.WriteString('Firestore', 'Collection', edtCollection.Text);
-  IniFile.WriteString('Firestore', 'Document', edtDocument.Text);
+  IniFile.WriteString('Firestore', 'Document', edtDocument.Items.Text);
   IniFile.WriteBool('Firestore', 'UseChild', chbUseChildDoc.IsChecked);
   IniFile.WriteBool('Firestore', 'Limited', chbLimitTo10Docs.IsChecked);
   IniFile.WriteString('Firestore', 'ChildCol', edtChildCollection.Text);
@@ -318,13 +317,14 @@ begin
   try
     ShowDocument(Doc);
     if assigned(Doc) and not chbUseChildDoc.IsChecked then
-      edtDocument.Text := Doc.DocumentName(false)
+      edtDocument.Items.Insert(0, Doc.DocumentName(false))
     else if not assigned(Doc) and not chbUseChildDoc.IsChecked then
-      edtDocument.Text := ''
+      edtDocument.Items.Insert(0, '')
     else if assigned(Doc) and chbUseChildDoc.IsChecked then
-      edtChildDocument.Text := Doc.DocumentName(false)
+      edtDocument.Items.Insert(0, Doc.DocumentName(false))
     else
-      edtChildDocument.Text := '';
+      exit;
+    edtDocument.ItemIndex := 0;
   except
     on e: exception do
       OnFirestoreError(Info, e.Message);
@@ -438,15 +438,16 @@ begin
     if not chbUseChildDoc.IsChecked then
     begin
       if assigned(Doc) then
-        edtDocument.Text := Doc.DocumentName(false)
-      else
-        edtDocument.Text := '';
-    end else begin
+      begin
+        edtDocument.Items.Insert(0, Doc.DocumentName(false));
+        edtDocument.ItemIndex := 0;
+      end;
+    end else
       if assigned(Doc) then
-        edtChildDocument.Text := Doc.DocumentName(false)
-      else
-        edtChildDocument.Text := '';
-    end;
+      begin
+        edtDocument.Items.Insert(0, Doc.DocumentName(false));
+        edtDocument.ItemIndex := 0;
+      end;
   except
     on e: exception do
       OnFirestoreError(Info, e.Message);
@@ -668,60 +669,32 @@ end;
 
 {$REGION 'BatchGet and BatchWrite'}
 
-procedure TFirestoreFra.btnBatchGetClick(Sender: TObject);
+procedure TFirestoreFra.btnBatchWriteAndGetClick(Sender: TObject);
 var
   DocNames: array[0..1] of string;
-  DocPaths: TRequestResourceParams;
-  i: integer;
-  Doc: IFirestoreDocument;
-begin
-  if not CheckAndCreateFirestoreDBClass then
-    exit;
-  if not CheckFirestoreFields(false) then
-    exit;
-
-  SetLength(DocPaths, 2);
-  memFirestore.Lines.Add('Setup: Creating 2 test documents for batchGet inside ' + edtCollection.Text);
-  // Setup: create 2 documents
-  for i := 0 to 1 do
-  begin
-    DocNames[i] := TFirebaseHelpers.CreateAutoID;
-    DocPaths[i] := [edtCollection.Text, DocNames[i]];
-    Doc := TFirestoreDocument.Create(DocPaths[i], fDatabase.ProjectID);
-    Doc.AddOrUpdateField(TJSONObject.SetInteger('testValue', i));
-    fDatabase.InsertOrUpdateDocumentSynchronous(Doc);
-  end;
-
-  memFirestore.Lines.Add('Calling BatchGet asynchronously for ' + DocPaths[0][1] + ' and ' + DocPaths[1][1]);
-  fDatabase.BatchGet(DocPaths, OnFirestoreGet, OnFirestoreError);
-end;
-
-procedure TFirestoreFra.btnBatchWriteClick(Sender: TObject);
-var
-  DocNames: array[0..1] of string;
-  DocPaths: TRequestResourceParams;
-  i: integer;
-  Doc: IFirestoreDocument;
+  c: integer;
   WriteTrans: IFirestoreWriteTransaction;
+  Doc: IFirestoreDocument;
 begin
   if not CheckAndCreateFirestoreDBClass then
     exit;
   if not CheckFirestoreFields(false) then
     exit;
 
-  SetLength(DocPaths, 2);
+  SetLength(fBatchDocPaths, 2);
   memFirestore.Lines.Add('Setup: Preparing 2 test documents for BatchWrite inside ' + edtCollection.Text);
   WriteTrans := fDatabase.BeginWriteTransaction;
-  for i := 0 to 1 do
+  for c := 0 to 1 do
   begin
-    DocNames[i] := TFirebaseHelpers.CreateAutoID;
-    DocPaths[i] := [edtCollection.Text, DocNames[i]];
-    Doc := TFirestoreDocument.Create(DocPaths[i], fDatabase.ProjectID);
-    Doc.AddOrUpdateField(TJSONObject.SetInteger('batchWriteValue', i));
+    DocNames[c] := TFirebaseHelpers.CreateAutoID;
+    fBatchDocPaths[c] := [edtCollection.Text, DocNames[c]];
+    Doc := TFirestoreDocument.Create(fBatchDocPaths[c], fDatabase.ProjectID);
+    Doc.AddOrUpdateField(TJSONObject.SetInteger('batchWriteValue', c));
+    Doc.AddOrUpdateField(TJSONObject.SetTimeStamp('createDateTime', now));
     WriteTrans.CreateDoc(Doc);
   end;
 
-  memFirestore.Lines.Add('Calling BatchWrite asynchronously for ' + DocPaths[0][1] + ' and ' + DocPaths[1][1]);
+  memFirestore.Lines.Add('Calling BatchWrite asynchronously for ' + fBatchDocPaths[0][1] + ' and ' + fBatchDocPaths[1][1]);
   fDatabase.BatchWrite(WriteTrans, OnFirestoreBatchWrite, OnFirestoreError);
 end;
 
@@ -731,6 +704,9 @@ begin
     memFirestore.Lines.Add('BatchWrite successfully committed at ' + DateTimeToStr(Commit.CommitTime))
   else
     memFirestore.Lines.Add('BatchWrite succeeded but commit is nil');
+
+  memFirestore.Lines.Add('Calling BatchGet asynchronously for ' + fBatchDocPaths[0][1] + ' and ' + fBatchDocPaths[1][1]);
+  fDatabase.BatchGet(fBatchDocPaths, OnFirestoreGet, OnFirestoreError);
 end;
 
 {$ENDREGION}

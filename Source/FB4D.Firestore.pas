@@ -676,16 +676,20 @@ begin
         Request := TFirebaseRequest.Create(LocalBaseURI,
           rsRunAggQuery + LocalQuery.GetInfo, LocalAuth);
         Body := LocalSelf.BuildAggregationJSON(LocalQuery, LocalAggs);
-        Response := Request.SendRequestSynchronous([], rmPost, Body, nil);
-        LocalSelf.fLastReceivedMsg := now;
-        Res := LocalSelf.ParseAggregationResponse(Response);
-        RequestID := rsRunAggQuery + LocalQuery.GetInfo;
-        if Assigned(OnResult) then
-          TThread.Queue(nil,
-            procedure
-            begin
-              OnResult(RequestID, Res);
-            end);
+        try
+          Response := Request.SendRequestSynchronous([], rmPost, Body, nil);
+          LocalSelf.fLastReceivedMsg := now;
+          Res := LocalSelf.ParseAggregationResponse(Response);
+          RequestID := rsRunAggQuery + LocalQuery.GetInfo;
+          if Assigned(OnResult) then
+            TThread.Queue(nil,
+              procedure
+              begin
+                OnResult(RequestID, Res);
+              end);
+        finally
+          Body.Free;
+        end;
       except
         on e: Exception do
         begin
@@ -716,9 +720,13 @@ begin
   Request := TFirebaseRequest.Create(BaseURI + METHODE_RUNAGGREGATIONQUERY,
     '', fAuth);
   Body := BuildAggregationJSON(StructuredQuery, Aggregations);
-  Response := Request.SendRequestSynchronous([], rmPost, Body, nil);
-  fLastReceivedMsg := now;
-  result := ParseAggregationResponse(Response);
+  try
+    Response := Request.SendRequestSynchronous([], rmPost, Body, nil);
+    fLastReceivedMsg := now;
+    result := ParseAggregationResponse(Response);
+  finally
+    Body.Free;
+  end;
 end;
 
 procedure TFirestoreDatabase.Get(Params: TRequestResourceParam;
@@ -813,14 +821,18 @@ var
 begin
   Request := TFirebaseRequest.Create(BaseURI + METHODE_BATCHGET, rsBatchGet, fAuth);
   Data := TJSONObject.Create;
-  DocArr := TJSONArray.Create;
-  for Path in DocumentPaths do
-    DocArr.AddElement(TJSONString.Create(TFirestoreDocument.GetDocFullPath(Path, fProjectID, fDatabaseID)));
-  Data.AddPair('documents', DocArr);
-  if not ReadTransaction.IsEmpty then
-    Data.AddPair('transaction', TJSONString.Create(ReadTransaction));
-  Request.SendRequest([], rmPOST, Data, nil, tmBearer, OnQueryResponse,
-    OnRequestError, TOnSuccess.CreateFirestoreDocs(OnDocuments));
+  try
+    DocArr := TJSONArray.Create;
+    for Path in DocumentPaths do
+      DocArr.AddElement(TJSONString.Create(TFirestoreDocument.GetDocFullPath(Path, fProjectID, fDatabaseID)));
+    Data.AddPair('documents', DocArr);
+    if not ReadTransaction.IsEmpty then
+      Data.AddPair('transaction', TJSONString.Create(ReadTransaction));
+    Request.SendRequest([], rmPOST, Data, nil, tmBearer, OnQueryResponse,
+      OnRequestError, TOnSuccess.CreateFirestoreDocs(OnDocuments));
+  finally
+    Data.Free;
+  end;
 end;
 
 function TFirestoreDatabase.BatchGetSynchronous(
@@ -861,12 +873,16 @@ var
   Request: IFirebaseRequest;
   Data: TJSONObject;
 begin
-  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS {METHODE_BATCHWRITE}, rsBatchWrite, fAuth);
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS, rsBatchWrite, fAuth);
   Data := TJSONObject.Create;
-  Data.AddPair('writes',
-    (Writes as TFirestoreWriteTransaction).GetWritesObjArray.Clone as TJSONArray);
-  Request.SendRequest([], rmPOST, Data, nil, tmBearer, CommitWriteTransactionResp,
-    OnRequestError, TOnSuccess.CreateFirestoreCommitWriteTransaction(OnSuccess)); // Notice we use CommitWriteTransactionResp as it parses identically
+  try
+    Data.AddPair('writes',
+      (Writes as TFirestoreWriteTransaction).GetWritesObjArray);
+    Request.SendRequest([], rmPOST, Data, nil, tmBearer, CommitWriteTransactionResp,
+      OnRequestError, TOnSuccess.CreateFirestoreCommitWriteTransaction(OnSuccess)); // Notice we use CommitWriteTransactionResp as it parses identically
+  finally
+    Data.Free;
+  end;
 end;
 
 function TFirestoreDatabase.BatchWriteSynchronous(
@@ -1353,9 +1369,13 @@ begin
     rsBeginTrans, fAuth);
   Data := TJSONObject.Create(TJSONPair.Create('options',
     TJSONObject.Create(TJSONPair.Create('readOnly', TJSONObject.Create))));
-  Request.SendRequest([], rmPOST, Data, nil, tmBearer, BeginReadTransactionResp,
-    OnRequestError,
-    TOnSuccess.CreateFirestoreReadTransaction(OnBeginReadTransaction));
+  try
+    Request.SendRequest([], rmPOST, Data, nil, tmBearer, BeginReadTransactionResp,
+      OnRequestError,
+      TOnSuccess.CreateFirestoreReadTransaction(OnBeginReadTransaction));
+  finally
+    Data.Free;
+  end;
 end;
 
 procedure TFirestoreDatabase.BeginReadTransactionResp(
@@ -1463,11 +1483,15 @@ begin
   Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
     rsCommitTrans, fAuth);
   Data := TJSONObject.Create;
-  Data.AddPair('writes',
-    (Transaction as TFirestoreWriteTransaction).GetWritesObjArray);
-  Request.SendRequest([], rmPOST, Data, nil, tmBearer,
-    CommitWriteTransactionResp, OnRequestError,
-    TOnSuccess.CreateFirestoreCommitWriteTransaction(OnCommitWriteTransaction));
+  try
+    Data.AddPair('writes',
+      (Transaction as TFirestoreWriteTransaction).GetWritesObjArray);
+    Request.SendRequest([], rmPOST, Data, nil, tmBearer,
+      CommitWriteTransactionResp, OnRequestError,
+      TOnSuccess.CreateFirestoreCommitWriteTransaction(OnCommitWriteTransaction));
+  finally
+    Data.Free;
+  end;
 end;
 
 procedure TFirestoreDatabase.CommitWriteTransactionResp(const RequestID: string;

@@ -9,13 +9,13 @@ object FirestoreFra: TFirestoreFra
     Size.Width = 153.000000000000000000
     Size.Height = 19.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 6
+    TabOrder = 5
     Text = 'Use Child Document'
     OnChange = chbUseChildDocChange
   end
   object edtChildCollection: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 3
+    TabOrder = 2
     Position.X = 112.000000000000000000
     Position.Y = 84.000000000000000000
     Size.Width = 225.000000000000000000
@@ -35,7 +35,7 @@ object FirestoreFra: TFirestoreFra
   end
   object edtChildDocument: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 5
+    TabOrder = 4
     Position.X = 456.000000000000000000
     Position.Y = 84.000000000000000000
     Size.Width = 225.000000000000000000
@@ -73,27 +73,6 @@ object FirestoreFra: TFirestoreFra
       TabOrder = 0
     end
   end
-  object edtDocument: TEdit
-    Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 1
-    Position.X = 456.000000000000000000
-    Position.Y = 54.000000000000000000
-    Size.Width = 225.000000000000000000
-    Size.Height = 22.000000000000000000
-    Size.PlatformDefault = False
-    OnChangeTracking = edtDocumentChangeTracking
-    object Label7: TLabel
-      Position.X = -111.000000000000000000
-      Position.Y = 3.000000000000000000
-      Size.Width = 104.000000000000000000
-      Size.Height = 17.000000000000000000
-      Size.PlatformDefault = False
-      TextSettings.HorzAlign = Trailing
-      TextSettings.Trimming = None
-      Text = 'Document:'
-      TabOrder = 0
-    end
-  end
   object memFirestore: TMemo
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
@@ -104,7 +83,7 @@ object FirestoreFra: TFirestoreFra
     Size.Width = 1000.000000000000000000
     Size.Height = 463.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 2
+    TabOrder = 1
     Viewport.Width = 996.000000000000000000
     Viewport.Height = 459.000000000000000000
     object popFSLog: TPopupMenu
@@ -124,8 +103,8 @@ object FirestoreFra: TFirestoreFra
     Size.Width = 1000.000000000000000000
     Size.Height = 132.000000000000000000
     Size.PlatformDefault = False
-    TabIndex = 0
-    TabOrder = 10
+    TabIndex = 5
+    TabOrder = 9
     TabPosition = PlatformDefault
     Sizes = (
       1000s
@@ -152,7 +131,7 @@ object FirestoreFra: TFirestoreFra
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Size.Width = 54.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
@@ -322,8 +301,8 @@ object FirestoreFra: TFirestoreFra
       CustomIcon = <
         item
         end>
-      IsSelected = False
-      Size.Width = 71.000000000000000000
+      IsSelected = True
+      Size.Width = 69.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -331,45 +310,27 @@ object FirestoreFra: TFirestoreFra
       Text = 'Batch Op'
       ExplicitSize.cx = 63.000000000000000000
       ExplicitSize.cy = 26.000000000000000000
-      object btnBatchGet: TButton
+      object btnBatchWriteAndGet: TButton
         Position.X = 16.000000000000000000
         Position.Y = 16.000000000000000000
-        Size.Width = 121.000000000000000000
+        Size.Width = 217.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        Text = 'Batch Get Docs'
-        OnClick = btnBatchGetClick
+        Text = 'Batch Write and Batch Get Docs'
+        OnClick = btnBatchWriteAndGetClick
       end
-      object lblBatchGetInfo: TLabel
-        Position.X = 145.000000000000000000
-        Position.Y = 16.000000000000000000
+      object lblBatchInfo: TLabel
+        Position.X = 18.000000000000000000
+        Position.Y = 46.000000000000000000
         Size.Width = 400.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
         TextSettings.Trimming = None
-        Text = 'Creates 2 test documents in the collection and gets them via BatchGet'
+        Text = 
+          'Writes 2 test documents in the collection and gets them via Batc' +
+          'hGet'
         TabOrder = 1
-      end
-      object btnBatchWrite: TButton
-        Position.X = 16.000000000000000000
-        Position.Y = 46.000000000000000000
-        Size.Width = 121.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 2
-        Text = 'Batch Write Docs'
-        OnClick = btnBatchWriteClick
-      end
-      object lblBatchWriteInfo: TLabel
-        Position.X = 145.000000000000000000
-        Position.Y = 46.000000000000000000
-        Size.Width = 400.000000000000000000
-        Size.Height = 22.000000000000000000
-        Size.PlatformDefault = False
-        TextSettings.Trimming = None
-        Text = 'Writes two test documents to the collection'
-        TabOrder = 3
       end
     end
     object tabQuery: TTabItem
@@ -391,7 +352,7 @@ object FirestoreFra: TFirestoreFra
         Size.Width = 121.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 8
+        TabOrder = 7
         Text = 'Run Query'
         OnClick = btnRunQueryClick
       end
@@ -478,7 +439,7 @@ object FirestoreFra: TFirestoreFra
         end>
       IsSelected = False
       ImageIndex = 0
-      Size.Width = 77.000000000000000000
+      Size.Width = 78.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -648,7 +609,7 @@ object FirestoreFra: TFirestoreFra
   end
   object edtDatabaseID: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 4
+    TabOrder = 3
     Position.X = 112.000000000000000000
     Position.Y = 16.000000000000000000
     Size.Width = 225.000000000000000000
@@ -674,6 +635,26 @@ object FirestoreFra: TFirestoreFra
       Size.PlatformDefault = False
       Stroke.Kind = None
       Visible = False
+    end
+  end
+  object edtDocument: TComboBox
+    ItemIndex = 0
+    Position.X = 457.000000000000000000
+    Position.Y = 54.000000000000000000
+    Size.Width = 224.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 12
+    object Label7: TLabel
+      Position.X = -111.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 104.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Document:'
+      TabOrder = 0
     end
   end
   object imlTabStatus: TImageList
