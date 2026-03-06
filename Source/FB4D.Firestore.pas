@@ -892,7 +892,7 @@ var
   Response: IFirebaseResponse;
   Data, Res: TJSONObject;
 begin
-  Request := TFirebaseRequest.Create(BaseURI + METHODE_BATCHWRITE,
+  Request := TFirebaseRequest.Create(BaseURI + METHODE_COMMITTRANS,
     rsBatchWrite, fAuth);
   Data := TJSONObject.Create;
   Data.AddPair('database', TJSONString.Create('projects/' + fProjectID + '/databases/' + fDatabaseID));
