@@ -14,9 +14,9 @@
 
 setlocal
 
-:: --- Determine repo root (first argument, or current dir if not supplied) ---
+:: --- Determine repo root (first argument, or script parent dir if not supplied) ---
 if "%~1"=="" (
-  set REPO_ROOT=%CD%
+  set REPO_ROOT=%~dp0..
 ) else (
   set REPO_ROOT=%~f1
 )
@@ -32,8 +32,9 @@ for /f "tokens=3 delims=; " %%A in ('findstr "cLibMajorVersion" "%VERSION_FILE%"
 for /f "tokens=3 delims=; " %%A in ('findstr "cLibMinorVersion" "%VERSION_FILE%" 2^>nul') do set MINOR=%%A
 for /f "tokens=3 delims=; " %%A in ('findstr "cLibReleaseVersion" "%VERSION_FILE%" 2^>nul') do set RELEASE=%%A
 
-:: --- Get commit count from git ---
+:: --- Get commit count from git and increment by 1 for the next commit ---
 for /f %%i in ('git -C "%REPO_ROOT%" rev-list --count HEAD 2^>nul') do set BUILD=%%i
+set /A BUILD+=1
 
 if "%BUILD%"=="" (
   echo [UpdateBuildVersion] WARNING: git not found or not a git repo. Build number unchanged.
