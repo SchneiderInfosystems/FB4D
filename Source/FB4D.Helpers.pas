@@ -1144,7 +1144,11 @@ begin
 {$IF defined(WIN32)}
   result := 'Win32';
 {$ELSEIF defined(WIN64)}
+  {$IFDEF CPUARM64}
+  result := 'WinArm64EC';
+  {$ELSE}
   result := 'Win64';
+  {$ENDIF}
 {$ELSEIF defined(MACOS32)}
   result := 'Mac32';
 {$ELSEIF defined(MACOS64)}

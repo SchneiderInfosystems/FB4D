@@ -1,13 +1,13 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{CFB4EDE1-ADA9-42DD-8D3F-C037E8F2B9B9}</ProjectGuid>
-        <ProjectVersion>20.3</ProjectVersion>
+        <ProjectVersion>20.4</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">WinARM64EC</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">FS_Encrypted_Notes_VCL</ProjectName>
-        <TargetedPlatforms>3</TargetedPlatforms>
+        <TargetedPlatforms>2097155</TargetedPlatforms>
         <AppType>Application</AppType>
         <MainSource>FS_Encrypted_Notes_VCL.dpr</MainSource>
     </PropertyGroup>
@@ -21,6 +21,11 @@
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
         <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='WinARM64EC' and '$(Base)'=='true') or '$(Base_WinARM64EC)'!=''">
+        <Base_WinARM64EC>true</Base_WinARM64EC>
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
@@ -41,6 +46,12 @@
         <Cfg_1>true</Cfg_1>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='WinARM64EC' and '$(Cfg_1)'=='true') or '$(Cfg_1_WinARM64EC)'!=''">
+        <Cfg_1_WinARM64EC>true</Cfg_1_WinARM64EC>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2>
         <CfgParent>Base</CfgParent>
@@ -54,6 +65,12 @@
     </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win64)'!=''">
         <Cfg_2_Win64>true</Cfg_2_Win64>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='WinARM64EC' and '$(Cfg_2)'=='true') or '$(Cfg_2_WinARM64EC)'!=''">
+        <Cfg_2_WinARM64EC>true</Cfg_2_WinARM64EC>
         <CfgParent>Cfg_2</CfgParent>
         <Cfg_2>true</Cfg_2>
         <Base>true</Base>
@@ -94,6 +111,12 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_WinARM64EC)'!=''">
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
         <DCC_DebugDCUs>true</DCC_DebugDCUs>
@@ -113,6 +136,9 @@
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_WinARM64EC)'!=''">
+        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
@@ -123,6 +149,9 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_WinARM64EC)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
     </PropertyGroup>
     <ItemGroup>
@@ -839,6 +868,9 @@
                     <Platform Name="Win64x">
                         <Operation>1</Operation>
                     </Platform>
+                    <Platform Name="WinARM64EC">
+                        <Operation>1</Operation>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectiOSDeviceDebug">
                     <Platform Name="iOSDevice32">
@@ -909,6 +941,10 @@
                         <RemoteDir>Assets</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
+                    <Platform Name="WinARM64EC">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
                 </DeployClass>
                 <DeployClass Name="UWP_DelphiLogo44">
                     <Platform Name="Win32">
@@ -916,6 +952,10 @@
                         <Operation>1</Operation>
                     </Platform>
                     <Platform Name="Win64">
+                        <RemoteDir>Assets</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="WinARM64EC">
                         <RemoteDir>Assets</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
@@ -1132,10 +1172,12 @@
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64x" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="WinARM64EC" Name="$(PROJECTNAME)"/>
             </Deployment>
             <Platforms>
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
+                <Platform value="WinARM64EC">True</Platform>
             </Platforms>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
