@@ -38,10 +38,11 @@ type
   private const
     cSafetyMargin = 5 / 3600 / 24; // 5 sec
   private type
-    TSignType = (stNewUser, stLogin, stAnonymousLogin);
+    TSignType = (stNewUser, stLogin, stAnonymousLogin, stCustomToken);
   private const
     cSignTypeEndPoints: array [TSignType] of string =
-      ('accounts:signUp', 'accounts:signInWithPassword', 'accounts:signUp');
+      ('accounts:signUp', 'accounts:signInWithPassword', 'accounts:signUp',
+       'accounts:signInWithCustomToken');
   private var
     fApiKey: string;
     fCSForToken: TCriticalSection;
@@ -96,6 +97,11 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
+    // Login with a custom backend-generated JWT token
+    procedure SignInWithCustomToken(const CustomToken: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    function SignInWithCustomTokenSynchronous(const CustomToken: string):
+      IFirebaseUser;
     // Google Account via OAuth2
     procedure SetGoogleAuth2(const ClientID, ClientSecret: string);
     procedure SignInWithGoogleAccount(OnUserResponse: TOnUserResponse;
@@ -251,6 +257,7 @@ const
 
 resourcestring
   rsSignInAnonymously = 'Sign in anonymously';
+  rsSignInWithCustomToken = 'Sign in with custom token';
   rsSignInWithEmail = 'Sign in with email for %s';
   rsSignUpWithEmail = 'Sign up with email for %s';
   rsSignInWithOAuth = 'Sign in with OAuth for %s';
@@ -299,6 +306,20 @@ end;
 function TFirebaseAuthentication.SignInAnonymouslySynchronous: IFirebaseUser;
 begin
   result := SignWithEmailAndPasswordSynchronous(stAnonymousLogin);
+end;
+
+procedure TFirebaseAuthentication.SignInWithCustomToken(
+  const CustomToken: string; OnUserResponse: TOnUserResponse;
+  OnError: TOnRequestError);
+begin
+  SignWithEmailAndPassword(stCustomToken, rsSignInWithCustomToken,
+    OnUserResponse, OnError, CustomToken);
+end;
+
+function TFirebaseAuthentication.SignInWithCustomTokenSynchronous(
+  const CustomToken: string): IFirebaseUser;
+begin
+  result := SignWithEmailAndPasswordSynchronous(stCustomToken, CustomToken);
 end;
 
 procedure TFirebaseAuthentication.SignInWithEmailAndPassword(const Email,
@@ -625,7 +646,8 @@ begin
     begin
       Data.AddPair(TJSONPair.Create('email', Email));
       Data.AddPair(TJSONPair.Create('password', Password));
-    end;
+    end else if SignType = stCustomToken then
+      Data.AddPair(TJSONPair.Create('token', Email));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Params.Add('key', [ApiKey]);
     Request.SendRequest([cSignTypeEndPoints[SignType]], rmPost, Data, Params,
@@ -655,7 +677,8 @@ begin
     begin
       Data.AddPair(TJSONPair.Create('email', Email));
       Data.AddPair(TJSONPair.Create('password', Password));
-    end;
+    end else if SignType = stCustomToken then
+      Data.AddPair(TJSONPair.Create('token', Email));
     Data.AddPair(TJSONPair.Create('returnSecureToken', 'true'));
     Params.Add('key', [ApiKey]);
     Response := Request.SendRequestSynchronous([cSignTypeEndPoints[SignType]],
@@ -734,11 +757,9 @@ begin
       if Registered then
       begin
         ResArr := ResObj.GetValue('allProviders') as TJSONArray;
-        if not assigned(ResArr) then
-          raise EFirebaseAuthentication.Create(
-            'JSON field allProviders missing');
-        for c := 0 to ResArr.Count - 1 do
-          Providers.Add(ResArr.Items[c].ToString);
+        if assigned(ResArr) then
+          for c := 0 to ResArr.Count - 1 do
+            Providers.Add((ResArr.Items[c] as TJSONString).Value);
       end;
       if assigned(Response.OnSuccess.OnFetchProviders) then
         Response.OnSuccess.OnFetchProviders(RequestID, Registered, Providers);
@@ -769,7 +790,7 @@ begin
   Params := TQueryParams.Create;
   try
     Data.AddPair(TJSONPair.Create('identifier', Email));
-    Data.AddPair(TJSONPair.Create('continueUri', 'https://locahost'));
+    Data.AddPair(TJSONPair.Create('continueUri', 'https://localhost'));
     Params.Add('key', [ApiKey]);
     Response := Request.SendRequestSynchronous(['accounts:createAuthUri'],
       rmPOST, Data, Params, tmNoToken);
@@ -781,11 +802,10 @@ begin
     if result then
     begin
       ResArr := ResObj.GetValue('allProviders') as TJSONArray;
-      if not assigned(ResArr) then
-        raise EFirebaseAuthentication.Create('JSON field allProviders missing');
       Providers.Clear;
-      for c := 0 to ResArr.Count - 1 do
-        Providers.Add(ResArr.Items[c].ToString);
+      if assigned(ResArr) then
+        for c := 0 to ResArr.Count - 1 do
+          Providers.Add((ResArr.Items[c] as TJSONString).Value);
     end;
   finally
     ResObj.Free;

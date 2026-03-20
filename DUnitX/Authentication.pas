@@ -50,6 +50,7 @@ type
       Providers: TStrings);
     procedure OnResp(const RequestID: string; Response: IFirebaseResponse);
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
+    procedure WaitUntilCallBack(TimeoutMS: cardinal = 10000);
   public
     [Setup]
     procedure Setup;
@@ -70,6 +71,8 @@ type
     procedure LinkWithEMailAndPassword;
     procedure FetchProvidersForEMailSynchronous;
     procedure FetchProvidersForEMail;
+    procedure DeleteProvidersSynchronous;
+    procedure DeleteProviders;
     procedure ChangeProfileSynchronousAndGetUserDataSynchronous;
     procedure ChangeProfileAndGetUserData;
   end;
@@ -78,6 +81,7 @@ implementation
 
 uses
   VCL.Forms,
+  System.DateUtils,
   FB4D.Configuration,
   Consts;
 
@@ -148,6 +152,16 @@ begin
     fUser := FirebaseUserList.Items[0];
   fCallBack := true;
 end;
+
+procedure UT_Authentication.WaitUntilCallBack(TimeoutMS: cardinal);
+var
+  Start: TDateTime;
+begin
+  Start := now;
+  while not fCallBack and (MilliSecondsBetween(now, Start) < TimeoutMS) do
+    Application.ProcessMessages;
+  Assert.IsTrue(fCallBack, 'Timeout waiting for callback');
+end;
 { Test Cases }
 
 procedure UT_Authentication.SignUpWithEmailAndPasswordSynchronous;
@@ -165,8 +179,7 @@ procedure UT_Authentication.SignUpWithEmailAndPassword;
 begin
   fConfig.Auth.SignUpWithEmailAndPassword(cEmail, cPassword, OnUserResponse,
     OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fUser.IsEMailAvailable, 'No EMail');
@@ -201,8 +214,7 @@ begin
   Status('Try create already registered email again');
   fConfig.Auth.SignUpWithEmailAndPassword(cEmail, cPassword, OnUserResponse,
     OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.AreEqual(fErrMsg, 'EMAIL_EXISTS');
   Assert.IsNull(fUser, 'User created');
   fConfig.Auth.DeleteCurrentUserSynchronous;
@@ -232,8 +244,7 @@ begin
   // start test
   fConfig.Auth.SignInWithEmailAndPassword(cEmail, cPassword, OnUserResponse,
     OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fUser.IsEMailAvailable, 'No EMail');
@@ -260,8 +271,7 @@ begin
   Status('Try login unregistered account');
   fConfig.Auth.SignInWithEmailAndPassword(cEmail, cPassword, OnUserResponse,
     OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.AreEqual(fErrMsg, 'EMAIL_NOT_FOUND');
   Assert.IsNull(fUser, 'User exists');
 end;
@@ -278,8 +288,7 @@ end;
 procedure UT_Authentication.SignInAnonymously;
 begin
   fConfig.Auth.SignInAnonymously(OnUserResponse, OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsFalse(fUser.IsEMailAvailable, 'Unexpected EMail');
@@ -310,8 +319,7 @@ begin
   // start test
   fConfig.Auth.LinkWithEMailAndPassword(cEmail, cPassword, OnUserResponse,
     OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   // re-login
@@ -345,13 +353,57 @@ begin
   // precondition is a created user
   SignUpWithEmailAndPasswordSynchronous;
   fConfig.Auth.FetchProvidersForEMail(cEMail, OnFetchProviders, OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fIsRegistered, 'EMail not registered');
   Assert.IsTrue(Pos(cEMail, fEMail) > 0, 'EMail missing in RequestID');
   Assert.IsTrue(Pos('password', fProviders) > 0, 'Password provider missing');
+end;
+
+procedure UT_Authentication.DeleteProvidersSynchronous;
+var
+  strs: TStringList;
+begin
+  // precondition is a created user
+  SignUpWithEmailAndPasswordSynchronous;
+  // start test: delete (unlink) the password provider
+  strs := TStringList.Create;
+  try
+    strs.Add('password');
+    Assert.IsTrue(fConfig.Auth.DeleteProvidersSynchronous(strs), 'Delete failed');
+    // Verify it is gone
+    strs.Clear;
+    fConfig.Auth.FetchProvidersForEMailSynchronous(cEMail, strs);
+    Assert.IsFalse(Pos('password', strs.CommaText) > 0,
+      'Password provider still there');
+  finally
+    strs.Free;
+  end;
+end;
+
+procedure UT_Authentication.DeleteProviders;
+var
+  strs: TStringList;
+begin
+  // precondition is a created user
+  SignUpWithEmailAndPasswordSynchronous;
+  // start test: delete (unlink) the password provider
+  strs := TStringList.Create;
+  try
+    strs.Add('password');
+    fConfig.Auth.DeleteProviders(strs, OnResp, OnError);
+    WaitUntilCallBack;
+    Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
+    // Verify it is gone
+    fCallBack := false;
+    strs.Clear;
+    fConfig.Auth.FetchProvidersForEMailSynchronous(cEMail, strs);
+    Assert.IsFalse(Pos('password', strs.CommaText) > 0,
+      'Password provider still there');
+  finally
+    strs.Free;
+  end;
 end;
 
 procedure UT_Authentication.ChangeProfileSynchronousAndGetUserDataSynchronous;
@@ -392,13 +444,11 @@ begin
   Assert.IsNotEmpty(fUSer.Token, 'Token is empty');
   // start test
   fConfig.Auth.ChangeProfile('', '', cDisplayName, cPhotoURL, OnResp, OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   fCallBack := false;
   fConfig.Auth.GetUserData(OnGetUserData, OnError);
-  while not fCallBack do
-    Application.ProcessMessages;
+  WaitUntilCallBack;
   Assert.IsEmpty(fErrMsg, 'Error: ' + fErrMsg);
   Assert.IsNotNull(fUser, 'No user created');
   Assert.IsTrue(fUser.IsEMailAvailable, 'No EMail');

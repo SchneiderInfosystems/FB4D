@@ -1,4 +1,4 @@
-﻿{******************************************************************************}
+{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2026 Christoph Schneider                                 }
@@ -1120,6 +1120,11 @@ type
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
+    // Login with a custom backend-generated JWT token
+    procedure SignInWithCustomToken(const CustomToken: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    function SignInWithCustomTokenSynchronous(const CustomToken: string):
+      IFirebaseUser;
     // Link new email/password access to anonymous user
     procedure LinkWithEMailAndPassword(const EMail, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
