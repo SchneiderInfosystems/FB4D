@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -56,7 +56,13 @@ type
     fRefreshToken: string;
     fTokenRefreshCount: cardinal;
     fOnTokenRefresh: TOnTokenRefresh;
+    fMfaTotpEnrollmentInfo: TMfaTotpEnrollmentInfo;
+    fOnMfaRequired: TOnMfaRequired;
+    fOnMfaEnrollment: TOnMfaEnrollment;
+    fOnMfaEnrollError: TOnRequestError;
     fLastUTCServerTime: TDateTime;
+    function CheckForMfaPendingCredential(
+      ResObj: TJSONObject): TMfaPendingCredential;
     function SignWithEmailAndPasswordSynchronous(SignType: TSignType;
       const Email: string = ''; const Password: string = ''): IFirebaseUser;
     procedure SignWithEmailAndPassword(SignType: TSignType; const Info: string;
@@ -76,6 +82,7 @@ type
     procedure AddPairForTokenId(Data: TJSONObject);
     procedure OnAuthenticatorFinished(State: TGoogleOAuth2Authenticator.TAuthorizationState;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    procedure OnMfaEnrollmentResp(const RequestID: string; Response: IFirebaseResponse);
   public const
     GoogleProviderID: string = 'google.com';
     Auth2Authenticator: string = 'Auth2 Authenticator';
@@ -92,8 +99,20 @@ type
     procedure SignInWithEmailAndPassword(const Email,
       Password: string; OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
+    procedure SignInWithEmailAndPasswordWithMFA(const Email, Password: string;
+      OnUserResponse: TOnUserResponse; OnMfaRequired: TOnMfaRequired;
+      OnError: TOnRequestError);
     function SignInWithEmailAndPasswordSynchronous(const Email,
       Password: string): IFirebaseUser;
+    // Multi-Factor Authentication (MFA)
+    procedure StartMfaTotpEnrollment(OnMfaTotpEnrollment: TOnMfaEnrollment;
+      OnError: TOnRequestError);
+    function FinalizeMfaTotpEnrollment(const VerificationCode, DisplayName: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError): boolean;
+    procedure MfaSignIn(const PendingCredential: TMfaPendingCredential;
+      const VerificationCode: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    // Anonymous Login
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
@@ -205,6 +224,7 @@ type
     {$ENDIF}
     destructor Destroy; override;
     // Get User Identification
+    function IsUIDAvailable: boolean;
     function UID: string;
     // Get EMail Address
     function IsEMailAvailable: boolean;
@@ -214,6 +234,8 @@ type
     // Get User Display Name
     function IsDisplayNameAvailable: boolean;
     function DisplayName: string;
+    // Return either Display Name or EMail or UID
+    function PrettyName: string;
     // Get Photo URL for User Avatar or Photo
     function IsPhotoURLAvailable: boolean;
     function PhotoURL: string;
@@ -253,12 +275,14 @@ uses
 
 const
  GOOGLE_IDTOOLKIT_URL = 'https://identitytoolkit.googleapis.com/v1';
+ GOOGLE_IDTOOLKIT_V2_URL = 'https://identitytoolkit.googleapis.com/v2';
  GOOGLE_REFRESH_AUTH_URL = 'https://securetoken.googleapis.com/v1/token';
 
 resourcestring
   rsSignInAnonymously = 'Sign in anonymously';
   rsSignInWithCustomToken = 'Sign in with custom token';
   rsSignInWithEmail = 'Sign in with email for %s';
+  rsSignInWithEmailWithMfa = 'Sign in with email and MFA for %s';
   rsSignUpWithEmail = 'Sign up with email for %s';
   rsSignInWithOAuth = 'Sign in with OAuth for %s';
   rsEnableAnonymousLogin = 'In the firebase console under Authentication/' +
@@ -287,6 +311,7 @@ begin
   fOnTokenRefresh := nil;
   fLastUTCServerTime := 0;
   fAuth2Authenticator := nil;
+  fMfaTotpEnrollmentInfo.Init;
 end;
 
 destructor TFirebaseAuthentication.Destroy;
@@ -333,6 +358,163 @@ function TFirebaseAuthentication.SignInWithEmailAndPasswordSynchronous(
   const Email, Password: string): IFirebaseUser;
 begin
   result := SignWithEmailAndPasswordSynchronous(stLogin, Email, Password);
+end;
+
+procedure TFirebaseAuthentication.SignInWithEmailAndPasswordWithMFA(const Email,
+  Password: string; OnUserResponse: TOnUserResponse;
+  OnMfaRequired: TOnMfaRequired; OnError: TOnRequestError);
+begin
+  fOnMfaRequired := OnMfaRequired;
+  SignWithEmailAndPassword(stLogin, Format(rsSignInWithEmailWithMfa, [EMail]),
+    OnUserResponse, OnError, Email, Password);
+end;
+
+function TFirebaseAuthentication.CheckForMfaPendingCredential(
+  ResObj: TJSONObject): TMfaPendingCredential;
+var
+  Val: TJSONValue;
+begin
+  result.MfaPendingCredential := '';
+  result.MfaEnrollmentId := '';
+  result.MfaDisplayName := '';
+  result.PhoneResolver := '';
+  if not ResObj.TryGetValue('mfaPendingCredential', result.MfaPendingCredential) then
+    exit;
+  Val := ResObj.FindValue('mfaInfo[0].mfaEnrollmentId');
+  if Assigned(Val) then
+    result.MfaEnrollmentId := Val.Value;
+  Val := ResObj.FindValue('mfaInfo[0].displayName');
+  if Assigned(Val) then
+    result.MfaDisplayName := Val.Value;
+  Val := ResObj.FindValue('mfaInfo[0].phoneInfo');
+  if Assigned(Val) then
+    result.PhoneResolver := Val.Value;
+end;
+
+procedure TFirebaseAuthentication.OnMfaEnrollmentResp(const RequestID: string; Response: IFirebaseResponse);
+var
+  ResObj: TJSONObject;
+  Val: TJSONValue;
+begin
+  try
+    Response.CheckForJSONObj;
+    ResObj := Response.GetContentAsJSONObj;
+    Val := ResObj.FindValue('totpSessionInfo.sharedSecretKey');
+    fMfaTotpEnrollmentInfo.Init(Response.GetServerTime(tzUTC));
+    if Assigned(Val) then
+      fMfaTotpEnrollmentInfo.SharedSecretKey := Val.Value
+    else
+      fMfaTotpEnrollmentInfo.SharedSecretKey := '';
+    Val := ResObj.FindValue('totpSessionInfo.verificationCodeLength');
+    if Assigned(Val) then
+      TryStrToInt(Val.Value, fMfaTotpEnrollmentInfo.VerificationCodeLength);
+    Val := ResObj.FindValue('totpSessionInfo.hashingAlgorithm');
+    if Assigned(Val) then
+      fMfaTotpEnrollmentInfo.HashingAlgorithm := Val.Value
+    else
+      fMfaTotpEnrollmentInfo.HashingAlgorithm := '';
+    Val := ResObj.FindValue('totpSessionInfo.periodSec');
+    if Assigned(Val) then
+      TryStrToInt(Val.Value, fMfaTotpEnrollmentInfo.PeriodSec);
+    Val := ResObj.FindValue('totpSessionInfo.sessionInfo');
+    if Assigned(Val) then
+      fMfaTotpEnrollmentInfo.SessionInfo := Val.Value
+    else
+      fMfaTotpEnrollmentInfo.SessionInfo := '';
+    if Assigned(fOnMfaEnrollment) then
+       fOnMfaEnrollment(fMfaTotpEnrollmentInfo);
+  except
+    on e: exception do
+      if Assigned(fOnMfaEnrollError) then
+        fOnMfaEnrollError(RequestID, e.Message);
+  end;
+end;
+
+procedure TFirebaseAuthentication.StartMfaTotpEnrollment(OnMfaTotpEnrollment: TOnMfaEnrollment;
+  OnError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+  Data: TJSONObject;
+  Params: TQueryParams;
+begin
+  fOnMfaEnrollment := OnMfaTotpEnrollment;
+  fOnMfaEnrollError := OnError;
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_V2_URL, 'MFA TOTP Enrollment Start');
+  Data := TJSONObject.Create;
+  Params := TQueryParams.Create;
+  try
+    AddPairForTokenId(Data);
+    Data.AddPair(TJSONPair.Create('totpEnrollmentInfo', TJSONObject.Create));
+    Params.Add('key', [ApiKey]);  
+    Request.SendRequest(['accounts', 'mfaEnrollment:start'], rmPost, Data, Params,
+      tmNoToken, OnMfaEnrollmentResp, OnError, TOnSuccess.Create(nil));
+  finally
+    Data.Free;
+    Params.Free;
+  end;
+end;
+
+function TFirebaseAuthentication.FinalizeMfaTotpEnrollment(
+  const VerificationCode, DisplayName: string;
+  OnUserResponse: TOnUserResponse; OnError: TOnRequestError): boolean;
+var
+  Request: IFirebaseRequest;
+  Data: TJSONObject;
+  Params: TQueryParams;
+begin
+  result := fMfaTotpEnrollmentInfo.IsValid;
+  if result then
+  begin
+    Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_V2_URL, 'MFA TOTP Enrollment Finalize');
+    Params := TQueryParams.Create;
+    Data := TJSONObject.Create;
+    try
+      AddPairForTokenId(Data);
+      Data.AddPair(TJSONPair.Create('displayName', DisplayName));
+      Data.AddPair(TJSONPair.Create('totpVerificationInfo',
+        TJSONObject.Create.AddPair(
+          TJSONPair.Create('verificationCode', VerificationCode)).
+          AddPair('sessionInfo', fMfaTotpEnrollmentInfo.SessionInfo)));
+      Params.Add('key', [ApiKey]);   
+      Request.SendRequest(['accounts', 'mfaEnrollment:finalize'], rmPost, Data, Params,
+        tmNoToken, OnUserResp, OnError, TOnSuccess.CreateUser(OnUserResponse));
+    finally
+      Data.Free;
+      Params.Free;
+    end;
+  end;
+end;
+
+procedure TFirebaseAuthentication.MfaSignIn(
+  const PendingCredential: TMfaPendingCredential;
+  const VerificationCode: string;
+  OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+var
+  Request: IFirebaseRequest;
+  Data: TJSONObject;
+  Params: TQueryParams;
+begin
+  fAuthenticated := false;
+  fOnMfaRequired := nil; // Reset: no further MFA intercept expected
+  Request := TFirebaseRequest.Create(GOOGLE_IDTOOLKIT_V2_URL, 'MFA Sign In');
+  Params := TQueryParams.Create;
+  Data := TJSONObject.Create;
+  try
+    Data.AddPair(TJSONPair.Create('mfaPendingCredential',
+      PendingCredential.MfaPendingCredential));
+    Data.AddPair(TJSONPair.Create('mfaEnrollmentId',
+      PendingCredential.MfaEnrollmentId));
+    Data.AddPair(TJSONPair.Create('totpVerificationInfo',
+      TJSONObject.Create.AddPair(
+        TJSONPair.Create('verificationCode', VerificationCode))));
+    Params.Add('key', [ApiKey]);
+    Request.SendRequest(['accounts', 'mfaSignIn:finalize'], rmPost, Data,
+      Params, tmNoToken, OnUserResp, OnError,
+      TOnSuccess.CreateUser(OnUserResponse));
+  finally
+    Data.Free;
+    Params.Free;
+  end;
 end;
 
 procedure TFirebaseAuthentication.AddPairForTokenId(Data: TJSONObject);
@@ -579,11 +761,25 @@ procedure TFirebaseAuthentication.OnUserResp(const RequestID: string;
 var
   User: IFirebaseUser;
   ErrMsg: string;
+  ResObj: TJSONObject;
+  PendCred: TMfaPendingCredential;
 begin
   try
     Response.CheckForJSONObj;
     fLastUTCServerTime := Response.GetServerTime(tzUTC);
-    User := TFirebaseUser.Create(Response.GetContentAsJSONObj);
+    ResObj := Response.GetContentAsJSONObj;
+    // When MFA is enrolled the server returns mfaPendingCredential instead of
+    // an idToken. Detect this case and route to OnMfaRequired callback.
+    if assigned(fOnMfaRequired) then
+    begin
+      PendCred := CheckForMfaPendingCredential(ResObj);
+      if not PendCred.MfaPendingCredential.IsEmpty then
+      begin
+        fOnMfaRequired(PendCred);
+        exit;
+      end;
+    end;
+    User := TFirebaseUser.Create(ResObj);
     fCSForToken.Acquire;
     try
       fAuthenticated := true;
@@ -752,7 +948,7 @@ begin
     ResObj := Response.GetContentAsJSONObj;
     Providers := TStringList.Create;
     try
-      if not ResObj.GetValue('registered').TryGetValue(Registered) then
+      if not ResObj.TryGetValue<boolean>('registered', Registered) then
         raise EFirebaseAuthentication.Create(rsDeactivateEMailEnumProtection);
       if Registered then
       begin
@@ -1789,15 +1985,45 @@ begin
     raise EFirebaseUser.Create('displayName not found');
 end;
 
+function TFirebaseUser.PrettyName: string;
+begin
+  if IsDisplayNameAvailable then
+    result := DisplayName
+  else if IsEMailAvailable then
+    result := EMail
+  else if IsUIDAvailable then
+
+    result := UID;
+end;
+
 function TFirebaseUser.IsEMailAvailable: boolean;
+{$IFDEF TOKENJWT}
+var
+  Val: TJSONValue;
+{$ENDIF}
 begin
   result := fJSONResp.GetValue('email') <> nil;
+  {$IFDEF TOKENJWT}
+  if assigned(fTokenJWT) and fClaimFields.TryGetValue('email', Val) then
+    result := true;
+  {$ENDIF}
 end;
 
 function TFirebaseUser.EMail: string;
+{$IFDEF TOKENJWT}
+var
+  Val: TJSONValue;
+{$ENDIF}
 begin
   if not fJSONResp.TryGetValue('email', result) then
-    raise EFirebaseUser.Create('email not found');
+  begin
+  {$IFDEF TOKENJWT}
+    if assigned(fTokenJWT) and fClaimFields.TryGetValue('email', Val) then
+      result := Val.Value
+    else
+  {$ENDIF}
+      raise EFirebaseUser.Create('email not found');
+  end;
 end;
 
 function TFirebaseUser.ErrorMsg: string;
@@ -1810,10 +2036,34 @@ begin
   result := fExpiresAt;
 end;
 
+function TFirebaseUser.IsUIDAvailable: boolean;
+var
+ Val: TJSONValue;
+begin
+  result := fJSONResp.TryGetValue('localId', Val);
+  {$IFDEF TOKENJWT}
+  if assigned(fTokenJWT) and fClaimFields.TryGetValue('sub', Val) then
+    result := true;
+  {$ENDIF}
+end;
+
 function TFirebaseUser.UID: string;
+{$IFDEF TOKENJWT}
+var
+  Val: TJSONValue;
+{$ENDIF}
 begin
   if not fJSONResp.TryGetValue('localId', result) then
-    raise EFirebaseUser.Create('localId not found');
+  begin
+    // mfaSignIn:finalize responses do not include localId, extract UID from
+    // the JWT sub claim instead.
+    {$IFDEF TOKENJWT}
+    if assigned(fTokenJWT) and fClaimFields.TryGetValue('sub', Val) then
+      result := Val.Value
+    else
+    {$ENDIF}
+      raise EFirebaseUser.Create('localId not found');
+  end;
 end;
 
 function TFirebaseUser.IsEMailRegistered: TThreeStateBoolean;

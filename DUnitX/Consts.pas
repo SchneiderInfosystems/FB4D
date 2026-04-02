@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -37,8 +37,7 @@ uses
   FB4D.Helpers;
 
 initialization
-  // generate for each run and own password
-  cPassword := TFirebaseHelpers.CreateAutoID(FBID);
-  // Limit to 12 chars
-  cPassword := cPassword.SubString(12);
+  // Use a fixed password so that aborted test runs can be recovered and their
+  // orphaned user accounts can be deleted in the SetupFixture step.
+  cPassword := 'FB4D_Integration_Pass_123!';
 end.

@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2026 Christoph Schneider                                 }
@@ -166,6 +166,50 @@ type
   /// <param name="Info">Additional information about the response.</param>
   /// <param name="User">The IFirebaseUser object representing the user.</param>
   TOnUserResponse = procedure(const Info: string; User: IFirebaseUser) of object;
+
+  /// <summary>
+  /// Holds the information required for a pending multi-factor authentication sign-in.
+  /// This record is populated from the signInWithPassword response when a user
+  /// has MFA enrolled and must be passed to MfaSignIn to complete authentication.
+  /// </summary>
+  TMfaPendingCredential = record
+    /// Temporary credential from the first sign-in step (required for finalize)
+    MfaPendingCredential: string;
+    /// Enrollment ID of the MFA factor to verify (from mfaInfo[].mfaEnrollmentId)
+    MfaEnrollmentId: string;
+    /// Display name of the enrolled MFA factor (informational)
+    MfaDisplayName: string;
+    /// Phone number resolver for SMS-based MFA (empty for TOTP)
+    PhoneResolver: string;
+  end;
+
+  /// <summary>
+  /// Holds the information required for a TOTP Multi-Factor Authentication enrollment.
+  /// </summary>
+  TMfaTotpEnrollmentInfo = record
+    Created: TDateTime;
+    SharedSecretKey: string;
+    VerificationCodeLength: integer;
+    HashingAlgorithm: string;
+    PeriodSec: integer;
+    SessionInfo: string;
+    procedure Init(ServerLocalTime: TDateTime = 0);
+    function IsValid: boolean;
+    function CalcQrCodeURL(const EMail, IssuerName: string): string;
+  end;
+
+  /// <summary>
+  /// Event handler type for when a login requires MFA.
+  /// This event is triggered when sign-in requires an additional factor.
+  /// </summary>
+  /// <param name="PendingCredential">The credential used for completing the MFA sign-in.</param>
+  TOnMfaRequired = procedure(PendingCredential: TMfaPendingCredential) of object;
+
+  /// <summary>
+  /// Event handler type for when TOTP MFA enrollment starts.
+  /// </summary>
+  /// <param name="EnrollmentInfo">The TOTP enrollment info (including the QR Code URI and Shared Secret).</param>
+  TOnMfaEnrollment = procedure(const EnrollmentInfo: TMfaTotpEnrollmentInfo) of object;
 
   /// <summary>
   /// Event handler type for fetching authentication providers.
@@ -1065,6 +1109,8 @@ type
     // Get User Display Name
     function DisplayName: string;
     function IsDisplayNameAvailable: boolean;
+    // Return either Display Name or EMail or UID
+    function PrettyName: string;
     // Get Photo URL for User Avatar or Photo
     function IsPhotoURLAvailable: boolean;
     function PhotoURL: string;
@@ -1115,8 +1161,20 @@ type
     // Login
     procedure SignInWithEmailAndPassword(const Email, Password: string;
       OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
+    procedure SignInWithEmailAndPasswordWithMFA(const Email, Password: string;
+      OnUserResponse: TOnUserResponse; OnMfaRequired: TOnMfaRequired;
+      OnError: TOnRequestError);
     function SignInWithEmailAndPasswordSynchronous(const Email,
       Password: string): IFirebaseUser;
+    // Multi-Factor Authentication (MFA)
+    procedure StartMfaTotpEnrollment(OnMfaTotpEnrollment: TOnMfaEnrollment;
+      OnError: TOnRequestError);
+    // Returns false if StartMfaTotpEnrollment was not called before!
+    function FinalizeMfaTotpEnrollment(const VerificationCode, DisplayName: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError): boolean;
+    procedure MfaSignIn(const PendingCredential: TMfaPendingCredential;
+      const VerificationCode: string;
+      OnUserResponse: TOnUserResponse; OnError: TOnRequestError);
     procedure SignInAnonymously(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError);
     function SignInAnonymouslySynchronous: IFirebaseUser;
@@ -2244,11 +2302,45 @@ const
 implementation
 
 uses
-  System.NetEncoding;
+  System.NetEncoding, System.Math, System.StrUtils;
 
 {$IFDEF LINUX64}
 {$I LinuxTypeImpl.inc}
 {$ENDIF}
+
+{ TMfaTotpEnrollmentInfo }
+
+procedure TMfaTotpEnrollmentInfo.Init(ServerLocalTime: TDateTime);
+begin
+  Created := ServerLocalTime;
+  SharedSecretKey := '';
+  VerificationCodeLength := 0;
+  HashingAlgorithm := '';
+  PeriodSec := 0;
+  SessionInfo := '';
+end;
+
+function TMfaTotpEnrollmentInfo.IsValid: boolean;
+begin
+  result := not((Created = 0) or
+                SharedSecretKey.IsEmpty or
+                SessionInfo.IsEmpty);
+end;
+
+function TMfaTotpEnrollmentInfo.CalcQrCodeURL(const EMail, IssuerName: string): string;
+const
+  cOTPauth ='otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=%s&digits=%d&period=%d';
+var
+  IssuerEncoded: string;
+begin
+  IssuerEncoded := TNetEncoding.URL.Encode(IssuerName);
+  result :=
+    Format(cOTPauth,
+      [IssuerEncoded, TNetEncoding.URL.Encode(EMail), sharedSecretKey, IssuerEncoded,
+       ifThen(hashingAlgorithm <> '', hashingAlgorithm, 'SHA1'),
+       ifThen(verificationCodeLength > 0, verificationCodeLength, 6),
+       ifThen(periodSec > 0, periodSec, 30)]);
+end;
 
 { TAggregationField }
 

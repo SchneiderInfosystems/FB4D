@@ -22,9 +22,8 @@ object AuthFra: TAuthFra
       CustomIcon = <
         item
         end>
-      TextSettings.Trimming = None
       IsSelected = True
-      Size.Width = 82.000000000000000000
+      Size.Width = 83.000000000000000000
       Size.Height = 26.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = ''
@@ -45,8 +44,8 @@ object AuthFra: TAuthFra
         Size.Height = 447.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        Viewport.Width = 976.000000000000000000
-        Viewport.Height = 443.000000000000000000
+        Viewport.Width = 980.000000000000000000
+        Viewport.Height = 447.000000000000000000
         object timRefresh: TTimer
           Enabled = False
           OnTimer = timRefreshTimer
@@ -59,7 +58,6 @@ object AuthFra: TAuthFra
         Position.Y = 22.000000000000000000
         TabOrder = 1
         Text = 'User Data'
-        TextSettings.Trimming = None
         OnClick = btnGetUserDataClick
       end
       object btnRefresh: TButton
@@ -71,7 +69,6 @@ object AuthFra: TAuthFra
         Size.PlatformDefault = False
         TabOrder = 14
         Text = 'Refresh'
-        TextSettings.Trimming = None
         OnClick = btnRefreshClick
       end
     end
@@ -79,7 +76,6 @@ object AuthFra: TAuthFra
       CustomIcon = <
         item
         end>
-      TextSettings.Trimming = None
       IsSelected = False
       Size.Width = 125.000000000000000000
       Size.Height = 26.000000000000000000
@@ -134,7 +130,6 @@ object AuthFra: TAuthFra
         Size.PlatformDefault = False
         TabOrder = 7
         Text = 'Change Display Name'
-        TextSettings.Trimming = None
         OnClick = btnChangeClick
       end
       object btnChangeEMail: TButton
@@ -146,7 +141,6 @@ object AuthFra: TAuthFra
         Size.PlatformDefault = False
         TabOrder = 6
         Text = 'Change EMail Address'
-        TextSettings.Trimming = None
         OnClick = btnChangeEMailClick
       end
       object edtChangePassword: TEdit
@@ -177,7 +171,6 @@ object AuthFra: TAuthFra
         Size.PlatformDefault = False
         TabOrder = 5
         Text = 'Change Password'
-        TextSettings.Trimming = None
         OnClick = btnChangePwdClick
       end
       object edtChangePhotoURL: TEdit
@@ -207,7 +200,6 @@ object AuthFra: TAuthFra
         Size.PlatformDefault = False
         TabOrder = 4
         Text = 'Change Photo URL'
-        TextSettings.Trimming = None
         OnClick = btnChangePhotoURLClick
       end
       object btnDeleteUserAccount: TButton
@@ -218,7 +210,6 @@ object AuthFra: TAuthFra
         Size.PlatformDefault = False
         TabOrder = 8
         Text = 'Delete Signed-In User Account'
-        TextSettings.Trimming = None
         OnClick = btnDeleteUserAccountClick
       end
       object btnSendEMailVerification: TButton
@@ -229,7 +220,6 @@ object AuthFra: TAuthFra
         Size.PlatformDefault = False
         TabOrder = 9
         Text = 'Send EMail Verification'
-        TextSettings.Trimming = None
         OnClick = btnSendEMailVerificationClick
       end
     end
@@ -331,7 +321,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 2
     Text = 'Sign up new user'
-    TextSettings.Trimming = None
     OnClick = btnSignUpNewUserClick
   end
   object btnPasswordReset: TButton
@@ -344,7 +333,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 4
     Text = 'Reset Password'
-    TextSettings.Trimming = None
     OnClick = btnPasswordResetClick
   end
   object btnLogin: TButton
@@ -356,7 +344,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 3
     Text = 'Anonymous Login'
-    TextSettings.Trimming = None
     OnClick = btnLoginClick
   end
   object btnLinkEMailPwd: TButton
@@ -368,7 +355,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 5
     Text = 'Link EMail/Pwd'
-    TextSettings.Trimming = None
     OnClick = btnLinkEMailPwdClick
   end
   object btnLogout: TButton
@@ -380,7 +366,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 14
     Text = 'Logout'
-    TextSettings.Trimming = None
     OnClick = btnLogoutClick
   end
   object btnGoogleOAuth: TButton
@@ -391,7 +376,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 8
     Text = 'Login by Google Account'
-    TextSettings.Trimming = None
     OnClick = btnGoogleOAuthClick
   end
   object edtOAuthRefreshToken: TEdit
@@ -434,7 +418,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 10
     Text = 'Re-Sign-In by Google'
-    TextSettings.Trimming = None
     OnClick = btnReSignInWithGoogleAccountClick
   end
   object btnReSignInWithRefreshToken: TButton
@@ -445,7 +428,6 @@ object AuthFra: TAuthFra
     Size.PlatformDefault = False
     TabOrder = 7
     Text = 'Re-Sign-In by Refresh Token'
-    TextSettings.Trimming = None
     OnClick = btnReSignInWithRefreshTokenClick
   end
 end

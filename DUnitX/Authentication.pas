@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -52,6 +52,8 @@ type
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
     procedure WaitUntilCallBack(TimeoutMS: cardinal = 10000);
   public
+    [SetupFixture]
+    procedure GlobalSetup;
     [Setup]
     procedure Setup;
     [TearDown]
@@ -90,6 +92,28 @@ uses
 const
   cDisplayName = 'The Tester';
   cPhotoURL = 'https://www.schneider-infosys.ch/img/Christoph.png';
+
+procedure UT_Authentication.GlobalSetup;
+var
+  Config: IFirebaseConfiguration;
+  DummyProviders: TStringList;
+begin
+  Config := TFirebaseConfiguration.Create(cApiKey, cProjectID, cBucket);
+  DummyProviders := TStringList.Create;
+  try
+    if Config.Auth.FetchProvidersForEMailSynchronous(cEMail, DummyProviders) then
+    begin
+      try
+        Config.Auth.SignInWithEmailAndPasswordSynchronous(cEMail, cPassword);
+        Config.Auth.DeleteCurrentUserSynchronous;
+      except
+        // Ignore if user account was deleted manually or has a different randomized password
+      end;
+    end;
+  finally
+    DummyProviders.Free;
+  end;
+end;
 
 procedure UT_Authentication.Setup;
 begin

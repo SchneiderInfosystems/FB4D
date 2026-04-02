@@ -7,3 +7,6 @@
 	url = https://github.com/grahamegrieve/delphi-markdown.git
 	branch = master
 
+[submodule "submodules/DelphiZXingQRCode"]
+	path = submodules/DelphiZXingQRCode
+	url = https://github.com/foxitsoftware/DelphiZXingQRCode.git

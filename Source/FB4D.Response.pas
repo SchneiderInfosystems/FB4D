@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -183,7 +183,12 @@ begin
         [ContentAsString])
     else if (JSONValue as TJSONObject).TryGetValue('error', Error) and
       (Error.TryGetValue('message', ErrMsg)) then
-      raise EFirebaseResponse.Create(ErrMsg.Value);
+    begin
+      if SameText(ErrMsg.Value, 'MFA_REQUIRED') then
+        raise EFirebaseResponse.Create(ContentAsString)
+      else
+        raise EFirebaseResponse.Create(ErrMsg.Value);
+    end;
   finally
     JSONValue.Free;
   end;
@@ -204,7 +209,12 @@ begin
     else if (JSONValue as TJSONObject).TryGetValue('error', Error) then
     begin
       if Error.TryGetValue('message', ErrMsg) then
-        result := ErrMsg.Value
+      begin
+        if SameText(ErrMsg.Value, 'MFA_REQUIRED') then
+          result := ContentAsString
+        else
+          result := ErrMsg.Value;
+      end
       else
         result := Error.Value;
     end else

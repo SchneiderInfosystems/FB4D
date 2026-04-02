@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -269,7 +269,7 @@ begin
       'Unexpected Currency: ' + JO.GetValue<string>('Currency'));
     Addr := StringReplace(JO.GetValue<string>('InvoiceIssuerNameAndAddress'), #$A, ';', [rfReplaceAll]);
     Addr := StringReplace(Addr, '; ', ';', [rfReplaceAll]);
-    Assert.AreEqual(Addr, 'Schneider Infosystems AG;Mühlegasse 18;CH-6340 Baar',
+    Assert.AreEqual(Addr, 'Schneider Infosystems AG;MÃ¼hlegasse 18;CH-6340 Baar',
       'Unexpected InvoiceIssuerNameAndAddress: ' + Addr);
     Addr := StringReplace(JO.GetValue<string>('ReceiverNameAndAddress'), #$A, ';', [rfReplaceAll]);
     Addr := StringReplace(Addr, '; ', ';', [rfReplaceAll]);

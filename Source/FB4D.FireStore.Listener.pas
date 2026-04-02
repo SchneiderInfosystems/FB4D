@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -1059,7 +1059,7 @@ begin
           Msg := Resp.StatusText;
           MsgDetail := resp.ContentAsString;
           // Try to fetch more detail information from HTML page in case of error
-          c := Pos('That’s an error.', MsgDetail);
+          c := Pos('Thatâ€™s an error.', MsgDetail);
           if c > 0 then
           begin
             MsgDetail := MsgDetail.Substring(c);

@@ -1,7 +1,7 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
-{  Copyright (c) 2018-2025 Christoph Schneider                                 }
+{  Copyright (c) 2018-2026 Christoph Schneider                                 }
 {  Schneider Infosystems AG, Switzerland                                       }
 {  https://github.com/SchneiderInfosystems/FB4D                                }
 {                                                                              }
@@ -1351,7 +1351,7 @@ begin
   else if SameText(Code, 'my') then
     result := 'Burmese'
   else if SameText(Code, 'nb') then
-    result := 'Norwegian (Bokmål)'
+    result := 'Norwegian (BokmÃ¥l)'
   else if SameText(Code, 'ne') then
     result := 'Nepali'
   else if SameText(Code, 'nl') then

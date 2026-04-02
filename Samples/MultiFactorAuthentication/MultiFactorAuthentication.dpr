@@ -21,40 +21,35 @@
 {                                                                              }
 {******************************************************************************}
 
-program FB4D.IntegrationTests;
+program MultiFactorAuthentication;
 
-// Console Tester not support because a windows event handler is required for
-// aysnchrouns functions
-
-{$STRONGLINKTYPES ON}
 uses
-  System.SysUtils,
-  {$IFDEF TESTINSIGHT}
-  TestInsight.DUnitX,
-  {$ENDIF }
-  DUnitX.Loggers.GUI.VCL,
-  DUnitX.Loggers.Xml.NUnit,
-  DUnitX.TestFramework,
-  Config in 'Config.pas',
-  RealTimeDB in 'RealTimeDB.pas',
-  FBFunction in 'FBFunction.pas',
-  FirestoreDB in 'FirestoreDB.pas',
-  Authentication in 'Authentication.pas',
-  FBHelpers in 'FBHelpers.pas',
-  Storage in 'Storage.pas',
-  Consts in 'Consts.pas',
-  GeminiAI in 'GeminiAI.pas';
+  System.StartUpCopy,
+  FMX.Forms,
+  FB4D.Authentication in '..\..\Source\FB4D.Authentication.pas',
+  FB4D.Configuration in '..\..\Source\FB4D.Configuration.pas',
+  FB4D.Document in '..\..\Source\FB4D.Document.pas',
+  FB4D.FireStore.Listener in '..\..\Source\FB4D.FireStore.Listener.pas',
+  FB4D.Firestore in '..\..\Source\FB4D.Firestore.pas',
+  FB4D.Functions in '..\..\Source\FB4D.Functions.pas',
+  FB4D.GeminiAI in '..\..\Source\FB4D.GeminiAI.pas',
+  FB4D.Helpers in '..\..\Source\FB4D.Helpers.pas',
+  FB4D.Interfaces in '..\..\source\FB4D.Interfaces.pas',
+  FB4D.OAuth in '..\..\Source\FB4D.OAuth.pas',
+  FB4D.RealTimeDB.Listener in '..\..\Source\FB4D.RealTimeDB.Listener.pas',
+  FB4D.RealTimeDB in '..\..\Source\FB4D.RealTimeDB.pas',
+  FB4D.Request in '..\..\Source\FB4D.Request.pas',
+  FB4D.Response in '..\..\Source\FB4D.Response.pas',
+  FB4D.Storage in '..\..\Source\FB4D.Storage.pas',
+  FB4D.VisionML in '..\..\Source\FB4D.VisionML.pas',
+  FB4D.VisionMLDefinition in '..\..\Source\FB4D.VisionMLDefinition.pas',
+  DelphiZXingQRCode in '..\..\submodules\DelphiZXingQRCode\source\DelphiZXingQRCode.pas',
+  FB4D.MFAMainFmx in 'FB4D.MFAMainFmx.pas' {fmxMainMFA};
+
+{$R *.res}
 
 begin
-{$IFDEF TESTINSIGHT}
-  TestInsight.DUnitX.RunRegisteredTests;
-  exit;
-{$ENDIF}
-  try
-    TDUnitX.CheckCommandLine;
-    DUnitX.Loggers.GUI.VCL.Run;
-  except
-    on E: Exception do
-      System.Writeln(E.ClassName, ': ', E.Message);
-  end;
+  Application.Initialize;
+  Application.CreateForm(TfmxMainMFA, fmxMainMFA);
+  Application.Run;
 end.
