@@ -1,4 +1,4 @@
-# FB4D � The OpenSource Cross-Platform Library for _Firebase_
+# FB4D – The OpenSource Cross-Platform Library for _Firebase_
 
 The _Google Firebase Cloud Database_ is used in many mobile and web applications worldwide and there are well-documented libraries for many languages and platforms. For Delphi, the cross-platform library **FB4D** supports the _Firestore Database_, the _Firebase Realtime Database_, the _Firebase Storage_ (for file storage), _Firebase Functions_ (for calling server functions), and _Vision ML_. For authentication, **FB4D** currently supports email/password authentication, login by using a Google Account, anonymous login, and **Multi-Factor Authentication (MFA)** with TOTP. 
 
@@ -14,8 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about major interface changes and significant library enhancements that need the attention of users of this library.
 
-- April
- 2026: _MFA Integration_: Add support for Multi-Factor Authentication using Time-based One-Time Passwords (TOTP). New methods for TOTP enrollment, verification, and MFA-aware sign-in. A new cross-platform sample application _MultiFactorAuthentication_ demonstrates the complete workflow;
+- April 2026: Add support for Multi-Factor Authentication _MFA_ using Time-based One-Time Passwords (TOTP). New methods for TOTP enrollment, verification, and MFA-aware sign-in. A new cross-platform sample application _MultiFactorAuthentication_ demonstrates the complete workflow;
 - March 2026: _Firestore_ extended Methods: Add support for batch operations (BatchWrite, BatchGet), aggregation queries (Count, Sum, Avg), and resolve memory leaks in asynchronous Firebase requests;
 - April 2025: _Gemini AI_: Add support for system instructions and modality request for text, image and audio;
 - March 2025: Add authentication by using Google Accounts. The _DemoFB4D_ App demonstrates the functionality after setting up the Firebase Project for using this auth provider. Check the wiki for details;
@@ -37,7 +36,7 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 The sample projects are developed and prepared for **Delphi 13 Florence**.
 
-?? This library requires at least **Delphi 11.0 Alexandria**??. 
+🔺 This library requires at least **Delphi 11.0 Alexandria**🔺. 
 
 #### Hint: Support from Delphi 10 Seattle to Delphi 10.2 Tokyo has been discontinued since the introduction of the Firestore Listener in March 2021. Delphi 10.3 Update 1 and earlier versions are no longer supported because of an issue in the RTL. Delphi 10.4 Support is removed since FB4D V1.8.0 because of missing TBase64StringEncoding. 
 
