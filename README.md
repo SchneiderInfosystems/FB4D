@@ -79,6 +79,12 @@ For converting markdown formatted text into HTML this library uses the Delphi Ma
 
 [github.com/grahamegrieve/delphi-markdown](https://github.com/grahamegrieve/delphi-markdown)
 
+#### DelphiZXingQRCode
+
+FB4D supports Multi-Factor Authentication (MFA) via TOTP (Time-based One-Time Password). To implement the enrollment process in your application, we recommend using the DelphiZXingQRCode library to generate and display the required QR Code. This allows users to easily scan the shared secret into standard authenticator apps, such as Google Authenticator or Microsoft Authenticator, on their mobile devices.
+
+[https://github.com/foxitsoftware/DelphiZXingQRCode](https://github.com/foxitsoftware/DelphiZXingQRCode)
+
 # Sponsoring FB4D
 
 I recommend that anyone using this open-source library in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed. [Read more about the benefits of sponsoring here](github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D).
