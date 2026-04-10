@@ -26,7 +26,7 @@ unit FB4D.Response;
 interface
 
 uses
-  System.SysUtils, System.JSON,
+  System.Classes, System.SysUtils, System.JSON,
   System.Net.HttpClient,
   REST.Client,
   FB4D.Interfaces;
@@ -298,18 +298,51 @@ begin
 end;
 
 function TFirebaseResponse.GetContentAsJSONObj: TJSONObject;
+var
+  Bytes: TBytes;
+  Stream: TStream;
 begin
-  result := TJSONObject.ParseJSONValue(ContentAsString) as TJSONObject;
+  if assigned(fHttpResp) then
+  begin
+    Stream := fHttpResp.ContentStream;
+    Stream.Position := 0;
+    SetLength(Bytes, Stream.Size);
+    Stream.ReadBuffer(Bytes[0], Stream.Size);
+    result := TJSONObject.ParseJSONValue(Bytes, 0) as TJSONObject;
+  end else
+    result := TJSONObject.ParseJSONValue(ContentAsString) as TJSONObject;
 end;
 
 function TFirebaseResponse.GetContentAsJSONVal: TJSONValue;
+var
+  Bytes: TBytes;
+  Stream: TStream;
 begin
-  result := TJSONObject.ParseJSONValue(ContentAsString);
+  if assigned(fHttpResp) then
+  begin
+    Stream := fHttpResp.ContentStream;
+    Stream.Position := 0;
+    SetLength(Bytes, Stream.Size);
+    Stream.ReadBuffer(Bytes[0], Stream.Size);
+    result := TJSONObject.ParseJSONValue(Bytes, 0);
+  end else
+    result := TJSONObject.ParseJSONValue(ContentAsString);
 end;
 
 function TFirebaseResponse.GetContentAsJSONArr: TJSONArray;
+var
+  Bytes: TBytes;
+  Stream: TStream;
 begin
-  result := TJSONObject.ParseJSONValue(ContentAsString) as TJSONArray;
+  if assigned(fHttpResp) then
+  begin
+    Stream := fHttpResp.ContentStream;
+    Stream.Position := 0;
+    SetLength(Bytes, Stream.Size);
+    Stream.ReadBuffer(Bytes[0], Stream.Size);
+    result := TJSONObject.ParseJSONValue(Bytes, 0) as TJSONArray;
+  end else
+    result := TJSONObject.ParseJSONValue(ContentAsString) as TJSONArray;
 end;
 
 function TFirebaseResponse.GetServerTime(TimeZone: TTimeZone): TDateTime;

@@ -541,7 +541,7 @@ var
 begin
   SourceStr := nil;
   if Data <> nil then
-    SourceStr := TStringStream.Create(Data.ToJSON);
+    SourceStr := TStringStream.Create(Data.ToJSON, TEncoding.UTF8);
   try
     result := SendRequestSynchronous(ResourceParams, Method, SourceStr,
       TRESTContentType.ctAPPLICATION_JSON, QueryParams, TokenMode);
