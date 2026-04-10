@@ -273,6 +273,7 @@ procedure TfmxMainMFA.OnMfaRequired(PendingCredential: TMfaPendingCredential);
 begin
   fMfaPending := PendingCredential;
   lblStatus.Text := rsEnterOTP;
+  edtTestMfaCode.Text := '';
   TabControl.ActiveTab := tabEnterMFACode;
   edtTestMfaCode.SetFocus;
 end;
