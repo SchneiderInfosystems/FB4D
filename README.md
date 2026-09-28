@@ -1,8 +1,8 @@
 # FB4D – The OpenSource Cross-Platform Library for _Firebase_
 
-The _Google Firebase Cloud Database_ is used in many mobile and web applications worldwide and there are well-documented libraries for many languages and platforms. For Delphi, the cross-platform library **FB4D** supports the _Firestore Database_, the _Firebase Realtime Database_, the _Firebase Storage_ (for file storage), _Firebase Functions_ (for calling server functions), and _Vision ML_. For authentication, **FB4D** currently supports email/password authentication, login by using a Google Account, anonymous login, and **Multi-Factor Authentication (MFA)** with TOTP. 
+The _Google Firebase Cloud Database_ powers countless mobile and web applications globally, supported by numerous language-specific libraries. For Delphi, the cross-platform library **FB4D** supports the _Firestore Database_, the _Firebase Realtime Database_, the _Firebase Storage_ (for file storage), _Firebase Functions_ (for calling server functions), and _Vision ML_. For authentication, **FB4D** currently supports email/password authentication, login by using a Google Account, anonymous login, and **Multi-Factor Authentication (MFA)** with TOTP. 
 
-The library builds on the _Firebase REST-API_ and provides all functionality with synchronous and asynchronous methods for use within GUI applications, services, and background threads. Both frameworks _VCL_ and _Firemonkey_ are supported. The library is a pure source code library that relies on class interfaces. For clean and short application code, it supports fluent interface design.
+The library builds on the _Firebase REST-API_ and provides all functionality with synchronous and asynchronous methods for use within GUI applications, services, and background threads. Both frameworks _VCL_ and _Firemonkey_ are supported. The library is a pure source code library that relies on class interfaces. To promote highly readable and concise application code, the library incorporates a fluent interface design.
 
 ### Wiki
 
@@ -87,7 +87,7 @@ FB4D supports Multi-Factor Authentication (MFA) via TOTP (Time-based One-Time Pa
 
 # Sponsoring FB4D
 
-I recommend that anyone using this open-source library in a commercial project should consider sponsoring it. This is the only way this valuable library can be maintained and further developed. [Read more about the benefits of sponsoring here](github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D).
+We strongly recommend that anyone incorporating this open-source library into a commercial project considers sponsoring it. This support is crucial for maintaining and furthering the development of this valuable resource. [Read more about the benefits of sponsoring here](github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D).
 
 Christoph Schneider, Schneider Infosystems AG, Switzerland
 [www.schneider-infosys.ch](https://www.schneider-infosys.ch)  
