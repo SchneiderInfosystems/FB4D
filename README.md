@@ -87,7 +87,7 @@ FB4D supports Multi-Factor Authentication (MFA) via TOTP (Time-based One-Time Pa
 
 # Sponsoring FB4D
 
-We strongly recommend that anyone incorporating this open-source library into a commercial project considers sponsoring it. This support is crucial for maintaining and furthering the development of this valuable resource. [Read more about the benefits of sponsoring here](github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D).
+We strongly recommend that anyone incorporating this open-source library into a commercial project considers sponsoring it. This support is crucial for maintaining and furthering the development of this valuable resource. [Read more about the benefits of sponsoring here](https://github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D).
 
 Christoph Schneider, Schneider Infosystems AG, Switzerland
 [www.schneider-infosys.ch](https://www.schneider-infosys.ch)  
