@@ -153,6 +153,7 @@ type
     function SetSystemInstruction(const SystemInstructions: string): IGeminiAIRequest;
     function ModelParameter(Temperature, TopP: double; MaxOutputTokens,
       TopK: cardinal): IGeminiAIRequest;
+    function SetThinkingConfig(ThinkingBudget: integer; IncludeThoughts: boolean = false): IGeminiAIRequest;
     function SetStopSequences(StopSequences: TStrings): IGeminiAIRequest;
     function SetSafety(HarmCat: THarmCategory; LevelToBlock: TSafetyBlockLevel): IGeminiAIRequest;
     function SetJSONResponseSchema(Schema: IGeminiSchema): IGeminiAIRequest;
@@ -294,8 +295,8 @@ begin
           Details := GetModulDetails(Model as TJSONObject);
           if MatchStr('generateContent', Details.SupportedGenerationMethods) then
           begin
-            ModelNames.Add(Modelname.Substring(length(cModels)));
-            fModelDetails.AddOrSetValue(ModelName, GetModulDetails(Model as TJSONObject));
+            ModelNames.Add(ModelName);
+            fModelDetails.AddOrSetValue(ModelName, Details);
           end;
         end;
       finally
@@ -875,15 +876,30 @@ function TGeminiAIRequest.ModelParameter(Temperature, TopP: double;
   MaxOutputTokens, TopK: cardinal): IGeminiAIRequest;
 begin
   CheckAndCreateGenerationConfig;
-  if (Temperature < 0) and (Temperature > 0) then
-    raise EGeminiAIRequest.CreateFmt('Temperatur out of range 0..1: %f',
+  if (Temperature < 0) or (Temperature > 2) then
+    raise EGeminiAIRequest.CreateFmt('Temperature out of range 0..2: %f',
       [Temperature]);
-  if (TopP < 0) and (TopP > 0) then
+  if (TopP < 0) or (TopP > 1) then
     raise EGeminiAIRequest.CreateFmt('TopP out of range 0..1: %f', [TopP]);
   fGenerationConfig.AddPair('temperature', Temperature);
   fGenerationConfig.AddPair('topP', TopP);
   fGenerationConfig.AddPair('maxOutputTokens', MaxOutputTokens);
   fGenerationConfig.AddPair('topK', TopK);
+  result := self;
+end;
+
+function TGeminiAIRequest.SetThinkingConfig(ThinkingBudget: integer;
+  IncludeThoughts: boolean): IGeminiAIRequest;
+var
+  ThinkingCfg: TJSONObject;
+begin
+  CheckAndCreateGenerationConfig;
+  fGenerationConfig.RemovePair('thinkingConfig');
+  ThinkingCfg := TJSONObject.Create;
+  ThinkingCfg.AddPair('thinkingBudget', TJSONNumber.Create(ThinkingBudget));
+  if IncludeThoughts then
+    ThinkingCfg.AddPair('includeThoughts', TJSONBool.Create(true));
+  fGenerationConfig.AddPair('thinkingConfig', ThinkingCfg);
   result := self;
 end;
 
@@ -1213,9 +1229,10 @@ procedure TGeminiResponse.EvaluateResults;
 var
   Candidates, Parts, Arr, Arr2: TJSONArray;
   Ind, Ind2, Ind3: integer;
-  IndTxt, IndData: integer;
+  IndTxt, IndThought, IndData: integer;
+  IsThought: boolean;
   Txt: string;
-  Candidate, Obj, Obj2: TJSONObject;
+  Candidate, Obj, Obj2, PartObj: TJSONObject;
   HarmCat: THarmCategory;
 begin
   fFinishReasons := [];
@@ -1235,19 +1252,28 @@ begin
           if Obj.TryGetValue<TJSONArray>('parts', Parts) then
           begin
             SetLength(fResults[Ind].PartText, Parts.Count);
+            SetLength(fResults[Ind].ThoughtText, Parts.Count);
             SetLength(fResults[Ind].PartMediaData, Parts.Count);
             IndTxt := 0;
+            IndThought := 0;
             IndData := 0;
             for Ind2 := 0 to Parts.Count - 1 do
             begin
-              if (Parts.Items[Ind2] as TJSONObject).
-                 TryGetValue<string>('text', fResults[Ind].PartText[IndTxt]) then
+              PartObj := Parts.Items[Ind2] as TJSONObject;
+              IsThought := false;
+              PartObj.TryGetValue<boolean>('thought', IsThought);
+              if IsThought then
+              begin
+                if PartObj.TryGetValue<string>('text', fResults[Ind].ThoughtText[IndThought]) then
+                  inc(IndThought);
+              end
+              else if PartObj.TryGetValue<string>('text', fResults[Ind].PartText[IndTxt]) then
                 inc(IndTxt);
-              if (Parts.Items[Ind2] as TJSONObject).
-                 TryGetValue<TJSONObject>('inlineData', fResults[Ind].PartMediaData[IndData]) then
+              if PartObj.TryGetValue<TJSONObject>('inlineData', fResults[Ind].PartMediaData[IndData]) then
                 inc(IndData);
             end;
             SetLength(fResults[Ind].PartText, IndTxt);
+            SetLength(fResults[Ind].ThoughtText, IndThought);
             SetLength(fResults[Ind].PartMediaData, IndData);
           end;
         end;
@@ -1261,6 +1287,16 @@ begin
             fResults[Ind].FinishReason := gfrSafety
           else if SameText(txt, 'RECITATION') then
             fResults[Ind].FinishReason := gfrRecitation
+          else if SameText(txt, 'BLOCKLIST') then
+            fResults[Ind].FinishReason := gfrBlocklist
+          else if SameText(txt, 'PROHIBITED_CONTENT') then
+            fResults[Ind].FinishReason := gfrProhibitedContent
+          else if SameText(txt, 'SPII') then
+            fResults[Ind].FinishReason := gfrSpii
+          else if SameText(txt, 'MALFORMED_FUNCTION_CALL') then
+            fResults[Ind].FinishReason := gfrMalformedFunctionCall
+          else if SameText(txt, 'IMAGE_SAFETY') then
+            fResults[Ind].FinishReason := gfrImageSafety
           else if SameText(txt, 'OTHER') then
             fResults[Ind].FinishReason := gfrOther
           else
@@ -1367,7 +1403,7 @@ begin
                 fResults[Ind].SafetyRatings[HarmCat].Severity := psHIGH;
             end;
             obj.TryGetValue<extended>('probabilityScore', fResults[Ind].SafetyRatings[HarmCat].ProbabilityScore);
-            obj.TryGetValue<extended>('severityScore', fResults[Ind].SafetyRatings[HarmCat].ProbabilityScore);
+            obj.TryGetValue<extended>('severityScore', fResults[Ind].SafetyRatings[HarmCat].SeverityScore);
           end;
         end;
       end;
@@ -1389,12 +1425,16 @@ begin
          end;
       end;
     end;
-    Obj := fContentResponse.GetValue<TJSONObject>('usageMetadata');
     fUsageMetaData.Init;
-    Obj.TryGetValue<integer>('promptTokenCount', fUsageMetaData.PromptTokenCount);
-    Obj.TryGetValue<integer>('candidatesTokenCount', fUsageMetaData.GeneratedTokenCount);
-    Obj.TryGetValue<integer>('totalTokenCount', fUsageMetaData.TotalTokenCount);
-    fModelVersion := fContentResponse.GetValue<string>('modelVersion');
+    if fContentResponse.TryGetValue<TJSONObject>('usageMetadata', Obj) then
+    begin
+      Obj.TryGetValue<integer>('promptTokenCount', fUsageMetaData.PromptTokenCount);
+      Obj.TryGetValue<integer>('candidatesTokenCount', fUsageMetaData.GeneratedTokenCount);
+      Obj.TryGetValue<integer>('thoughtsTokenCount', fUsageMetaData.ThoughtsTokenCount);
+      Obj.TryGetValue<integer>('cachedContentTokenCount', fUsageMetaData.CachedContentTokenCount);
+      Obj.TryGetValue<integer>('totalTokenCount', fUsageMetaData.TotalTokenCount);
+    end;
+    fContentResponse.TryGetValue<string>('modelVersion', fModelVersion);
   except
     on e: exception do
     begin
@@ -1535,7 +1575,7 @@ end;
 
 function TGeminiSchema.SetNullable(IsNullable: boolean): IGeminiSchema;
 begin
-  fSchema.AddPair('nullable', BoolToStr(IsNullable, true).ToLower);
+  fSchema.AddPair('nullable', TJSONBool.Create(IsNullable));
   result := self;
 end;
 

@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2026 Christoph Schneider                                 }
@@ -43,8 +43,10 @@ type
     [TearDown]
     procedure TearDown;
   published
+    procedure TestFetchModelsSynchronous;
     procedure TestSimpleMathPrompt;
     procedure TestSimpleColorPrompt;
+    procedure TestThinkingConfigAndSchema;
     procedure TestImageInterpretation;
     procedure TestJSONObjectCreation;
     procedure TestPDFInterpretationAsJSONObject;
@@ -64,6 +66,22 @@ end;
 procedure UT_GeminiAI.TearDown;
 begin
   fGeminiAI := nil;
+end;
+
+procedure UT_GeminiAI.TestFetchModelsSynchronous;
+var
+  Models: TStringList;
+begin
+  Models := TStringList.Create;
+  try
+    fGeminiAI.FetchListOfModelsSynchronous(Models);
+    Assert.IsTrue(Models.Count > 0, 'No models returned by FetchListOfModelsSynchronous');
+    Assert.IsTrue(Models.IndexOf(cGeminiAIDefaultModel) >= 0,
+      'Default model "' + cGeminiAIDefaultModel + '" not found in model list: ' + Models.CommaText);
+    Status('Fetched ' + Models.Count.ToString + ' models including ' + cGeminiAIDefaultModel);
+  finally
+    Models.Free;
+  end;
 end;
 
 procedure UT_GeminiAI.TestSimpleMathPrompt;
@@ -88,9 +106,11 @@ begin
   Assert.IsTrue(Resp.UsageMetaData.GeneratedTokenCount < 3, 'GeneratedTokenCount to large: ' +
     Resp.UsageMetaData.GeneratedTokenCount.ToString);
   Status('GeneratedTokenCount: ' + Resp.UsageMetaData.GeneratedTokenCount.ToString);
-  // TotalTokenCount may include thinking tokens (Gemini 2.5+)
-  Assert.IsTrue(Resp.UsageMetaData.TotalTokenCount >= Resp.UsageMetaData.PromptTokenCount +
-    Resp.UsageMetaData.GeneratedTokenCount, 'TotalTokenCount below Prompt+Generated: ' + Resp.UsageMetaData.TotalTokenCount.ToString);
+  Status('ThoughtsTokenCount: ' + Resp.UsageMetaData.ThoughtsTokenCount.ToString);
+  Assert.AreEqual(Resp.UsageMetaData.TotalTokenCount,
+    Resp.UsageMetaData.PromptTokenCount + Resp.UsageMetaData.GeneratedTokenCount +
+    Resp.UsageMetaData.ThoughtsTokenCount,
+    'TotalTokenCount mismatch');
   Status('Simple math calc prompt succeded');
 end;
 
@@ -116,10 +136,49 @@ begin
   Assert.IsTrue(Resp.UsageMetaData.GeneratedTokenCount < 4, 'GeneratedTokenCount to large: ' +
     Resp.UsageMetaData.GeneratedTokenCount.ToString);
   Status('GeneratedTokenCount: ' + Resp.UsageMetaData.GeneratedTokenCount.ToString);
-  // TotalTokenCount may include thinking tokens (Gemini 2.5+)
-  Assert.IsTrue(Resp.UsageMetaData.TotalTokenCount >= Resp.UsageMetaData.PromptTokenCount +
-    Resp.UsageMetaData.GeneratedTokenCount, 'TotalTokenCount below Prompt+Generated: ' + Resp.UsageMetaData.TotalTokenCount.ToString);
+  Status('ThoughtsTokenCount: ' + Resp.UsageMetaData.ThoughtsTokenCount.ToString);
+  Assert.AreEqual(Resp.UsageMetaData.TotalTokenCount,
+    Resp.UsageMetaData.PromptTokenCount + Resp.UsageMetaData.GeneratedTokenCount +
+    Resp.UsageMetaData.ThoughtsTokenCount,
+    'TotalTokenCount mismatch');
   Status('Simple color prompt succeded');
+end;
+
+procedure UT_GeminiAI.TestThinkingConfigAndSchema;
+const
+  cSpellPrompt = 'Korrigiere Rechtschreibfehler: "Das ist ein Tset fuer Schulungsvideos."';
+var
+  Request: IGeminiAIRequest;
+  Resp: IGeminiAIResponse;
+  JO: TJSONObject;
+begin
+  // 1. Validate ModelParameter range check fix
+  Assert.WillRaise(
+    procedure
+    begin
+      TGeminiAIRequest.Create.ModelParameter(2.5, 0.9, 100, 10);
+    end,
+    EGeminiAIRequest,
+    'Out-of-range Temperature (> 2.0) must raise EGeminiAIRequest'
+  );
+
+  // 2. Test SetThinkingConfig(0) (disabled thinking) + SetNullable(true) + SetArrayType
+  Request := TGeminiAIRequest.Create.Prompt(cSpellPrompt);
+  Request.SetThinkingConfig(0, false);
+  Request.SetJSONResponseSchema(TGeminiSchema.ObjectType(TSchemaItems.Create([
+    TSchemaItems.CreateItem('CorrectedText', TGeminiSchema.StringType),
+    TSchemaItems.CreateItem('OptionalNote', TGeminiSchema.StringType.SetNullable(true)),
+    TSchemaItems.CreateItem('Tags', TGeminiSchema.ArrayType(TGeminiSchema.StringType, 1, 3))
+  ])));
+  Resp := fGeminiAI.GenerateContentByRequestSynchronous(Request);
+  Assert.IsTrue(Resp.IsValid, 'Gemini AI result is not valid: ' + Resp.FailureDetail);
+  Assert.AreEqual(0, Resp.UsageMetaData.ThoughtsTokenCount,
+    'ThoughtsTokenCount must be 0 when ThinkingBudget is 0');
+  JO := Resp.ResultAsJSON as TJSONObject;
+  Assert.IsNotNull(JO, 'ResultAsJSON must return a TJSONObject');
+  Assert.IsTrue(JO.GetValue<string>('CorrectedText').Contains('Test'),
+    'CorrectedText did not fix "Tset": ' + JO.GetValue<string>('CorrectedText'));
+  Status('ThinkingBudget=0 and Schema (Nullable + Array) test succeeded: ' + JO.ToJSON);
 end;
 
 procedure UT_GeminiAI.TestImageInterpretation;
