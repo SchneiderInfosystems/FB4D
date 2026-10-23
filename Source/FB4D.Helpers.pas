@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2026 Christoph Schneider                                 }
@@ -1152,7 +1152,11 @@ begin
 {$ELSEIF defined(MACOS32)}
   result := 'Mac32';
 {$ELSEIF defined(MACOS64)}
+  {$IFDEF CPUARM64}
+  result := 'MacArm64'
+  {$ELSE}
   result := 'Mac64';
+  {$ENDIF}
 {$ELSEIF defined(IOS32)}
   result := 'iOS32';
 {$ELSEIF defined(IOS64)}
