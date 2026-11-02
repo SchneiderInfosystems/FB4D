@@ -841,6 +841,7 @@ end;
 procedure UT_FirestoreDB.TestRunAggregationQuery;
 const
   cPrice = 'price';
+  cOtherField = 'description';
   cPrice1 = 100;
   cPrice2 = 200;
   cPrice3 = 300;
@@ -851,7 +852,7 @@ var
   Doc: IFirestoreDocument;
   Query: IStructuredQuery;
   AggResult: IAggregationResult;
-  sumDouble: double;
+  sumDouble, avgDouble: double;
 begin
   // 1. Setup: create 3 documents
   for i := 0 to 2 do
@@ -864,6 +865,7 @@ begin
       1: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice2));
       2: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice3));
     end;
+	Doc.AddOrUpdateField(TJSONObject.SetString(cOtherField, 'Document with price field'));
     fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
     Status('Created test doc for aggregation: ' + DocNames[i]);
   end;
@@ -882,9 +884,12 @@ begin
   sumDouble := AggResult.GetDouble('sum_price');
   Assert.AreEqual(sumDouble, double(cPrice1 + cPrice2 + cPrice3), 0.0001, 'Sum should be exactly 600');
   
+  avgDouble := AggResult.GetDouble('avg_price');
+  Assert.AreEqual(avgDouble, double(cPrice1 + cPrice2 + cPrice3) / 3, 0.0001, 'Avg should be exactly 200');
+
   Status('RunAggregationQuery passed. Count: ' + IntToStr(AggResult.GetCount('total')) + 
          ', Sum: ' + FloatToStr(sumDouble) + 
-         ', Avg: ' + FloatToStr(AggResult.GetDouble('avg_price')));
+         ', Avg: ' + FloatToStr(avgDouble));
 
   // 3. Cleanup: delete the 3 documents
   for i := 0 to 2 do
