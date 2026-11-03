@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2026 Christoph Schneider                                 }
@@ -865,37 +865,38 @@ begin
       1: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice2));
       2: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice3));
     end;
-	Doc.AddOrUpdateField(TJSONObject.SetString(cOtherField, 'Document with price field'));
+	  Doc.AddOrUpdateField(TJSONObject.SetString(cOtherField, 'Document with price field'));
     fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
     Status('Created test doc for aggregation: ' + DocNames[i]);
   end;
+  try
+    // 2. Run Aggregation
+    Query := TStructuredQuery.CreateForCollection(cDBPath);
+    AggResult := fConfig.Database.RunAggregationQuerySynchronous(Query, [
+      TAggregationField.Count('total'),
+      TAggregationField.Sum(cPrice, 'sum_price'),
+      TAggregationField.Avg(cPrice, 'avg_price')
+    ]);
 
-  // 2. Run Aggregation
-  Query := TStructuredQuery.CreateForCollection(cDBPath);
-  AggResult := fConfig.Database.RunAggregationQuerySynchronous(Query, [
-    TAggregationField.Count('total'),
-    TAggregationField.Sum(cPrice, 'sum_price'),
-    TAggregationField.Avg(cPrice, 'avg_price')
-  ]);
+    Assert.IsNotNull(AggResult, 'Aggregation result is nil');
+    Assert.AreEqual(AggResult.GetCount('total'), Int64(3), 'Total count should be exactly 3');
 
-  Assert.IsNotNull(AggResult, 'Aggregation result is nil');
-  Assert.AreEqual(AggResult.GetCount('total'), Int64(3), 'Total count should be exactly 3');
-  
-  sumDouble := AggResult.GetDouble('sum_price');
-  Assert.AreEqual(sumDouble, double(cPrice1 + cPrice2 + cPrice3), 0.0001, 'Sum should be exactly 600');
-  
-  avgDouble := AggResult.GetDouble('avg_price');
-  Assert.AreEqual(avgDouble, double(cPrice1 + cPrice2 + cPrice3) / 3, 0.0001, 'Avg should be exactly 200');
+    sumDouble := AggResult.GetDouble('sum_price');
+    Assert.AreEqual(sumDouble, double(cPrice1 + cPrice2 + cPrice3), 0.0001, 'Sum should be exactly 600');
 
-  Status('RunAggregationQuery passed. Count: ' + IntToStr(AggResult.GetCount('total')) + 
-         ', Sum: ' + FloatToStr(sumDouble) + 
-         ', Avg: ' + FloatToStr(avgDouble));
+    avgDouble := AggResult.GetDouble('avg_price');
+    Assert.AreEqual(avgDouble, double(cPrice1 + cPrice2 + cPrice3) / 3, 0.0001, 'Avg should be exactly 200');
 
-  // 3. Cleanup: delete the 3 documents
-  for i := 0 to 2 do
-  begin
-    fConfig.Database.DeleteSynchronous(DocPaths[i]);
-    Status('Deleted test doc: ' + DocNames[i]);
+    Status('RunAggregationQuery passed. Count: ' + IntToStr(AggResult.GetCount('total')) +
+           ', Sum: ' + FloatToStr(sumDouble) +
+           ', Avg: ' + FloatToStr(avgDouble));
+  finally
+    // 3. Cleanup: delete the 3 documents
+    for i := 0 to 2 do
+    begin
+      fConfig.Database.DeleteSynchronous(DocPaths[i]);
+      Status('Deleted test doc: ' + DocNames[i]);
+    end;
   end;
 end;
 
