@@ -1,4 +1,4 @@
-﻿{******************************************************************************}
+{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2026 Christoph Schneider                                 }
@@ -73,6 +73,7 @@ type
     procedure Object2DocumentMapper;
     procedure Object2DocumentMapperWithOptions;
     procedure TestRunAggregationQuery;
+    procedure TestEdgeCaseRunAggregationQuery;
     procedure TestBatchGet;
     procedure TestBatchWrite;
   end;
@@ -893,6 +894,87 @@ begin
   finally
     // 3. Cleanup: delete the 3 documents
     for i := 0 to 2 do
+    begin
+      fConfig.Database.DeleteSynchronous(DocPaths[i]);
+      Status('Deleted test doc: ' + DocNames[i]);
+    end;
+  end;
+end;
+
+procedure UT_FirestoreDB.TestEdgeCaseRunAggregationQuery;
+const
+  cPrice = 'price';
+  cOtherField = 'description';
+  cPrice1 = 100;
+  cPrice2 = 200;
+  cPrice3 = 300;
+var
+  DocNames: array[0..3] of string;
+  DocPaths: array[0..3] of TRequestResourceParam;
+  i: integer;
+  Doc: IFirestoreDocument;
+  Query: IStructuredQuery;
+  AggResult: IAggregationResult;
+  sumDouble, avgDouble: double;
+begin
+  // 1. Setup: create 4 documents (the 4th document without a price field)
+  for i := 0 to 3 do
+  begin
+    DocNames[i] := TFirebaseHelpers.CreateAutoID;
+    DocPaths[i] := [cDBPath, DocNames[i]];
+    Doc := TFirestoreDocument.Create(DocPaths[i], fConfig.ProjectID);
+    case i of
+      0: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice1));
+      1: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice2));
+      2: Doc.AddOrUpdateField(TJSONObject.SetInteger(cPrice, cPrice3));
+    end;
+    if i < 3 then
+      Doc.AddOrUpdateField(TJSONObject.SetString(cOtherField, 'Document with price field'))
+    else
+      Doc.AddOrUpdateField(TJSONObject.SetString(cOtherField, 'Document without price field'));
+    fConfig.Database.InsertOrUpdateDocumentSynchronous(Doc);
+    Status('Created test doc for aggregation: ' + DocNames[i]);
+  end;
+  try
+    // 2. Run Aggregation
+    Query := TStructuredQuery.CreateForCollection(cDBPath);
+
+    // Note on Firestore aggregation behavior when a document lacks the aggregated field:
+    // a) A standalone COUNT aggregation counts all 4 documents in the collection:
+    AggResult := fConfig.Database.RunAggregationQuerySynchronous(Query, [
+      TAggregationField.Count('total')
+    ]);
+    Assert.IsNotNull(AggResult, 'Standalone COUNT aggregation result is nil');
+    Assert.AreEqual(AggResult.GetCount('total'), Int64(4), 'Standalone COUNT should include all 4 documents');
+
+    // b) When COUNT is combined with SUM or AVG on a specific field ('price'),
+    //    Firestore evaluates the entire aggregation query against the field index of 'price'.
+    //    Documents without the 'price' field are not in that index and are completely
+    //    excluded from the query result - so COUNT returns 3 instead of 4,
+    //    and AVG divides by 3 (resulting in 200 instead of 150).
+    //    Note: TStructuredQuery.AsJSON consumes internal fields on first call, so create a fresh Query instance:
+    Query := TStructuredQuery.CreateForCollection(cDBPath);
+    AggResult := fConfig.Database.RunAggregationQuerySynchronous(Query, [
+      TAggregationField.Count('total'),
+      TAggregationField.Sum(cPrice, 'sum_price'),
+      TAggregationField.Avg(cPrice, 'avg_price')
+    ]);
+
+    Assert.IsNotNull(AggResult, 'Aggregation result is nil');
+    Assert.AreEqual(AggResult.GetCount('total'), Int64(3), 'Total count of docs with price field should be 3');
+
+    sumDouble := AggResult.GetDouble('sum_price');
+    Assert.AreEqual(sumDouble, double(cPrice1 + cPrice2 + cPrice3), 0.0001, 'Sum should be exactly 600');
+
+    avgDouble := AggResult.GetDouble('avg_price');
+    Assert.AreEqual(avgDouble, double(cPrice1 + cPrice2 + cPrice3) / 3, 0.0001, 'Avg should be 200 (4th doc without price is ignored)');
+
+    Status('TestEdgeCaseRunAggregationQuery passed. Count (with price): ' + IntToStr(AggResult.GetCount('total')) +
+           ', Sum: ' + FloatToStr(sumDouble) +
+           ', Avg: ' + FloatToStr(avgDouble));
+  finally
+    // 3. Cleanup: delete the 4 documents
+    for i := 0 to 3 do
     begin
       fConfig.Database.DeleteSynchronous(DocPaths[i]);
       Status('Deleted test doc: ' + DocNames[i]);

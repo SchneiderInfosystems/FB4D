@@ -837,6 +837,13 @@ type
   /// Describes one aggregation step in a runAggregationQuery request.
   /// Use the class factory functions <c>Count</c>, <c>Sum</c>, and <c>Avg</c> to create instances.
   /// </summary>
+  /// <remarks>
+  /// Note on missing fields: <c>Sum</c> and <c>Avg</c> operate on the field index of <c>FieldPath</c>,
+  /// so documents that do not contain <c>FieldPath</c> are ignored. When <c>Count</c> is combined with
+  /// <c>Sum</c> or <c>Avg</c> in the same aggregation query, Firestore evaluates the entire query against
+  /// that field index and therefore <c>Count</c> also only counts documents that contain <c>FieldPath</c>.
+  /// Run a standalone <c>Count</c> query to count all documents regardless of whether they have <c>FieldPath</c>.
+  /// </remarks>
   TAggregationField = record
     /// <summary>The aggregation operator to apply.</summary>
     Operator: TAggregationOperator;
