@@ -553,8 +553,14 @@ procedure TFraSelfRegistration.OnVerificationMailSent(const RequestID: string;
 begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
+  if not edtPassword.Visible then
+    StartEMailEntering
+  else begin
+    btnSignUp.Visible := false;
+    btnSignIn.Visible := true;
+    btnSignIn.Enabled := true;
+  end;
   lblStatus.Text := rsPleaseCheckEMailForVerify;
-  btnSignIn.Enabled := true;
 end;
 
 procedure TFraSelfRegistration.btnRegisterDisplayNameClick(Sender: TObject);
