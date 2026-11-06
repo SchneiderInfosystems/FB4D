@@ -27,6 +27,9 @@
         <Projects Include="GeminiAIBusinessApp\GeminiAIBusinessApp.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="AuthSelfReg\Auth_SelfReg.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="MultiFactorAuthentication\MultiFactorAuthentication.dproj">
             <Dependencies/>
         </Projects>
@@ -110,6 +113,15 @@
     <Target Name="GeminiAIBusinessApp:Make">
         <MSBuild Projects="GeminiAIBusinessApp\GeminiAIBusinessApp.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Auth_SelfReg">
+        <MSBuild Projects="AuthSelfReg\Auth_SelfReg.dproj"/>
+    </Target>
+    <Target Name="Auth_SelfReg:Clean">
+        <MSBuild Projects="AuthSelfReg\Auth_SelfReg.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Auth_SelfReg:Make">
+        <MSBuild Projects="AuthSelfReg\Auth_SelfReg.dproj" Targets="Make"/>
+    </Target>
     <Target Name="MultiFactorAuthentication">
         <MSBuild Projects="MultiFactorAuthentication\MultiFactorAuthentication.dproj"/>
     </Target>
@@ -120,13 +132,13 @@
         <MSBuild Projects="MultiFactorAuthentication\MultiFactorAuthentication.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard;FSSimpleChat;PhotoBox;FSObj2Doc;GeminiAIBusinessApp;MultiFactorAuthentication"/>
+        <CallTarget Targets="DemoFB4D;RTDB_SimpleReadWrite;RTDB_PerUserReadWrite;CloudClipBoard;FSSimpleChat;PhotoBox;FSObj2Doc;GeminiAIBusinessApp;Auth_SelfReg;MultiFactorAuthentication"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean;FSSimpleChat:Clean;PhotoBox:Clean;FSObj2Doc:Clean;GeminiAIBusinessApp:Clean;MultiFactorAuthentication:Clean"/>
+        <CallTarget Targets="DemoFB4D:Clean;RTDB_SimpleReadWrite:Clean;RTDB_PerUserReadWrite:Clean;CloudClipBoard:Clean;FSSimpleChat:Clean;PhotoBox:Clean;FSObj2Doc:Clean;GeminiAIBusinessApp:Clean;Auth_SelfReg:Clean;MultiFactorAuthentication:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make;FSSimpleChat:Make;PhotoBox:Make;FSObj2Doc:Make;GeminiAIBusinessApp:Make;MultiFactorAuthentication:Make"/>
+        <CallTarget Targets="DemoFB4D:Make;RTDB_SimpleReadWrite:Make;RTDB_PerUserReadWrite:Make;CloudClipBoard:Make;FSSimpleChat:Make;PhotoBox:Make;FSObj2Doc:Make;GeminiAIBusinessApp:Make;Auth_SelfReg:Make;MultiFactorAuthentication:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

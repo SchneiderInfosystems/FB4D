@@ -1,0 +1,336 @@
+object frmMain: TfrmMain
+  Left = 0
+  Top = 0
+  Caption = 'Self Registration Workflow'
+  ClientHeight = 520
+  ClientWidth = 628
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object TabControl: TTabControl
+    Align = Client
+    Size.Width = 628.000000000000000000
+    Size.Height = 520.000000000000000000
+    Size.PlatformDefault = False
+    TabIndex = 1
+    TabOrder = 0
+    TabPosition = None
+    Sizes = (
+      628s
+      520s
+      628s
+      520s)
+    object tabLogin: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabLogin'
+      object layTopBar: TLayout
+        Align = Top
+        Size.Width = 628.000000000000000000
+        Size.Height = 45.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object btnSettings: TButton
+          Position.X = 10.000000000000000000
+          Position.Y = 12.000000000000000000
+          Size.Width = 75.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = 'Settings'
+          OnClick = btnSettingsClick
+        end
+      end
+      inline FraSelfRegistration: TFraSelfRegistration
+        Align = Client
+        Size.Width = 628.000000000000000000
+        Size.Height = 475.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+      end
+    end
+    object tabFirebaseSettings: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = True
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabFirebaseSettings'
+      object lblProjectID: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 150.000000000000000000
+        Size.Height = 16.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Firebase Project ID'
+        TabOrder = 0
+      end
+      object edtProjectID: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 1
+        Position.X = 24.000000000000000000
+        Position.Y = 24.000000000000000000
+        Size.Width = 577.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object lblWebAPIKey: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 60.000000000000000000
+        Size.Width = 150.000000000000000000
+        Size.Height = 16.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Firebase Web API Key'
+        TabOrder = 2
+      end
+      object edtWebAPIKey: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 3
+        Position.X = 24.000000000000000000
+        Position.Y = 76.000000000000000000
+        Size.Width = 577.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object lblBucket: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 112.000000000000000000
+        Size.Width = 160.000000000000000000
+        Size.Height = 16.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Firebase Storage Bucket'
+        TabOrder = 4
+      end
+      object edtBucket: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 5
+        Position.X = 24.000000000000000000
+        Position.Y = 128.000000000000000000
+        Size.Width = 577.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object lblGoogleOAuthClientID: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 164.000000000000000000
+        Size.Width = 140.000000000000000000
+        Size.Height = 16.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'OAuth Client ID'
+        TabOrder = 6
+      end
+      object edtGoogleOAuthClientID: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        TabOrder = 7
+        Position.X = 24.000000000000000000
+        Position.Y = 180.000000000000000000
+        Size.Width = 280.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        OnChangeTracking = edtGoogleOAuthChange
+      end
+      object lblGoogleOAuthClientSecret: TLabel
+        Position.X = 321.000000000000000000
+        Position.Y = 164.000000000000000000
+        Size.Width = 140.000000000000000000
+        Size.Height = 16.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'OAuth Client Secret'
+        TabOrder = 8
+      end
+      object edtGoogleOAuthClientSecret: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 9
+        Password = True
+        Position.X = 321.000000000000000000
+        Position.Y = 180.000000000000000000
+        Size.Width = 280.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        OnChangeTracking = edtGoogleOAuthChange
+      end
+      object Label1: TLabel
+        Position.X = 24.000000000000000000
+        Position.Y = 216.000000000000000000
+        Size.Width = 120.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        Text = 'Workflow options:'
+        TabOrder = 10
+      end
+      object chbAllowAutoLogin: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 32.000000000000000000
+        Position.Y = 237.000000000000000000
+        Size.Width = 569.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 11
+        Text = 
+          'Allow automatic login by storing the last refresh token (Not rec' +
+          'ommended option for high secure apps)'
+      end
+      object chbPersistentEMail: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 32.000000000000000000
+        Position.Y = 262.000000000000000000
+        Size.Width = 569.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 12
+        Text = 
+          'Remember email address of last login (not recommended for high s' +
+          'ecure apps)'
+      end
+      object chbAllowSelfRegistration: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 32.000000000000000000
+        Position.Y = 290.000000000000000000
+        Size.Width = 569.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 13
+        Text = 
+          'Allow Self Registration Workflow (Check your business requiremen' +
+          'ts)'
+        OnChange = chbAllowSelfRegistrationChange
+      end
+      object chbRequireVerificatedEMail: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 56.000000000000000000
+        Position.Y = 315.000000000000000000
+        Size.Width = 545.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 14
+        Text = 
+          'Require EMail Verification (Increases security of self registrat' +
+          'ion workflow)'
+        OnChange = chbRequireVerificatedEMailChange
+      end
+      object chbRequireMFA: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 80.000000000000000000
+        Position.Y = 340.000000000000000000
+        Size.Width = 521.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 15
+        Text = 
+          'Require Multi-Factor Authentication (MFA with TOTP Authenticator' +
+          ' App)'
+      end
+      object chbSupportGoogleAccount: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 32.000000000000000000
+        Position.Y = 368.000000000000000000
+        Size.Width = 569.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 16
+        Text = 
+          'Support Google Account Login (Requires OAuth Client ID and Clien' +
+          't Secret)'
+      end
+      object chbRegisterDisplayName: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 32.000000000000000000
+        Position.Y = 396.000000000000000000
+        Size.Width = 569.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 17
+        Text = 
+          'Use a display name in addition to the email (Display name is not' +
+          ' unique by default)'
+        OnChange = chbRegisterDisplayNameChange
+      end
+      object chbUploadProfileImg: TCheckBox
+        Anchors = [akLeft, akTop, akRight]
+        Position.X = 56.000000000000000000
+        Position.Y = 421.000000000000000000
+        Size.Width = 545.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 18
+        Text = 
+          'Use a profile image to identify the user (uploads a picture into' +
+          ' the firebase storage)'
+      end
+      object btnSaveSettings: TButton
+        Anchors = [akTop, akRight]
+        Position.X = 486.000000000000000000
+        Position.Y = 463.000000000000000000
+        Size.Width = 115.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 19
+        Text = 'Save Settings'
+        OnClick = btnSaveSettingsClick
+      end
+    end
+    object tabLoggedIn: TTabItem
+      CustomIcon = <
+        item
+        end>
+      IsSelected = False
+      Size.Width = 8.000000000000000000
+      Size.Height = 8.000000000000000000
+      Size.PlatformDefault = False
+      StyleLookup = ''
+      TabOrder = 0
+      Text = 'tabLoggedIn'
+      object imgUser: TImage
+        MultiResBitmap = <
+          item
+          end>
+        Anchors = [akTop, akRight]
+        Position.X = 576.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 44.000000000000000000
+        Size.Height = 39.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object edtLoggedInUser: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 0
+        ReadOnly = True
+        Text = 'edtLoggedInUser'
+        Position.X = 24.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 546.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+      end
+      object btnSignOut: TButton
+        Position.X = 24.000000000000000000
+        Position.Y = 56.000000000000000000
+        Size.Width = 75.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Sign out'
+        OnClick = btnSignOutClick
+      end
+    end
+  end
+end
+
