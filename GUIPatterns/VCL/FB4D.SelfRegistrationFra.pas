@@ -645,7 +645,8 @@ begin
     end;
   end;
   FreeAndNil(fProfileLoadStream);
-  if assigned(fOnUserLogin) and fTokenRefreshed then
+  if assigned(fOnUserLogin) and
+     (not fRegisterDisplayName or not edtDisplayName.Text.IsEmpty) then
   begin
     lblStatus.Caption := rsLoggedIn;
     lblStatus.visible := true;

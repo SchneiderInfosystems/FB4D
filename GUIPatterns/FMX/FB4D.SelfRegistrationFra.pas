@@ -663,7 +663,8 @@ begin
   FreeAndNil(fProfileLoadStream);
   if assigned(fOnGetStorage) then
     fOnGetStorage(); // Side effect disable Bucket edit box
-  if assigned(fOnUserLogin) and fTokenRefreshed then
+  if assigned(fOnUserLogin) and
+     (not fRegisterDisplayName or not edtDisplayName.Text.IsEmpty) then
   begin
     lblStatus.Text := rsLoggedIn;
     TThread.CreateAnonymousThread(
