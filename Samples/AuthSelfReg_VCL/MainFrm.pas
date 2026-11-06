@@ -194,6 +194,12 @@ end;
 
 procedure TfrmMain.btnSaveSettingsClick(Sender: TObject);
 begin
+  if chbPersistentEMail.checked then
+    fLastEMail := FraSelfRegistration.GetEMail
+  else
+    fLastEMail := '';
+  if not chbAllowAutoLogin.checked then
+    fLastToken := '';
   SaveSettings;
   StartLogin;
 end;

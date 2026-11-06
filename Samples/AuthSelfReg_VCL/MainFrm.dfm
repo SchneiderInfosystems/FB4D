@@ -263,8 +263,8 @@ object frmMain: TfrmMain
         Width = 569
         Height = 17
         Caption = 
-          'Remember email adress of last login (not recommended for high se' +
-          'cure apps)'
+          'Remember email address of last login (not recommended for high s' +
+          'ecure apps)'
         TabOrder = 9
       end
     end
