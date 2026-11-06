@@ -241,6 +241,7 @@ end;
 procedure TFraSelfRegistration.StartEMailEntering;
 begin
   fInfo := '';
+  pnlCheckRegistered.Top := gdpAcitivityInd.Top + gdpAcitivityInd.Height;
   pnlCheckRegistered.Visible := true;
   btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
   btnCheckEMail.Visible := true;
@@ -258,6 +259,7 @@ end;
 procedure TFraSelfRegistration.StartEMailChecking;
 begin
   fInfo := '';
+  pnlCheckRegistered.Top := gdpAcitivityInd.Top + gdpAcitivityInd.Height;
   pnlCheckRegistered.Visible := true;
   if not assigned(fAuth) and assigned(fOnGetAuth) then
     fAuth := fOnGetAuth;
@@ -312,6 +314,7 @@ begin
     lblStatus.Caption := rsEnterPassword;
     pnlCheckRegistered.visible := Height >= gdpAcitivityInd.Height +
       pnlCheckRegistered.Height + pnlCheckRegistered.Height;
+    pnlPassword.Top := pnlCheckRegistered.Top + pnlCheckRegistered.Height;
     pnlPassword.visible := true;
     edtPassword.Text := '';
     edtPassword.SetFocus;
@@ -326,6 +329,7 @@ begin
     lblStatus.Caption := rsSetupPassword;
     pnlCheckRegistered.visible := Height >= gdpAcitivityInd.Height +
       pnlCheckRegistered.Height + pnlCheckRegistered.Height;
+    pnlPassword.Top := pnlCheckRegistered.Top + pnlCheckRegistered.Height;
     pnlPassword.visible := true;
     edtPassword.Text := '';
     edtPassword.SetFocus;
