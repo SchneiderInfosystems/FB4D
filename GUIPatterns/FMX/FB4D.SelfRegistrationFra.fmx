@@ -156,6 +156,50 @@ object FraSelfRegistration: TFraSelfRegistration
     TextSettings.Trimming = None
     TabOrder = 9
   end
+  object imgQrCode: TImage
+    MultiResBitmap = <
+      item
+      end>
+    Align = Center
+    Margins.Bottom = 170.000000000000000000
+    Size.Width = 200.000000000000000000
+    Size.Height = 200.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object edtOtpCode: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    Align = Center
+    TabOrder = 10
+    KeyboardType = NumberPad
+    MaxLength = 6
+    FilterChar = '0123456789'
+    Margins.Bottom = 30.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 32.000000000000000000
+    Size.PlatformDefault = False
+    TextPrompt = 'Enter 6-digit OTP code from Authenticator App'
+    OnChangeTracking = edtOtpCodeChangeTracking
+    object txtOtpCode: TText
+      Position.X = -104.000000000000000000
+      Size.Width = 96.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      Text = '6-digit OTP'
+      TextSettings.HorzAlign = Trailing
+    end
+  end
+  object btnVerifyOTP: TButton
+    Align = Center
+    Default = True
+    Margins.Bottom = -50.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 11
+    Text = 'Verify OTP'
+    TextSettings.Trimming = None
+    OnClick = btnVerifyOTPClick
+  end
   object btnRegisterDisplayName: TButton
     Align = Center
     Default = True

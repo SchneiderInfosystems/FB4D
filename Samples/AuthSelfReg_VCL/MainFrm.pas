@@ -51,6 +51,7 @@ type
     chbAllowAutoLogin: TCheckBox;
     chbAllowSelfRegistration: TCheckBox;
     chbRequireVerificatedEMail: TCheckBox;
+    chbRequireMFA: TCheckBox;
     chbSupportGoogleAccount: TCheckBox;
     chbRegisterDisplayName: TCheckBox;
     Label1: TLabel;
@@ -61,6 +62,7 @@ type
     procedure btnSignOutClick(Sender: TObject);
     procedure btnSettingsClick(Sender: TObject);
     procedure chbAllowSelfRegistrationClick(Sender: TObject);
+    procedure chbRequireVerificatedEMailClick(Sender: TObject);
     procedure chbRegisterDisplayNameClick(Sender: TObject);
     procedure edtGoogleOAuthChange(Sender: TObject);
   private
@@ -106,6 +108,8 @@ begin
     chbPersistentEMail.checked := IniFile.ReadBool('Settings', 'PersistentEMail', true);
     chbAllowSelfRegistration.checked := IniFile.ReadBool('Settings', 'AllowSelfRegistration', true);
     chbRequireVerificatedEMail.checked := IniFile.ReadBool('Settings', 'RequireVerificatedEMail', true);
+    chbRequireMFA.checked := IniFile.ReadBool('Settings', 'RequireMFA', false);
+    chbAllowSelfRegistrationClick(nil);
     chbSupportGoogleAccount.checked := IniFile.ReadBool('Settings', 'SupportGoogleAccount', false);
     edtGoogleOAuthChange(nil);
     chbRegisterDisplayName.checked := IniFile.ReadBool('Settings', 'RegisterDisplayName', true);
@@ -203,6 +207,7 @@ begin
     IniFile.WriteBool('Settings', 'PersistentEMail', chbPersistentEMail.checked);
     IniFile.WriteBool('Settings', 'AllowSelfRegistration', chbAllowSelfRegistration.checked);
     IniFile.WriteBool('Settings', 'RequireVerificatedEMail', chbRequireVerificatedEMail.checked);
+    IniFile.WriteBool('Settings', 'RequireMFA', chbRequireMFA.checked);
     IniFile.WriteBool('Settings', 'SupportGoogleAccount', chbSupportGoogleAccount.checked);
     IniFile.WriteBool('Settings', 'RegisterDisplayName', chbRegisterDisplayName.checked);
     IniFile.WriteBool('Settings', 'UploadProfileImg', chbUploadProfileImg.checked);
@@ -236,7 +241,8 @@ begin
     fLastEMail, chbAllowSelfRegistration.checked,
     chbRequireVerificatedEMail.checked,
     chbRegisterDisplayName.checked, true,
-    chbSupportGoogleAccount.checked);
+    chbSupportGoogleAccount.checked,
+    chbRequireMFA.checked);
   if chbUploadProfileImg.checked then
     FraSelfRegistration.RequestProfileImg(GetStorage);
 end;
@@ -267,6 +273,14 @@ begin
   chbRequireVerificatedEMail.Enabled := chbAllowSelfRegistration.checked;
   if not chbAllowSelfRegistration.checked then
     chbRequireVerificatedEMail.checked := false;
+  chbRequireVerificatedEMailClick(Sender);
+end;
+
+procedure TfrmMain.chbRequireVerificatedEMailClick(Sender: TObject);
+begin
+  chbRequireMFA.Enabled := chbRequireVerificatedEMail.checked;
+  if not chbRequireVerificatedEMail.checked then
+    chbRequireMFA.checked := false;
 end;
 
 procedure TfrmMain.chbRegisterDisplayNameClick(Sender: TObject);

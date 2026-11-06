@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{13FD70E6-2AC8-4639-9C2A-4B243308C071}</ProjectGuid>
         <ProjectVersion>20.5</ProjectVersion>
@@ -126,7 +126,7 @@
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>PhotoBox</SanitizedProjectName>
         <DCC_Define>$(FrameworkType);$(DCC_Define)</DCC_Define>
-        <DCC_UnitSearchPath>..\..\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\Source;..\..\submodules\DelphiZXingQRCode\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_DUPLICATE_CTOR_DTOR>false</DCC_DUPLICATE_CTOR_DTOR>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">

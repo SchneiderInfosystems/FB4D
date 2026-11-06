@@ -102,8 +102,26 @@ object frmMain: TfrmMain
             ExplicitLeft = 325
           end
         end
-        inherited pnlDisplayName: TPanel
+        inherited pnlMFA: TPanel
           Width = 628
+          ExplicitWidth = 626
+          inherited imgQrCode: TImage
+            Left = 194
+            ExplicitLeft = 194
+          end
+          inherited edtOtpCode: TLabeledEdit
+            Width = 576
+            ExplicitWidth = 574
+          end
+          inherited btnVerifyOTP: TButton
+            Left = 463
+            ExplicitLeft = 461
+          end
+        end
+        inherited pnlDisplayName: TPanel
+          Top = 598
+          Width = 628
+          ExplicitTop = 598
           ExplicitWidth = 626
           inherited imgProfile: TImage
             Left = 230
@@ -218,12 +236,12 @@ object frmMain: TfrmMain
       end
       object btnSaveSettings: TButton
         Left = 486
-        Top = 440
+        Top = 463
         Width = 115
         Height = 25
         Anchors = [akTop, akRight]
         Caption = 'Save Settings'
-        TabOrder = 12
+        TabOrder = 13
         OnClick = btnSaveSettingsClick
       end
       object chbAllowAutoLogin: TCheckBox
@@ -259,40 +277,52 @@ object frmMain: TfrmMain
           'Require EMail Verification (Increases security of self registrat' +
           'ion workflow)'
         TabOrder = 8
+        OnClick = chbRequireVerificatedEMailClick
+      end
+      object chbRequireMFA: TCheckBox
+        Left = 80
+        Top = 336
+        Width = 521
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 
+          'Require Multi-Factor Authentication (MFA with TOTP Authenticator' +
+          ' App)'
+        TabOrder = 9
       end
       object chbSupportGoogleAccount: TCheckBox
         Left = 32
-        Top = 343
+        Top = 366
         Width = 569
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Support Google Account Login (Requires OAuth Client ID and Clien' +
           't Secret)'
-        TabOrder = 9
+        TabOrder = 10
       end
       object chbRegisterDisplayName: TCheckBox
         Left = 32
-        Top = 373
+        Top = 396
         Width = 569
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Use a display name in addition to the email (Display name is not' +
           ' unique by default)'
-        TabOrder = 10
+        TabOrder = 11
         OnClick = chbRegisterDisplayNameClick
       end
       object chbUploadProfileImg: TCheckBox
         Left = 56
-        Top = 396
+        Top = 419
         Width = 545
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Use a profile image to identify the user (uploads a picture into' +
           ' the firebase storage)'
-        TabOrder = 11
+        TabOrder = 12
       end
       object chbPersistentEMail: TCheckBox
         Left = 32

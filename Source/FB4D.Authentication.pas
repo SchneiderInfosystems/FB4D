@@ -244,6 +244,7 @@ type
     // Get User Account State and Timestamps
     function IsDisabled: TThreeStateBoolean;
     function IsNewSignupUser: boolean;
+    function IsMfaEnrolled: boolean;
     function IsLastLoginAtAvailable: boolean;
     function LastLoginAt(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     function IsCreatedAtAvailable: boolean;
@@ -2101,6 +2102,13 @@ var
   {$ENDIF}
   bool: boolean;
 begin
+  if fJSONResp.TryGetValue('emailVerified', bool) then
+  begin
+    if bool then
+      exit(tsbTrue)
+    else
+      exit(tsbFalse);
+  end;
   {$IFDEF TOKENJWT}
   if fClaimFields.TryGetValue('email_verified', Val) then
   begin
@@ -2110,12 +2118,7 @@ begin
       exit(tsbFalse);
   end;
   {$ENDIF}
-  if not fJSONResp.TryGetValue('emailVerified', bool) then
-    result := tsbUnspecified
-  else if bool then
-    result := tsbTrue
-  else
-    result := tsbFalse;
+  result := tsbUnspecified;
 end;
 
 function TFirebaseUser.IsCreatedAtAvailable: boolean;
@@ -2153,6 +2156,23 @@ begin
   result := false;
   if fJSONResp.TryGetValue('kind', kind) then
     result := String.EndsText(cSignupNewUser, Kind);
+end;
+
+function TFirebaseUser.IsMfaEnrolled: boolean;
+var
+  MfaArr: TJSONArray;
+  {$IFDEF TOKENJWT}
+  Val: TJSONValue;
+  SecFactor: string;
+  {$ENDIF}
+begin
+  result := fJSONResp.TryGetValue('mfaInfo', MfaArr) and (MfaArr.Count > 0);
+  {$IFDEF TOKENJWT}
+  if not result and fClaimFields.TryGetValue('firebase', Val) and
+     (Val is TJSONObject) and
+     (Val as TJSONObject).TryGetValue('sign_in_second_factor', SecFactor) then
+    result := not SecFactor.IsEmpty;
+  {$ENDIF}
 end;
 
 function TFirebaseUser.LastLoginAt(TimeZone: TTimeZone): TDateTime;

@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{D287206E-DEC9-4DF6-A324-366E9588C656}</ProjectGuid>
         <ProjectVersion>20.5</ProjectVersion>
@@ -126,6 +126,7 @@
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>FSSimpleChat</SanitizedProjectName>
         <DCC_DUPLICATE_CTOR_DTOR>false</DCC_DUPLICATE_CTOR_DTOR>
+        <DCC_UnitSearchPath>..\..\submodules\DelphiZXingQRCode\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_Define>$(FrameworkType);$(DCC_Define)</DCC_Define>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">

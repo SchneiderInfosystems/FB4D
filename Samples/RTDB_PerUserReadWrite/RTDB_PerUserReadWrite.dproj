@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{BFB3F47B-0D45-48F2-A00F-052C5C957199}</ProjectGuid>
         <ProjectVersion>20.5</ProjectVersion>
@@ -125,7 +125,7 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>RTDB_PerUserReadWrite</SanitizedProjectName>
-        <DCC_UnitSearchPath>..\..\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\source;..\..\submodules\DelphiZXingQRCode\source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_Define>$(FrameworkType);$(DCC_Define)</DCC_Define>
         <DCC_DUPLICATE_CTOR_DTOR>false</DCC_DUPLICATE_CTOR_DTOR>
     </PropertyGroup>

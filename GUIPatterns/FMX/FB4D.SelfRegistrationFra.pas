@@ -46,6 +46,10 @@ type
     edtPassword: TEdit;
     txtPassword: TText;
     lblStatus: TLabel;
+    imgQrCode: TImage;
+    edtOtpCode: TEdit;
+    txtOtpCode: TText;
+    btnVerifyOTP: TButton;
     btnRegisterDisplayName: TButton;
     edtDisplayName: TEdit;
     txtDisplayName: TText;
@@ -59,6 +63,8 @@ type
     procedure btnSignInClick(Sender: TObject);
     procedure btnSignUpClick(Sender: TObject);
     procedure btnResetPwdClick(Sender: TObject);
+    procedure edtOtpCodeChangeTracking(Sender: TObject);
+    procedure btnVerifyOTPClick(Sender: TObject);
     procedure btnRegisterDisplayNameClick(Sender: TObject);
     procedure btnLoadProfileClick(Sender: TObject);
     procedure imgShowPwdMouseDown(Sender: TObject; Button: TMouseButton;
@@ -69,6 +75,7 @@ type
   public const
     cDefaultProfileImgSize = 300; // 300x300 pixels
     cDefaultStoragePathForProfileImg = 'userProfiles';
+    cDefaultMfaIssuerName = 'FB4D';
   private
     fAuth: IFirebaseAuthentication;
     fOnUserLogin: TOnUserResponse;
@@ -77,6 +84,10 @@ type
     fRequireVerificatedEMail: boolean;
     fRegisterDisplayName: boolean;
     fSupportGoogleAccount: boolean;
+    fRequireMFA: boolean;
+    fMfaIssuerName: string;
+    fMfaPending: TMfaPendingCredential;
+    fVerificationEMailSentFor: string;
     fLinkWithGoogleAfterSignIn: boolean;
     fRegisterProfileImg: boolean;
     fStorage: IFirebaseStorage;
@@ -100,8 +111,13 @@ type
     procedure OnResetPwd(const Info: string; Response: IFirebaseResponse);
     procedure OnUserError(const Info, ErrMsg: string);
     procedure OnUserResponse(const Info: string; User: IFirebaseUser);
+    procedure OnMfaRequired(PendingCredential: TMfaPendingCredential);
+    procedure OnMfaEnrollment(const EnrollmentInfo: TMfaTotpEnrollmentInfo);
+    procedure OnMfaError(const Info, ErrMsg: string);
+    procedure RenderQR(const URI: string);
     procedure OnTokenRefresh(TokenRefreshed: boolean);
     procedure OnGetUserData(FirebaseUserList: TFirebaseUserList);
+    procedure HandleUnverifiedEMail;
     procedure OnVerificationMailSent(const RequestID: string;
       Response: IFirebaseResponse);
     procedure OnChangedProfile(const RequestID: string;
@@ -121,14 +137,18 @@ type
       RequireVerificatedEMail: boolean = false;
       RegisterDisplayName: boolean = false;
       AutoCheckEMail: boolean = true;
-      SupportGoogleAccount: boolean = false);
+      SupportGoogleAccount: boolean = false;
+      RequireMFA: boolean = false;
+      const MfaIssuerName: string = '');
     procedure InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
       RequireVerificatedEMail: boolean = false;
       RegisterDisplayName: boolean = false;
       AutoCheckEMail: boolean = true;
-      SupportGoogleAccount: boolean = false);
+      SupportGoogleAccount: boolean = false;
+      RequireMFA: boolean = false;
+      const MfaIssuerName: string = '');
     procedure RequestProfileImg(OnGetStorage: TOnGetStorage;
       const StoragePath: string = cDefaultStoragePathForProfileImg;
       ProfileImgSize: integer = cDefaultProfileImgSize);
@@ -145,6 +165,7 @@ implementation
 
 uses
   REST.Types,
+  DelphiZXingQRCode,
   FB4D.Helpers;
 
 {$R *.fmx}
@@ -177,6 +198,10 @@ resourcestring
   rsLoggedIn = 'Successful logged in';
   rsPleaseCheckEMailForVerify =
     'Please check your e-mail inbox to confirm your email address';
+  rsEnterOTP =
+    'Multi-factor authentication required! Please enter OTP and click Verify OTP.';
+  rsScanQrAndEnterOTP =
+    'Scan the QR code with your Authenticator app and enter the 6-digit OTP code to activate MFA.';
   rsWriteProfileData = 'Your %s will be registrated';
   rsUserError = 'Access of user data failed: %s';
   rsProfileLoadErr = 'Load of your profile photo is failed: %s';
@@ -185,6 +210,9 @@ resourcestring
 constructor TFraSelfRegistration.Create(AOwner: TComponent);
 begin
   inherited;
+  imgQrCode.Visible := false;
+  edtOtpCode.Visible := false;
+  btnVerifyOTP.Visible := false;
   edtDisplayName.Visible := false;
   btnRegisterDisplayName.Visible := false;
   shpProfile.Visible := false;
@@ -207,30 +235,42 @@ end;
 procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
   AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName,
-  AutoCheckEMail, SupportGoogleAccount: boolean);
+  AutoCheckEMail, SupportGoogleAccount, RequireMFA: boolean;
+  const MfaIssuerName: string);
 begin
   fAuth := Auth;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := nil;
   fAllowSelfRegistration := AllowSelfRegistration;
-  fRequireVerificatedEMail := RequireVerificatedEMail;
+  fRequireVerificatedEMail := RequireVerificatedEMail or RequireMFA;
   fRegisterDisplayName := RegisterDisplayName;
   fSupportGoogleAccount := SupportGoogleAccount;
+  fRequireMFA := RequireMFA;
+  if MfaIssuerName.IsEmpty then
+    fMfaIssuerName := cDefaultMfaIssuerName
+  else
+    fMfaIssuerName := MfaIssuerName;
   InternalInit(LastRefreshToken, LastEMail, AutoCheckEMail);
 end;
 
 procedure TFraSelfRegistration.InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
   AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName,
-  AutoCheckEMail, SupportGoogleAccount: boolean);
+  AutoCheckEMail, SupportGoogleAccount, RequireMFA: boolean;
+  const MfaIssuerName: string);
 begin
   fAuth := nil;
   fOnUserLogin := OnUserLogin;
   fOnGetAuth := OnGetAuth;
   fAllowSelfRegistration := AllowSelfRegistration;
-  fRequireVerificatedEMail := RequireVerificatedEMail;
+  fRequireVerificatedEMail := RequireVerificatedEMail or RequireMFA;
   fRegisterDisplayName := RegisterDisplayName;
   fSupportGoogleAccount := SupportGoogleAccount;
+  fRequireMFA := RequireMFA;
+  if MfaIssuerName.IsEmpty then
+    fMfaIssuerName := cDefaultMfaIssuerName
+  else
+    fMfaIssuerName := MfaIssuerName;
   InternalInit(LastRefreshToken, LastEMail, AutoCheckEMail);
 end;
 
@@ -238,6 +278,7 @@ procedure TFraSelfRegistration.InternalInit(const LastRefreshToken,
   LastEMail: string; AutoCheckEMail: boolean);
 begin
   fLinkWithGoogleAfterSignIn := false;
+  fMfaPending.MfaPendingCredential := '';
   edtEMail.Text := LastEMail;
   if not LastRefreshToken.IsEmpty then
     StartTokenReferesh(LastRefreshToken)
@@ -260,6 +301,7 @@ procedure TFraSelfRegistration.StartEMailEntering;
 begin
   fInfo := '';
   fLinkWithGoogleAfterSignIn := false;
+  fMfaPending.MfaPendingCredential := '';
   edtEMail.Visible := true;
   btnCheckEMail.Visible := true;
   btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
@@ -270,6 +312,9 @@ begin
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
   edtPassword.Visible := false;
+  imgQrCode.Visible := false;
+  edtOtpCode.Visible := false;
+  btnVerifyOTP.Visible := false;
   edtDisplayName.Visible := false;
   btnRegisterDisplayName.Visible := false;
   shpProfile.Visible := false;
@@ -282,6 +327,7 @@ procedure TFraSelfRegistration.StartEMailChecking;
 begin
   fInfo := '';
   fLinkWithGoogleAfterSignIn := false;
+  fMfaPending.MfaPendingCredential := '';
   if not assigned(fAuth) and assigned(fOnGetAuth) then
     fAuth := fOnGetAuth;
   Assert(assigned(fAuth), 'Auth is not initialized');
@@ -295,6 +341,9 @@ begin
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
   edtPassword.Visible := false;
+  imgQrCode.Visible := false;
+  edtOtpCode.Visible := false;
+  btnVerifyOTP.Visible := false;
   edtDisplayName.Visible := false;
   btnRegisterDisplayName.Visible := false;
   shpProfile.Visible := false;
@@ -307,10 +356,16 @@ end;
 procedure TFraSelfRegistration.edtEMailChangeTracking(Sender: TObject);
 begin
   fLinkWithGoogleAfterSignIn := false;
-  if edtPassword.Visible then
+  fMfaPending.MfaPendingCredential := '';
+  if not SameText(fVerificationEMailSentFor, trim(edtEMail.Text)) then
+    fVerificationEMailSentFor := '';
+  if edtPassword.Visible or edtOtpCode.Visible then
   begin
     lblStatus.Text := rsEnterEMail;
     edtPassword.Visible := false;
+    imgQrCode.Visible := false;
+    edtOtpCode.Visible := false;
+    btnVerifyOTP.Visible := false;
     btnCheckEMail.Visible := true;
     btnGoogleOAuth.Margins.Bottom := -50;
     btnGoogleOAuth.Visible := fSupportGoogleAccount;
@@ -401,8 +456,8 @@ end;
 
 procedure TFraSelfRegistration.btnSignInClick(Sender: TObject);
 begin
-  fAuth.SignInWithEmailAndPassword(trim(edtEmail.Text), edtPassword.Text,
-    OnUserResponse, OnUserError);
+  fAuth.SignInWithEmailAndPasswordWithMFA(trim(edtEmail.Text), edtPassword.Text,
+    OnUserResponse, OnMfaRequired, OnUserError);
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
   btnSignIn.Enabled := false;
@@ -456,6 +511,9 @@ begin
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
   edtPassword.Visible := false;
+  imgQrCode.Visible := false;
+  edtOtpCode.Visible := false;
+  btnVerifyOTP.Visible := false;
   fReqInfo := 'AfterTokenRefresh';
   fAuth.RefreshToken(LastToken, OnTokenRefresh, OnUserError);
 end;
@@ -490,12 +548,23 @@ begin
     if fRequireVerificatedEMail and not IsGoogleConnected(User) then
       if User.IsEMailVerified <> tsbTrue then
       begin
-        fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
+        HandleUnverifiedEMail;
         exit;
       end;
     OnUserResponse(fReqInfo, User);
   end else
     StartEMailEntering;
+end;
+
+procedure TFraSelfRegistration.HandleUnverifiedEMail;
+begin
+  if not fVerificationEMailSentFor.IsEmpty and
+     SameText(fVerificationEMailSentFor, trim(edtEMail.Text)) then
+    OnVerificationMailSent('', nil)
+  else begin
+    fVerificationEMailSentFor := trim(edtEMail.Text);
+    fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
+  end;
 end;
 
 procedure TFraSelfRegistration.OnUserError(const Info, ErrMsg: string);
@@ -534,9 +603,17 @@ procedure TFraSelfRegistration.OnUserResponse(const Info: string;
   User: IFirebaseUser);
 const
   cReqInfo4Photo = 'GetUserDataForPhoto';
+  cReqInfo4Mfa = 'GetUserDataForMfa';
 var
   WaitForDisplayNameOrProfile: boolean;
 begin
+  fMfaPending.MfaPendingCredential := '';
+  if not User.IsUIDAvailable then
+  begin
+    fReqInfo := cReqInfo4Mfa;
+    fAuth.GetUserData(OnGetUserData, OnUserError);
+    exit;
+  end;
   if User.IsEMailAvailable and not User.EMail.IsEmpty and
      not SameText(edtEMail.Text, User.EMail) then
     edtEMail.Text := User.EMail;
@@ -555,12 +632,28 @@ begin
           end;
         tsbFalse:
           begin
-            fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
+            HandleUnverifiedEMail;
             exit;
           end;
       end;
+    if fRequireMFA and not IsGoogleConnected(User) and not User.IsMfaEnrolled then
+    begin
+      if not SameText(Info, cReqInfo4Mfa) and
+         not SameText(Info, 'GetUserData') and
+         not SameText(Info, 'AfterTokenRefresh') then
+      begin
+        fReqInfo := cReqInfo4Mfa;
+        fAuth.GetUserData(OnGetUserData, OnUserError);
+      end else begin
+        fAuth.StartMfaTotpEnrollment(OnMfaEnrollment, OnUserError);
+      end;
+      exit;
+    end;
     if fRegisterProfileImg and not User.IsPhotoURLAvailable and
-      not SameText(Info, cReqInfo4Photo) then
+      not SameText(Info, cReqInfo4Photo) and
+      not SameText(Info, cReqInfo4Mfa) and
+      not SameText(Info, 'GetUserData') and
+      not SameText(Info, 'AfterTokenRefresh') then
     begin
       fReqInfo := cReqInfo4Photo;
       fAuth.GetUserData(OnGetUserData, OnUserError);
@@ -570,6 +663,9 @@ begin
     AniIndicator.Visible := false;
     edtEMail.Visible := false;
     edtPassword.Visible := false;
+    imgQrCode.Visible := false;
+    edtOtpCode.Visible := false;
+    btnVerifyOTP.Visible := false;
     btnCheckEMail.Visible := false;
     btnGoogleOAuth.Visible := false;
     btnSignIn.Visible := false;
@@ -577,7 +673,7 @@ begin
     btnResetPwd.Visible := false;
     btnRegisterDisplayName.Visible := false;
     fInfo := Info;
-    if assigned(fUser) and (fUser.UID <> User.UID) then
+    if assigned(fUser) and fUser.IsUIDAvailable and (fUser.UID <> User.UID) then
     begin
       fProfileURL := '';
       shpProfile.Fill.Bitmap.Bitmap.Assign(fDefaultProfileImg);
@@ -586,22 +682,11 @@ begin
     WaitForDisplayNameOrProfile := false;
     if fRegisterDisplayName and User.IsDisplayNameAvailable and
       not User.DisplayName.IsEmpty then
-    begin
-      lblStatus.visible := false;
-      edtDisplayName.Visible := true;
       edtDisplayName.Text := User.DisplayName;
-      btnRegisterDisplayName.Visible := true;
-    end;
     if fRegisterProfileImg and User.IsPhotoURLAvailable and
       not User.PhotoURL.IsEmpty and fProfileURL.IsEmpty then
     begin
       StartDownloadProfileImg(User.PhotoURL);
-      WaitForDisplayNameOrProfile := true;
-    end
-    else if fRegisterProfileImg and
-      (not User.IsPhotoURLAvailable or User.PhotoURL.IsEmpty) then
-    begin
-      shpProfile.Visible := true;
       WaitForDisplayNameOrProfile := true;
     end;
     if fRegisterDisplayName and
@@ -612,7 +697,11 @@ begin
       edtDisplayName.SetFocus;
       btnRegisterDisplayName.Visible := true;
       shpProfile.Visible := fRegisterProfileImg;
+      btnLoadProfile.Enabled := fRegisterProfileImg;
       WaitForDisplayNameOrProfile := true;
+    end else begin
+      edtDisplayName.Visible := false;
+      shpProfile.Visible := false;
     end;
     if assigned(fOnUserLogin) and not WaitForDisplayNameOrProfile then
     begin
@@ -620,6 +709,119 @@ begin
       lblStatus.Text := rsLoggedIn;
       fOnUserLogin(fInfo, fUser);
     end;
+  end;
+end;
+
+procedure TFraSelfRegistration.OnMfaRequired(
+  PendingCredential: TMfaPendingCredential);
+begin
+  AniIndicator.Enabled := false;
+  AniIndicator.Visible := false;
+  fMfaPending := PendingCredential;
+  edtPassword.Visible := false;
+  btnSignIn.Visible := false;
+  btnResetPwd.Visible := false;
+  btnSignUp.Visible := false;
+  btnGoogleOAuth.Visible := false;
+  edtEMail.Visible := true;
+  imgQrCode.Visible := false;
+  edtOtpCode.Margins.Bottom := 30;
+  btnVerifyOTP.Margins.Bottom := -50;
+  edtOtpCode.Text := '';
+  edtOtpCode.Visible := true;
+  btnVerifyOTP.Enabled := false;
+  btnVerifyOTP.Visible := true;
+  edtOtpCode.SetFocus;
+  lblStatus.Visible := true;
+  lblStatus.Text := rsEnterOTP;
+end;
+
+procedure TFraSelfRegistration.OnMfaEnrollment(
+  const EnrollmentInfo: TMfaTotpEnrollmentInfo);
+begin
+  AniIndicator.Enabled := false;
+  AniIndicator.Visible := false;
+  fMfaPending.MfaPendingCredential := '';
+  edtEMail.Visible := false;
+  btnCheckEMail.Visible := false;
+  edtPassword.Visible := false;
+  btnSignIn.Visible := false;
+  btnResetPwd.Visible := false;
+  btnSignUp.Visible := false;
+  btnGoogleOAuth.Visible := false;
+  RenderQR(EnrollmentInfo.CalcQrCodeURL(trim(edtEMail.Text), fMfaIssuerName));
+  imgQrCode.Visible := true;
+  edtOtpCode.Margins.Bottom := -70;
+  btnVerifyOTP.Margins.Bottom := -140;
+  edtOtpCode.Text := '';
+  edtOtpCode.Visible := true;
+  btnVerifyOTP.Enabled := false;
+  btnVerifyOTP.Visible := true;
+  edtOtpCode.SetFocus;
+  lblStatus.Visible := true;
+  lblStatus.Text := rsScanQrAndEnterOTP;
+end;
+
+procedure TFraSelfRegistration.OnMfaError(const Info, ErrMsg: string);
+begin
+  AniIndicator.Enabled := false;
+  AniIndicator.Visible := false;
+  edtOtpCode.Text := '';
+  btnVerifyOTP.Enabled := false;
+  if edtOtpCode.Visible then
+    edtOtpCode.SetFocus;
+  lblStatus.Visible := true;
+  lblStatus.Text := Info + ': ' + ErrMsg;
+end;
+
+procedure TFraSelfRegistration.edtOtpCodeChangeTracking(Sender: TObject);
+begin
+  btnVerifyOTP.Enabled := length(trim(edtOtpCode.Text)) = 6;
+end;
+
+procedure TFraSelfRegistration.btnVerifyOTPClick(Sender: TObject);
+begin
+  AniIndicator.Enabled := true;
+  AniIndicator.Visible := true;
+  btnVerifyOTP.Enabled := false;
+  lblStatus.Text := rsWait;
+  if not fMfaPending.MfaPendingCredential.IsEmpty then
+    fAuth.MfaSignIn(fMfaPending, trim(edtOtpCode.Text), OnUserResponse,
+      OnMfaError)
+  else
+    fAuth.FinalizeMfaTotpEnrollment(trim(edtOtpCode.Text), fMfaIssuerName,
+      OnUserResponse, OnMfaError);
+end;
+
+procedure TFraSelfRegistration.RenderQR(const URI: string);
+const
+  cScale = 8;
+var
+  QRCode: TDelphiZXingQRCode;
+  r, c: integer;
+  Bmp: TBitmap;
+begin
+  QRCode := TDelphiZXingQRCode.Create;
+  Bmp := TBitmap.Create;
+  try
+    QRCode.Data := URI;
+    Bmp.SetSize(QRCode.Columns * cScale, QRCode.Rows * cScale);
+    if Bmp.Canvas.BeginScene then
+    try
+      Bmp.Canvas.Clear(TAlphaColors.White);
+      Bmp.Canvas.Fill.Color := TAlphaColors.Black;
+      for r := 0 to QRCode.Rows - 1 do
+        for c := 0 to QRCode.Columns - 1 do
+          if QRCode.IsBlack[r, c] then
+            Bmp.Canvas.FillRect(TRectF.Create(c * cScale, r * cScale,
+              (c + 1) * cScale, (r + 1) * cScale), 0, 0, AllCorners, 1);
+    finally
+      Bmp.Canvas.EndScene;
+    end;
+    imgQrCode.Bitmap.Assign(Bmp);
+  finally
+    Bmp.Free;
+    QRCode.Free;
   end;
 end;
 
@@ -664,6 +866,8 @@ begin
     btnSignUp.Visible := false;
     btnSignIn.Visible := true;
     btnSignIn.Enabled := true;
+    btnResetPwd.Visible := true;
+    btnResetPwd.Enabled := true;
   end;
   lblStatus.Text := rsPleaseCheckEMailForVerify;
 end;
@@ -680,6 +884,7 @@ end;
 procedure TFraSelfRegistration.OnChangedProfile(const RequestID: string;
   Response: IFirebaseResponse);
 begin
+  fReqInfo := 'GetUserData';
   fAuth.GetUserData(OnGetUserData, OnUserError);
 end;
 
@@ -798,6 +1003,9 @@ end;
 
 procedure TFraSelfRegistration.InformDelayedStart(const Msg: string);
 begin
+  imgQrCode.Visible := false;
+  edtOtpCode.Visible := false;
+  btnVerifyOTP.Visible := false;
   edtDisplayName.Visible := false;
   btnRegisterDisplayName.Visible := false;
   shpProfile.Visible := false;

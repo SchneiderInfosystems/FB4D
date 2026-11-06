@@ -1107,6 +1107,7 @@ type
   /// </summary>
   IFirebaseUser = interface(IInterface)
     // Get User Identification
+    function IsUIDAvailable: boolean;
     function UID: string;
     // Get EMail Address
     function IsEMailAvailable: boolean;
@@ -1124,6 +1125,7 @@ type
     // Get User Account State and Timestamps
     function IsDisabled: TThreeStateBoolean;
     function IsNewSignupUser: boolean;
+    function IsMfaEnrolled: boolean;
     function IsLastLoginAtAvailable: boolean;
     function LastLoginAt(TimeZone: TTimeZone = tzLocalTime): TDateTime;
     function IsCreatedAtAvailable: boolean;

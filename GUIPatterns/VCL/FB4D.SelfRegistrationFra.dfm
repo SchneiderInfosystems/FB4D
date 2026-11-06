@@ -167,14 +167,61 @@ object FraSelfRegistration: TFraSelfRegistration
       OnClick = btnResetPwdClick
     end
   end
-  object pnlDisplayName: TPanel
+  object pnlMFA: TPanel
     Left = 0
     Top = 274
+    Width = 669
+    Height = 324
+    Align = alTop
+    BevelOuter = bvNone
+    TabOrder = 4
+    DesignSize = (
+      669
+      324)
+    object imgQrCode: TImage
+      Left = 214
+      Top = 72
+      Width = 240
+      Height = 240
+      Anchors = [akTop]
+      Center = True
+      Proportional = True
+      Stretch = True
+    end
+    object edtOtpCode: TLabeledEdit
+      Left = 24
+      Top = 32
+      Width = 617
+      Height = 23
+      Anchors = [akLeft, akTop, akRight]
+      EditLabel.Width = 222
+      EditLabel.Height = 15
+      EditLabel.Caption = '6-digit OTP code from Authenticator App:'
+      MaxLength = 6
+      NumbersOnly = True
+      TabOrder = 0
+      Text = ''
+      OnChange = edtOtpCodeChange
+    end
+    object btnVerifyOTP: TButton
+      Left = 504
+      Top = 67
+      Width = 137
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Verify OTP'
+      TabOrder = 1
+      OnClick = btnVerifyOTPClick
+    end
+  end
+  object pnlDisplayName: TPanel
+    Left = 0
+    Top = 497
     Width = 669
     Height = 223
     Align = alTop
     BevelOuter = bvNone
-    TabOrder = 4
+    TabOrder = 5
     DesignSize = (
       669
       223)
