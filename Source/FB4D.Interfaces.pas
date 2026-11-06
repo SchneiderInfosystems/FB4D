@@ -1,4 +1,4 @@
-﻿{******************************************************************************}
+{******************************************************************************}
 {                                                                              }
 {  Delphi FB4D Library                                                         }
 {  Copyright (c) 2018-2026 Christoph Schneider                                 }
@@ -1199,6 +1199,8 @@ type
     procedure SetGoogleAuth2(const ClientID, ClientSecret: string);
     procedure SignInWithGoogleAccount(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError; const OptionalGMailAdr: string = '');
+    procedure LinkWithGoogleAccount(OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError);
     function GetOAuthRedirectionEndpoint: string;
     function GetOAuthRefreshToken: string;
     procedure ReSignInWithGoogleAccount(const LastOAuthRefreshToken: string;

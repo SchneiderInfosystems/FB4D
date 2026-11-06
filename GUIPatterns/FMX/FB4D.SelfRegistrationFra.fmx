@@ -22,6 +22,17 @@ object FraSelfRegistration: TFraSelfRegistration
     TextSettings.Trimming = None
     OnClick = btnCheckEMailClick
   end
+  object btnGoogleOAuth: TButton
+    Align = Center
+    Margins.Bottom = -50.000000000000000000
+    Size.Width = 377.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Text = 'Login by Google Account'
+    TextSettings.Trimming = None
+    OnClick = btnGoogleOAuthClick
+  end
   object btnResetPwd: TButton
     Align = Center
     Margins.Bottom = -125.000000000000000000

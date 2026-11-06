@@ -125,6 +125,8 @@ type
     procedure SetGoogleAuth2(const ClientID, ClientSecret: string);
     procedure SignInWithGoogleAccount(OnUserResponse: TOnUserResponse;
       OnError: TOnRequestError; const OptionalGMailAdr: string = '');
+    procedure LinkWithGoogleAccount(OnUserResponse: TOnUserResponse;
+      OnError: TOnRequestError);
     function GetOAuthRedirectionEndpoint: string;
     function GetOAuthRefreshToken: string;
     procedure ReSignInWithGoogleAccount(const LastOAuthRefreshToken: string;
@@ -573,14 +575,20 @@ begin
   fAuthenticated := false;
   if not assigned(fAuth2Authenticator) then
     raise EGoogleOAuth2Authenticator.Create('SetGoogleAuth2 call missing');
-  if fAuth2Authenticator.AuthorizationState in [idle, failed, timeOutOccured] then
-    fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError)
-  else if fAuth2Authenticator.AuthorizationState = passed then
-  begin
-    OnError('Sign in with Google Account', 'Already authorized');
-    fAuthenticated := true;
-  end else
+  if fAuth2Authenticator.AuthorizationState in [idle, failed, timeOutOccured, passed] then
+    fAuth2Authenticator.OpenDefaultBrowserForLogin(OnAuthenticatorFinished, OnUserResponse, OnError, OptionalGMailAdr)
+  else
     OnError('Sign in with Google Account', 'Unexpected state: ' + fAuth2Authenticator.AuthorizationStateInfo);
+end;
+
+procedure TFirebaseAuthentication.LinkWithGoogleAccount(OnUserResponse: TOnUserResponse;
+  OnError: TOnRequestError);
+begin
+  if not assigned(fAuth2Authenticator) then
+    raise EGoogleOAuth2Authenticator.Create('SetGoogleAuth2 call missing');
+  if fAuth2Authenticator.AuthorizationState <> passed then
+    raise EGoogleOAuth2Authenticator.Create('Google OAuth2 not authorized');
+  OnAuthenticatorFinished(passed, OnUserResponse, OnError);
 end;
 
 procedure TFirebaseAuthentication.ReSignInWithGoogleAccount(const LastOAuthRefreshToken: string;
@@ -760,7 +768,7 @@ procedure TFirebaseAuthentication.OnUserResp(const RequestID: string;
   Response: IFirebaseResponse);
 var
   User: IFirebaseUser;
-  ErrMsg: string;
+  ErrMsg, EMail: string;
   ResObj: TJSONObject;
   PendCred: TMfaPendingCredential;
 begin
@@ -768,6 +776,8 @@ begin
     Response.CheckForJSONObj;
     fLastUTCServerTime := Response.GetServerTime(tzUTC);
     ResObj := Response.GetContentAsJSONObj;
+    if not ResObj.TryGetValue('email', EMail) then
+      EMail := '';
     // When MFA is enrolled the server returns mfaPendingCredential instead of
     // an idToken. Detect this case and route to OnMfaRequired callback.
     if assigned(fOnMfaRequired) then
@@ -816,11 +826,14 @@ begin
     end;
     on e: Exception do
     begin
+      ErrMsg := e.Message;
+      if not EMail.IsEmpty then
+        ErrMsg := ErrMsg + ' [' + EMail + ']';
       if assigned(Response.OnError) then
-        Response.OnError(RequestID, e.Message)
+        Response.OnError(RequestID, ErrMsg)
       else
         TFirebaseHelpers.LogFmt(rsFBFailureIn,
-          ['FirebaseAuthentication.OnUserResp', RequestID, e.Message]);
+          ['FirebaseAuthentication.OnUserResp', RequestID, ErrMsg]);
     end;
   end;
 end;
@@ -1905,7 +1918,10 @@ begin
   {$ENDIF}
   fJSONResp := JSONResp;
   if not fJSONResp.TryGetValue('errorMessage', fErrorMsg) then
-    fErrorMsg := '';
+    if fJSONResp.GetValue('mfaPendingCredential') <> nil then
+      fErrorMsg := 'MFA_REQUIRED (OnMfaRequired not installed)'
+    else
+      fErrorMsg := '';
   if not fJSONResp.TryGetValue('idToken', fToken) then
     if TokenExpected then
       raise EFirebaseUser.Create('idToken not found, (Error: ' + fErrorMsg + ')')

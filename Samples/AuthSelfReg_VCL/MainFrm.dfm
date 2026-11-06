@@ -2,7 +2,7 @@ object frmMain: TfrmMain
   Left = 0
   Top = 0
   Caption = 'Self Registration Workflow'
-  ClientHeight = 442
+  ClientHeight = 520
   ClientWidth = 628
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,7 +16,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 0
     Width = 628
-    Height = 442
+    Height = 520
     Align = alClient
     ActiveCard = CardFirebaseSettings
     BevelOuter = bvNone
@@ -25,7 +25,7 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 628
-      Height = 442
+      Height = 520
       Caption = 'CardLogin'
       CardIndex = 0
       TabOrder = 0
@@ -33,19 +33,19 @@ object frmMain: TfrmMain
         Left = 0
         Top = 0
         Width = 628
-        Height = 442
+        Height = 520
         Align = alClient
         TabOrder = 0
         ExplicitWidth = 628
-        ExplicitHeight = 442
+        ExplicitHeight = 520
         inherited pnlStatus: TPanel
           Width = 628
-          Height = 224
+          Height = 302
           ExplicitWidth = 628
-          ExplicitHeight = 224
+          ExplicitHeight = 302
           inherited lblStatus: TLabel
             Width = 608
-            Height = 204
+            Height = 282
             GlowSize = 5
             WordWrap = True
           end
@@ -140,16 +140,16 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 628
-      Height = 442
+      Height = 520
       Caption = 'CardFirebaseSettings'
       CardIndex = 1
       TabOrder = 1
       DesignSize = (
         628
-        442)
+        520)
       object Label1: TLabel
         Left = 24
-        Top = 163
+        Top = 216
         Width = 97
         Height = 15
         Caption = 'Workflow options:'
@@ -168,7 +168,7 @@ object frmMain: TfrmMain
       end
       object edtWebAPIKey: TLabeledEdit
         Left = 24
-        Top = 80
+        Top = 76
         Width = 577
         Height = 23
         Anchors = [akLeft, akTop, akRight]
@@ -190,95 +190,132 @@ object frmMain: TfrmMain
         TabOrder = 2
         Text = ''
       end
+      object edtGoogleOAuthClientID: TLabeledEdit
+        Left = 24
+        Top = 180
+        Width = 280
+        Height = 23
+        EditLabel.Width = 87
+        EditLabel.Height = 15
+        EditLabel.Caption = 'OAuth Client ID'
+        TabOrder = 3
+        Text = ''
+        OnChange = edtGoogleOAuthChange
+      end
+      object edtGoogleOAuthClientSecret: TLabeledEdit
+        Left = 321
+        Top = 180
+        Width = 280
+        Height = 23
+        Anchors = [akLeft, akTop, akRight]
+        EditLabel.Width = 103
+        EditLabel.Height = 15
+        EditLabel.Caption = 'OAuth Client Secret'
+        PasswordChar = '*'
+        TabOrder = 4
+        Text = ''
+        OnChange = edtGoogleOAuthChange
+      end
       object btnSaveSettings: TButton
         Left = 486
-        Top = 360
+        Top = 440
         Width = 115
         Height = 25
         Anchors = [akTop, akRight]
         Caption = 'Save Settings'
-        TabOrder = 3
+        TabOrder = 12
         OnClick = btnSaveSettingsClick
       end
       object chbAllowAutoLogin: TCheckBox
         Left = 32
-        Top = 184
+        Top = 237
         Width = 569
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Allow automatic login by storing the last refresh token (Not rec' +
           'ommended option for high secure apps)'
-        TabOrder = 4
+        TabOrder = 5
       end
       object chbAllowSelfRegistration: TCheckBox
         Left = 32
-        Top = 245
+        Top = 290
         Width = 569
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Allow Self Registration Workflow (Check your business requiremen' +
           'ts)'
-        TabOrder = 5
+        TabOrder = 7
         OnClick = chbAllowSelfRegistrationClick
       end
       object chbRequireVerificatedEMail: TCheckBox
         Left = 56
-        Top = 268
+        Top = 313
         Width = 545
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Require EMail Verification (Increases security of self registrat' +
           'ion workflow)'
-        TabOrder = 6
+        TabOrder = 8
+      end
+      object chbSupportGoogleAccount: TCheckBox
+        Left = 32
+        Top = 343
+        Width = 569
+        Height = 17
+        Anchors = [akLeft, akTop, akRight]
+        Caption = 
+          'Support Google Account Login (Requires OAuth Client ID and Clien' +
+          't Secret)'
+        TabOrder = 9
       end
       object chbRegisterDisplayName: TCheckBox
         Left = 32
-        Top = 305
+        Top = 373
         Width = 569
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Use a display name in addition to the email (Display name is not' +
           ' unique by default)'
-        TabOrder = 7
+        TabOrder = 10
         OnClick = chbRegisterDisplayNameClick
       end
       object chbUploadProfileImg: TCheckBox
         Left = 56
-        Top = 328
+        Top = 396
         Width = 545
         Height = 17
         Anchors = [akLeft, akTop, akRight]
         Caption = 
           'Use a profile image to identify the user (uploads a picture into' +
           ' the firebase storage)'
-        TabOrder = 8
+        TabOrder = 11
       end
       object chbPersistentEMail: TCheckBox
         Left = 32
-        Top = 207
+        Top = 260
         Width = 569
         Height = 17
         Caption = 
           'Remember email address of last login (not recommended for high s' +
           'ecure apps)'
-        TabOrder = 9
+        TabOrder = 6
       end
     end
     object CardLoggedIn: TCard
       Left = 0
       Top = 0
       Width = 628
-      Height = 442
+      Height = 520
       Caption = 'CardLoggedIn'
       CardIndex = 2
       TabOrder = 2
       DesignSize = (
         628
-        442)
+        520)
       object imgUser: TImage
         Left = 576
         Top = 8

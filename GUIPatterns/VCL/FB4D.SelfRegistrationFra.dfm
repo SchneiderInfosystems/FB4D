@@ -102,6 +102,15 @@ object FraSelfRegistration: TFraSelfRegistration
       TabOrder = 1
       OnClick = btnCheckEMailClick
     end
+    object btnGoogleOAuth: TButton
+      Left = 24
+      Top = 67
+      Width = 161
+      Height = 25
+      Caption = 'Login by Google Account'
+      TabOrder = 2
+      OnClick = btnGoogleOAuthClick
+    end
   end
   object pnlPassword: TPanel
     Left = 0

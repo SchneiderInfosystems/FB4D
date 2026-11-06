@@ -37,6 +37,7 @@ type
   TFraSelfRegistration = class(TFrame)
     AniIndicator: TAniIndicator;
     btnCheckEMail: TButton;
+    btnGoogleOAuth: TButton;
     btnResetPwd: TButton;
     btnSignIn: TButton;
     btnSignUp: TButton;
@@ -54,6 +55,7 @@ type
     imgShowPwd: TImage;
     procedure edtEMailChangeTracking(Sender: TObject);
     procedure btnCheckEMailClick(Sender: TObject);
+    procedure btnGoogleOAuthClick(Sender: TObject);
     procedure btnSignInClick(Sender: TObject);
     procedure btnSignUpClick(Sender: TObject);
     procedure btnResetPwdClick(Sender: TObject);
@@ -74,6 +76,8 @@ type
     fAllowSelfRegistration: boolean;
     fRequireVerificatedEMail: boolean;
     fRegisterDisplayName: boolean;
+    fSupportGoogleAccount: boolean;
+    fLinkWithGoogleAfterSignIn: boolean;
     fRegisterProfileImg: boolean;
     fStorage: IFirebaseStorage;
     fOnGetStorage: TOnGetStorage;
@@ -107,6 +111,7 @@ type
     procedure StartDownloadProfileImg(PhotoURL: string);
     procedure OnProfileDownload(const DownloadURL: string);
     function GetProfileImg: TBitmap;
+    function IsGoogleConnected(User: IFirebaseUser): boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -115,13 +120,15 @@ type
       const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
       RequireVerificatedEMail: boolean = false;
       RegisterDisplayName: boolean = false;
-      AutoCheckEMail: boolean = true);
+      AutoCheckEMail: boolean = true;
+      SupportGoogleAccount: boolean = false);
     procedure InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
       OnUserLogin: TOnUserResponse; const LastRefreshToken: string = '';
       const LastEMail: string = ''; AllowSelfRegistration: boolean = true;
       RequireVerificatedEMail: boolean = false;
       RegisterDisplayName: boolean = false;
-      AutoCheckEMail: boolean = true);
+      AutoCheckEMail: boolean = true;
+      SupportGoogleAccount: boolean = false);
     procedure RequestProfileImg(OnGetStorage: TOnGetStorage;
       const StoragePath: string = cDefaultStoragePathForProfileImg;
       ProfileImgSize: integer = cDefaultProfileImgSize);
@@ -160,6 +167,10 @@ resourcestring
   rsEnterEMail = 'Enter your e-mail address for sign-in or registration';
   rsWait = 'Please wait for Firebase';
   rsEnterPassword = 'Enter your password for registration';
+  rsEnterPasswordOrGoogle =
+    'Enter your password for registration or login by Google Account';
+  rsEnterPasswordToLinkGoogle =
+    'Enter your password once to link your existing account with Google';
   rsSetupPassword = 'Setup a new password for future registrations';
   rsNotRegisteredEMail = 'The entered e-mail is not registered';
   rsPleaseCheckEMail = 'Please check your e-mail inbox to renew your password';
@@ -196,7 +207,7 @@ end;
 procedure TFraSelfRegistration.Initialize(Auth: IFirebaseAuthentication;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
   AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName,
-  AutoCheckEMail: boolean);
+  AutoCheckEMail, SupportGoogleAccount: boolean);
 begin
   fAuth := Auth;
   fOnUserLogin := OnUserLogin;
@@ -204,13 +215,14 @@ begin
   fAllowSelfRegistration := AllowSelfRegistration;
   fRequireVerificatedEMail := RequireVerificatedEMail;
   fRegisterDisplayName := RegisterDisplayName;
+  fSupportGoogleAccount := SupportGoogleAccount;
   InternalInit(LastRefreshToken, LastEMail, AutoCheckEMail);
 end;
 
 procedure TFraSelfRegistration.InitializeAuthOnDemand(OnGetAuth: TOnGetAuth;
   OnUserLogin: TOnUserResponse; const LastRefreshToken, LastEMail: string;
   AllowSelfRegistration, RequireVerificatedEMail, RegisterDisplayName,
-  AutoCheckEMail: boolean);
+  AutoCheckEMail, SupportGoogleAccount: boolean);
 begin
   fAuth := nil;
   fOnUserLogin := OnUserLogin;
@@ -218,12 +230,14 @@ begin
   fAllowSelfRegistration := AllowSelfRegistration;
   fRequireVerificatedEMail := RequireVerificatedEMail;
   fRegisterDisplayName := RegisterDisplayName;
+  fSupportGoogleAccount := SupportGoogleAccount;
   InternalInit(LastRefreshToken, LastEMail, AutoCheckEMail);
 end;
 
 procedure TFraSelfRegistration.InternalInit(const LastRefreshToken,
   LastEMail: string; AutoCheckEMail: boolean);
 begin
+  fLinkWithGoogleAfterSignIn := false;
   edtEMail.Text := LastEMail;
   if not LastRefreshToken.IsEmpty then
     StartTokenReferesh(LastRefreshToken)
@@ -245,9 +259,13 @@ end;
 procedure TFraSelfRegistration.StartEMailEntering;
 begin
   fInfo := '';
+  fLinkWithGoogleAfterSignIn := false;
   edtEMail.Visible := true;
   btnCheckEMail.Visible := true;
   btnCheckEMail.Enabled := TFirebaseHelpers.IsEMailAdress(edtEMail.Text);
+  btnGoogleOAuth.Margins.Bottom := -50;
+  btnGoogleOAuth.Visible := fSupportGoogleAccount;
+  btnGoogleOAuth.Enabled := fSupportGoogleAccount;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
@@ -255,6 +273,7 @@ begin
   edtDisplayName.Visible := false;
   btnRegisterDisplayName.Visible := false;
   shpProfile.Visible := false;
+  lblStatus.Visible := true;
   lblStatus.Text := rsEnterEMail;
   edtEMail.SetFocus;
 end;
@@ -262,12 +281,16 @@ end;
 procedure TFraSelfRegistration.StartEMailChecking;
 begin
   fInfo := '';
+  fLinkWithGoogleAfterSignIn := false;
   if not assigned(fAuth) and assigned(fOnGetAuth) then
     fAuth := fOnGetAuth;
   Assert(assigned(fAuth), 'Auth is not initialized');
   fAuth.FetchProvidersForEMail(trim(edtEmail.Text), OnFetchProviders,
     OnFetchProvidersError);
   btnCheckEMail.Enabled := false;
+  btnGoogleOAuth.Margins.Bottom := -50;
+  btnGoogleOAuth.Visible := fSupportGoogleAccount;
+  btnGoogleOAuth.Enabled := fSupportGoogleAccount;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
   btnSignUp.Visible := false;
@@ -277,16 +300,21 @@ begin
   shpProfile.Visible := false;
   AniIndicator.Enabled := true;
   AniIndicator.Visible := true;
+  lblStatus.Visible := true;
   lblStatus.Text := rsWait;
 end;
 
 procedure TFraSelfRegistration.edtEMailChangeTracking(Sender: TObject);
 begin
+  fLinkWithGoogleAfterSignIn := false;
   if edtPassword.Visible then
   begin
     lblStatus.Text := rsEnterEMail;
     edtPassword.Visible := false;
     btnCheckEMail.Visible := true;
+    btnGoogleOAuth.Margins.Bottom := -50;
+    btnGoogleOAuth.Visible := fSupportGoogleAccount;
+    btnGoogleOAuth.Enabled := fSupportGoogleAccount;
     btnSignUp.Visible := false;
     btnSignIn.Visible := false;
     btnResetPwd.Visible := false;
@@ -299,6 +327,19 @@ begin
   StartEMailChecking;
 end;
 
+procedure TFraSelfRegistration.btnGoogleOAuthClick(Sender: TObject);
+begin
+  if not assigned(fAuth) and assigned(fOnGetAuth) then
+    fAuth := fOnGetAuth;
+  Assert(assigned(fAuth), 'Auth is not initialized');
+  fAuth.SignInWithGoogleAccount(OnUserResponse, OnUserError, trim(edtEMail.Text));
+  AniIndicator.Enabled := true;
+  AniIndicator.Visible := true;
+  btnGoogleOAuth.Enabled := false;
+  btnCheckEMail.Enabled := false;
+  lblStatus.Text := rsWait;
+end;
+
 procedure TFraSelfRegistration.OnFetchProviders(const EMail: string;
   IsRegistered: boolean; Providers: TStrings);
 begin
@@ -306,16 +347,29 @@ begin
   AniIndicator.Visible := false;
   if IsRegistered then
   begin
+    if fSupportGoogleAccount and (Providers.Count = 1) and
+       SameText(Providers[0], 'google.com') then
+    begin
+      btnGoogleOAuthClick(nil);
+      exit;
+    end;
     btnSignUp.Visible := false;
     btnSignIn.Visible := true;
     btnSignIn.Enabled := true;
     btnResetPwd.Visible := true;
     btnResetPwd.Enabled := true;
-    lblStatus.Text := rsEnterPassword;
+    lblStatus.Visible := true;
+    if fSupportGoogleAccount then
+      lblStatus.Text := rsEnterPasswordOrGoogle
+    else
+      lblStatus.Text := rsEnterPassword;
     edtPassword.Text := '';
     edtPassword.Visible := true;
     edtPassword.SetFocus;
     btnCheckEMail.Visible := false;
+    btnGoogleOAuth.Margins.Bottom := -185;
+    btnGoogleOAuth.Visible := fSupportGoogleAccount;
+    btnGoogleOAuth.Enabled := fSupportGoogleAccount;
   end
   else if fAllowSelfRegistration then
   begin
@@ -328,6 +382,9 @@ begin
     edtPassword.Visible := true;
     edtPassword.SetFocus;
     btnCheckEMail.Visible := false;
+    btnGoogleOAuth.Margins.Bottom := -185;
+    btnGoogleOAuth.Visible := fSupportGoogleAccount;
+    btnGoogleOAuth.Enabled := fSupportGoogleAccount;
   end else begin
     lblStatus.Text := rsNotRegisteredEMail;
     edtEMail.SetFocus;
@@ -393,6 +450,7 @@ begin
   AniIndicator.Visible := true;
   edtEMail.Visible := false;
   btnCheckEMail.Visible := false;
+  btnGoogleOAuth.Visible := false;
   lblStatus.Text := rsWait;
   btnSignIn.Visible := false;
   btnResetPwd.Visible := false;
@@ -411,6 +469,17 @@ begin
     StartEMailEntering;
 end;
 
+function TFraSelfRegistration.IsGoogleConnected(User: IFirebaseUser): boolean;
+var
+  c: integer;
+begin
+  result := SameText(User.OAuthProviderId, 'google.com');
+  if not result then
+    for c := 0 to User.ProviderCount - 1 do
+      if SameText(User.Provider(c).ProviderId, 'google.com') then
+        exit(true);
+end;
+
 procedure TFraSelfRegistration.OnGetUserData(FirebaseUserList: TFirebaseUserList);
 var
   User: IFirebaseUser;
@@ -418,7 +487,7 @@ begin
   if FirebaseUserList.Count = 1 then
   begin
     User := FirebaseUserList[0];
-    if fRequireVerificatedEMail then
+    if fRequireVerificatedEMail and not IsGoogleConnected(User) then
       if User.IsEMailVerified <> tsbTrue then
       begin
         fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
@@ -430,11 +499,35 @@ begin
 end;
 
 procedure TFraSelfRegistration.OnUserError(const Info, ErrMsg: string);
+var
+  p1, p2: integer;
 begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
-  StartEMailEntering;
-  lblStatus.Text := Format(rsUserError, [ErrMsg]);
+  if fSupportGoogleAccount and Info.Contains('google.com') and
+     ErrMsg.Contains('EMAIL_EXISTS') then
+  begin
+    p1 := Pos('[', ErrMsg);
+    p2 := Pos(']', ErrMsg);
+    if (p1 > 0) and (p2 > p1) then
+      edtEMail.Text := Copy(ErrMsg, p1 + 1, p2 - p1 - 1);
+    fLinkWithGoogleAfterSignIn := true;
+    edtEMail.Visible := true;
+    btnSignUp.Visible := false;
+    btnSignIn.Visible := true;
+    btnSignIn.Enabled := true;
+    btnResetPwd.Visible := true;
+    btnResetPwd.Enabled := true;
+    lblStatus.Text := rsEnterPasswordToLinkGoogle;
+    edtPassword.Text := '';
+    edtPassword.Visible := true;
+    edtPassword.SetFocus;
+    btnCheckEMail.Visible := false;
+    btnGoogleOAuth.Visible := false;
+  end else begin
+    StartEMailEntering;
+    lblStatus.Text := Format(rsUserError, [ErrMsg]);
+  end;
 end;
 
 procedure TFraSelfRegistration.OnUserResponse(const Info: string;
@@ -444,77 +537,89 @@ const
 var
   WaitForDisplayNameOrProfile: boolean;
 begin
-  if fRequireVerificatedEMail then
-    case User.IsEMailVerified of
-      tsbUnspecified:
-        begin
-          fReqInfo := 'GetUserData';
-          fAuth.GetUserData(OnGetUserData, OnUserError);
-          exit;
-        end;
-      tsbFalse:
-        begin
-          fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
-          exit;
-        end;
+  if User.IsEMailAvailable and not User.EMail.IsEmpty and
+     not SameText(edtEMail.Text, User.EMail) then
+    edtEMail.Text := User.EMail;
+  if fLinkWithGoogleAfterSignIn then
+  begin
+    fLinkWithGoogleAfterSignIn := false;
+    fAuth.LinkWithGoogleAccount(OnUserResponse, OnUserError);
+  end else begin
+    if fRequireVerificatedEMail and not IsGoogleConnected(User) then
+      case User.IsEMailVerified of
+        tsbUnspecified:
+          begin
+            fReqInfo := 'GetUserData';
+            fAuth.GetUserData(OnGetUserData, OnUserError);
+            exit;
+          end;
+        tsbFalse:
+          begin
+            fAuth.SendEmailVerification(OnVerificationMailSent, OnUserError);
+            exit;
+          end;
+      end;
+    if fRegisterProfileImg and not User.IsPhotoURLAvailable and
+      not SameText(Info, cReqInfo4Photo) then
+    begin
+      fReqInfo := cReqInfo4Photo;
+      fAuth.GetUserData(OnGetUserData, OnUserError);
+      exit;
     end;
-  if fRegisterProfileImg and not User.IsPhotoURLAvailable and
-    not SameText(Info, cReqInfo4Photo) then
-  begin
-    fReqInfo := cReqInfo4Photo;
-    fAuth.GetUserData(OnGetUserData, OnUserError);
-    exit;
-  end;
-  AniIndicator.Enabled := false;
-  AniIndicator.Visible := false;
-  edtEMail.Visible := false;
-  edtPassword.Visible := false;
-  btnSignIn.Visible := false;
-  btnSignUp.Visible := false;
-  btnResetPwd.Visible := false;
-  btnRegisterDisplayName.Visible := false;
-  fInfo := Info;
-  if assigned(fUser) and (fUser.UID <> User.UID) then
-  begin
-    fProfileURL := '';
-    shpProfile.Fill.Bitmap.Bitmap.Assign(fDefaultProfileImg);
-  end;
-  fUser := User;
-  WaitForDisplayNameOrProfile := false;
-  if fRegisterDisplayName and User.IsDisplayNameAvailable and
-    not User.DisplayName.IsEmpty then
-  begin
-    lblStatus.visible := false;
-    edtDisplayName.Visible := true;
-    edtDisplayName.Text := User.DisplayName;
-    btnRegisterDisplayName.Visible := true;
-  end;
-  if fRegisterProfileImg and User.IsPhotoURLAvailable and
-    not User.PhotoURL.IsEmpty and fProfileURL.IsEmpty then
-  begin
-    StartDownloadProfileImg(User.PhotoURL);
-    WaitForDisplayNameOrProfile := true;
-  end
-  else if fRegisterProfileImg and
-    (not User.IsPhotoURLAvailable or User.PhotoURL.IsEmpty) then
-  begin
-    shpProfile.Visible := true;
-    WaitForDisplayNameOrProfile := true;
-  end;
-  if fRegisterDisplayName and
-    (not User.IsDisplayNameAvailable or User.DisplayName.IsEmpty) then
-  begin
-    lblStatus.visible := false;
-    edtDisplayName.Visible := true;
-    edtDisplayName.SetFocus;
-    btnRegisterDisplayName.Visible := true;
-    shpProfile.Visible := fRegisterProfileImg;
-    WaitForDisplayNameOrProfile := true;
-  end;
-  if assigned(fOnUserLogin) and not WaitForDisplayNameOrProfile then
-  begin
-    lblStatus.Text := rsLoggedIn;
-    fOnUserLogin(fInfo, fUser);
+    AniIndicator.Enabled := false;
+    AniIndicator.Visible := false;
+    edtEMail.Visible := false;
+    edtPassword.Visible := false;
+    btnCheckEMail.Visible := false;
+    btnGoogleOAuth.Visible := false;
+    btnSignIn.Visible := false;
+    btnSignUp.Visible := false;
+    btnResetPwd.Visible := false;
+    btnRegisterDisplayName.Visible := false;
+    fInfo := Info;
+    if assigned(fUser) and (fUser.UID <> User.UID) then
+    begin
+      fProfileURL := '';
+      shpProfile.Fill.Bitmap.Bitmap.Assign(fDefaultProfileImg);
+    end;
+    fUser := User;
+    WaitForDisplayNameOrProfile := false;
+    if fRegisterDisplayName and User.IsDisplayNameAvailable and
+      not User.DisplayName.IsEmpty then
+    begin
+      lblStatus.visible := false;
+      edtDisplayName.Visible := true;
+      edtDisplayName.Text := User.DisplayName;
+      btnRegisterDisplayName.Visible := true;
+    end;
+    if fRegisterProfileImg and User.IsPhotoURLAvailable and
+      not User.PhotoURL.IsEmpty and fProfileURL.IsEmpty then
+    begin
+      StartDownloadProfileImg(User.PhotoURL);
+      WaitForDisplayNameOrProfile := true;
+    end
+    else if fRegisterProfileImg and
+      (not User.IsPhotoURLAvailable or User.PhotoURL.IsEmpty) then
+    begin
+      shpProfile.Visible := true;
+      WaitForDisplayNameOrProfile := true;
+    end;
+    if fRegisterDisplayName and
+      (not User.IsDisplayNameAvailable or User.DisplayName.IsEmpty) then
+    begin
+      lblStatus.visible := false;
+      edtDisplayName.Visible := true;
+      edtDisplayName.SetFocus;
+      btnRegisterDisplayName.Visible := true;
+      shpProfile.Visible := fRegisterProfileImg;
+      WaitForDisplayNameOrProfile := true;
+    end;
+    if assigned(fOnUserLogin) and not WaitForDisplayNameOrProfile then
+    begin
+      lblStatus.Visible := true;
+      lblStatus.Text := rsLoggedIn;
+      fOnUserLogin(fInfo, fUser);
+    end;
   end;
 end;
 
@@ -666,6 +771,7 @@ begin
   if assigned(fOnUserLogin) and
      (not fRegisterDisplayName or not edtDisplayName.Text.IsEmpty) then
   begin
+    lblStatus.Visible := true;
     lblStatus.Text := rsLoggedIn;
     TThread.CreateAnonymousThread(
       procedure

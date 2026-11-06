@@ -39,6 +39,8 @@ type
     edtProjectID: TLabeledEdit;
     edtWebAPIKey: TLabeledEdit;
     edtBucket: TLabeledEdit;
+    edtGoogleOAuthClientID: TLabeledEdit;
+    edtGoogleOAuthClientSecret: TLabeledEdit;
     btnSaveSettings: TButton;
     CardLoggedIn: TCard;
     edtLoggedInUser: TEdit;
@@ -49,6 +51,7 @@ type
     chbAllowAutoLogin: TCheckBox;
     chbAllowSelfRegistration: TCheckBox;
     chbRequireVerificatedEMail: TCheckBox;
+    chbSupportGoogleAccount: TCheckBox;
     chbRegisterDisplayName: TCheckBox;
     Label1: TLabel;
     chbUploadProfileImg: TCheckBox;
@@ -59,6 +62,7 @@ type
     procedure btnSettingsClick(Sender: TObject);
     procedure chbAllowSelfRegistrationClick(Sender: TObject);
     procedure chbRegisterDisplayNameClick(Sender: TObject);
+    procedure edtGoogleOAuthChange(Sender: TObject);
   private
     fConfig: IFirebaseConfiguration;
     fLastEMail: string;
@@ -96,10 +100,14 @@ begin
     edtProjectID.Text :=
       IniFile.ReadString('FBProjectSettings', 'ProjectID', '');
     edtBucket.Text := IniFile.ReadString('FBProjectSettings', 'Bucket', '');
+    edtGoogleOAuthClientID.Text := IniFile.ReadString('GoogleOAuth2', 'ClientID', '');
+    edtGoogleOAuthClientSecret.Text := IniFile.ReadString('GoogleOAuth2', 'ClientSecret', '');
     chbAllowAutoLogin.checked := IniFile.ReadBool('Settings', 'AllowAutoLogin', true);
     chbPersistentEMail.checked := IniFile.ReadBool('Settings', 'PersistentEMail', true);
     chbAllowSelfRegistration.checked := IniFile.ReadBool('Settings', 'AllowSelfRegistration', true);
     chbRequireVerificatedEMail.checked := IniFile.ReadBool('Settings', 'RequireVerificatedEMail', true);
+    chbSupportGoogleAccount.checked := IniFile.ReadBool('Settings', 'SupportGoogleAccount', false);
+    edtGoogleOAuthChange(nil);
     chbRegisterDisplayName.checked := IniFile.ReadBool('Settings', 'RegisterDisplayName', true);
     chbUploadProfileImg.checked := IniFile.ReadBool('Settings', 'UploadProfileImg', true);
     if chbPersistentEMail.checked then
@@ -132,11 +140,18 @@ end;
 
 function TfrmMain.GetAuth: IFirebaseAuthentication;
 begin
-  fConfig := TFirebaseConfiguration.Create(edtWebAPIKey.Text, edtProjectID.Text);
+  if not assigned(fConfig) then
+  begin
+    fConfig := TFirebaseConfiguration.Create(edtWebAPIKey.Text, edtProjectID.Text);
+    fConfig.Auth.InstallTokenRefreshNotification(OnTokenRefresh);
+    edtWebAPIKey.Enabled := false;
+    edtProjectID.Enabled := false;
+  end;
   result := fConfig.Auth;
-  result.InstallTokenRefreshNotification(OnTokenRefresh);
-  edtWebAPIKey.Enabled := false;
-  edtProjectID.Enabled := false;
+  if chbSupportGoogleAccount.checked and
+     (length(edtGoogleOAuthClientID.Text) > 0) and
+     (length(edtGoogleOAuthClientSecret.Text) > 0) then
+    result.SetGoogleAuth2(edtGoogleOAuthClientID.Text, edtGoogleOAuthClientSecret.Text);
 end;
 
 function TfrmMain.GetStorage: IFirebaseStorage;
@@ -169,8 +184,16 @@ begin
     IniFile.WriteString('FBProjectSettings', 'APIKey', edtWebAPIKey.Text);
     IniFile.WriteString('FBProjectSettings', 'ProjectID', edtProjectID.Text);
     IniFile.WriteString('FBProjectSettings', 'Bucket', edtBucket.Text);
+    IniFile.WriteString('GoogleOAuth2', 'ClientID', edtGoogleOAuthClientID.Text);
+    IniFile.WriteString('GoogleOAuth2', 'ClientSecret', edtGoogleOAuthClientSecret.Text);
     if chbPersistentEMail.checked then
-      IniFile.WriteString('Authentication', 'User', FraSelfRegistration.GetEMail);
+    begin
+      fLastEMail := FraSelfRegistration.GetEMail;
+      IniFile.WriteString('Authentication', 'User', fLastEMail);
+    end else begin
+      fLastEMail := '';
+      IniFile.DeleteKey('Authentication', 'User');
+    end;
     if assigned(fConfig) and fConfig.Auth.Authenticated and chbAllowAutoLogin.checked then
       IniFile.WriteString('Authentication', 'Token',
         fConfig.Auth.GetRefreshToken) // Better encrypt this information
@@ -180,6 +203,7 @@ begin
     IniFile.WriteBool('Settings', 'PersistentEMail', chbPersistentEMail.checked);
     IniFile.WriteBool('Settings', 'AllowSelfRegistration', chbAllowSelfRegistration.checked);
     IniFile.WriteBool('Settings', 'RequireVerificatedEMail', chbRequireVerificatedEMail.checked);
+    IniFile.WriteBool('Settings', 'SupportGoogleAccount', chbSupportGoogleAccount.checked);
     IniFile.WriteBool('Settings', 'RegisterDisplayName', chbRegisterDisplayName.checked);
     IniFile.WriteBool('Settings', 'UploadProfileImg', chbUploadProfileImg.checked);
   finally
@@ -211,7 +235,8 @@ begin
   FraSelfRegistration.InitializeAuthOnDemand(GetAuth, OnUserLogin, fLastToken,
     fLastEMail, chbAllowSelfRegistration.checked,
     chbRequireVerificatedEMail.checked,
-    chbRegisterDisplayName.checked);
+    chbRegisterDisplayName.checked, true,
+    chbSupportGoogleAccount.checked);
   if chbUploadProfileImg.checked then
     FraSelfRegistration.RequestProfileImg(GetStorage);
 end;
@@ -228,7 +253,12 @@ end;
 procedure TfrmMain.btnSignOutClick(Sender: TObject);
 begin
   fLastToken := '';
+  if chbPersistentEMail.checked then
+    fLastEMail := FraSelfRegistration.GetEMail
+  else
+    fLastEMail := '';
   fConfig.Auth.SignOut;
+  SaveSettings;
   StartLogin;
 end;
 
@@ -244,6 +274,15 @@ begin
   chbUploadProfileImg.Enabled := chbRegisterDisplayName.checked;
   if not chbRegisterDisplayName.checked then
     chbUploadProfileImg.checked := false;
+end;
+
+procedure TfrmMain.edtGoogleOAuthChange(Sender: TObject);
+begin
+  chbSupportGoogleAccount.Enabled :=
+    (length(edtGoogleOAuthClientID.Text) > 0) and
+    (length(edtGoogleOAuthClientSecret.Text) > 0);
+  if not chbSupportGoogleAccount.Enabled then
+    chbSupportGoogleAccount.checked := false;
 end;
 
 end.
