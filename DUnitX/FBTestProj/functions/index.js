@@ -1,5 +1,5 @@
 // Delphi FB4D Library
-// Copyright (c) 2018-2025 Christoph Schneider
+// Copyright (c) 2018-2026 Christoph Schneider
 // Schneider Infosystems AG, Switzerland
 // https://github.com/SchneiderInfosystems/FB4D
 

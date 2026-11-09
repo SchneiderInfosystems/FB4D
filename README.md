@@ -14,6 +14,7 @@ You can find more learning videos on the following [YouTube channel](https://www
 
 This log informs about major interface changes and significant library enhancements that need the attention of users of this library.
 
+- November 2026: Integration of MFA and login via Google account into the self-registration process for both GUI patterns (FMX and VCL). 
 - April 2026: Add support for Multi-Factor Authentication _MFA_ using Time-based One-Time Passwords (TOTP). New methods for TOTP enrollment, verification, and MFA-aware sign-in. A new cross-platform sample application _MultiFactorAuthentication_ demonstrates the complete workflow;
 - March 2026: _Firestore_ extended Methods: Add support for batch operations (BatchWrite, BatchGet), aggregation queries (Count, Sum, Avg), and resolve memory leaks in asynchronous Firebase requests;
 - April 2025: _Gemini AI_: Add support for system instructions and modality request for text, image and audio;
