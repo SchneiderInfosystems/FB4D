@@ -333,6 +333,8 @@ begin
   Assert(assigned(fAuth), 'Auth is not initialized');
   fAuth.FetchProvidersForEMail(trim(edtEmail.Text), OnFetchProviders,
     OnFetchProvidersError);
+  edtEMail.Visible := true;
+  btnCheckEMail.Visible := true;
   btnCheckEMail.Enabled := false;
   btnGoogleOAuth.Margins.Bottom := -50;
   btnGoogleOAuth.Visible := fSupportGoogleAccount;
@@ -400,6 +402,7 @@ procedure TFraSelfRegistration.OnFetchProviders(const EMail: string;
 begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
+  edtEMail.Visible := true;
   if IsRegistered then
   begin
     if fSupportGoogleAccount and (Providers.Count = 1) and
@@ -451,6 +454,7 @@ begin
   AniIndicator.Enabled := false;
   AniIndicator.Visible := false;
   lblStatus.Text := Info + ': ' + ErrMsg;
+  btnCheckEMail.Visible := true;
   btnCheckEMail.Enabled := true;
 end;
 

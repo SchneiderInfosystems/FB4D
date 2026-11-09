@@ -21,6 +21,8 @@ object frmMain: TfrmMain
       628s
       520s
       628s
+      520s
+      628s
       520s)
     object tabLogin: TTabItem
       CustomIcon = <
@@ -33,6 +35,8 @@ object frmMain: TfrmMain
       StyleLookup = ''
       TabOrder = 0
       Text = 'tabLogin'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
       object layTopBar: TLayout
         Align = Top
         Size.Width = 628.000000000000000000
@@ -56,6 +60,11 @@ object frmMain: TfrmMain
         Size.Height = 475.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
+        inherited edtPassword: TEdit
+          inherited imgShowPwd: TImage
+            MultiResBitmap.Width = 18
+          end
+        end
       end
     end
     object tabFirebaseSettings: TTabItem
@@ -69,6 +78,8 @@ object frmMain: TfrmMain
       StyleLookup = ''
       TabOrder = 0
       Text = 'tabFirebaseSettings'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
       object lblProjectID: TLabel
         Position.X = 24.000000000000000000
         Position.Y = 8.000000000000000000
@@ -297,12 +308,14 @@ object frmMain: TfrmMain
       StyleLookup = ''
       TabOrder = 0
       Text = 'tabLoggedIn'
+      ExplicitSize.cx = 8.000000000000000000
+      ExplicitSize.cy = 8.000000000000000000
       object imgUser: TImage
         MultiResBitmap = <
           item
           end>
         Anchors = [akTop, akRight]
-        Position.X = 576.000000000000000000
+        Position.X = 574.000000000000000000
         Position.Y = 8.000000000000000000
         Size.Width = 44.000000000000000000
         Size.Height = 39.000000000000000000
@@ -315,8 +328,8 @@ object frmMain: TfrmMain
         ReadOnly = True
         Text = 'edtLoggedInUser'
         Position.X = 24.000000000000000000
-        Position.Y = 16.000000000000000000
-        Size.Width = 546.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 542.000000000000000000
         Size.Height = 22.000000000000000000
         Size.PlatformDefault = False
       end
@@ -333,4 +346,3 @@ object frmMain: TfrmMain
     end
   end
 end
-
