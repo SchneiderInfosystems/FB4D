@@ -35,7 +35,7 @@ A new listener detects changes within the Firestore Database without pooling. [S
 
 ### Prerequisites
 
-The sample projects are developed and prepared for **Delphi 13 Florence**.
+The sample projects are developed and prepared for **Delphi 13 Florence** (13.2).
 
 🔺 This library requires at least **Delphi 11.0 Alexandria**🔺. 
 
