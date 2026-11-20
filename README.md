@@ -86,6 +86,10 @@ FB4D supports Multi-Factor Authentication (MFA) via TOTP (Time-based One-Time Pa
 
 [https://github.com/foxitsoftware/DelphiZXingQRCode](https://github.com/foxitsoftware/DelphiZXingQRCode)
 
+### AI Coding Assistant Skill
+
+FB4D includes an agent skill at [`.agents/skills/fb4d/SKILL.md`](.agents/skills/fb4d/SKILL.md) for AI coding assistants (such as Antigravity, Cursor, Claude Code, or GitHub Copilot). It directs the assistant to `Source/FB4D.Interfaces.pas`, the FMX and VCL sample projects in `Samples/`, and the [FB4D Wiki](https://github.com/SchneiderInfosystems/FB4D/wiki) so generated Delphi code follows FB4D's interface-based design. To use it in your own Delphi project, copy the `.agents/skills/fb4d/` folder into your project's `.agents/skills/` directory.
+
 # Sponsoring FB4D
 
 We strongly recommend that anyone incorporating this open-source library into a commercial project considers sponsoring it. This support is crucial for maintaining and furthering the development of this valuable resource. [Read more about the benefits of sponsoring here](https://github.com/SchneiderInfosystems/FB4D/wiki/Sponsorships-and-Support-Request-for-FB4D).
