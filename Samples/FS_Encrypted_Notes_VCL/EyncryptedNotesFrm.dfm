@@ -22,6 +22,7 @@ object frmEncryptedNotes: TfrmEncryptedNotes
     OpenedWidth = 200
     Placement = svpLeft
     TabOrder = 0
+    ExplicitHeight = 417
     DesignSize = (
       200
       434)
@@ -58,6 +59,7 @@ object frmEncryptedNotes: TfrmEncryptedNotes
       Caption = 'Save'
       TabOrder = 2
       OnClick = btnSaveClick
+      ExplicitTop = 384
     end
     object btnGenerateKey: TButton
       Left = 96
@@ -90,6 +92,8 @@ object frmEncryptedNotes: TfrmEncryptedNotes
     Height = 19
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 417
+    ExplicitWidth = 618
   end
   object pnlMain: TPanel
     Left = 200
@@ -99,6 +103,8 @@ object frmEncryptedNotes: TfrmEncryptedNotes
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitWidth = 418
+    ExplicitHeight = 417
     DesignSize = (
       424
       434)
@@ -143,6 +149,8 @@ object frmEncryptedNotes: TfrmEncryptedNotes
       Height = 300
       Anchors = [akLeft, akTop, akRight, akBottom]
       TabOrder = 0
+      ExplicitWidth = 204
+      ExplicitHeight = 283
     end
     object lstNotes: TListBox
       Left = 8
@@ -153,6 +161,7 @@ object frmEncryptedNotes: TfrmEncryptedNotes
       ItemHeight = 15
       TabOrder = 1
       OnClick = lstNotesClick
+      ExplicitHeight = 370
     end
     object btnSettings: TButton
       Left = 8
@@ -182,6 +191,7 @@ object frmEncryptedNotes: TfrmEncryptedNotes
       Enabled = False
       TabOrder = 4
       OnClick = btnDeleteNoteClick
+      ExplicitLeft = 337
     end
     object stcID: TEdit
       Left = 226
@@ -193,6 +203,7 @@ object frmEncryptedNotes: TfrmEncryptedNotes
       ReadOnly = True
       TabOrder = 5
       TextHint = 'Document ID'
+      ExplicitWidth = 179
     end
     object btnSaveNote: TButton
       Left = 206
